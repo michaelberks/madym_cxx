@@ -1,0 +1,10 @@
+#ifndef MDM_VERSION_H
+#define MDM_VERSION_H
+
+#define GIT_BRANCH "@GIT_BRANCH@"
+#define GIT_COMMIT_HASH "@GIT_COMMIT_HASH@"
+#define GIT_TAG "@GIT_TAG@"
+#define MDM_TEST_CALIBRATION_DIR "@CMAKE_BINARY_DIR@/calibration_data/"
+#define MDM_VERSION GIT_TAG
+
+#endif
