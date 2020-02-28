@@ -16,6 +16,7 @@
 //Alternatives needed for windows
 #include <direct.h>
 #include <Winsock2.h>
+#include <limits.h>
 
 #define getcwd _getcwd // stupid MSFT "deprecation" warning
 #define PLATFORM_USER "USERNAME"
@@ -25,6 +26,7 @@
 #include <unistd.h>
 #include <sys/param.h>
 #include <ifaddrs.h>
+#include <float.h>
 #define PLATFORM_USER "USER"
 #endif
 

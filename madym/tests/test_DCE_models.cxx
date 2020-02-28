@@ -40,7 +40,8 @@ void test_model_time_series(
 	model->computeCtModel(nTimes);
 	std::vector<double> Ct = model->CtModel();
 	std::string test_str = "Test DCE models, values match: " + modelName;
-	TEST(test_str.c_str(), Ct, CtCalibration);
+	TEST(test_str.c_str(), mdm_test_utils::vectors_near_equal(
+        Ct, CtCalibration, 0.0001), true);
 	
 	delete model;
 }
