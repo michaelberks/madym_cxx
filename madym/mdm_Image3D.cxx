@@ -24,6 +24,7 @@
 #include <cassert>
 #include <sstream>
 #include <iostream>
+#include <cmath>
 
 /*
  * Create a new mdm_Image3D object

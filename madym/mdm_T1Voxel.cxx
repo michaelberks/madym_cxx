@@ -14,8 +14,8 @@
 
 #include <stdio.h>                
 #include <stdlib.h>                
-#include <math.h>            /* For cos(), sin() and exp() */
-#include <assert.h>          /* For assert macro */
+#include <cmath>            /* For cos(), sin() and exp() */
+#include <cassert>          /* For assert macro */
 
 #include "mdm_ErrorTracker.h"
 #include "mdm_ProgramLogger.h"
