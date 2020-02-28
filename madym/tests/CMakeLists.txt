@@ -23,7 +23,7 @@ ADD_EXECUTABLE( mdm_test_driver
 
 add_test( NAME mdm_test_mdm COMMAND $<TARGET_FILE:mdm_test_driver> test_mdm )
 add_test( NAME mdm_test_image3D COMMAND $<TARGET_FILE:mdm_test_driver> test_image3D )
-add_test( NAME mdm_tools_test_boost COMMAND $<TARGET_FILE:mdm_tools_test_driver> test_boost )
+add_test( NAME mdm_test_boost COMMAND $<TARGET_FILE:mdm_test_driver> test_boost )
 add_test( NAME mdm_test_analyze COMMAND $<TARGET_FILE:mdm_test_driver> test_analyze )
 add_test( NAME mdm_test_T1 COMMAND $<TARGET_FILE:mdm_test_driver> test_T1 )
 add_test( NAME mdm_test_AIF COMMAND $<TARGET_FILE:mdm_test_driver> test_AIF )
