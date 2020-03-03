@@ -1,6 +1,6 @@
 PROJECT( manchester_qbi_madym )
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.10)
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
@@ -82,17 +82,14 @@ SETIFEMPTY(IMSCI_QBI_INSTALL_INCLUDE_DIR include)
 
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} )
 
-IF( WIN32 )
-  OPTION( BUILD_TESTING "Should the tests be built?" NO )
-ELSE( WIN32 )
-  OPTION( BUILD_TESTING "Should the tests be built?" YES )
-ENDIF( WIN32 )
+OPTION( BUILD_TESTING "Should the tests be built?" YES )
 
 # Best to use shared libraries
 OPTION(BUILD_SHARED_LIBS "Build with shared libraries." YES)
 
 # Best to use shared libraries
 OPTION(BUILD_DOCUMENTATION "Build documentation using doxygen." NO)
+
 IF (BUILD_DOCUMENTATION)
   # Require dot, treat the other components as optional
   find_package(Doxygen)

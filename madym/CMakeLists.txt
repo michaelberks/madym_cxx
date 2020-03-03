@@ -18,7 +18,7 @@ FIND_PACKAGE(Boost COMPONENTS system filesystem REQUIRED)
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-LINK_DIRECTORIES(${Boost_LIBRARY_DIR_DEBUG})
+#LINK_DIRECTORIES(${Boost_LIBRARY_DIR_DEBUG})
 
 ADD_SUBDIRECTORY(opt)
 
@@ -71,7 +71,7 @@ ELSE ( MSVC )
 ENDIF ( MSVC )
 
 OPTION( BUILD_TOOLS "Should the main madym executable tools be built?" YES )
-OPTION( BUILD_QT_GUI "Should the madym GUI be built?" YES )
+OPTION( BUILD_QT_GUI "Should the madym GUI be built?" NO )
 
 if ( BUILD_TOOLS )
 	SUBDIRS(tools)
