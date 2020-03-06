@@ -5,7 +5,7 @@
 #include <madym/mdm_Image3D.h>
 #include "mdm_test_utils.h"
 
-void test_write_read(const mdm_Image3D &img, const int format, const bool sparse)
+void test_write_read(const mdm_Image3D &img, const mdm_AnalyzeFormat::Data_type format, const bool sparse)
 {
 	std::string format_str;
 	switch (format)
@@ -29,7 +29,7 @@ void test_write_read(const mdm_Image3D &img, const int format, const bool sparse
 	//Double format
 	std::string img_name = mdm_test_utils::temp_dir() + "/" + format_str;
 	bool success = mdm_AnalyzeFormat::writeImage3D(
-		img_name, img, format, false, sparse);
+		img_name, img, format, mdm_AnalyzeFormat::NO_XTR, sparse);
 
 	mdm_Image3D img_r = mdm_AnalyzeFormat::readImage3D(img_name, false);
 
@@ -49,7 +49,6 @@ void test_xtr(mdm_Image3D &img)
 	double TR = 3;
 	double TE = 1;
 	double time = 123456.789;
-	bool use_xtr = true;
 	img.info_.flipAngle.setValue(FA);
 	img.info_.TR.setValue(TR);
 	img.info_.TE.setValue(TE);
@@ -57,10 +56,10 @@ void test_xtr(mdm_Image3D &img)
 
 	std::string img_name = mdm_test_utils::temp_dir() + "/xtr_test";
 	bool success = mdm_AnalyzeFormat::writeImage3D(
-		img_name, img, mdm_AnalyzeFormat::DT_FLOAT, use_xtr, false);
+		img_name, img, mdm_AnalyzeFormat::DT_FLOAT, mdm_AnalyzeFormat::NEW_XTR, false);
 	TEST("xtr write", success, true);
 
-	mdm_Image3D img_r = mdm_AnalyzeFormat::readImage3D(img_name, use_xtr);
+	mdm_Image3D img_r = mdm_AnalyzeFormat::readImage3D(img_name, true);
 	TEST_NEAR("xtr read: FA", FA, img_r.info_.flipAngle.value(), 1e-3);
 	TEST_NEAR("xtr read: TR", TR, img_r.info_.TR.value(), 1e-3);
 	TEST_NEAR("xtr read: TE", TE, img_r.info_.TE.value(), 1e-3);

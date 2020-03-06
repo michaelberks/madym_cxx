@@ -76,12 +76,12 @@ public:
 	/**
 	* @brief Return the current AIF
 	*/
-	MDM_API std::vector<double> AIF() const;
+	MDM_API const std::vector<double>& AIF() const;
 
 	/**
 	* @brief Return the current PIF
 	*/
-	MDM_API std::vector<double> PIF() const;
+	MDM_API const std::vector<double>& PIF() const;
 
 
 	/**
@@ -117,7 +117,7 @@ public:
 	/**
 	* @brief Get time (in minutes) of each AIF sample
 	*/
-	MDM_API std::vector<double> AIFTimes() const;
+	MDM_API const std::vector<double>& AIFTimes() const;
 
 	/**
 	* @brief Get time (in minutes) of selected AIF sample

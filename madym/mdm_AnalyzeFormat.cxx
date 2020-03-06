@@ -219,7 +219,7 @@ bool mdm_AnalyzeFormat::writeOldXtr(std::ofstream *xtrFileStream,
 //
 bool mdm_AnalyzeFormat::writeAnalyzeXtr(const std::string &baseName,
                       const mdm_Image3D &img,
-                      const int typeFlag)
+                      const XTR_type typeFlag)
 {
   assert(!baseName.empty());
   assert(img.getNvoxels());
@@ -300,7 +300,7 @@ bool mdm_AnalyzeFormat::writeAnalyzeHdr(const std::string &baseName,
 //
 bool mdm_AnalyzeFormat::writeAnalyzeImg(const std::string &baseName,
 	const mdm_Image3D& img,
-	const int typeFlag,
+	const Data_type typeFlag,
 	bool sparse)
 {
   
@@ -358,7 +358,7 @@ bool mdm_AnalyzeFormat::writeAnalyzeImg(const std::string &baseName,
 //
 MDM_API bool mdm_AnalyzeFormat::writeImage3D(const std::string &baseName,
                             const mdm_Image3D &img,
-                            const int dataTypeFlag, const int xtrTypeFlag,
+                            const Data_type dataTypeFlag, const XTR_type xtrTypeFlag,
 														bool sparse)
 {
   //int   nVoxels = img.getNvoxels();
@@ -393,21 +393,9 @@ MDM_API bool mdm_AnalyzeFormat::writeImage3D(const std::string &baseName,
 
   // Write *.xtr files only if info has been set (default values are all NaN)
   // But ignore TE for now ... GAB 5 June 2007
-  if ((img.info_.flipAngle.isSet())
-      && (img.info_.TR.isSet())
-      && (xtrTypeFlag != NO_XTR))
+  if (xtrTypeFlag != NO_XTR)
   {
-    if ((xtrTypeFlag == OLD_XTR) || (xtrTypeFlag == NEW_XTR))
-    {
-      writeAnalyzeXtr(baseName, img, xtrTypeFlag);
-    }
-    else
-    {
-			mdm_ProgramLogger::logProgramMessage(
-				"ERROR: mdm_AnalyzeFormat::writeImage3D: "
-				"Invalid xtr file type " + std::to_string(xtrTypeFlag) + ": file " + baseName + "\n");
-      return false;
-    }
+    writeAnalyzeXtr(baseName, img, xtrTypeFlag);
   }
 
   return true;

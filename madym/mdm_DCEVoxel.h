@@ -44,7 +44,7 @@ public:
     const std::vector<double> &noiseVar,
 		const double T10,
 		const double S01,
-		const double r1cont,
+		const double r1Const,
     const int bolus_time,
 		const std::vector<double> &dynamicTimings,
 		const double TR,
@@ -134,7 +134,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API void IAUC_calc();
+	MDM_API void calculateIAUC();
 
   	/**
 	* @brief
@@ -198,7 +198,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API double     r1cont() const;
+	MDM_API double     r1Const() const;
 		/**
 	* @brief
 
@@ -382,7 +382,7 @@ private:
   std::vector<double>					noiseVar_;			//DCE time series vector of estimated noise variance for each temporal volume
 	double								t10_;						//T1 value for this voxel
 	double								s0_;						//M0 (aka S0) value for this voxel - not used if using ratio method
-	double								r1cont_;				//relaxivity constat of tissue 
+	double								r1Const_;				//relaxivity constant of tissue 
   int                   bolus_time_;    //Time point of injection
 	std::vector<double>		IAUC_times_;		//Vector of times (in secs) at which to caclucate IAUC values (and the resulting values)
 	std::vector<double>		IAUC_vals_; 

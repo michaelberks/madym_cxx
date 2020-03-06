@@ -53,7 +53,7 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
   const std::vector<double> &noiseVar,
 	const double T10,
 	const double S0,
-	const double r1cont,
+	const double r1Const,
   const int bolus_time,
 	const std::vector<double> &dynamicTimings,
 	const double TR,
@@ -71,7 +71,7 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	s0_(S0),
 	n1_(n1),
 	n2_(n2),
-	r1cont_(r1cont),
+	r1Const_(r1Const),
   bolus_time_(bolus_time),
 	IAUC_times_(IAUC_times),
 	IAUC_vals_(IAUC_times_.size(), 0),
@@ -84,6 +84,7 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	useRatio_(useRatio),
   status_(mdm_DCEVoxelStatus::OK)
 {
+	std::cout << "dyn times " << dynamicTimings_.size() << std::endl;
 }
 
 MDM_API mdm_DCEVoxel::~mdm_DCEVoxel()
@@ -111,7 +112,7 @@ MDM_API mdm_DCEVoxel::~mdm_DCEVoxel()
 */
 MDM_API void mdm_DCEVoxel::computeCtFromSignal()
 {
-  double  R1gd = r1cont() * 0.001;   /* Use millisec instead of sec (as in user interface) */
+  double  R1gd = r1Const() * 0.001;   /* Use millisec instead of sec (as in user interface) */
 
   /* MB - this function is now only called when we're converting
   signal intensities to concentration. If we already have concentrations
@@ -470,37 +471,46 @@ MDM_API void mdm_DCEVoxel::fitModel()
   if (!model_)
     return;
 
-  /* Use IAUC to check for enhancement (since 1.22 unless user says no */
+	enhancing_ = true;
+
+  //Check if any issues with voxel
   if (status_ != mdm_DCEVoxelStatus::OK && status_ != mdm_DCEVoxelStatus::DYN_T1_BAD)
   {
     model_->zeroParams();
 		for (auto &iauc : IAUC_vals_)
 			iauc = 0.0;
     modelFitError_ = 0.0;
-    enhancing_ = 0;
+    enhancing_ = false;
   }
-	else if (testEnhancement_ && ((IAUC_vals_[0] <= 0.0) || (IAUC_vals_[1] <= 0.0)))
-  {
-  /*
-   * This is where I cut CJR's enhancement stuff
-   * GAB 22 Feb 2012 (madym 1.21.alpha at BDL)
-   */
-    model_->zeroParams();
-		for (auto &iauc : IAUC_vals_)
-			iauc = 0.0;
-    modelFitError_ = 0.0;
-    enhancing_ = 0;
-  }
-  else
-  {
-    /* The voxel is enhancing, so set the map value */
-    enhancing_ = 1;
-    
-    /*
-     * Fit pharmacokinetic model
-     */
+
+	// Use IAUC to check for enhancement (since 1.22 unless user says no)
+	else if (testEnhancement_)
+	{
+		/*
+		 * This is where I cut CJR's enhancement stuff
+		 * GAB 22 Feb 2012 (madym 1.21.alpha at BDL)
+		 */
+		for (const auto iauc : IAUC_vals_)
+		{
+			if (iauc <= 0.0)
+			{
+				enhancing_ = false;
+				break;
+			}
+		}
+	}
+	if (enhancing_)
+	{	
+		//Fit pharmacokinetic model
 		optimiseModel();
   }
+	else
+	{
+		model_->zeroParams();
+		for (auto &iauc : IAUC_vals_)
+			iauc = 0.0;
+		modelFitError_ = 0.0;
+	}
 }
 
 /**
@@ -526,7 +536,7 @@ MDM_API void mdm_DCEVoxel::fitModel()
 * @param    IAUC90          Pointer to double holding AUC to 90 s             - OUTPUT
 * @param    IAUC120         Pointer to double holding AUC to 120 s            - OUTPUT
 */
-MDM_API void mdm_DCEVoxel::IAUC_calc()
+MDM_API void mdm_DCEVoxel::calculateIAUC()
 {
 	/*MB must check - are dynamic timings in seconds or minutes? Adjust to seconds here if so*/
 	size_t nTimes = dynamicTimings_.size();
@@ -534,16 +544,37 @@ MDM_API void mdm_DCEVoxel::IAUC_calc()
 	for (auto & iauc : IAUC_vals_)
 		iauc = 0.0;
 
+	size_t nIAUC = IAUC_times_.size();
+	double cumulativeCt = 0;
+	const double bolusTime = dynamicTimings_[bolus_time_];
+
+	//This relies on IAUC times being sorted, which we enforce externally to save
+	//time, but for robustness could do so here?
+	int currIAUCt = 0;
   for (size_t i_t = bolus_time_; i_t < nTimes; i_t++)
 	{
+		double elapsedTime = dynamicTimings_[i_t] - bolusTime;
+		double delta_t = dynamicTimings_[i_t] - dynamicTimings_[i_t - 1];
+		double delta_Ct = CtData_[i_t] + CtData_[i_t - 1];
+		double addedCt = delta_t * delta_Ct / 2.0;
 
-		for (size_t i_iauc = 0, n_iauc = IAUC_times_.size(); i_iauc < n_iauc; i_iauc++)
+		//If we exceed time for any IAUC time, set the val
+		if (elapsedTime > IAUC_times_[currIAUCt])
 		{
-			if (dynamicTimings_[i_t] - dynamicTimings_[bolus_time_] <= IAUC_times_[i_iauc])
-				IAUC_vals_[i_iauc] += (CtData_[i_t] + CtData_[i_t - 1]) *
-				(dynamicTimings_[i_t] - dynamicTimings_[i_t - 1]) / 2.0;
+			//Compute the extra littl ebit of trapezium...
+			double t_frac = 1.0 - (elapsedTime - IAUC_times_[currIAUCt])/delta_t; 
 
+			IAUC_vals_[currIAUCt] = cumulativeCt + t_frac*addedCt;
+
+			//If this was the last time point, we can break
+			if (currIAUCt == nIAUC - 1)
+				break;
+			else
+				currIAUCt++;;
 		}
+
+		//Add to the cumulative Ct
+		cumulativeCt += addedCt;
 	}
 }
 
@@ -581,9 +612,9 @@ MDM_API double     mdm_DCEVoxel::s0() const
 {
 	return s0_;
 }
-MDM_API double     mdm_DCEVoxel::r1cont() const
+MDM_API double     mdm_DCEVoxel::r1Const() const
 {
-	return r1cont_;
+	return r1Const_;
 }
 MDM_API double     mdm_DCEVoxel::IAUC_val(int i) const
 {

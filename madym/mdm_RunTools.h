@@ -28,20 +28,29 @@ public:
   //:All madym  options
   //--------------------------------------------------------------------
 	
+	const static std::string empty_str;
+	MDM_API bool to_stream(std::ostream &str) const;
+	MDM_API bool to_file(const std::string &filename) const;
+	MDM_API bool from_file(const std::string &filename);
+
+	//Generic input options
+	std::string configFile = "";
+	std::string dataDir = "";
+	std::string inputDataFile = "";
+	std::string roiName = "";
+
   //DCE input options
 	bool inputCt = false;
   std::string dynDir = "";
   std::string dynName = "dyn_";
   std::string dynFormat = "%01u";
-  std::string roiName = "";
-	std::string inputDataFile = "";
-	std::string dynTimesFile = "";
+  std::string dynTimesFile = "";
 	int nDyns = 0;
 
   //T1 calculation options
   std::string T1method = "VFA";
   std::vector<std::string> T1inputNames = {};
-	double T1noiseThresh = 100.0;
+	double T1noiseThresh = 0.0;
  
   //Signal to concentration options
   double r1Const = 3.4;
@@ -57,10 +66,11 @@ public:
   bool useRatio = true;
 
   //Logging options
-  std::string errorBaseName = "error_codes";
-	std::string programLogBaseName = "ProgramLog.txt";
+  std::string errorCodesName = "error_codes";
+	std::string programLogName = "ProgramLog.txt";
+	std::string outputConfigFileName = "config.txt";
   std::string auditLogBaseName = "AuditLog.txt";
-  std::string auditLogDir = "./audit_logs/";
+  std::string auditLogDir = "audit_logs/";
 
   //AIF options
   std::string aifName = "";
@@ -73,7 +83,8 @@ public:
   bool overwrite = false;
   bool outputCt = false;
   bool outputCm = false;
-  std::vector<double> IAUCTimes = {30.0,60.0,90.0};
+	bool sparseWrite = false;
+  std::vector<double> IAUCTimes = {60.0,90.0,120.0};
 
   //Model options
   std::string model = "";
@@ -97,14 +108,18 @@ public:
 
   //:All madym  options - help strings
   //--------------------------------------------------------------------
+	//Generic input options
+	std::string configFileText = "Read input parameters from a configuration file";
+	std::string dataDirText = "Set the working directory";
+	std::string inputDataFileText = "Input data filename, see notes for options";
+	std::string roiNameText = "Path to ROI map";
+
   //DCE input options
   std::string inputCtText = "Flag specifying input dynamic sequence are concentration (not signal) maps";
   std::string dceDirText = "Directory containing dynamic input volumes";
   std::string dynNameText = "Template name for dynamic sequences eg. dynamic/dyn_";
   std::string dynFormatText = "Number format for suffix specifying temporal index of dynamic volumes";
-  std::string roiNameText = "Path to ROI map";
-	std::string inputDataFileText = "Input data filename, see notes for options";
-	std::string dynTimesFileText = "Time associated with each dynamic signal, see notes for options";
+  std::string dynTimesFileText = "Time associated with each dynamic signal, see notes for options";
 	std::string nDynsText = "Number of time-points in dynamic series";
 
   //T1 calculation options
@@ -126,10 +141,11 @@ public:
   std::string useRatioText = "Flag to use ratio method to scale signal instead of supplying S0";
 
   //Logging options
-  std::string programLogBaseNameText = "Program log file name";
-  std::string auditLogBaseNameText = "Audit log file name";
+  std::string programLogNameText = "Program log filename";
+	std::string outputConfigFileNameText = "Config file of  filename";
+	std::string auditLogBaseNameText = "Base of audit log filename, will be appended with date and time";
   std::string auditLogDirText = "Folder in which audit output is saved";
-  std::string errorBaseNameText = "Error codes image file name";
+  std::string errorCodesNameText = "Error codes image filename";
 
   //AIF options
   std::string aifNameText = "Path to precomputed AIF if not using population AIF";
@@ -142,6 +158,7 @@ public:
 	std::string overwriteText = "Set overwrite existing analysis in output dir ON";
   std::string outputCtText = "Flag requesting concentration (derived from signal) are saved to output";
   std::string outputCmText = "Flag requesting modelled concentration maps are saved to output";
+	std::string sparseWriteText = "Flag requesting output files are written in Analyze sparse format";
 
   //Model options
   std::string modelText = "Model to fit, see notes for options";

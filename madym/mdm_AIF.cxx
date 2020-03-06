@@ -555,19 +555,19 @@ MDM_API bool mdm_AIF::computeAutoAIF(
 }
 
 //
-MDM_API std::vector<double> mdm_AIF::AIF() const
+MDM_API const std::vector<double>& mdm_AIF::AIF() const
 {
 	return resampled_AIF_;
 }
 
 //
-MDM_API std::vector<double> mdm_AIF::PIF() const
+MDM_API const std::vector<double>& mdm_AIF::PIF() const
 {
 	return resampled_PIF_;
 }
 
 //
-MDM_API std::vector<double> mdm_AIF::AIFTimes() const
+MDM_API const std::vector<double>& mdm_AIF::AIFTimes() const
 {
 	return AIFTimes_;
 }

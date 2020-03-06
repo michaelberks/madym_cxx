@@ -18,7 +18,6 @@ FIND_PACKAGE(Boost COMPONENTS system filesystem REQUIRED)
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-#LINK_DIRECTORIES(${Boost_LIBRARY_DIR_DEBUG})
 
 ADD_SUBDIRECTORY(opt)
 
@@ -52,11 +51,8 @@ SET(mdm_sources
 		mdm_api.h
 )
 
-#ADD_EXECUTABLE(alglib_demo 
-#	alglib_demo.cxx ${mdm_opt_sources})
-
 ADD_LIBRARY(mdm 
-	${mdm_sources}) #${mdm_opt_sources}
+	${mdm_sources})
 
 TARGET_LINK_LIBRARIES( mdm LINK_PUBLIC 
   mdm_opt

@@ -32,7 +32,7 @@ using namespace boost::filesystem;
 
 #include "mdm_ProgramLogger.h"
 
-const int MAX_IMAGES = 512;
+const int MAX_IMAGES = 1024;
 
 MDM_API mdm_FileManager::mdm_FileManager(mdm_AIF &AIF,
 	mdm_T1VolumeAnalysis &T1Mapper,
@@ -51,7 +51,8 @@ MDM_API mdm_FileManager::mdm_FileManager(mdm_AIF &AIF,
   PIFPath_(""),
 	ROIPath_(""),
 	writeCtDataMaps_(false),
-  writeCtModelMaps_(false)
+  writeCtModelMaps_(false),
+	sparseWrite_(false)
 {
 
 }
@@ -201,7 +202,7 @@ MDM_API bool mdm_FileManager::writeErrorMap(const std::string &outputPath)
 	}
 		
 	if (!mdm_AnalyzeFormat::writeImage3D(outputPath, img,
-		mdm_AnalyzeFormat::DT_SIGNED_INT, false))
+		mdm_AnalyzeFormat::DT_SIGNED_INT, mdm_AnalyzeFormat::NO_XTR, sparseWrite_))
 	{
 		// write msg to errLog (failed to write image to file)
 		mdm_ProgramLogger::logProgramMessage(
@@ -219,6 +220,11 @@ MDM_API void mdm_FileManager::setWriteCtDataMaps(bool b)
 MDM_API void mdm_FileManager::setWriteCtModelMaps(bool b)
 {
   writeCtModelMaps_ = b;
+}
+
+MDM_API void mdm_FileManager::setSparseWrite(bool b)
+{
+	sparseWrite_ = b;
 }
 
 MDM_API bool mdm_FileManager::saveAIF(const std::string &AIFpath)
@@ -335,13 +341,43 @@ MDM_API bool mdm_FileManager::loadS0Image(const std::string &S0path)
 }
 
 MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
-	const std::string &dynPrefix)
+	const std::string &dynPrefix, int nDyns)
 {
 	bool dynFilesExist = true;
 	int nDyn = 0;
 	dynPaths_.clear();
-	while (dynFilesExist && nDyn < MAX_IMAGES)
+
+	//Set flags for missing data and reaching max images based on whether
+	//nDyns was set or not
+	bool errorIfMissing, warnIfMax;
+
+	if (nDyns <= 0)
 	{
+		//If nDyns not set, keep reading images until we hit memory max
+		//warn if we hit max, but don't error when we run out of images
+		nDyns = MAX_IMAGES;
+		errorIfMissing = false;
+		warnIfMax = true;
+	}
+	else
+	{
+		//If nDyns not set, read in nDyns images
+		//Don't warn if we hit max, but error if we run out of images
+		errorIfMissing = true;
+		warnIfMax = false;
+	}
+
+	while (dynFilesExist)
+	{
+		if (nDyn == nDyns)
+		{
+			if (warnIfMax)
+				mdm_ProgramLogger::logProgramMessage(
+					"WARNING: mdm_FileManager::loadStDataMaps: reached maximum number of images "
+					+ std::to_string(MAX_IMAGES));
+			break;
+		}
+
 		nDyn++;
 
 		/* This sets various globals (see function header comment) */
@@ -350,9 +386,17 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 
 		if (!boost::filesystem::exists(dynPath))
 		{
-			mdm_ProgramLogger::logProgramMessage(
-				"ERROR: mdm_FileManager::loadStDataMaps: " + 
-				dynPath + " does not exist.");
+			//If nDyns was set, we expect to load in that many images, so error and return false
+			//if any of them don't exist
+			if (errorIfMissing)
+			{
+				mdm_ProgramLogger::logProgramMessage(
+					"ERROR: mdm_FileManager::loadStDataMaps: " + dynPath + " does not exist.");
+				return false;
+			}
+
+			//However if nDyns wasn't set, this is expected behaviour - we keep loading images
+			//until we don't find them - just set catFilesExist to false so we break the loop
 			dynFilesExist = false;
 		}
 		else
@@ -387,13 +431,42 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 }
 
 MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
-	const std::string &catPrefix)
+	const std::string &catPrefix, int nDyns)
 {
 	bool catFilesExist = true;
 	int nCat = 0;
 	catPaths_.clear();
-	while (catFilesExist && nCat < MAX_IMAGES)
+
+	//Set flags for missing data and reaching max images based on whether
+	//nDyns was set or not
+	bool errorIfMissing, warnIfMax;
+
+	if (nDyns <= 0)
 	{
+		//If nDyns not set, keep reading images until we hit memory max
+		//warn if we hit max, but don't error when we run out of images
+		nDyns = MAX_IMAGES;
+		errorIfMissing = false;
+		warnIfMax = true;
+	}
+	else
+	{
+		//If nDyns not set, read in nDyns images
+		//Don't warn if we hit max, but error if we run out of images
+		errorIfMissing = true;
+		warnIfMax = false;
+	}
+
+	while (catFilesExist)
+	{
+		if (nCat == nDyns)
+		{
+			if (warnIfMax)
+				mdm_ProgramLogger::logProgramMessage(
+					"WARNING: mdm_FileManager::loadCtDataMaps: reached maximum number of images " 
+					+ std::to_string(MAX_IMAGES));
+			break;
+		}
 		nCat++;
 
 		/* This sets various globals (see function header comment) */
@@ -402,8 +475,17 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 
 		if (!boost::filesystem::exists(catPath))
 		{
-			mdm_ProgramLogger::logProgramMessage(
-				"ERROR: mdm_FileManager::loadCtDataMaps: " + catPath + " does not exist.");
+			//If nDyns was set, we expect to load in that many images, so error and return false
+			//if any of them don't exist
+			if (errorIfMissing)
+			{
+				mdm_ProgramLogger::logProgramMessage(
+					"ERROR: mdm_FileManager::loadCtDataMaps: " + catPath + " does not exist.");
+				return false;
+			}
+			
+			//However if nDyns wasn't set, this is expected behaviour - we keep loading images
+			//until we don't find them - just set catFilesExist to false so we break the loop
 			catFilesExist = false;
 		}
 		else
@@ -477,10 +559,10 @@ bool mdm_FileManager::writeOutputMap(const std::string &mapName, const mdm_Image
 {
 	std::string saveName = outputDir + "/" + mapName;
 
-  int xtr = (writeXtr ? mdm_AnalyzeFormat::XTR_type::NEW_XTR : mdm_AnalyzeFormat::XTR_type::NO_XTR);
+	mdm_AnalyzeFormat::XTR_type xtr = (writeXtr ? mdm_AnalyzeFormat::XTR_type::NEW_XTR : mdm_AnalyzeFormat::XTR_type::NO_XTR);
 
 	if (!mdm_AnalyzeFormat::writeImage3D(saveName, img,
-		mdm_AnalyzeFormat::DT_FLOAT, xtr))
+		mdm_AnalyzeFormat::DT_FLOAT, xtr, sparseWrite_))
 	{
 		// write msg to errLog (failed to write image to file)
 		mdm_ProgramLogger::logProgramMessage(

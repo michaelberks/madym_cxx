@@ -99,8 +99,8 @@ void madym_gui_ui::on_computeT1Button_clicked()
 
   madym_options_.roiName = ui.roiPathLineEdit->text().toStdString();
 
-  madym_options_.programLogBaseName = ui.logNameLineEdit->text().toStdString();
-  madym_options_.errorBaseName = ui.errorCodesLineEdit->text().toStdString();
+  madym_options_.programLogName = ui.logNameLineEdit->text().toStdString();
+  madym_options_.errorCodesName = ui.errorCodesLineEdit->text().toStdString();
   madym_options_.auditLogBaseName = ui.auditNameLineEdit->text().toStdString();
   madym_options_.auditLogDir = ui.auditDirLineEdit->text().toStdString();
 
@@ -167,8 +167,8 @@ void madym_gui_ui::on_computeIFButton_clicked()
   }
 
   //Logging options
-  madym_options_.programLogBaseName = ui.logNameLineEdit->text().toStdString();
-  madym_options_.errorBaseName = ui.errorCodesLineEdit->text().toStdString();
+  madym_options_.programLogName = ui.logNameLineEdit->text().toStdString();
+  madym_options_.errorCodesName = ui.errorCodesLineEdit->text().toStdString();
   madym_options_.auditLogBaseName = ui.auditNameLineEdit->text().toStdString();
   madym_options_.auditLogDir = ui.auditDirLineEdit->text().toStdString();
 
@@ -252,8 +252,8 @@ void madym_gui_ui::on_fitModelButton_clicked()
   }
 
   //Logging options
-  madym_options_.programLogBaseName = ui.logNameLineEdit->text().toStdString();
-  madym_options_.errorBaseName = ui.errorCodesLineEdit->text().toStdString();
+  madym_options_.programLogName = ui.logNameLineEdit->text().toStdString();
+  madym_options_.errorCodesName = ui.errorCodesLineEdit->text().toStdString();
   madym_options_.auditLogBaseName = ui.auditNameLineEdit->text().toStdString();
   madym_options_.auditLogDir = ui.auditDirLineEdit->text().toStdString();
 
@@ -666,8 +666,8 @@ void madym_gui_ui::initialize_widget_values()
     ui.t1UsePrecomputedCheckBox->isChecked());
 
   //Logging options
-  ui.logNameLineEdit->setText(madym_options_.programLogBaseName.c_str());
-  ui.errorCodesLineEdit->setText(madym_options_.errorBaseName.c_str());
+  ui.logNameLineEdit->setText(madym_options_.programLogName.c_str());
+  ui.errorCodesLineEdit->setText(madym_options_.errorCodesName.c_str());
   ui.auditNameLineEdit->setText(madym_options_.auditLogBaseName.c_str());
   ui.auditDirLineEdit->setText(madym_options_.auditLogDir.c_str());
 

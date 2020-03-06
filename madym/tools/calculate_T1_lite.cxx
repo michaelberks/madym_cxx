@@ -33,6 +33,8 @@ int main(int argc, char *argv[])
   /* If cmd-line looks ok save for log otherwise advise user */
   vul_arg_base::set_help_option("-h");
 
+	vul_arg<std::string> dataDir("-cwd", madym_options_.dataDirText.c_str(), madym_options_.dataDir);
+
   vul_arg<std::string> inputDataFile("-d", "input data filename, see notes for options", "");
   vul_arg<int> nSignals("-n", "Number of signals in data", 0);
   vul_arg<double> TR("-TR", madym_options_.TRText.c_str(), madym_options_.TR);
@@ -71,6 +73,7 @@ int main(int argc, char *argv[])
   }
 
 	//Copy command line options back into options object
+	madym_options_.dataDir = dataDir();
 	madym_options_.inputDataFile = inputDataFile();
 	madym_options_.TR = TR();
 	madym_options_.outputDir = outputDir();

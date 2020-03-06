@@ -20,6 +20,206 @@
 
 namespace fs = boost::filesystem;
 
+const std::string mdm_ToolsOptions::empty_str = "<>";
+
+template < class T >
+inline std::ostream& operator << (std::ostream& os, const std::vector<T>& v)
+{
+	os << "[ " << v.size() << " :";
+	for (const auto ii : v)
+		os << " " << ii;
+	
+	os << " ]";
+	return os;
+}
+
+template < class T >
+inline std::istream& operator >> (std::istream& is, std::vector<T>& v)
+{
+	std::string s;
+	int n;
+
+	//Get the opening brace
+	is >> s;
+
+	//Get the number of elements
+	is >> n;
+
+	//Get the :
+	is >> s;
+
+	v.resize(n);
+	for (auto &element : v)
+		is >> element;
+
+	//Get the closing brace
+	is >> s;
+	return is;
+}
+
+inline std::istream& read_str(std::istream& is, std::string& s)
+{
+	is >> s;
+	if (s == mdm_ToolsOptions::empty_str)
+		s.clear();
+	return is;
+}
+
+//
+MDM_API bool mdm_ToolsOptions::to_stream(std::ostream &stream) const
+{
+	stream 
+		<< "configFile " << configFile << "\n"
+		<< "dataDir " << dataDir << "\n"
+		<< "inputCt " << inputCt << "\n"
+		<< "dynDir " << (dynDir.empty() ? mdm_ToolsOptions::empty_str : dynDir) << "\n"
+		<< "dynName " << (dynName.empty() ? mdm_ToolsOptions::empty_str : dynName) << "\n"
+		<< "dynFormat " << (dynFormat.empty() ? mdm_ToolsOptions::empty_str : dynFormat) << "\n"
+		<< "roiName " << (roiName.empty() ? mdm_ToolsOptions::empty_str : roiName) << "\n"
+		<< "inputDataFile " << (inputDataFile.empty() ? mdm_ToolsOptions::empty_str : inputDataFile) << "\n"
+		<< "dynTimesFile " << (dynTimesFile.empty() ? mdm_ToolsOptions::empty_str : dynTimesFile) << "\n"
+		<< "nDyns " << nDyns << "\n"
+		<< "T1method " << (T1method.empty() ? mdm_ToolsOptions::empty_str : T1method) << "\n"
+		<< "T1inputNames " << T1inputNames << "\n"
+		<< "T1noiseThresh " << T1noiseThresh << "\n"
+		<< "r1Const " << r1Const << "\n"
+		<< "injectionImage " << injectionImage << "\n"
+		<< "dose " << dose << "\n"
+		<< "hct " << hct << "\n"
+		<< "TR " << TR << "\n"
+		<< "FA " << FA << "\n"
+		<< "T1Name " << (T1Name.empty() ? mdm_ToolsOptions::empty_str : T1Name) << "\n"
+		<< "S0Name " << (S0Name.empty() ? mdm_ToolsOptions::empty_str : S0Name) << "\n"
+		<< "useRatio " << useRatio << "\n"
+		<< "errorCodesName " << (errorCodesName.empty() ? mdm_ToolsOptions::empty_str : errorCodesName) << "\n"
+		<< "programLogName " << (programLogName.empty() ? mdm_ToolsOptions::empty_str : programLogName) << "\n"
+		<< "auditLogBaseName " << (auditLogBaseName.empty() ? mdm_ToolsOptions::empty_str : auditLogBaseName) << "\n"
+		<< "auditLogDir " << (auditLogDir.empty() ? mdm_ToolsOptions::empty_str : auditLogDir) << "\n"
+		<< "aifName " << (aifName.empty() ? mdm_ToolsOptions::empty_str : aifName) << "\n"
+		<< "pifName " << (pifName.empty() ? mdm_ToolsOptions::empty_str : pifName) << "\n"
+		<< "aifSlice " << aifSlice << "\n"
+		<< "outputDir " << (outputDir.empty() ? mdm_ToolsOptions::empty_str : outputDir) << "\n"
+		<< "outputName " << (outputName.empty() ? mdm_ToolsOptions::empty_str : outputName) << "\n"
+		<< "overwrite " << overwrite << "\n"
+		<< "outputCt " << outputCt << "\n"
+		<< "outputCm " << outputCm << "\n"
+		<< "sparseWrite " << sparseWrite << "\n"
+		<< "IAUCTimes " << IAUCTimes << "\n"
+		<< "model " << (model.empty() ? mdm_ToolsOptions::empty_str : model) << "\n"
+		<< "initParams " << initParams << "\n"
+		<< "initMapsDir " << (initMapsDir.empty() ? mdm_ToolsOptions::empty_str : initMapsDir) << "\n"
+		<< "initMapParams " << initMapParams << "\n"
+		<< "initParamsFile " << (initParamsFile.empty() ? mdm_ToolsOptions::empty_str : initParamsFile) << "\n"
+		<< "paramNames " << paramNames << "\n"
+		<< "fixedParams " << fixedParams << "\n"
+		<< "fixedValues " << fixedValues << "\n"
+		<< "firstImage " << firstImage << "\n"
+		<< "lastImage " << lastImage << "\n"
+		<< "noOptimise " << noOptimise << "\n"
+		<< "dynNoise " << dynNoise << "\n"
+		<< "dynNoiseFile " << (dynNoiseFile.empty() ? mdm_ToolsOptions::empty_str : dynNoiseFile) << "\n"
+		<< "enhFlag " << enhFlag << "\n"
+		<< "maxIterations " << maxIterations;
+	return true;
+}
+
+//
+MDM_API bool mdm_ToolsOptions::to_file(const std::string &filename) const
+{
+	std::ofstream filestream(filename, std::ios::out);
+	if (!filestream.is_open())
+		return false;
+	to_stream(filestream);
+
+	filestream.close();
+	return true;
+}
+
+//
+MDM_API bool mdm_ToolsOptions::from_file(const std::string &filename)
+{
+	std::ifstream ifs(filename, std::ios::in);
+
+	if (!ifs.is_open())
+		return false;
+	
+	const int MAXLEN = 255;
+	std::string str;
+	char *line = new char[MAXLEN];
+
+	while (ifs >> std::ws, !ifs.eof())
+	{
+		(ifs) >> str;
+		if (!str.compare(0, 2, "//"))
+		{
+			// Comment line, so read to end
+			ifs.getline(line, MAXLEN);
+			std::cout << "Comment read from file: " << line << std::endl;
+		}
+		else if (str == "configFile")				{ read_str(ifs, configFile); }
+		else if (str == "dataDir")					{ read_str(ifs, dataDir); }
+		else if (str == "inputCt")					{ (ifs) >> inputCt; }
+		else if (str == "dynDir")						{ read_str(ifs, dynDir); }
+		else if (str == "dynName")					{ read_str(ifs, dynName); }
+		else if (str == "dynFormat")				{ read_str(ifs, dynFormat); }
+		else if (str == "roiName")					{ read_str(ifs, roiName); }
+		else if (str == "inputDataFile")		{ read_str(ifs, inputDataFile); }
+		else if (str == "dynTimesFile")			{ read_str(ifs, dynTimesFile); }
+		else if (str == "nDyns")						{ (ifs) >> nDyns; }
+		else if (str == "T1method")					{ read_str(ifs, T1method); }
+		else if (str == "T1inputNames")			{ (ifs) >> T1inputNames; }
+		else if (str == "T1noiseThresh")		{ (ifs) >> T1noiseThresh; }
+		else if (str == "r1Const")					{ (ifs) >> r1Const; }
+		else if (str == "injectionImage")		{ (ifs) >> injectionImage; }
+		else if (str == "dose")							{ (ifs) >> dose; }
+		else if (str == "hct")							{ (ifs) >> hct; }
+		else if (str == "TR")								{ (ifs) >> TR; }
+		else if (str == "FA")								{ (ifs) >> FA; }
+		else if (str == "T1Name")						{ read_str(ifs, T1Name); }
+		else if (str == "S0Name")						{ read_str(ifs, S0Name); }
+		else if (str == "useRatio")					{ (ifs) >> useRatio; }
+		else if (str == "errorCodesName")		{ read_str(ifs, errorCodesName); }
+		else if (str == "programLogName") { read_str(ifs, programLogName); }
+		else if (str == "auditLogBaseName") { read_str(ifs, auditLogBaseName); }
+		else if (str == "auditLogDir")			{ read_str(ifs, auditLogDir); }
+		else if (str == "aifName")					{ read_str(ifs, aifName); }
+		else if (str == "pifName")					{ read_str(ifs, pifName); }
+		else if (str == "aifSlice")					{ (ifs) >> aifSlice; }
+		else if (str == "outputDir")				{ read_str(ifs, outputDir); }
+		else if (str == "outputName")				{ read_str(ifs, outputName); }
+		else if (str == "overwrite")				{ (ifs) >> overwrite; }
+		else if (str == "outputCt")					{ (ifs) >> outputCt; }
+		else if (str == "outputCm")					{ (ifs) >> outputCm; }
+		else if (str == "sparseWrite")			{ (ifs) >> sparseWrite; }
+		else if (str == "IAUCTimes")				{ (ifs) >> IAUCTimes; }
+		else if (str == "model")						{ read_str(ifs, model); }
+		else if (str == "initParams")				{ (ifs) >> initParams; }
+		else if (str == "initMapsDir")			{ read_str(ifs, initMapsDir); }
+		else if (str == "initMapParams")		{ (ifs) >> initMapParams; }
+		else if (str == "initParamsFile")		{ read_str(ifs, initParamsFile); }
+		else if (str == "paramNames")				{ (ifs) >> paramNames; }
+		else if (str == "fixedParams")			{ (ifs) >> fixedParams; }
+		else if (str == "fixedValues")			{ (ifs) >> fixedValues; }
+		else if (str == "firstImage")				{ (ifs) >> firstImage; }
+		else if (str == "lastImage")				{ (ifs) >> lastImage; }
+		else if (str == "noOptimise")				{ (ifs) >> noOptimise; }
+		else if (str == "dynNoise")					{ (ifs) >> dynNoise; }
+		else if (str == "dynNoiseFile")			{ read_str(ifs, dynNoiseFile); }
+		else if (str == "enhFlag")					{ (ifs) >> enhFlag; }
+		else if (str == "maxIterations")		{ (ifs) >> maxIterations; }
+		else
+			std::cout << "Label" << str << " not recognised." << std::endl;
+
+	}
+	(ifs).close();
+
+	//Tidy up and return
+	delete[] line;
+	return true;
+	return true;
+}
+
+//
 MDM_API mdm_RunTools::mdm_RunTools(mdm_ToolsOptions &options)
   :
   T1Mapper_(errorTracker_),
@@ -28,8 +228,15 @@ MDM_API mdm_RunTools::mdm_RunTools(mdm_ToolsOptions &options)
   fileManager_(AIF_, T1Mapper_, volumeAnalysis_, errorTracker_),
   options_(options)
 {
+	//Make the audit log absolute before we change directory
+	options_.auditLogDir = fs::absolute(options_.auditLogDir).string();
 
+	//If dataDir is set in the options, change the current path to this
+	if (!options_.dataDir.empty())
+		fs::current_path(fs::absolute(options_.dataDir));
 }
+
+
 MDM_API mdm_RunTools::~mdm_RunTools()
 {
 
@@ -67,6 +274,8 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
   //Set parameters in data objects from user input
   fileManager_.setWriteCtDataMaps(options_.outputCt);
   fileManager_.setWriteCtModelMaps(options_.outputCm);
+	fileManager_.setSparseWrite(options_.sparseWrite);
+
   AIF_.setPrebolus(options_.injectionImage);
   AIF_.setHct(options_.hct);
   AIF_.setDose(options_.dose);
@@ -110,9 +319,9 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
 
   //Set up paths to error image and audit logs, using default names if not user supplied
   // and using boost::filesystem to make absolute paths
-  fs::path errorBasePath = outputPath / options_.errorBaseName;
-
-  fs::path mdmLogBasePath = outputPath / options_.programLogBaseName;
+  fs::path errorCodesPath = outputPath / options_.errorCodesName;
+  fs::path programLogPath = outputPath / options_.programLogName;
+	fs::path configFilePath = outputPath / options_.outputConfigFileName;
 
   //Note the default audit path doesn't use the output directory (unless user specifically set so)
 	fs::path auditPath = fs::absolute(options_.auditLogDir);
@@ -124,12 +333,17 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
 	std::string caller = exeString_ + " " + MDM_VERSION;
   mdm_ProgramLogger::openAuditLog(auditBasePath.string(), caller);
 	mdm_ProgramLogger::logAuditMessage("Command args: " + exe_args);
-	mdm_ProgramLogger::openProgramLog(mdmLogBasePath.string(), caller);
+	mdm_ProgramLogger::openProgramLog(programLogPath.string(), caller);
 	mdm_ProgramLogger::logProgramMessage("Command args: " + exe_args);
 
-  //Log location of program log in audit log
+	//Save the config file of input options
+	options_.to_file(configFilePath.string());
+
+  //Log location of program log and config file in audit log
 	mdm_ProgramLogger::logAuditMessage(
-    "Program log saved to " + mdmLogBasePath.string() + "\n");
+    "Program log saved to " + programLogPath.string() + "\n");
+	mdm_ProgramLogger::logAuditMessage(
+		"Config file saved to " + configFilePath.string() + "\n");
 
   /*
   *  Now it's time for the fun ...
@@ -164,7 +378,7 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
 	
 	//Before we start, try and load an errorImage, this allows us to add
 	//to any existing errors in a re-analysis
-	fileManager_.loadErrorImage(errorBasePath.string());
+	fileManager_.loadErrorImage(errorCodesPath.string());
 
   //Check for case 4: load pre-computed concentration maps
   if (options_.inputCt)
@@ -174,7 +388,7 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
     std::string catBasePath = catPath.remove_filename().string();
     if (!catBasePath.empty() && !catPrefix.empty())
     {
-      if (!fileManager_.loadCtDataMaps(catBasePath, catPrefix))
+      if (!fileManager_.loadCtDataMaps(catBasePath, catPrefix, options_.nDyns))
       {
         mdm_progAbort("error loading catMaps");
       }
@@ -199,7 +413,7 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
       }
 
       //Load the dynamic image
-      if (!fileManager_.loadStDataMaps(dynBasePath, dynPrefix))
+      if (!fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns))
       {
         mdm_progAbort("error loading dynamic images");
       }
@@ -323,7 +537,7 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
   }
 
   /*Write out the error image*/
-  fileManager_.writeErrorMap(errorBasePath.string());
+  fileManager_.writeErrorMap(errorCodesPath.string());
 
   return mdm_progExit();
 }
@@ -491,6 +705,11 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 	if (options_.lastImage <= 0)
 		options_.lastImage = options_.nDyns;
 
+	//Convert IAUC times to minutes
+	std::sort(options_.IAUCTimes.begin(), options_.IAUCTimes.end());
+	for (auto &t : options_.IAUCTimes)
+		t /= 60;
+
 	std::vector<double> ts(options_.nDyns, 0);
 
 	double d;
@@ -619,8 +838,9 @@ MDM_API int mdm_RunTools::run_CalculateT1(const std::string &exe_args, const std
 
   //Set up paths to error image and audit logs, using default names if not user supplied
   // and using boost::filesystem to make absolute paths
-  fs::path errorBasePath = outputPath / options_.errorBaseName;
-  fs::path mdmLogBasePath = outputPath / options_.programLogBaseName;
+  fs::path errorCodesPath = outputPath / options_.errorCodesName;
+  fs::path programLogPath = outputPath / options_.programLogName;
+	fs::path configFilePath = outputPath / options_.outputConfigFileName;
 
 	//Note the default audit path doesn't use the output directory (unless user specifically set so)
 	fs::path auditPath = fs::absolute(options_.auditLogDir);
@@ -633,12 +853,17 @@ MDM_API int mdm_RunTools::run_CalculateT1(const std::string &exe_args, const std
 
   mdm_ProgramLogger::openAuditLog(auditBasePath.string(), caller);
 	mdm_ProgramLogger::logAuditMessage(exe_args);
-	mdm_ProgramLogger::openProgramLog(mdmLogBasePath.string(), caller);
+	mdm_ProgramLogger::openProgramLog(programLogPath.string(), caller);
 	mdm_ProgramLogger::logProgramMessage(exe_args);
 
-  //Log path to program log in audit log
+	//Save the config file of input options
+	options_.to_file(configFilePath.string());
+
+	//Log location of program log and config file in audit log
 	mdm_ProgramLogger::logAuditMessage(
-    "Program log saved to " + mdmLogBasePath.string() + "\n");
+		"Program log saved to " + programLogPath.string() + "\n");
+	mdm_ProgramLogger::logAuditMessage(
+		"Config file saved to " + configFilePath.string() + "\n");
 
   /*
   *  Now it's time for the fun ...
@@ -646,13 +871,11 @@ MDM_API int mdm_RunTools::run_CalculateT1(const std::string &exe_args, const std
   *  1.  Set parameter values
   *  2.  Load files
   *  3.  Do T1 map
-  *  4.  Read dyn, AIF and ROI
-  *  5.  Fit model (unless user has requested no fit)
   */
 
 	//Before we start, try and load an errorImage, this allows us to add
 	//to any existing errors in a re-analysis
-	fileManager_.loadErrorImage(errorBasePath.string());
+	fileManager_.loadErrorImage(errorCodesPath.string());
 
   if (!options_.roiName.empty())
   {
@@ -705,7 +928,7 @@ MDM_API int mdm_RunTools::run_CalculateT1(const std::string &exe_args, const std
   }
 
   //Write out the error image
-  fileManager_.writeErrorMap(errorBasePath.string());
+  fileManager_.writeErrorMap(errorCodesPath.string());
 
   //Tidy up the logging objects
 	return mdm_progExit();
@@ -878,9 +1101,9 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
 
   //Set up paths to error image and audit logs, using default names if not user supplied
   // and using boost::filesystem to make absolute paths
-  fs::path errorBasePath = outputPath / options_.errorBaseName;
-
-  fs::path mdmLogBasePath = outputPath / options_.programLogBaseName;
+  fs::path errorCodesPath = outputPath / options_.errorCodesName;
+  fs::path programLogPath = outputPath / options_.programLogName;
+	fs::path configFilePath = outputPath / options_.outputConfigFileName;
 
 	//Note the default audit path doesn't use the output directory (unless user specifically set so)
 	fs::path auditPath = fs::absolute(options_.auditLogDir);
@@ -892,12 +1115,17 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
   std::string caller = exeString_ + " " + MDM_VERSION;
   mdm_ProgramLogger::openAuditLog(auditBasePath.string(), caller);
 	mdm_ProgramLogger::logAuditMessage(exe_args);
-	mdm_ProgramLogger::openProgramLog(mdmLogBasePath.string(), caller);
+	mdm_ProgramLogger::openProgramLog(programLogPath.string(), caller);
 	mdm_ProgramLogger::logProgramMessage(exe_args);
 
-  //Log program log location in audit log
+	//Save the config file of input options
+	options_.to_file(configFilePath.string());
+
+	//Log location of program log and config file in audit log
 	mdm_ProgramLogger::logAuditMessage(
-    "Program log saved to " + mdmLogBasePath.string() + "\n");
+		"Program log saved to " + programLogPath.string() + "\n");
+	mdm_ProgramLogger::logAuditMessage(
+		"Config file saved to " + configFilePath.string() + "\n");
 
   /*
   *  Now it's time for the fun ...
@@ -923,7 +1151,7 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
 
 	//Before we start, try and load an errorImage, this allows us to add
 	//to any existing errors in a re-analysis
-	fileManager_.loadErrorImage(errorBasePath.string());
+	fileManager_.loadErrorImage(errorCodesPath.string());
 
   //Check for case 4: load pre-computed concentration maps
   if (options_.inputCt)
@@ -933,7 +1161,7 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
     std::string catBasePath = catPath.remove_filename().string();
     if (!catBasePath.empty() && !catPrefix.empty())
     {
-      if (!fileManager_.loadCtDataMaps(catBasePath, catPrefix))
+      if (!fileManager_.loadCtDataMaps(catBasePath, catPrefix, options_.nDyns))
       {
         mdm_progAbort("error loading catMaps");
       }
@@ -956,7 +1184,7 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
     }
 
     //Load the dynamic image
-    if (!fileManager_.loadStDataMaps(dynBasePath, dynPrefix))
+    if (!fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns))
     {
       mdm_progAbort("error loading dynamic images");
     }
@@ -1031,7 +1259,7 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
   }
 
 	//Write out the error image
-	fileManager_.writeErrorMap(errorBasePath.string());
+	fileManager_.writeErrorMap(errorCodesPath.string());
 
   //Tidy up the logging objects
   return mdm_progExit();
@@ -1168,7 +1396,7 @@ void mdm_RunTools::fit_series(std::ostream &outputData,
 		IAUCTimes);
 	vox.initialiseModelFit(*model_);
 
-	vox.IAUC_calc();
+	vox.calculateIAUC();
 
 	if (optimiseModel)
 		vox.fitModel();

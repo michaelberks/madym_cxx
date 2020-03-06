@@ -8,6 +8,7 @@
 
 #include <boost/filesystem.hpp>
 #include "mdm_version.h"
+#include <random>
 
 /**
 *  @brief   Header only class provides some utility methods for unit testing
@@ -32,6 +33,17 @@ public:
 	{
 		//Auto-generated in mdm_version to be relative to users binary dir
 		return std::string(MDM_TEST_CALIBRATION_DIR);
+	};
+
+	/**
+	* @brief   Return string path to directory containing madym tools executable
+	* @deatils Uses MACRO defined during CMake generation to map to calibration
+	* data copied to binary build dir during project generation
+	*/
+	static std::string tools_exe_dir()
+	{
+		//Auto-generated in mdm_version to be relative to users binary dir
+		return std::string(MDM_EXE_DIR);
 	};
 
 	/**
@@ -68,6 +80,19 @@ public:
 		// Compare two vectors of strings in case insensitive manner
 		bool matched = std::equal(v1.begin(), v1.end(), v2.begin(), near_to_rel);
 		return matched;
+	}
+
+	static void add_noise(std::vector<double> &time_series, const double sigma)
+	{
+		std::random_device r;
+		std::seed_seq seed2{ r(), r(), r(), r(), r(), r(), r(), r() };
+		std::mt19937 e2(seed2);
+		std::normal_distribution<double> normal_dist(0.0, sigma);
+		for (auto &t : time_series)
+		{
+			double n = normal_dist(e2);
+			t += n;
+		}
 	}
 };
 #endif //MDM_TEST_UTILS_H

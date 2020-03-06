@@ -28,6 +28,9 @@ int main(int argc, char *argv[])
   /* If cmd-line looks ok save for log otherwise advise user */
   vul_arg_base::set_help_option("-h");
 
+	vul_arg<std::string> configFile("-config", madym_options_.configFileText.c_str(), madym_options_.configFile);
+	vul_arg<std::string> dataDir("-cwd", madym_options_.dataDirText.c_str(), madym_options_.dataDir);
+
   vul_arg<std::vector<std::string>> mapNames("-maps", madym_options_.T1inputNamesText.c_str(), madym_options_.T1inputNames);
 	
 	vul_arg<std::string> outputDir("-o", madym_options_.outputDirText.c_str(), madym_options_.outputDir);
@@ -37,14 +40,16 @@ int main(int argc, char *argv[])
 
 	vul_arg<std::string> roiName("-roi", madym_options_.roiNameText.c_str(), madym_options_.roiName);
 
-	vul_arg<std::string> programLogBaseName("-log", madym_options_.programLogBaseNameText.c_str(),
-		madym_options_.programLogBaseName);
+	vul_arg<std::string> programLogName("-log", madym_options_.programLogNameText.c_str(),
+		madym_options_.programLogName);
+	vul_arg<std::string> outputConfigFileName("-config_name", madym_options_.outputConfigFileNameText.c_str(),
+		madym_options_.outputConfigFileName); 
 	vul_arg<std::string> auditLogBaseName("-audit", madym_options_.auditLogBaseNameText.c_str(),
 		madym_options_.auditLogBaseName);
 	vul_arg<std::string> auditLogDir("-audit_dir", madym_options_.auditLogDirText.c_str(),
 		madym_options_.auditLogDir);
-	vul_arg<std::string> errorBaseName("-E", madym_options_.errorBaseNameText.c_str(),
-		madym_options_.errorBaseName);
+	vul_arg<std::string> errorCodesName("-E", madym_options_.errorCodesNameText.c_str(),
+		madym_options_.errorCodesName);
 
 	vul_arg<bool> overwrite("-overwrite", madym_options_.overwriteText.c_str(), madym_options_.overwrite);
 	vul_arg<bool> help("-help", madym_options_.helpText.c_str(), madym_options_.help);
@@ -75,21 +80,43 @@ int main(int argc, char *argv[])
     return 0;
   }
 
-  madym_options_.outputDir = outputDir();
-  madym_options_.T1inputNames = mapNames();
+	//Check if configFile supplied, if so, load it to fill madym_options
+	if (!configFile().empty())
+	{
+		if (!madym_options_.from_file(configFile()))
+		{
+			std::cerr << "Unable to read config file " << configFile() << std::endl;
+			return 1;
+		}
+	}
 
-  madym_options_.T1method = method();
-  madym_options_.T1noiseThresh = noiseThresh();
-  madym_options_.roiName = roiName();
+	//Now check which, if any, command line args were set, and use this to override the config
+	if (dataDir.set())
+		madym_options_.dataDir = dataDir();
+	if (outputDir.set())
+		madym_options_.outputDir = outputDir();
+	if (mapNames.set())
+		madym_options_.T1inputNames = mapNames();
 
-	madym_options_.programLogBaseName = programLogBaseName();
-	madym_options_.auditLogBaseName = auditLogBaseName();
+	if (method.set())
+		madym_options_.T1method = method();
+	if (noiseThresh.set())
+		madym_options_.T1noiseThresh = noiseThresh();
+	if (roiName.set())
+		madym_options_.roiName = roiName();
+
+	if (programLogName.set())
+		madym_options_.programLogName = programLogName();
+	if (outputConfigFileName.set())
+		madym_options_.outputConfigFileName = outputConfigFileName();
+	if (auditLogBaseName.set())
+		madym_options_.auditLogBaseName = auditLogBaseName();
 	madym_options_.auditLogDir = auditLogDir();
-	madym_options_.errorBaseName = errorBaseName();
+	if (errorCodesName.set())
+		madym_options_.errorCodesName = errorCodesName();
 
-  madym_options_.overwrite = overwrite();
-  madym_options_.help = help();
-  madym_options_.version = version();
+	if (overwrite.set())
+		madym_options_.overwrite = overwrite();
 
   //Instantiate new madym_exe object with these options and run
   mdm_RunTools madym_exe(madym_options_);

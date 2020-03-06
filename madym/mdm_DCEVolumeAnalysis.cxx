@@ -1,32 +1,7 @@
 /**
  *  @file    mdm_DCEVolumeAnalysis.cxx
- *  @brief   What it says on the tin ...
- *
- *  Author GJM Parker 2001-2003
- *  (c) Copyright ISBE, University of Manchester 2001-2003
- *
- *  Created GJM Parker 27/9/01
- *  Last edited GJMP 7/10/03
- *
- *  Modified by GA Buonaccorsi
- *  Last modified GAB 22 April 2004
- *
- *  GAB mods:
- *  22-25 April 2004
- *  -  MAXPATHLEN -> MAXPATHLEN & commenting
- *  -  Deleted code for unsupported file formats (still in perm_tool main branch)
- *  -  Deleted uncalled functions (still in perm_tool main branch)
- *  -  Tidied repeated code sections into functions
- *  7 July 2005
- *  -  Using flag to decide if we need sig int maps for registration
- *  25 July 2011
- *  -  Major refit for TINA removal
- *  23 Feb 2012
- *  -  Refactor at BDL
- *  24 Feb - 4 March 2014
- *  - Mods for version 1.22 for SYN-13-1 - GAB
- *  - - Output [CA](t) maps on request
- *  - - Don't fit model on request
+ *  @brief   
+
  */
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
@@ -39,6 +14,7 @@
 #include <cassert>
 #include <chrono>  // chrono::system_clock
 #include <sstream> // stringstream
+#include <algorithm>
 
 #include "mdm_version.h"
 #include "mdm_ProgramLogger.h"
@@ -57,7 +33,6 @@ const std::string mdm_DCEVolumeAnalysis::MAP_NAME_ERROR_CODE = "error_codes";
 MDM_API mdm_DCEVolumeAnalysis::mdm_DCEVolumeAnalysis(mdm_ErrorTracker &errorTracker, mdm_T1VolumeAnalysis &T1_mapper)
 	:errorTracker_(errorTracker),
 	T1_mapper_(T1_mapper),
-	IAUCTimes_{60.0, 90.0, 120.0},
 	testEnhancement_(false),
 	useRatio_(true),
   outputCt_(false),
@@ -69,8 +44,9 @@ MDM_API mdm_DCEVolumeAnalysis::mdm_DCEVolumeAnalysis(mdm_ErrorTracker &errorTrac
   lastImage_(-1),
   model_(NULL)
 {
-
+	setIAUCtimes({ 60.0, 90.0, 120.0 }, true);
 }
+
 MDM_API mdm_DCEVolumeAnalysis::~mdm_DCEVolumeAnalysis()
 {
 
@@ -285,7 +261,7 @@ MDM_API std::vector<double> mdm_DCEVolumeAnalysis::IAUCtimes() const
 
 MDM_API void mdm_DCEVolumeAnalysis::setRelaxCoeff(double rc)
 {
-	relaxCoeff_ = rc;
+	r1Const_ = rc;
 }
 
 //Flag for which model we're using - MB TODO make this an Enum
@@ -325,9 +301,18 @@ MDM_API void mdm_DCEVolumeAnalysis::setOutputCmod(bool flag)
 }
 
 //Set the time points at which we calculate IAUC
-MDM_API void mdm_DCEVolumeAnalysis::setIAUCtimes(const std::vector<double> &times)
+MDM_API void mdm_DCEVolumeAnalysis::setIAUCtimes(const std::vector<double> &times, bool convertToMins)
 {
 	IAUCTimes_ = times;
+	std::sort(IAUCTimes_.begin(), IAUCTimes_.end());
+
+	IAUCTMinutes_ = times;
+	if (convertToMins)
+	{
+		for (auto &t : IAUCTMinutes_)
+			t /= 60;
+	}
+		
 }
 
 //Set whether we're using temporal varying noise if it's econded in the dynamic series xtr headers
@@ -388,80 +373,6 @@ void  mdm_DCEVolumeAnalysis::getCm_tFromVoxel(int voxelIndex, std::vector<double
   for (int k = 0; k < n; k++)
     data[k] = CtModelMaps_[k].getVoxel(voxelIndex);
 }
-
-/**
- * Pre-conditions:
- * -  Dynamic series loaded and number_of_dynamics set
- * -  T1 map already generated - if not using input [CA](t) images
- * -  ROI_image already loaded and mdmCfg.ROI_flag set
- *
- * Post-conditions:
- * -  Kinetic analysis run and all output parameter maps populated
- *
- * Uses madym.h globals:
- * - mdmCfg.caMapFlag                   (input only)
- * - mdmCfg.model_flag                  (input only)
- *
- * Uses local file scope static:
- * - number_of_dynamics                 (input only)
- *
- * Uses mdm_T1VolumeAnalysis.h globals:
- * - T1                                 (input only)
- *
- * Note:  NOT a stand-alone fn - see pre-conditions & side-effects
- *
- * @author   GJM Parker (mods by GA Buonaccorsi)
- * @brief    Populate Permeability struct then fit model to time series for given voxel
- * @version  madym 1.22
- * @param    perm_data    Pointer to Permeability struct holding input data
- * @param    voxelIndex   Linear index of current voxel
- * @param    tr           Float TR (repetition time) value
- * @param    fa           Float FA (flip angle) value
- * @return   0 on success
- */
-mdm_DCEVoxel mdm_DCEVolumeAnalysis::setUpDCEVoxel(int voxelIndex, double tr, double fa)
-{
-	/* Initialize Permeability object */
-	double t10 = 0.0;
-	double s0 = 0.0;
-	double r1cont = 0.0;
-	if (lastImage_ < 0)
-    lastImage_ = getNDyns();
-
-	//Get signals
-	std::vector<double> signalData;
-	std::vector<double> CtData;
-	
-
-	if (computeCt_)
-	{
-		r1cont = relaxCoeff_;
-		t10 = T1_mapper_.T1atVoxel(voxelIndex);
-		if (!useRatio_)
-			s0 = T1_mapper_.S0atVoxel(voxelIndex);
-		getSignalsFromVoxel(voxelIndex, signalData);
-	}
-	else
-		getCs_tFromVoxel(voxelIndex, CtData);
-
-	mdm_DCEVoxel vox(signalData,//dynSignals
-		CtData,//dynConc
-    noiseVar_,//noiseVar
-		t10,//T10
-		s0,//S0
-		r1cont,//r1cont
-    model_->AIF().prebolus(),//bolus_time
-		dynamicTimes_,//dynamicTimings
-		tr,//TR
-		fa,//FA
-		firstImage_,//n1
-    lastImage_,//n2
-		testEnhancement_,//testEnhancement
-		useRatio_,//useRatio
-		IAUCTimes_);//IAUC_times
-
-	return vox;
-};
 
 void mdm_DCEVolumeAnalysis::setVoxelErrors(int voxelIndex, const mdm_DCEVoxel &vox)
 {
@@ -704,10 +615,9 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
           }
           
           //Set up the DCE voxel object
-					//mdm_DCEVoxel vox = setUpDCEVoxel(voxelIndex, tr, fa);
           double t10 = 0.0;
           double s0 = 0.0;
-          double r1cont = 0.0;
+          double r1Const = 0.0;
           if (lastImage_ < 0)
             lastImage_ = getNDyns();
 
@@ -717,7 +627,7 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
 
           if (computeCt_)
           {
-            r1cont = relaxCoeff_;
+            r1Const = r1Const_;
             t10 = T1_mapper_.T1atVoxel(voxelIndex);
             if (!useRatio_)
               s0 = T1_mapper_.S0atVoxel(voxelIndex);
@@ -731,7 +641,7 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
             noiseVar_,//noiseVar
             t10,//T10
             s0,//S0
-            r1cont,//r1cont
+            r1Const,//r1Const
             model_->AIF().prebolus(),//bolus_time
             dynamicTimes_,//dynamicTimings
             tr,//TR
@@ -740,7 +650,7 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
             lastImage_,//n2
             testEnhancement_,//testEnhancement
             useRatio_,//useRatio
-            IAUCTimes_);//IAUC_times
+						IAUCTMinutes_);//IAUC_times
 
           //Run an initial fit (does not optimise parameters, but ensures
           //concentration has been derived from signal if not already done,
@@ -753,7 +663,7 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
 
           //Compute IAUC, this is cheap enough to do regardless, although
           //we may consider setting a flag?
-          vox.IAUC_calc();
+          vox.calculateIAUC();
 
           //The main event: If optimising the model fit, do so now
           if (optimiseModel)

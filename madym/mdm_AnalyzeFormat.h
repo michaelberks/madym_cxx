@@ -76,7 +76,7 @@ public:
 	*/
 	MDM_API static bool writeImage3D(const std::string & baseName,
 		const mdm_Image3D &img,
-		const int dataTypeFlag, const int xtrTypeFlag,
+		const Data_type dataTypeFlag, const XTR_type xtrTypeFlag,
 		bool sparse = false);
 
 	/**
@@ -107,7 +107,7 @@ private:
 	//
 	static bool writeAnalyzeImg(const std::string &baseName,
 		const mdm_Image3D& img,
-		const int typeFlag,
+		const Data_type typeFlag,
 		bool sparse);
 
 	//
@@ -121,7 +121,7 @@ private:
 	//
 	static bool writeAnalyzeXtr(const std::string &baseName,
 		const mdm_Image3D &img,
-		const int typeFlag);
+		const XTR_type typeFlag);
 
 	//
 	static bool readAnalyzeImg(const std::string& imgFileName,

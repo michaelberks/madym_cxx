@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
 	/* If cmd-line looks ok save for log otherwise advise user */
   vul_arg_base::set_help_option("-h");
 
+	vul_arg<std::string> dataDir("-cwd", madym_options_.dataDirText.c_str(), madym_options_.dataDir);
+
 	vul_arg<std::string> model("-m", madym_options_.modelText.c_str(), madym_options_.model);
   vul_arg<std::string> inputDataFile("-d", madym_options_.inputDataFileText.c_str(), madym_options_.inputDataFile);
   vul_arg<int> nDyns("-n", madym_options_.nDynsText.c_str(), madym_options_.nDyns);
@@ -96,6 +98,7 @@ int main(int argc, char *argv[])
   }
 
 	//Set options from command line inputs
+	madym_options_.dataDir = dataDir();
 	madym_options_.model = model();
 	madym_options_.inputDataFile = inputDataFile();
 	madym_options_.nDyns = nDyns();

@@ -77,7 +77,7 @@ public:
 	* @return
 	*/
 	MDM_API bool loadStDataMaps(const std::string &dynBasePath,
-		const std::string &dynPrefix);
+		const std::string &dynPrefix, int nDyns);
 
 		/**
 	* @brief
@@ -86,7 +86,7 @@ public:
 	* @return
 	*/
 	MDM_API bool loadCtDataMaps(const std::string &catBasePath,
-		const std::string &catPrefix);
+		const std::string &catPrefix, int nDyns);
 
 		/**
 	* @brief
@@ -160,6 +160,14 @@ public:
 	*/
 	MDM_API void setWriteCtModelMaps(bool b);
 
+	/**
+* @brief
+
+* @param
+* @return
+*/
+	MDM_API void setSparseWrite(bool b);
+
   	/**
 	* @brief
 
@@ -215,6 +223,7 @@ private:
 
 	bool writeCtDataMaps_;
   bool writeCtModelMaps_;
+	bool sparseWrite_;
 };
 
 #endif /* MDM_FILELOAD_HDR */

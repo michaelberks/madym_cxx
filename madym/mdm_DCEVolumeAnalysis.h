@@ -254,7 +254,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API void setIAUCtimes(const std::vector<double> &times);
+	MDM_API void setIAUCtimes(const std::vector<double> &times, bool convertToMins = true);
 
   //Set whether we're using temporal varying noise if it's econded in the dynamic series xtr headers
   	/**
@@ -338,7 +338,6 @@ private:
 
 	/**
 	*/
-	mdm_DCEVoxel setUpDCEVoxel(int voxelIndex, double tr, double fa);
 	void setVoxelErrors(int voxelIndex, const mdm_DCEVoxel &p);
 
 	/**
@@ -385,8 +384,9 @@ private:
 
 	//Time points at which calculate IAUC values
 	std::vector<double> IAUCTimes_;
+	std::vector<double> IAUCTMinutes_;
 
-	double relaxCoeff_;
+	double r1Const_;
 
 	//Flag to check if we're testing for enhancment
 	bool testEnhancement_;

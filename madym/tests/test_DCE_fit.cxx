@@ -4,34 +4,22 @@
 #include <madym/mdm_AIF.h>
 #include <madym/mdm_DCEModelGenerator.h>
 #include <madym/mdm_DCEVoxel.h>
-#include <random>
-#include "mdm_test_utils.h"
 
-void add_noise(std::vector<double> &time_series, const double sigma)
-{
-	std::random_device r;
-	std::seed_seq seed2{ r(), r(), r(), r(), r(), r(), r(), r() };
-	std::mt19937 e2(seed2);
-	std::normal_distribution<double> normal_dist(0.0, sigma);
-	for (auto &t : time_series)
-	{
-		double n = normal_dist(e2);
-		t += n;
-	}
-}
+#include "mdm_test_utils.h"
 
 void test_model_time_fit(
 	const std::string &modelName,
 	const std::vector<int> fixedParams,
 	mdm_AIF &AIF,
 	const double paramTol,
-	const double sseTol)
+	const double sseTol,
+	bool test_IAUC = false)
 {
-	//Read in the model calibration file
+	//Read in the model calibration file - this has noise added to it
 	int nTimes = AIF.AIFTimes().size();
 	int nParams;
 	std::vector<double> CtCalibration(nTimes);
-	std::string modelFileName = mdm_test_utils::calibration_dir() + modelName + ".dat";
+	std::string modelFileName = mdm_test_utils::calibration_dir() + modelName + "_noise.dat";
 
 	std::ifstream modelFileStream(modelFileName, std::ios::in | std::ios::binary);
 	modelFileStream.read(reinterpret_cast<char*>(&nParams), sizeof(int));
@@ -44,8 +32,31 @@ void test_model_time_fit(
 	modelFileStream.close();
 	std::cout << "Read time series for " << modelName << " from binary calibration file" << std::endl;
 
-	//Add noise to it
-	add_noise(CtCalibration, 0.001);
+	int nIAUC;
+	std::vector<double> IAUCTimes;
+	std::vector<double> IAUCVals;
+	if (test_IAUC)
+	{
+		
+		std::string iaucFileName = mdm_test_utils::calibration_dir() + modelName + "_IAUC.dat";
+
+		std::ifstream iaucFileStream(iaucFileName, std::ios::in | std::ios::binary);
+		iaucFileStream.read(reinterpret_cast<char*>(&nIAUC), sizeof(int));
+
+		IAUCTimes.resize(nIAUC);
+		IAUCVals.resize(nIAUC);
+		for (double &itm : IAUCTimes)
+		{
+			double its;
+			iaucFileStream.read(reinterpret_cast<char*>(&its), sizeof(double));
+			itm = its / 60;
+		}
+			
+		for (double &iv : IAUCVals)
+			iaucFileStream.read(reinterpret_cast<char*>(&iv), sizeof(double));
+		iaucFileStream.close();
+		std::cout << "Read time series for " << modelName << " from binary calibration file" << std::endl;
+	}
 
 	//Now create the model and compute model time series
 	mdm_DCEModelBase *model = NULL;
@@ -74,7 +85,7 @@ void test_model_time_fit(
 		nTimes,
 		false,
 		true,
-		{});
+		IAUCTimes);
 	vox.initialiseModelFit(*model);
 	vox.fitModel();
 
@@ -97,6 +108,19 @@ void test_model_time_fit(
 
 	test_str = "Test DCE models, SSE < tol: " + modelName;
 	TEST_NEAR(test_str.c_str(), vox.modelFitError(), 0, sseTol);
+
+	if (test_IAUC)
+	{
+		vox.calculateIAUC();
+		std::vector<double> computedIAUC(nIAUC);
+		for (int i = 0; i < nIAUC; i++)
+			computedIAUC[i] = vox.IAUC_val(i);
+
+		test_str = "Test IAUC values for " + modelName;
+		TEST(test_str.c_str(), mdm_test_utils::vectors_near_equal(
+			computedIAUC, IAUCVals, 0.01), true);
+	}
+
 	delete model;
 }
 
@@ -119,8 +143,6 @@ void run_test_DCE_fit()
 	int injectionImage;
 	double hct;
 	double dose;
-	std::vector<double> aifVals(nTimes);
-	std::vector<double> pifVals(nTimes);
 
 	std::string aifFileName(mdm_test_utils::calibration_dir() + "aif.dat");
 	std::ifstream aifFileStream(aifFileName, std::ios::in | std::ios::binary);
@@ -139,7 +161,7 @@ void run_test_DCE_fit()
 	//Create model concentrations for each model type
 	test_model_time_fit(
 		"ETM", {},
-		AIF, 0.1, 0.0005);
+		AIF, 0.1, 0.0005, true);
 	test_model_time_fit(
 		"DIETM", {6},
 		AIF, 0.5, 0.0005);
