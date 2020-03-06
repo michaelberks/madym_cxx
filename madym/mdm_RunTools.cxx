@@ -319,22 +319,26 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
 
   //Set up paths to error image and audit logs, using default names if not user supplied
   // and using boost::filesystem to make absolute paths
+	std::string auditName = exeString_ + timeNow() + options_.auditLogBaseName;
+	std::string programName = exeString_ + timeNow() + options_.programLogName;
+	std::string configName = exeString_ + timeNow() + options_.outputConfigFileName;
+
   fs::path errorCodesPath = outputPath / options_.errorCodesName;
-  fs::path programLogPath = outputPath / options_.programLogName;
-	fs::path configFilePath = outputPath / options_.outputConfigFileName;
+  fs::path programLogPath = outputPath / programName;
+	fs::path configFilePath = outputPath / configName;
 
   //Note the default audit path doesn't use the output directory (unless user specifically set so)
-	fs::path auditPath = fs::absolute(options_.auditLogDir);
-	if (!is_directory(auditPath))
-		create_directories(auditPath);
-	std::string auditName = exeString_ + timeNow() + options_.auditLogBaseName;
-  fs::path auditBasePath = auditPath / auditName;
+	fs::path auditDir = fs::absolute(options_.auditLogDir);
+	if (!is_directory(auditDir))
+		create_directories(auditDir);
+  fs::path auditPath = auditDir / auditName;
 
 	std::string caller = exeString_ + " " + MDM_VERSION;
-  mdm_ProgramLogger::openAuditLog(auditBasePath.string(), caller);
+  mdm_ProgramLogger::openAuditLog(auditPath.string(), caller);
 	mdm_ProgramLogger::logAuditMessage("Command args: " + exe_args);
 	mdm_ProgramLogger::openProgramLog(programLogPath.string(), caller);
 	mdm_ProgramLogger::logProgramMessage("Command args: " + exe_args);
+	std::cout << "Opened audit log at " << auditPath.string() << std::endl;
 
 	//Save the config file of input options
 	options_.to_file(configFilePath.string());
@@ -358,7 +362,7 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
   if (!options_.roiName.empty())
   {
     std::string roiPath = fs::absolute(options_.roiName).string();
-    if (fileManager_.loadROI(roiPath))
+    if (!fileManager_.loadROI(roiPath))
     {
       mdm_progAbort("error loading ROI");
     }
