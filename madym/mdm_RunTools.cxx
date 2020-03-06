@@ -487,7 +487,7 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
       {
         mdm_progAbort(options_.model + " chosen as model but no AIF filename set");
       }
-      if (fileManager_.loadAIF(aifPath))
+      if (!fileManager_.loadAIF(aifPath))
       {
         mdm_progAbort("error loading AIF for model " + options_.model);
       }
@@ -501,7 +501,7 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
       }
       if (!fileManager_.loadPIF(pifPath))
       {
-        mdm_progAbort("error loading AIF for model " + options_.model);
+        mdm_progAbort("error loading PIF for model " + options_.model);
       }
     }
 
