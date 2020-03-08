@@ -118,7 +118,7 @@ MDM_API bool mdm_ToolsOptions::to_stream(std::ostream &stream) const
 		<< "noOptimise " << noOptimise << "\n"
 		<< "dynNoise " << dynNoise << "\n"
 		<< "dynNoiseFile " << (dynNoiseFile.empty() ? mdm_ToolsOptions::empty_str : dynNoiseFile) << "\n"
-		<< "enhFlag " << enhFlag << "\n"
+		<< "noEnhFlag " << noEnhFlag << "\n"
 		<< "maxIterations " << maxIterations;
 	return true;
 }
@@ -205,7 +205,7 @@ MDM_API bool mdm_ToolsOptions::from_file(const std::string &filename)
 		else if (str == "noOptimise")				{ (ifs) >> noOptimise; }
 		else if (str == "dynNoise")					{ (ifs) >> dynNoise; }
 		else if (str == "dynNoiseFile")			{ read_str(ifs, dynNoiseFile); }
-		else if (str == "enhFlag")					{ (ifs) >> enhFlag; }
+		else if (str == "noEnhFlag")				{ (ifs) >> noEnhFlag; }
 		else if (str == "maxIterations")		{ (ifs) >> maxIterations; }
 		else
 			std::cout << "Label" << str << " not recognised." << std::endl;
@@ -288,7 +288,7 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
   volumeAnalysis_.setOutputCt(options_.outputCt);
   volumeAnalysis_.setOutputCmod(options_.outputCm);
   volumeAnalysis_.setRelaxCoeff(options_.r1Const);
-  volumeAnalysis_.setTestEnhancement(!options_.enhFlag);
+  volumeAnalysis_.setTestEnhancement(!options_.noEnhFlag);
   volumeAnalysis_.setUseNoise(options_.dynNoise);
   volumeAnalysis_.setUseRatio(options_.useRatio);
   if (options_.firstImage)
@@ -758,7 +758,7 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 				options_.FA,
 				options_.firstImage,
 				options_.lastImage,
-				options_.enhFlag,
+				options_.noEnhFlag,
 				options_.useRatio,
 				options_.IAUCTimes,
 				options_.outputCm,
@@ -1364,7 +1364,7 @@ void mdm_RunTools::fit_series(std::ostream &outputData,
 	const double & FA,
 	const int &firstImage,
 	const int &lastImage,
-	const bool&enhFlag,
+	const bool&noEnhFlag,
 	const bool&useRatio,
 	const std::vector<double> &IAUCTimes,
 	const bool &outputCm,
@@ -1395,7 +1395,7 @@ void mdm_RunTools::fit_series(std::ostream &outputData,
 		FA,
 		firstImage,
 		lastImage,
-		enhFlag,
+		!noEnhFlag,
 		useRatio,
 		IAUCTimes);
 	vox.initialiseModelFit(*model_);

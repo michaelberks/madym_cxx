@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 	vul_arg<std::vector<double>> fixedValues("-fixed_values", madym_options_.fixedValuesText.c_str(), madym_options_.fixedValues);
 
 	vul_arg<bool> dynNoise("-dyn_noise", madym_options_.dynNoiseText.c_str(), madym_options_.dynNoise);
-	vul_arg<bool> enhFlag("-enh", madym_options_.enhFlagText.c_str(), madym_options_.enhFlag);
+	vul_arg<bool> noEnhFlag("-no_enh", madym_options_.noEnhFlagText.c_str(), madym_options_.noEnhFlag);
 	vul_arg<bool> overwrite("-overwrite", madym_options_.overwriteText.c_str(), madym_options_.overwrite);
 	vul_arg<bool> help("-help", madym_options_.helpText.c_str(), madym_options_.help);
 	vul_arg<bool> version("-version", madym_options_.versionText.c_str(), madym_options_.version);
@@ -200,8 +200,8 @@ int main(int argc, char *argv[])
 
 	if (dynNoise.set())
 		madym_options_.dynNoise = dynNoise();
-	if (enhFlag.set())
-		madym_options_.enhFlag = enhFlag();
+	if (noEnhFlag.set())
+		madym_options_.noEnhFlag = noEnhFlag();
 	if (overwrite.set())
 		madym_options_.overwrite = overwrite();
 

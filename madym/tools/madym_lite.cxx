@@ -9,7 +9,7 @@
 #include <mdm_RunTools.h>
 #include <vul/vul_arg.h>
 #include <madym/mdm_vul_arg.h>
-
+#include <mdm_AnalyzeFormat.h>
 mdm_ToolsOptions madym_options_;
 
 /******************************************************************************************
@@ -26,6 +26,8 @@ mdm_ToolsOptions madym_options_;
  */
 int main(int argc, char *argv[])
 {
+	mdm_Image3D img = mdm_AnalyzeFormat::readImage3D("C:/isbe/test.hdr", false);
+
 	/* If cmd-line looks ok save for log otherwise advise user */
   vul_arg_base::set_help_option("-h");
 
@@ -68,7 +70,7 @@ int main(int argc, char *argv[])
 	vul_arg<std::vector<double>> fixedValues("-fixed_values", madym_options_.fixedValuesText.c_str(), madym_options_.fixedValues);
 
   vul_arg<std::string> dynNoiseFile("-dyn_noise", madym_options_.dynNoiseFileText.c_str(), madym_options_.dynNoiseFile);
-	vul_arg<bool> enhFlag("-enh", madym_options_.enhFlagText.c_str(), madym_options_.enhFlag);
+	vul_arg<bool> noEnhFlag("-no_enh", madym_options_.noEnhFlagText.c_str(), madym_options_.noEnhFlag);
 	vul_arg<bool> help("-help", madym_options_.helpText.c_str(), madym_options_.help);
 	vul_arg<bool> version("-version", madym_options_.versionText.c_str(), madym_options_.version);
 
@@ -127,7 +129,7 @@ int main(int argc, char *argv[])
 	madym_options_.fixedParams = fixedParams();
 	madym_options_.fixedValues = fixedValues();
 	madym_options_.dynNoiseFile = dynNoiseFile();
-	madym_options_.enhFlag = enhFlag();
+	madym_options_.noEnhFlag = noEnhFlag();
 
 	//Instantiate new madym_exe object with these options and run
 	mdm_RunTools madym_exe(madym_options_);

@@ -483,7 +483,8 @@ MDM_API template <class T> bool mdm_Image3D::toBinaryStream(std::ostream &ofs, b
 		}
 		//For the indices we can now write in one chunk as only casting once
 		//from int to char*
-		ofs.write(reinterpret_cast<const char*>(&idx[0]), sizeof(int)*idx.size());
+		if (!idx.empty())
+			ofs.write(reinterpret_cast<const char*>(&idx[0]), sizeof(int)*idx.size());
 	}
 	else
 	{

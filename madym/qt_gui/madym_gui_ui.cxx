@@ -279,7 +279,7 @@ void madym_gui_ui::on_fitModelButton_clicked()
   madym_options_.model = ui.modelSelectComboBox->currentText().toStdString();
   madym_options_.dynNoise = ui.temporalNoiseCheckBox->isChecked();
   madym_options_.noOptimise = !ui.optimiseFitCheckBox->isChecked();
-  madym_options_.enhFlag = ui.testEnhancementCheckBox->isChecked();
+  madym_options_.noEnhFlag = ui.testEnhancementCheckBox->isChecked();
   madym_options_.firstImage = ui.firstImageSpinBox->value();
   madym_options_.lastImage = ui.lastImageSpinBox->value();
   //Model configurations - if changed from defaults - will be set by the model configurer GUI
@@ -695,7 +695,7 @@ void madym_gui_ui::initialize_widget_values()
   
   ui.temporalNoiseCheckBox->setChecked(madym_options_.dynNoise);
   ui.optimiseFitCheckBox->setChecked(!madym_options_.noOptimise);
-  ui.testEnhancementCheckBox->setChecked(madym_options_.enhFlag);
+  ui.testEnhancementCheckBox->setChecked(madym_options_.noEnhFlag);
   ui.firstImageSpinBox->setValue(0);
   ui.lastImageSpinBox->setValue(0);
   ui.maxIterationsLineEdit->setValidator(new QIntValidator(0, 10000, this));

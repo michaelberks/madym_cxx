@@ -100,7 +100,7 @@ public:
   bool noOptimise = false;
   bool dynNoise = false;
 	std::string dynNoiseFile = "";
-  bool enhFlag = false;
+  bool noEnhFlag = false;
   int maxIterations = 0;
   
   bool help = false;
@@ -175,7 +175,7 @@ public:
   std::string dynNoiseText = "Set to use varying temporal noise in model fit OFF";
 	std::string dynNoiseFileText = "File to set varying temporal noise in model fit";
   std::string noOptimiseText = "Flag to switch off optimising, will just fit initial parameters values for model";
-  std::string enhFlagText = "Set test-for-enhancement flag OFF";
+  std::string noEnhFlagText = "Set test-for-enhancement flag OFF";
   std::string maxIterationsText = "Max iterations per voxel in optimisation - set as 0 for no limit";
 
   //Other stuff 
@@ -275,7 +275,7 @@ private:
 		const double & FA,
 		const int &firstImage,
 		const int &lastImage,
-		const bool&enhFlag,
+		const bool&noEnhFlag,
 		const bool&useRatio,
 		const std::vector<double> &IAUCTimes,
 		const bool &outputCm,
