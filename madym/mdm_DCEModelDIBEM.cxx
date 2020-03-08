@@ -23,7 +23,7 @@ MDM_API mdm_DCEModelDIBEM::mdm_DCEModelDIBEM(
   if (pkParamNames_.empty())
     pkParamNames_ = { "Fpos", "Fneg", "Kpos", "Kneg", "fa", "aoffset", "voffset" };
   if (pkInitParams_.empty())
-    pkInitParams_ = {    0.2,    0.2,    0.5,    4.0,  0.5,       0.025,    0.0};
+    pkInitParams_ = {    0.2,    0.2,    0.5,    4.0,  0.25,       0.025,    0.0};
   if (optParamFlags_.empty())
     optParamFlags_ = { true, true, true, true, true, true, true };
   if (lowerBounds_.empty())
