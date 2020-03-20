@@ -26,8 +26,6 @@ mdm_ToolsOptions madym_options_;
  */
 int main(int argc, char *argv[])
 {
-	mdm_Image3D img = mdm_AnalyzeFormat::readImage3D("C:/isbe/test.hdr", false);
-
 	/* If cmd-line looks ok save for log otherwise advise user */
   vul_arg_base::set_help_option("-h");
 
