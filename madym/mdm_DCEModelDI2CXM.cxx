@@ -29,7 +29,7 @@ MDM_API mdm_DCEModelDI2CXM::mdm_DCEModelDI2CXM(
   if (lowerBounds_.empty())
     lowerBounds_ = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5 };
   if (upperBounds_.empty())
-    upperBounds_ = { 10.0, 10.0, 10.0, 10.0, 1.0, 0.5, 0.5 };//, 0.1
+    upperBounds_ = { 100.0, 10.0, 10.0, 10.0, 1.0, 0.5, 0.5 };//, 0.1
 
   mdm_DCEModelBase::init(fixedParams, fixedValues);
 }
