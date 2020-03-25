@@ -84,7 +84,6 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	useRatio_(useRatio),
   status_(mdm_DCEVoxelStatus::OK)
 {
-	std::cout << "dyn times " << dynamicTimings_.size() << std::endl;
 }
 
 MDM_API mdm_DCEVoxel::~mdm_DCEVoxel()
