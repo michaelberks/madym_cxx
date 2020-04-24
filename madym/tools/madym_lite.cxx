@@ -66,6 +66,8 @@ int main(int argc, char *argv[])
 	vul_arg<std::vector<std::string>> paramNames("-param_names", madym_options_.paramNamesText.c_str(), madym_options_.paramNames);
 	vul_arg<std::vector<int>> fixedParams("-fixed_params", madym_options_.fixedParamsText.c_str(), madym_options_.fixedParams);
 	vul_arg<std::vector<double>> fixedValues("-fixed_values", madym_options_.fixedValuesText.c_str(), madym_options_.fixedValues);
+	vul_arg<std::vector<int>> relativeLimitParams("-relative_limit_params", madym_options_.relativeLimitParamsText.c_str(), madym_options_.fixedParams);
+	vul_arg<std::vector<double>> relativeLimitValues("-relative_limit_values", madym_options_.relativeLimitValuesText.c_str(), madym_options_.fixedValues);
 
   vul_arg<std::string> dynNoiseFile("-dyn_noise", madym_options_.dynNoiseFileText.c_str(), madym_options_.dynNoiseFile);
 	vul_arg<bool> noEnhFlag("-no_enh", madym_options_.noEnhFlagText.c_str(), madym_options_.noEnhFlag);
@@ -126,6 +128,8 @@ int main(int argc, char *argv[])
 	madym_options_.paramNames = paramNames();
 	madym_options_.fixedParams = fixedParams();
 	madym_options_.fixedValues = fixedValues();
+	madym_options_.relativeLimitParams = relativeLimitParams();
+	madym_options_.relativeLimitValues = relativeLimitValues();
 	madym_options_.dynNoiseFile = dynNoiseFile();
 	madym_options_.noEnhFlag = noEnhFlag();
 

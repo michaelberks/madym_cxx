@@ -17,8 +17,14 @@ MDM_API mdm_DCEModelDI2CXM::mdm_DCEModelDI2CXM(
   const std::vector<std::string> &pkParamNames,
   const std::vector<double> &pkInitParams,
   const std::vector<int> &fixedParams,
-  const std::vector<double> &fixedValues)
-  :mdm_DCEModelBase(AIF, pkParamNames, pkInitParams, fixedParams, fixedValues)
+  const std::vector<double> &fixedValues,
+	const std::vector<int> &relativeLimitParams,
+	const std::vector<double> &relativeLimitValues)
+	:mdm_DCEModelBase(
+		AIF, pkParamNames, pkInitParams,
+		fixedParams, fixedValues,
+		relativeLimitParams,
+		relativeLimitValues)
 {
   if (pkParamNames_.empty())
     pkParamNames_ = { "Fp", "PS", "v_e", "v_p", "fa", "aoffset", "voffset" };
@@ -31,7 +37,7 @@ MDM_API mdm_DCEModelDI2CXM::mdm_DCEModelDI2CXM(
   if (upperBounds_.empty())
     upperBounds_ = { 100.0, 10.0, 10.0, 10.0, 1.0, 0.5, 0.5 };//, 0.1
 
-  mdm_DCEModelBase::init(fixedParams, fixedValues);
+  mdm_DCEModelBase::init(fixedParams, fixedValues, relativeLimitParams, relativeLimitValues);
 }
 
 MDM_API mdm_DCEModelDI2CXM::~mdm_DCEModelDI2CXM()

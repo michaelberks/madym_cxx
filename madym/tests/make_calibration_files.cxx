@@ -32,7 +32,7 @@ void make_model_time_series(
 	mdm_DCEModelBase *model = NULL;
 	bool model_set = mdm_DCEModelGenerator::setModel(model, AIF,
 		modelName, false, false, {},
-		initParams, {}, {});
+		initParams, {}, {}, {}, {});
 
 	//Check it set correctly
 	if (!model_set)

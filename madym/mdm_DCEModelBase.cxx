@@ -11,13 +11,16 @@
 
 #include "mdm_DCEModelBase.h"
 #include "mdm_platform_defs.h"
+#include <math.h>
 
 MDM_API mdm_DCEModelBase::mdm_DCEModelBase(
   mdm_AIF &AIF,
   const std::vector<std::string> &pkParamNames,
   const std::vector<double> &pkInitParams,
   const std::vector<int> &fixedParams,
-  const std::vector<double> &fixedValues)
+  const std::vector<double> &fixedValues,
+	const std::vector<int> relativeLimitParams,
+	const std::vector<double> relativeLimitValues)
   :CtModel_(0),
   AIF_(AIF),
   pkParams_(0),
@@ -35,7 +38,11 @@ MDM_API mdm_DCEModelBase::~mdm_DCEModelBase()
 
 }
 
-MDM_API void mdm_DCEModelBase::init(const std::vector<int> &fixedParams, const std::vector<double> &fixedValues)
+MDM_API void mdm_DCEModelBase::init(
+	const std::vector<int> &fixedParams,
+	const std::vector<double> &fixedValues,
+	const std::vector<int> &relativeLimitParams,
+	const std::vector<double> &relativeLimitValues)
 {
   //Check if we have any fixed parameters
   lowerBoundsOpt_.clear();
@@ -55,6 +62,20 @@ MDM_API void mdm_DCEModelBase::init(const std::vector<int> &fixedParams, const s
         pkInitParams_[fp] = fixedValues[i];
     }    
   }
+
+	//Set relative limits for any specified parameters
+	relativeBounds_.resize(num_dims(), 0);
+	for (int i = 0; i < relativeLimitParams.size(); i++)
+	{
+		int rp = relativeLimitParams[i] - 1;
+		if (rp < num_dims())
+		{
+			//If fixed values are supplied, use these to overwrite default
+			//initial parameters
+			if (i < relativeLimitValues.size())
+				relativeBounds_[rp] = relativeLimitValues[i];
+		}
+	}
     
   //Set upper and lower bounds for parameters to be optimised
   for (int i = 0; i < num_dims(); i++)
@@ -126,6 +147,22 @@ MDM_API void mdm_DCEModelBase::setPkParams(const std::vector<double>& optParams)
 MDM_API void mdm_DCEModelBase::setPkInitParams(const std::vector<double>& params)
 {
   pkInitParams_ = params;
+	
+	//See if we have any relative bounds to update
+	for (int i = 0, n = num_dims(), j = 0; i < n; i++)
+	{
+		if (optParamFlags_[i])
+		{
+			if (relativeBounds_[i])
+			{
+				//Make sure relative bounds don't push past lower/upper limits
+				lowerBoundsOpt_[j] = std::fmax(lowerBounds_[i], pkInitParams_[i] - relativeBounds_[i]);
+				upperBoundsOpt_[j] = std::fmin(upperBounds_[i], pkInitParams_[i] + relativeBounds_[i]);
+			}
+			j++;
+		}
+	}
+		
 }
 
 MDM_API void mdm_DCEModelBase::zeroParams()

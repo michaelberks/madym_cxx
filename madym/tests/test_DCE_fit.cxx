@@ -62,7 +62,7 @@ void test_model_time_fit(
 	mdm_DCEModelBase *model = NULL;
 	bool model_set = mdm_DCEModelGenerator::setModel(model, AIF,
 		modelName, false, false, {},
-		{}, fixedParams, {});
+		{}, fixedParams, {}, {}, {});
 
 	if (!model_set)
 	{

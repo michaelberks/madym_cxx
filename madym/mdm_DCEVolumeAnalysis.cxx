@@ -687,10 +687,7 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
 
 					numFitted++;
         }
-        else
-        {
-          zeroVoxelInAllMaps(voxelIndex);
-        }
+
       }
     }
   }
@@ -723,16 +720,19 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
  */
 MDM_API bool mdm_DCEVolumeAnalysis::createParameterMaps()
 {
-  /* The nasty syntax is so we can check for prior allocation */
-	pkParamMaps_.resize(model_->num_dims());
-	for (int i = 0; i < pkParamMaps_.size(); i++)
+  //Model parameter maps may already have been loaded
+	if (pkParamMaps_.size() != model_->num_dims())
 	{
-		if (!createMap(pkParamMaps_[i]))
+		pkParamMaps_.resize(model_->num_dims());
+		for (int i = 0; i < pkParamMaps_.size(); i++)
 		{
-			mdm_ProgramLogger::logProgramMessage(
-				"ERROR: mdm_DCEVolumeAnalysis::createParameterMaps: "
-				"Could not create PK model maps\n");
-			return false;
+			if (!createMap(pkParamMaps_[i]))
+			{
+				mdm_ProgramLogger::logProgramMessage(
+					"ERROR: mdm_DCEVolumeAnalysis::createParameterMaps: "
+					"Could not create PK model maps\n");
+				return false;
+			}
 		}
 	}
 
@@ -842,13 +842,12 @@ bool  mdm_DCEVolumeAnalysis::fitDCEModel(bool paramMapsInitialised, bool optimis
 	}
 
 	/* Allocate all the output maps */
-  if (pkParamMaps_.size() != model_->num_dims())
-		if (!createParameterMaps())
-		{
-			mdm_ProgramLogger::logProgramMessage(
-				"ERROR: mdm_DCEVolumeAnalysis::fitDCEModel: Could not create parameter maps\n");
-			return false;
-		}
+	if (!createParameterMaps())
+	{
+		mdm_ProgramLogger::logProgramMessage(
+			"ERROR: mdm_DCEVolumeAnalysis::fitDCEModel: Could not create parameter maps\n");
+		return false;
+	}
 
 	/*Fit the models*/
 	bool models_fitted = fitModel(paramMapsInitialised, optimiseModel, initMapParams);

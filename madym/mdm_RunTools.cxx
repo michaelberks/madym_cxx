@@ -113,6 +113,8 @@ MDM_API bool mdm_ToolsOptions::to_stream(std::ostream &stream) const
 		<< "paramNames " << paramNames << "\n"
 		<< "fixedParams " << fixedParams << "\n"
 		<< "fixedValues " << fixedValues << "\n"
+		<< "relativeLimitParams " << relativeLimitParams << "\n"
+		<< "relativeLimitValues " << relativeLimitValues << "\n"
 		<< "firstImage " << firstImage << "\n"
 		<< "lastImage " << lastImage << "\n"
 		<< "noOptimise " << noOptimise << "\n"
@@ -200,6 +202,8 @@ MDM_API bool mdm_ToolsOptions::from_file(const std::string &filename)
 		else if (str == "paramNames")				{ (ifs) >> paramNames; }
 		else if (str == "fixedParams")			{ (ifs) >> fixedParams; }
 		else if (str == "fixedValues")			{ (ifs) >> fixedValues; }
+		else if (str == "relativeLimitParams") { (ifs) >> relativeLimitParams; }
+		else if (str == "relativeLimitValues") { (ifs) >> relativeLimitValues; }
 		else if (str == "firstImage")				{ (ifs) >> firstImage; }
 		else if (str == "lastImage")				{ (ifs) >> lastImage; }
 		else if (str == "noOptimise")				{ (ifs) >> noOptimise; }
@@ -282,7 +286,9 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
 
   //Set which type of model we're using
   setModel(options_.model, !options_.aifName.empty(), !options_.pifName.empty(),
-    options_.paramNames, options_.initParams, options_.fixedParams, options_.fixedValues);
+    options_.paramNames, options_.initParams, 
+		options_.fixedParams, options_.fixedValues,
+		options_.relativeLimitParams, options_.relativeLimitValues);
 
   volumeAnalysis_.setComputeCt(!options_.inputCt);
   volumeAnalysis_.setOutputCt(options_.outputCt);
@@ -593,7 +599,8 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 	setModel(options_.model, 
 		!options_.aifName.empty(), !options_.pifName.empty(),
 		options_.paramNames, options_.initParams, 
-		options_.fixedParams, options_.fixedValues);
+		options_.fixedParams, options_.fixedValues,
+		options_.relativeLimitParams, options_.relativeLimitValues);
 	AIF_.setPrebolus(options_.injectionImage);
 	AIF_.setHct(options_.hct);
 	AIF_.setDose(options_.dose);
@@ -1317,7 +1324,9 @@ void mdm_RunTools::setModel(const std::string &model_name, bool auto_aif, bool a
   const std::vector<std::string> &paramNames,
   const std::vector<double> &initParams,
   const std::vector<int> fixedParams,
-  const std::vector<double> fixedValues)
+  const std::vector<double> fixedValues,
+	const std::vector<int> relativeLimitParams,
+	const std::vector<double> relativeLimitValues)
 {
   if (model_name == "T1_ONLY")
   {
@@ -1327,7 +1336,8 @@ void mdm_RunTools::setModel(const std::string &model_name, bool auto_aif, bool a
   {
     bool model_set = mdm_DCEModelGenerator::setModel(model_, AIF_,
       model_name, auto_aif, auto_pif, paramNames,
-      initParams, fixedParams, fixedValues);
+      initParams, fixedParams, fixedValues,
+			relativeLimitParams, relativeLimitValues);
 
     if (!model_set)
       mdm_progAbort("Invalid or unsupported model (from command-line)");

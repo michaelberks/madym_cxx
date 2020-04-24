@@ -540,11 +540,13 @@ void madym_gui_ui::on_modelSelectComboBox_currentIndexChanged(const QString &tex
   mdm_AIF aif;
   mdm_DCEModelGenerator::setModel(model_, aif,
     text.toStdString(), false, false, {},
-    {}, {}, {});
+		{}, {}, {}, {}, {});
   madym_options_.paramNames = {};
   madym_options_.initParams = {}; 
   madym_options_.fixedParams = {};
   madym_options_.fixedValues = {};
+	madym_options_.relativeLimitParams = {};
+	madym_options_.relativeLimitValues = {};
 }
 void madym_gui_ui::on_configureModelButton_clicked()
 {
@@ -560,7 +562,9 @@ void madym_gui_ui::on_configureModelButton_clicked()
   mdm_DCEModelGenerator::setModel(model_, aif,
     modelName.toStdString(),
     false, false, madym_options_.paramNames,
-    madym_options_.initParams, madym_options_.fixedParams, madym_options_.fixedValues);
+    madym_options_.initParams, 
+		madym_options_.fixedParams, madym_options_.fixedValues,
+		madym_options_.relativeLimitParams, madym_options_.relativeLimitValues);
 
   madym_gui_model_configure optionsWindow(*model_, modelName, madym_options_, this);
   const int response = optionsWindow.exec();

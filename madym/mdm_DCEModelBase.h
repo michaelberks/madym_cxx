@@ -36,7 +36,9 @@ public:
     const std::vector<std::string> &pkParamNames = std::vector<std::string>(0),
     const std::vector<double> &pkInitParams = std::vector<double>(0),
     const std::vector<int> &fixedParams = std::vector<int>(0),
-    const std::vector<double> &fixedValues = std::vector<double>(0));
+    const std::vector<double> &fixedValues = std::vector<double>(0),
+		const std::vector<int> relativeLimitParams = std::vector<int>(0),
+		const std::vector<double> relativeLimitValues = std::vector<double>(0));
 
 	/**
 	* @brief
@@ -52,7 +54,11 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API virtual void init(const std::vector<int> &fixedParams, const std::vector<double> &fixedValues);
+	MDM_API virtual void init(
+		const std::vector<int> &fixedParams, 
+		const std::vector<double> &fixedValues,
+		const std::vector<int> &relativeLimitParams, 
+		const std::vector<double> &relativeLimitValues);
 
   	/**
 	* @brief
@@ -262,6 +268,7 @@ protected:
   //Upper an lower bounds to use with optimiser
   std::vector<double> lowerBounds_;
   std::vector<double> upperBounds_;
+	std::vector<double> relativeBounds_;
   std::vector<double> lowerBoundsOpt_;
   std::vector<double> upperBoundsOpt_;
 

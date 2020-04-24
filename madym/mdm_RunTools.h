@@ -95,6 +95,8 @@ public:
 	std::vector<std::string> paramNames = {};
   std::vector<int> fixedParams = {};
   std::vector<double> fixedValues = {};
+	std::vector<int> relativeLimitParams = {};
+	std::vector<double> relativeLimitValues = {};
   int firstImage = 0;
   int lastImage = 0;
   bool noOptimise = false;
@@ -170,7 +172,9 @@ public:
 	std::string paramNamesText = "Names of model parameters to be optimised, used to name the output parameter maps, comma separated (no spaces)";
   std::string fixedParamsText = "Index of parameters fixed to their initial values (ie not optimised)";
   std::string fixedValuesText = "Values for fixed parameters (overrides default initial parameter values)";
-  std::string firstImageText = "First image";
+	std::string relativeLimitParamsText = "Index of parameters to which relative limits are applied";
+	std::string relativeLimitValuesText = "Values for relative limits - optimiser capped to range initParam +/- relLimit";
+	std::string firstImageText = "First image";
   std::string lastImageText = "Last image";
   std::string dynNoiseText = "Set to use varying temporal noise in model fit OFF";
 	std::string dynNoiseFileText = "File to set varying temporal noise in model fit";
@@ -262,7 +266,9 @@ private:
     const std::vector<std::string> &paramNames,
     const std::vector<double> &initParams,
     const std::vector<int> fixedParams,
-    const std::vector<double> fixedValues);
+    const std::vector<double> fixedValues,
+		const std::vector<int> relativeLimitParams,
+		const std::vector<double> relativeLimitValues);
 
   bool setT1Method(const std::string &method);
 

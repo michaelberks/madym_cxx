@@ -141,7 +141,7 @@ void mdm_AIF::aifPopGJMP(int nTimes, double tOffset)
 void mdm_AIF::aifPopHepaticAB(int nTimes, double tOffset, bool offsetAIF, bool resampleIRF)
 {
 	//If we've got an offset, make sure AIF has been resampled
-	if (offsetAIF)
+	if (offsetAIF || resampled_AIF_.size() != nTimes)
 		resample_AIF(nTimes, tOffset);
 
 	//generate a population IRF according to Anita's model

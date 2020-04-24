@@ -22,7 +22,9 @@ public:
     const std::vector<std::string> &pkParamNames = std::vector<std::string>(0),
     const std::vector<double> &pkInitParams = std::vector<double>(0),
     const std::vector<int> &fixedParams = std::vector<int>(0),
-    const std::vector<double> &fixedValues = std::vector<double>(0));
+    const std::vector<double> &fixedValues = std::vector<double>(0),
+		const std::vector<int> &relativeLimitParams = std::vector<int>(0),
+		const std::vector<double> &relativeLimitValues = std::vector<double>(0));
 
   MDM_API ~mdm_DCEModelDIBEM();
 

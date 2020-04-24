@@ -90,7 +90,9 @@ public:
     const std::vector<std::string> &paramNames,
     const std::vector<double> &initParams,
     const std::vector<int> fixedParams,
-    const std::vector<double> fixedValues)
+    const std::vector<double> fixedValues,
+		const std::vector<int> relativeLimitParams,
+		const std::vector<double> relativeLimitValues)
   {
     assert(!model_name.empty());
 
@@ -100,7 +102,9 @@ public:
 
     if (model_name == "TOFTS")
     {
-      model = new mdm_DCEModelETM(AIF, paramNames, initParams, fixedParams, fixedValues);
+      model = new mdm_DCEModelETM(AIF, paramNames, initParams, 
+				fixedParams, fixedValues,
+				relativeLimitParams, relativeLimitValues);
 
       if (auto_aif)
         AIF.setAIFflag(mdm_AIF::AIF_FILE);
@@ -111,13 +115,17 @@ public:
 
     else if (model_name == "VPSTD")
     {
-      model = new mdm_DCEModelETM(AIF, paramNames, initParams, fixedParams, fixedValues);
+      model = new mdm_DCEModelETM(AIF, paramNames, initParams,
+				fixedParams, fixedValues,
+				relativeLimitParams, relativeLimitValues);
       AIF.setAIFflag(mdm_AIF::AIF_STD);
     }
 
     else if (model_name == "ETM")
     {
-      model = new mdm_DCEModelETM(AIF, paramNames, initParams, fixedParams, fixedValues);
+      model = new mdm_DCEModelETM(AIF, paramNames, initParams,
+				fixedParams, fixedValues,
+				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
         AIF.setAIFflag(mdm_AIF::AIF_FILE);
       else
@@ -127,7 +135,9 @@ public:
 
     else if (model_name == "DIETM")
     {
-      model = new mdm_DCEModelDIETM(AIF, paramNames, initParams, fixedParams, fixedValues);
+      model = new mdm_DCEModelDIETM(AIF, paramNames, initParams,
+				fixedParams, fixedValues,
+				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
         AIF.setAIFflag(mdm_AIF::AIF_FILE);
       else
@@ -142,7 +152,9 @@ public:
 
     else if (model_name == "AUEM" || model_name == "GADOXETATE")
     {
-      model = new mdm_DCEModelAUEM(AIF, paramNames, initParams, fixedParams, fixedValues);
+      model = new mdm_DCEModelAUEM(AIF, paramNames, initParams,
+				fixedParams, fixedValues,
+				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
         AIF.setAIFflag(mdm_AIF::AIF_FILE);
       else
@@ -157,7 +169,9 @@ public:
 
     else if (model_name == "DISCM" || model_name == "MATERNE")
     {
-      model = new mdm_DCEModelDISCM(AIF, paramNames, initParams, fixedParams, fixedValues);
+      model = new mdm_DCEModelDISCM(AIF, paramNames, initParams,
+				fixedParams, fixedValues,
+				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
         AIF.setAIFflag(mdm_AIF::AIF_FILE);
       else
@@ -172,7 +186,9 @@ public:
 
     else if (model_name == "2CXM")
     {
-      model = new mdm_DCEModel2CXM(AIF, paramNames, initParams, fixedParams, fixedValues);
+      model = new mdm_DCEModel2CXM(AIF, paramNames, initParams,
+				fixedParams, fixedValues,
+				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
         AIF.setAIFflag(mdm_AIF::AIF_FILE);
       else
@@ -182,7 +198,9 @@ public:
 
     else if (model_name == "DI2CXM")
     {
-      model = new mdm_DCEModelDI2CXM(AIF, paramNames, initParams, fixedParams, fixedValues);
+      model = new mdm_DCEModelDI2CXM(AIF, paramNames, initParams,
+				fixedParams, fixedValues,
+				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
         AIF.setAIFflag(mdm_AIF::AIF_FILE);
       else
@@ -197,7 +215,9 @@ public:
 
     else if (model_name == "DIBEM" || model_name == "DIIRF")
     {
-      model = new mdm_DCEModelDIBEM(AIF, paramNames, initParams, fixedParams, fixedValues);
+      model = new mdm_DCEModelDIBEM(AIF, paramNames, initParams,
+				fixedParams, fixedValues,
+				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
         AIF.setAIFflag(mdm_AIF::AIF_FILE);
       else
