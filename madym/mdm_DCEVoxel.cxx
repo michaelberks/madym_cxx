@@ -362,17 +362,23 @@ void mdm_DCEVoxel::optimiseModel()
   std::vector<double> optParams = model_->optParams();
 	alglib::real_1d_array x;
 	x.attach_to_ptr(optParams.size(), optParams.data());
-	alglib::minbleicstate state;
-	alglib::minbleicreport rep;
+	//alglib::minbleicstate state;
+	//alglib::minbleicreport rep;
+	alglib::minnsstate state;
+	alglib::minnsreport rep;
 
 	//
 	// These variables define stopping conditions for the optimizer.
 	//
 	// We use very simple condition - |g|<=epsg
 	//
-	double epsg = 0.000001;
-	double epsf = 0;
+	//double epsg = 0.000001;
+	//double epsf = 0;
 	double epsx = 0;
+
+	double radius = 0.1;
+	double rho = 0.0;
+
 #if _DEBUG
 	alglib::ae_int_t maxits = 100;
 #else
@@ -393,11 +399,20 @@ void mdm_DCEVoxel::optimiseModel()
 	//
   try
   {
-    alglib::minbleiccreatef(x, diffstep, state);
+    /*alglib::minbleiccreatef(x, diffstep, state);
     alglib::minbleicsetbc(state, lowerBoundsOpt_, upperBoundsOpt_);
     alglib::minbleicsetcond(state, epsg, epsf, epsx, maxits);
     alglib::minbleicoptimize(state, &CtSSDalglib, NULL, this);
-    alglib::minbleicresults(state, x, rep);
+    alglib::minbleicresults(state, x, rep);*/
+
+		alglib::minnscreatef(x, diffstep, state);
+		alglib::minnssetalgoags(state, radius, rho);
+		alglib::minnssetcond(state, epsx, maxits);
+		//alglib::minnssetscale(state, s);
+
+		alglib::minnssetbc(state, lowerBoundsOpt_, upperBoundsOpt_);
+		alglib::minnsoptimize(state, &CtSSDalglib, NULL, this);
+		alglib::minnsresults(state, x, rep);
   }
   catch (alglib::ap_error e)
   {

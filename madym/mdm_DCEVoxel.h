@@ -328,9 +328,14 @@ private:
 
   double computeSSD(const std::vector<double> &catModel) const;
 
-	static void CtSSDalglib(const alglib::real_1d_array &x, double &func, void *context) {
+	/*static void CtSSDalglib(const alglib::real_1d_array &x, double &func, void *context) {
 		std::vector<double> params(x.getcontent(), x.getcontent() + x.length());
 		func = static_cast<mdm_DCEVoxel*>(context)->CtSSD(params);
+	}*/
+
+	static void CtSSDalglib(const alglib::real_1d_array &x, alglib::real_1d_array &func, void *context) {
+		std::vector<double> params(x.getcontent(), x.getcontent() + x.length());
+		func[0] = static_cast<mdm_DCEVoxel*>(context)->CtSSD(params);
 	}
 
 

@@ -35,6 +35,7 @@ SET(mdm_sources
 		mdm_DCEModel2CXM.cxx			mdm_DCEModel2CXM.h
 		mdm_DCEModelDI2CXM.cxx			mdm_DCEModelDI2CXM.h
 		mdm_DCEModelDIBEM.cxx			mdm_DCEModelDIBEM.h
+		mdm_DCEModelDIBEM_Fp.cxx		mdm_DCEModelDIBEM_Fp.h
 		mdm_DCEModelDISCM.cxx			mdm_DCEModelDISCM.h
 		mdm_DCEVolumeAnalysis.cxx		mdm_DCEVolumeAnalysis.h
 		mdm_DCEVoxel.cxx				mdm_DCEVoxel.h

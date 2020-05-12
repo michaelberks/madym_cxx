@@ -34,6 +34,7 @@ std::cout << "Model type " << modelType_ << " not recognised" << std::endl;
 #include <madym/mdm_DCEModel2CXM.h>
 #include <madym/mdm_DCEModelDI2CXM.h>
 #include <madym/mdm_DCEModelDIBEM.h>
+#include <madym/mdm_DCEModelDIBEM_Fp.h>
 
 /**
 	* @brief Header only class to generate specific instances of DCE models
@@ -229,6 +230,23 @@ public:
         AIF.setPIFflag(mdm_AIF::PIF_POP);
 
     }
+
+		else if (model_name == "DIBEM_FP")
+		{
+		model = new mdm_DCEModelDIBEM_Fp(AIF, paramNames, initParams,
+			fixedParams, fixedValues,
+			relativeLimitParams, relativeLimitValues);
+		if (auto_aif)
+			AIF.setAIFflag(mdm_AIF::AIF_FILE);
+		else
+			AIF.setAIFflag(mdm_AIF::AIF_POP);
+
+		if (auto_pif)
+			AIF.setPIFflag(mdm_AIF::PIF_FILE);
+		else
+			AIF.setPIFflag(mdm_AIF::PIF_POP);
+
+		}
 
     else
       return false;
