@@ -29,13 +29,13 @@ MDM_API mdm_DCEModelDIBEM_Fp::mdm_DCEModelDIBEM_Fp(
   if (pkParamNames_.empty())
     pkParamNames_ = { "Fp", "Epos", "Kpos", "Kneg", "fa", "aoffset", "voffset" };
   if (pkInitParams_.empty())
-    pkInitParams_ = {    1.0,    0.25,    1.0,    1.0,  0.5,       0.025,    0.0};
+    pkInitParams_ = {    1.0,    0.5,    1.0,    1.0,  0.5,       0.025,    0.0};
   if (optParamFlags_.empty())
     optParamFlags_ = { true, true, true, true, true, true, true };
   if (lowerBounds_.empty())
-    lowerBounds_ = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5 };
+    lowerBounds_ = { 0.0, 0.0, 0.0, 0.0, -0.5, 0.0, -0.5 };
   if (upperBounds_.empty())
-    upperBounds_ = { 100.0, 0.5, 100, 100, 1.0, 0.5, 0.5 };//, 0.1
+    upperBounds_ = { 100.0, 1.0, 100, 100, 1.5, 0.5, 0.5 };//, 0.1
 
   mdm_DCEModelBase::init(fixedParams, fixedValues, relativeLimitParams, relativeLimitValues);
 }
@@ -63,7 +63,7 @@ MDM_API void mdm_DCEModelDIBEM_Fp::computeCtModel(int nTimes)
   }
 
   //Rename parameters
-  const double &F_pos = pkParams_[0];// flow plasma rate
+  const double &F_p = pkParams_[0];// flow plasma rate
   const double &E_pos = pkParams_[1];// efflux flow
   const double &K_pos = pkParams_[2];//extravascular, extracellular space
   const double &K_neg = pkParams_[3];//plasma volume*/
@@ -127,7 +127,7 @@ MDM_API void mdm_DCEModelDIBEM_Fp::computeCtModel(int nTimes)
 
     //Combine the two compartments with the rate constant to get the final
     //concentration at this time point
-    double C_t = F_pos * (1 - E_pos) * Ft_neg + F_pos * E_pos * Ft_pos;
+    double C_t = F_p * (1 - E_pos) * Ft_neg + F_p * E_pos * Ft_pos;
 
     //If for any reason this computes NaN, set to zero and bug out now
     if (std::isnan(C_t))
