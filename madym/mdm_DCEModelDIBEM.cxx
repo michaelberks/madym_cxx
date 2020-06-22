@@ -33,9 +33,9 @@ MDM_API mdm_DCEModelDIBEM::mdm_DCEModelDIBEM(
   if (optParamFlags_.empty())
     optParamFlags_ = { true, true, true, true, true, true, true };
   if (lowerBounds_.empty())
-    lowerBounds_ = { 0.0, 0.0, 0.0, 0.0, -0.5, 0.0, -0.5 };
+    lowerBounds_ = { 0.0, 0.0, 0.0, 0.0, -0.1, 0.0, -0.5 };
   if (upperBounds_.empty())
-    upperBounds_ = { 100.0, 100.0, 100, 100, 1.5, 0.5, 0.5 };//, 0.1
+    upperBounds_ = { 100.0, 100.0, 100, 100, 1.1, 0.5, 0.5 };//, 0.1
 
   mdm_DCEModelBase::init(fixedParams, fixedValues, relativeLimitParams, relativeLimitValues);
 }
