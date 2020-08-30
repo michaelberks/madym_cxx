@@ -609,7 +609,7 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
 								initParams[i] = pkParamMaps_[i].getVoxel(voxelIndex);
 						else
 							for (int i : initMapParams)
-								initParams[i] = pkParamMaps_[i].getVoxel(voxelIndex);
+								initParams[i-1] = pkParamMaps_[i-1].getVoxel(voxelIndex); //Need -1 because user indexing starts at 1
 
             model_->setPkInitParams(initParams);
           }
