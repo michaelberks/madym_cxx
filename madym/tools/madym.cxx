@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
 	vul_arg<std::vector<double>> IAUCTimes("-iauc", madym_options_.IAUCTimesText.c_str(), madym_options_.IAUCTimes);
 	vul_arg<std::vector<double>> initParams("-init_params", madym_options_.initParamsText.c_str(), madym_options_.initParams);
 	vul_arg<std::string> initMapsDir("-init_maps", madym_options_.initMapsDirText.c_str(), madym_options_.initMapsDir);
+	vul_arg<std::vector<int>> initMapParams("-init_map_params", madym_options_.initMapParamsText.c_str(), madym_options_.initMapParams);
 	vul_arg<std::vector<std::string>> paramNames("-param_names", madym_options_.paramNamesText.c_str(), madym_options_.paramNames);
 	vul_arg<std::vector<int>> fixedParams("-fixed_params", madym_options_.fixedParamsText.c_str(), madym_options_.fixedParams);
 	vul_arg<std::vector<double>> fixedValues("-fixed_values", madym_options_.fixedValuesText.c_str(), madym_options_.fixedValues);
@@ -193,6 +194,8 @@ int main(int argc, char *argv[])
 		madym_options_.initParams = initParams();
 	if (initMapsDir.set())
 		madym_options_.initMapsDir = initMapsDir();
+	if (initMapParams.set())
+		madym_options_.initMapParams = initMapParams();
 	if (paramNames.set())
 		madym_options_.paramNames = paramNames();
 	if (fixedParams.set())
