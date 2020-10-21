@@ -1,19 +1,21 @@
-#include <testlib/testlib_test.h>
-#include "../../tests/mdm_test_utils.h"
+#include <boost/test/unit_test.hpp>
+
+#include <madym/tests/mdm_test_utils.h>
+
 #include <fstream>
 #include <madym/mdm_T1Voxel.h>
 #include <mdm_version.h>
 
 namespace fs = boost::filesystem;
 
-void run_test_calculate_T1_lite()
-{
+BOOST_AUTO_TEST_SUITE(test_mdm_tools)
 
-	std::cout << "======= Testing tool: calculate T1 =======" << std::endl;
+BOOST_AUTO_TEST_CASE(test_calculate_T1_lite) {
+	BOOST_TEST_MESSAGE("======= Testing tool: calculate T1 lite =======");
 
-	//Generate some signals from sample FA, TR, T1 and S0 values
+	//Generate some signals from sample FA, TR, T1 and M0 values
 	double T1 = 1000;
-	double S0 = 2000;
+	double M0 = 2000;
 	double TR = 3.5;
 	const auto PI = acos(-1.0);
 	std::vector<double>	FAs = { 2 , 10, 18 };
@@ -22,11 +24,7 @@ void run_test_calculate_T1_lite()
 	std::string inputDataFile = test_dir + "/T1_input.dat";
 	std::ofstream ifs(inputDataFile, std::ios::out);
 
-	if (!ifs.is_open())
-	{
-		TEST("Failed to write out test values for T1", 0, 1);
-		return;
-	}
+	BOOST_REQUIRE_MESSAGE(ifs.is_open(), "Failed to write out test values for T1");
 
 	//Write out FAs
 	for (const auto FA : FAs)
@@ -34,10 +32,10 @@ void run_test_calculate_T1_lite()
 
 	//Compute signal for each FA and write out value
 	for (int i_fa = 0; i_fa < 3; i_fa++)
-		ifs << mdm_T1Voxel::T1toSignal(T1, S0, PI*FAs[i_fa]/180, TR) << " ";
+		ifs << mdm_T1Voxel::T1toSignal(T1, M0, PI*FAs[i_fa]/180, TR) << " ";
 	ifs.close();
 
-	//Call calculate_T1 to fit T1 and S0
+	//Call calculate_T1 to fit T1 and M0
 	std::string T1_output_dir = test_dir + "/calculate_T1_lite/";
 	std::string outputName = "madym_analysis.dat";
 	std::stringstream cmd;
@@ -50,50 +48,45 @@ void run_test_calculate_T1_lite()
 		<< " -O " << outputName;
 		;
 
-	std::cout << "Command to run: " << cmd.str() << std::endl;
+	BOOST_TEST_MESSAGE("Command to run: " + cmd.str() );
 
-	int error; 
+	int error;
 	try
 	{
 		error = std::system(cmd.str().c_str());
-	}	
+	}
 	catch (...)
 	{
-		TEST("Running calculate_T1_lite failed", 0, 1);
+		BOOST_CHECK_MESSAGE(false, "Running calculate_T1_lite failed");
 		return;
 	}
 
-	TEST("calculate_T1_lite tool ran without error", error, 0);
+	BOOST_CHECK_MESSAGE(!error, "Error returned from calculate_T1_lite tool");
 
 	//Load in the fitted parameters from the output file
 	std::string outputDataFile = T1_output_dir + "VFA_" + outputName;
 	std::ifstream ofs(outputDataFile, std::ios::in);
-	if (!ofs.is_open())
-	{
-		TEST("Failed to read in fitted values for T1", 0, 1);
-		return;
-	}
-	double T1_fit, S0_fit;
+	BOOST_REQUIRE_MESSAGE(ofs.is_open(), "Failed to read in fitted values for T1");
+		
+	double T1_fit, M0_fit;
 	int fit_errors;
 	ofs >> T1_fit;
-	ofs >> S0_fit;
+	ofs >> M0_fit;
 	ofs >> fit_errors;
 	ofs.close();
 
 	//Check the model parameters have fitted correctly
 	double tol = 0.1;
-	TEST_NEAR("Fitted T1", T1_fit, T1, tol);
-	TEST_NEAR("Fitted S0", S0_fit, S0, tol);
-	TEST("Error codes zero", fit_errors, 0);
+	BOOST_TEST_MESSAGE("Testing fitted T1");
+	BOOST_CHECK_CLOSE(T1_fit, T1, tol);
+	BOOST_TEST_MESSAGE("Testing fitted M0");
+	BOOST_CHECK_CLOSE(M0_fit, M0, tol);
+	BOOST_TEST_MESSAGE("Checking zero error-codes");
+	BOOST_CHECK(!fit_errors);
 
 	//Tidy up
 	fs::remove(inputDataFile);
 	fs::remove_all(T1_output_dir);
 }
 
-void test_calculate_T1_lite()
-{
-	run_test_calculate_T1_lite();
-}
-
-TESTMAIN(test_calculate_T1_lite);
+BOOST_AUTO_TEST_SUITE_END() //

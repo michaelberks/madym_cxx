@@ -1,18 +1,20 @@
-#include <testlib/testlib_test.h>
+#include <boost/test/unit_test.hpp>
+#include <boost/format.hpp>
+
 #include <iostream>
-#include <fstream>
-#include "mdm_test_utils.h"
+#include <vector>
 #include <madym/mdm_T1Voxel.h>
+#include <madym/tests/mdm_test_utils.h>
 
-void run_test_T1()
-{
+BOOST_AUTO_TEST_SUITE(test_mdm)
 
-	std::cout << "======= Testing T1 mapping =======" << std::endl;
+BOOST_AUTO_TEST_CASE(test_T1) {
+	BOOST_TEST_MESSAGE("======= Testing T1 mapping =======");
 	
 	//Read in T1 calibration file
 	int nFAs;
 	double T1;
-	double S0;
+	double M0;
 	double TR;
 	std::string T1FileName(mdm_test_utils::calibration_dir() + "T1.dat");
 	std::ifstream T1FileStream(T1FileName, std::ios::in | std::ios::binary);
@@ -26,42 +28,37 @@ void run_test_T1()
 		T1FileStream.read(reinterpret_cast<char*>(&s), sizeof(double));
 
 	T1FileStream.read(reinterpret_cast<char*>(&T1), sizeof(double));
-	T1FileStream.read(reinterpret_cast<char*>(&S0), sizeof(double));
+	T1FileStream.read(reinterpret_cast<char*>(&M0), sizeof(double));
 	T1FileStream.read(reinterpret_cast<char*>(&TR), sizeof(double));
 	
 	T1FileStream.close();
 
-	std::cout << "Read T1 calibration file, T1 = " << T1
-		<< ", S0 = " << S0 << ", TR = " << TR << std::endl;
+	BOOST_TEST_MESSAGE(boost::format(
+		"Read T1 calibration file, T1 = %1% , M0 =%2%, TR = %3%")
+		% T1 % M0 % TR);
 
 	//Now compute signals
 	std::vector<double> signals(nFAs);
-	std::cout << "Signals from VFA (calibration, computed): ";
+	BOOST_TEST_MESSAGE("Testing signals from VFA (calibration, computed): ");
 	for (int i = 0; i < nFAs; i++)
 	{
-		signals[i] = mdm_T1Voxel::T1toSignal(T1, S0, FAs[i], TR);
-		std::cout << "(" << signalsCalibration[i] << ", " <<
-			signals[i] << ") ";
+		signals[i] = mdm_T1Voxel::T1toSignal(T1, M0, FAs[i], TR);
+		BOOST_TEST_MESSAGE(boost::format("(%1%, %2%)")
+			% signalsCalibration[i] % signals[i]);
 	}
-	std::cout << std::endl;
-	TEST("VFA signals match", signals, signalsCalibration);
+	BOOST_CHECK_VECTORS(signals, signalsCalibration);
 
-	//Next fit the signals to recover S0 and T1
-	double T1fit, S0fit;
+	//Next fit the signals to recover M0 and T1
+	double T1fit, M0fit;
 	mdm_T1Voxel T1Calculator(FAs, TR);
 	T1Calculator.setSignals(signalsCalibration);
-	int errCode = T1Calculator.fitT1_VFA(T1fit, S0fit);
+	int errCode = T1Calculator.fitT1_VFA(T1fit, M0fit);
+	BOOST_CHECK_MESSAGE(!errCode, "T1 fit returned error " << errCode);
 
-	if (errCode)
-		std::cout << "T1 fit returned error " << errCode << std::endl;
-
-	TEST_NEAR_REL("Fitted T1 match", T1fit, T1, 0.01);
-	TEST_NEAR_REL("Fitted S0 match", S0fit, S0, 0.01);
+	BOOST_TEST_MESSAGE("Testing fitted T1 match");
+	BOOST_CHECK_CLOSE(T1fit, T1, 0.01);
+	BOOST_TEST_MESSAGE("Testing fitted M0 match");
+	BOOST_CHECK_CLOSE(M0fit, M0, 0.01);
 }
 
-void test_T1()
-{
-  run_test_T1();
-}
-
-TESTMAIN(test_T1);
+BOOST_AUTO_TEST_SUITE_END() //

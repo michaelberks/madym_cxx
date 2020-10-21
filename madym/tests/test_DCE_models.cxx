@@ -1,6 +1,9 @@
-#include <testlib/testlib_test.h>
+#include <boost/test/unit_test.hpp>
+#include <boost/format.hpp>
+
 #include <iostream>
-#include "mdm_test_utils.h"
+
+#include <madym/tests/mdm_test_utils.h>
 #include <madym/mdm_AIF.h>
 #include <madym/mdm_DCEModelGenerator.h>
 
@@ -23,7 +26,8 @@ void test_model_time_series(
 	for (double &c : CtCalibration)
 		modelFileStream.read(reinterpret_cast<char*>(&c), sizeof(double));
 	modelFileStream.close();
-	std::cout << "Read time series for " << modelName << " from binary calibration file" << std::endl;
+	BOOST_TEST_MESSAGE(boost::format(
+		"Read time series for %1% from binary calibration file") % modelName);
 
 	//Now create the model and compute model time series
 	mdm_DCEModelBase *model = NULL;
@@ -31,25 +35,21 @@ void test_model_time_series(
 		modelName, false, false, {},
 		initParams, {}, {}, {}, {});
 
-	if (!model_set)
-	{
-		std::cout << "Unable to compute time series for " << modelName << std::endl;
-		return;
-	}
+	BOOST_REQUIRE_MESSAGE(model_set, "Unable to compute time series for " << modelName);
 
 	model->computeCtModel(nTimes);
 	std::vector<double> Ct = model->CtModel();
-	std::string test_str = "Test DCE models, values match: " + modelName;
-	TEST(test_str.c_str(), mdm_test_utils::vectors_near_equal(
-        Ct, CtCalibration, 0.0001), true);
+	BOOST_TEST_MESSAGE("Test DCE models, values match: " + modelName);
+	BOOST_CHECK(mdm_test_utils::vectors_near_equal(
+        Ct, CtCalibration, 0.0001));
 	
 	delete model;
 }
 
-void run_test_DCE_models()
-{
+BOOST_AUTO_TEST_SUITE(test_mdm)
 
-	std::cout << "======= Testing DCE models implemented in mdm library =======" << std::endl;
+BOOST_AUTO_TEST_CASE(test_DCE_models) {
+	BOOST_TEST_MESSAGE("======= Testing DCE models implemented in mdm library =======");
 	
 	//Read in dynamic times from calibration file
 	int nTimes;
@@ -108,9 +108,4 @@ void run_test_DCE_models()
 		AIF);
 }
 
-void test_DCE_models()
-{
-  run_test_DCE_models();
-}
-
-TESTMAIN(test_DCE_models);
+BOOST_AUTO_TEST_SUITE_END() //

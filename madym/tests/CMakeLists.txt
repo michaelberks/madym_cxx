@@ -2,13 +2,16 @@
 #   Mike Berks
 #
 
-LINK_LIBRARIES(mdm testlib)
+project(test_mdm)
+
+# external libraries
+find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
 ADD_EXECUTABLE( make_calibration_files
     make_calibration_files.cxx)
+target_link_libraries(make_calibration_files mdm)
 
-ADD_EXECUTABLE( mdm_test_driver
-  test_driver.cxx
+ADD_EXECUTABLE( test_mdm
 
   mdm_test_utils.h
   test_mdm.cxx
@@ -21,14 +24,10 @@ ADD_EXECUTABLE( mdm_test_driver
   test_DCE_fit.cxx
 )
 
-add_test( NAME mdm_test_mdm COMMAND $<TARGET_FILE:mdm_test_driver> test_mdm )
-add_test( NAME mdm_test_image3D COMMAND $<TARGET_FILE:mdm_test_driver> test_image3D )
-add_test( NAME mdm_test_boost COMMAND $<TARGET_FILE:mdm_test_driver> test_boost )
-add_test( NAME mdm_test_analyze COMMAND $<TARGET_FILE:mdm_test_driver> test_analyze )
-add_test( NAME mdm_test_T1 COMMAND $<TARGET_FILE:mdm_test_driver> test_T1 )
-add_test( NAME mdm_test_AIF COMMAND $<TARGET_FILE:mdm_test_driver> test_AIF )
-add_test( NAME mdm_test_DCE_models COMMAND $<TARGET_FILE:mdm_test_driver> test_DCE_models )
-add_test( NAME mdm_test_DCE_fit COMMAND $<TARGET_FILE:mdm_test_driver> test_DCE_fit )
+target_link_libraries(test_mdm Boost::unit_test_framework mdm)
+target_compile_definitions(test_mdm PUBLIC BOOST_TEST_DYN_LINK)
+enable_testing()
+add_test(NAME test_mdm COMMAND test_mdm)
 
 #See https://cmake.org/cmake/help/v3.8/prop_test/FIXTURES_REQUIRED.html#prop_test:FIXTURES_REQUIRED
 #for how to set dependencies between tests

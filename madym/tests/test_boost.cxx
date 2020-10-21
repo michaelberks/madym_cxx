@@ -1,22 +1,21 @@
 /**
  *
  */
-#include <testlib/testlib_test.h>
+#include <boost/test/unit_test.hpp>
 #include <string>
 #include <iostream>
 #include <boost/filesystem.hpp>
-#include "mdm_test_utils.h"
+#include <madym/tests/mdm_test_utils.h>
 
 using namespace boost::filesystem;
 
-/**
- */
-void run_test_boost()
-{
-  std::string dir_name = "test_boost";
+BOOST_AUTO_TEST_SUITE(test_mdm)
 
-	std::cout << "======= Testing boost library =======" << std::endl;
-	
+BOOST_AUTO_TEST_CASE(test_boost) {
+	std::string dir_name = "test_boost";
+
+	BOOST_TEST_MESSAGE("======= Testing boost library =======");
+
 	//Using boost filesyetm, can call one line to make absolute path from input
 	//regardless of whether relative or absolute path has been given
 	path dir_path = mdm_test_utils::temp_dir() + "/test_boost";
@@ -28,16 +27,11 @@ void run_test_boost()
 	bool deleted = boost::filesystem::remove(dir_path);
 	bool still_exists = is_directory(dir_path);
 
-	TEST("Test directory created", created, true);
-	TEST("Test directory exists", exists, true);
-	TEST("Test directory deleted", deleted, true);
-	TEST("Test directory no longer exists", still_exists, false);
-
+	BOOST_TEST_MESSAGE("Test directory created");
+	BOOST_CHECK(created);//
+	BOOST_CHECK(exists);//"Test directory exists"
+	BOOST_CHECK(deleted);//"Test directory deleted"
+	BOOST_CHECK(!still_exists);//"Test directory no longer exists"
 }
 
-void test_boost()
-{
-	run_test_boost();
-}
-
-TESTMAIN(test_boost);
+BOOST_AUTO_TEST_SUITE_END() //

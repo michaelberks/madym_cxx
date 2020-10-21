@@ -1,8 +1,9 @@
-#include <testlib/testlib_test.h>
-#include <iostream>
+#include <boost/test/unit_test.hpp>
+#include <boost/format.hpp>
+
 #include <sstream>
 
-#include "../../tests/mdm_test_utils.h"
+#include <madym/tests/mdm_test_utils.h>
 
 #include <madym/mdm_AIF.h>
 #include <madym/mdm_DCEModelGenerator.h>
@@ -35,10 +36,10 @@ double mins_to_timestamp(double t_in_mins)
 }
 	
 
-void run_test_madym()
-{
+BOOST_AUTO_TEST_SUITE(test_mdm_tools)
 
-	std::cout << "======= Testing tool: madym =======" << std::endl;
+BOOST_AUTO_TEST_CASE(test_madym) {
+	BOOST_TEST_MESSAGE("======= Testing tool: madym =======");
 	//Need to generate a dataset of analyze images. To do this, load in calibration
 	//data
 
@@ -133,7 +134,7 @@ void run_test_madym()
 		<< " -I " << IAUC_str
 		<< " --Ct --overwrite "; //<< " -iauc 60"
 
-	std::cout << "Command to run: " << cmd.str() << std::endl;
+	BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
 		
 	int error;
 	try
@@ -142,11 +143,11 @@ void run_test_madym()
 	}
 	catch (...)
 	{
-		TEST("Running madym failed", 0, 1);
+		BOOST_CHECK_MESSAGE(false, "Running madym failed");
 		return;
 	}
 
-	TEST("madym tool ran without error", error, 0);
+	BOOST_CHECK_MESSAGE(!error, "Error returned from madym tool");
 
 	//Load in the parameter img vols and extract the single voxel from each
 	mdm_Image3D ktrans_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "Ktrans.hdr", false);
@@ -158,23 +159,35 @@ void run_test_madym()
 	mdm_Image3D enhancing = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "enhVox.hdr", false);
 
 	//Check the model parameters have fitted correctly
-	double tol = 0.01;
-	TEST_NEAR("Fitted ktrans", ktrans_fit.getVoxel(0), trueParams[0], tol);
-	TEST_NEAR("Fitted Ve", ve_fit.getVoxel(0), trueParams[1], tol);
-	TEST_NEAR("Fitted Vp", vp_fit.getVoxel(0), trueParams[2], tol);
-	TEST_NEAR("Fitted tau", tau_fit.getVoxel(0), trueParams[3], tol);
+	double tol = 0.1;
+	BOOST_TEST_MESSAGE(boost::format("Fitted ktrans (%1.2f, %2.2f)")
+		% ktrans_fit.getVoxel(0) % trueParams[0]);
+	BOOST_CHECK_CLOSE(ktrans_fit.getVoxel(0), trueParams[0], tol);
+	BOOST_TEST_MESSAGE(boost::format("Fitted Ve (%1.2f, %2.2f)")
+		% ve_fit.getVoxel(0) % trueParams[1]);
+	BOOST_CHECK_CLOSE(ve_fit.getVoxel(0), trueParams[1], tol);
+	BOOST_TEST_MESSAGE(boost::format("Fitted Vp (%1.2f, %2.2f)")
+		% vp_fit.getVoxel(0) % trueParams[2]);
+	BOOST_CHECK_CLOSE(vp_fit.getVoxel(0), trueParams[2], tol);
+	BOOST_TEST_MESSAGE(boost::format("Fitted tau (%1.2f, %2.2f)")
+		% tau_fit.getVoxel(0) % trueParams[3]);
+	BOOST_CHECK_CLOSE(tau_fit.getVoxel(0), trueParams[3], tol);
 
 	//Check model fit, error codes and enhancing
-	TEST_NEAR("Model residuals", model_fit.getVoxel(0), 0, tol);
-	TEST("No error code", error_codes.getVoxel(0), 0);
-	TEST("Enhancing", enhancing.getVoxel(0), 1);
+	BOOST_TEST_MESSAGE(boost::format("Model residuals = %1%")
+		% model_fit.getVoxel(0));
+	BOOST_TEST_MESSAGE("No error code");
+	BOOST_CHECK(!error_codes.getVoxel(0));
+	BOOST_TEST_MESSAGE("Enhancing");
+	BOOST_CHECK(enhancing.getVoxel(0));
 	
 	//Check IAUC
 	for (int i = 0; i < nIAUC; i++)
 	{
 		std::string iauc_name = Ct_output_dir + "IAUC" + std::to_string((int)IAUCTimes[i]) + ".hdr";
 		mdm_Image3D iauc = mdm_AnalyzeFormat::readImage3D(iauc_name, false);
-		TEST_NEAR("Fitted IAUC ", iauc.getVoxel(0), IAUCVals[i], tol);
+		BOOST_TEST_MESSAGE("Fitted IAUC" + std::to_string((int)IAUCTimes[i]));
+		BOOST_CHECK_CLOSE(iauc.getVoxel(0), IAUCVals[i], tol);
 	}
 	
 	//Tidy up
@@ -182,9 +195,4 @@ void run_test_madym()
 	fs::remove_all(Ct_output_dir);
 }
 
-void test_madym()
-{
-	run_test_madym();
-}
-
-TESTMAIN(test_madym);
+BOOST_AUTO_TEST_SUITE_END() //

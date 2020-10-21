@@ -1,7 +1,6 @@
-#include <testlib/testlib_test.h>
-#include <iostream>
+#include <boost/test/unit_test.hpp>
 
-#include "../../tests/mdm_test_utils.h"
+#include <madym/tests/mdm_test_utils.h>
 
 #include <madym/mdm_T1Voxel.h>
 #include <madym/mdm_AnalyzeFormat.h>
@@ -10,10 +9,10 @@
 
 namespace fs = boost::filesystem;
 
-void run_test_calculate_T1()
-{
+BOOST_AUTO_TEST_SUITE(test_mdm_tools)
 
-	std::cout << "======= Testing tool: calculate T1 =======" << std::endl;
+BOOST_AUTO_TEST_CASE(test_calculate_T1) {
+	BOOST_TEST_MESSAGE("======= Testing tool: calculate T1 =======");
 
 	//Generate some signals from sample FA, TR, T1 and S0 values
 	double T1 = 1000;
@@ -53,7 +52,7 @@ void run_test_calculate_T1()
 		<< " -o " << T1_output_dir
 		<< " --overwrite";
 
-	std::cout << "Command to run: " << cmd.str() << std::endl;
+	BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
 
 	int error;
 	try
@@ -62,11 +61,11 @@ void run_test_calculate_T1()
 	}
 	catch (...)
 	{
-		TEST("Running calculate_T1 failed", 0, 1);
+		BOOST_CHECK_MESSAGE(false, "Running calculate_T1 failed");
 		return;
 	}
 
-	TEST("calculate_T1 tool ran without error", error, 0);
+	BOOST_CHECK_MESSAGE(!error, "Error returned from calculate_T1 tool");
 
 	//Load in the parameter img vols and extract the single voxel from each
 	mdm_Image3D T1_fit = mdm_AnalyzeFormat::readImage3D(T1_output_dir + "T1.hdr", false);
@@ -74,17 +73,14 @@ void run_test_calculate_T1()
 
 	//Check the model parameters have fitted correctly
 	double tol = 0.1;
-	TEST_NEAR("Fitted T1", T1_fit.getVoxel(0), T1, tol);
-	TEST_NEAR("Fitted M0", M0_fit.getVoxel(0), M0, tol);
+	BOOST_TEST_MESSAGE("Testing fitted T1");
+	BOOST_CHECK_CLOSE(T1_fit.getVoxel(0), T1, tol);
+	BOOST_TEST_MESSAGE("Testing fitted M0");
+	BOOST_CHECK_CLOSE(M0_fit.getVoxel(0), M0, tol);
 
 	//Tidy up
 	fs::remove_all(FA_dir);
 	fs::remove_all(T1_output_dir);
 }
 
-void test_calculate_T1()
-{
-	run_test_calculate_T1();
-}
-
-TESTMAIN(test_calculate_T1);
+BOOST_AUTO_TEST_SUITE_END() //

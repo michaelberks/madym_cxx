@@ -1,9 +1,12 @@
-#include <testlib/testlib_test.h>
+#include <boost/test/unit_test.hpp>
+
 #include <iostream>
-#include <vector>
+#include <madym/mdm_AIF.h>
+#include <madym/tests/mdm_test_utils.h>
+
 #include <madym/mdm_AnalyzeFormat.h>
 #include <madym/mdm_Image3D.h>
-#include "mdm_test_utils.h"
+
 
 void test_write_read(const mdm_Image3D &img, const mdm_AnalyzeFormat::Data_type format, const bool sparse)
 {
@@ -33,14 +36,14 @@ void test_write_read(const mdm_Image3D &img, const mdm_AnalyzeFormat::Data_type 
 
 	mdm_Image3D img_r = mdm_AnalyzeFormat::readImage3D(img_name, false);
 
-	test_str = "Test write: format " + format_str + sparse_str;
-	TEST(test_str.c_str(), success, true);
+	BOOST_TEST_MESSAGE( "Test write: format " + format_str + sparse_str);
+	BOOST_CHECK(success);
 
-	test_str = "Test read, correct size: format " + format_str + sparse_str;
-	TEST(test_str.c_str(), img.getNvoxels(), img_r.getNvoxels());
+	BOOST_TEST_MESSAGE("Test read, correct size: format " + format_str + sparse_str);
+	BOOST_CHECK_EQUAL(img.getNvoxels(), img_r.getNvoxels());
 
-	test_str = "Test read, correct data: format " + format_str + sparse_str;
-	TEST(test_str.c_str(), img.getData(), img_r.getData());
+	BOOST_TEST_MESSAGE("Test read, correct data: format " + format_str + sparse_str);
+	BOOST_CHECK_VECTORS(img.getData(), img_r.getData());
 }
 
 void test_xtr(mdm_Image3D &img)
@@ -57,20 +60,25 @@ void test_xtr(mdm_Image3D &img)
 	std::string img_name = mdm_test_utils::temp_dir() + "/xtr_test";
 	bool success = mdm_AnalyzeFormat::writeImage3D(
 		img_name, img, mdm_AnalyzeFormat::DT_FLOAT, mdm_AnalyzeFormat::NEW_XTR, false);
-	TEST("xtr write", success, true);
+	BOOST_TEST_MESSAGE("Testing: xtr write");
+	BOOST_CHECK(success);
 
 	mdm_Image3D img_r = mdm_AnalyzeFormat::readImage3D(img_name, true);
-	TEST_NEAR("xtr read: FA", FA, img_r.info_.flipAngle.value(), 1e-3);
-	TEST_NEAR("xtr read: TR", TR, img_r.info_.TR.value(), 1e-3);
-	TEST_NEAR("xtr read: TE", TE, img_r.info_.TE.value(), 1e-3);
-	TEST_NEAR("xtr read: timestamp", time, img_r.getTimeStamp(), 1e-3);
+	BOOST_TEST_MESSAGE("Tesing xtr read: FA");
+	BOOST_CHECK_CLOSE(FA, img_r.info_.flipAngle.value(), 1e-3);//
+	BOOST_TEST_MESSAGE("Tesing xtr read: TR");
+	BOOST_CHECK_CLOSE(TR, img_r.info_.TR.value(), 1e-3);
+	BOOST_TEST_MESSAGE("Tesing xtr read: TE");
+	BOOST_CHECK_CLOSE(TE, img_r.info_.TE.value(), 1e-3);
+	BOOST_TEST_MESSAGE("Tesing xtr read: timestamp");
+	BOOST_CHECK_CLOSE(time, img_r.getTimeStamp(), 1e-3);
 }
 
 
-void run_test_analyze()
-{
+BOOST_AUTO_TEST_SUITE(test_mdm)
 
-	std::cout << "======= Testing analyze format image reading/writing =======" << std::endl;
+BOOST_AUTO_TEST_CASE(test_analyze) {
+	BOOST_TEST_MESSAGE("======= Testing analyze format image reading/writing =======");
 
 	mdm_Image3D img_integer, img_real;
 	int nx = 2, ny = 2, nz = 2;
@@ -154,9 +162,4 @@ void run_test_analyze()
 	test_xtr(img_real);
 }
 
-void test_analyze()
-{
-	run_test_analyze();
-}
-
-TESTMAIN(test_analyze);
+BOOST_AUTO_TEST_SUITE_END() //

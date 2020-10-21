@@ -1,15 +1,12 @@
-#include <testlib/testlib_test.h>
-#include <iostream>
+#include <boost/test/unit_test.hpp>
 
-#include "../../tests/mdm_test_utils.h"
-
-//#include <madym/mdm_RunTools.h>
+#include <madym/tests/mdm_test_utils.h>
 #include <madym/mdm_InputOptions.h>
 
-void run_test_config()
-{
+BOOST_AUTO_TEST_SUITE(test_mdm_tools)
 
-	std::cout << "======= Testing generation of config files for madym tools =======" << std::endl;
+BOOST_AUTO_TEST_CASE(test_config) {
+	BOOST_TEST_MESSAGE("======= Testing generation of config files for madym tools =======");
 
 	std::string params_name = mdm_test_utils::temp_dir() + "/params.txt";
 	mdm_DefaultValues options;
@@ -22,24 +19,24 @@ void run_test_config()
 	options.T1inputNames.set({ "fa1", "fa2" }); //vector<str>
 
 	options_parser_.madym_inputs("test_write", options);
-	bool wrote = options_parser_.to_file(params_name, options);
-	TEST("Writing params file", wrote, true);
+	BOOST_TEST_MESSAGE("Writing params file");
+	BOOST_CHECK(options_parser_.to_file(params_name, options));
 
 	mdm_DefaultValues options_in;
 	options_in.configFile.set(params_name);
-	int read = options_parser_.madym_inputs("test_read", options_in);
-	TEST("Reading params file", read, 0);
+	BOOST_TEST_MESSAGE("Reading params file");
+	BOOST_CHECK(!options_parser_.madym_inputs("test_read", options_in));
 
-	TEST("Reading and writing params file, values match: aifName", options.aifName(), options_in.aifName());
-	TEST("Reading and writing params file, values match: aifName", options.IAUCTimes(), options_in.IAUCTimes());
-	TEST("Reading and writing params file, values match: aifName", options.dose(), options_in.dose());
-	TEST("Reading and writing params file, values match: fixedParams", options.fixedParams(), options_in.fixedParams());
-	TEST("Reading and writing params file, values match: T1inputNames", options.T1inputNames(), options_in.T1inputNames());
+	BOOST_TEST_MESSAGE("Reading and writing params file, values match: aifName");
+	BOOST_CHECK_EQUAL(options.aifName(), options_in.aifName());
+	BOOST_TEST_MESSAGE("Reading and writing params file, values match: IAUCTimes");
+	BOOST_CHECK_VECTORS(options.IAUCTimes(), options_in.IAUCTimes());
+	BOOST_TEST_MESSAGE("Reading and writing params file, values match: dose");
+	BOOST_CHECK_EQUAL(options.dose(), options_in.dose());
+	BOOST_TEST_MESSAGE("Reading and writing params file, values match: fixedParams");
+	BOOST_CHECK_VECTORS(options.fixedParams(), options_in.fixedParams());
+	BOOST_TEST_MESSAGE("Reading and writing params file, values match: T1inputNames");
+	BOOST_CHECK_VECTORS(options.T1inputNames(), options_in.T1inputNames());
 }
 
-void test_config()
-{
-	run_test_config();
-}
-
-TESTMAIN(test_config);
+BOOST_AUTO_TEST_SUITE_END() //

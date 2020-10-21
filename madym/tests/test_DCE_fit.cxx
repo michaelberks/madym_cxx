@@ -1,11 +1,16 @@
-#include <testlib/testlib_test.h>
+#include <boost/test/unit_test.hpp>
+#include <boost/format.hpp>
+
 #include <iostream>
 #include <iomanip>
+#include <string>
+
+#include <madym/mdm_AIF.h>
+#include <madym/tests/mdm_test_utils.h>
 #include <madym/mdm_AIF.h>
 #include <madym/mdm_DCEModelGenerator.h>
 #include <madym/mdm_DCEVoxel.h>
 
-#include "mdm_test_utils.h"
 
 void test_model_time_fit(
 	const std::string &modelName,
@@ -30,7 +35,8 @@ void test_model_time_fit(
 	for (double &c : CtCalibration)
 		modelFileStream.read(reinterpret_cast<char*>(&c), sizeof(double));
 	modelFileStream.close();
-	std::cout << "Read time series for " << modelName << " from binary calibration file" << std::endl;
+	BOOST_TEST_MESSAGE(boost::format(
+		"Read time series for %1% from binary calibration file") % modelName);
 
 	int nIAUC;
 	std::vector<double> IAUCTimes;
@@ -55,7 +61,8 @@ void test_model_time_fit(
 		for (double &iv : IAUCVals)
 			iaucFileStream.read(reinterpret_cast<char*>(&iv), sizeof(double));
 		iaucFileStream.close();
-		std::cout << "Read time series for " << modelName << " from binary calibration file" << std::endl;
+		BOOST_TEST_MESSAGE(boost::format(
+			"Read IAUC data for %1% from binary calibration file") % modelName);
 	}
 
 	//Now create the model and compute model time series
@@ -64,11 +71,7 @@ void test_model_time_fit(
 		modelName, false, false, {},
 		{}, fixedParams, {}, {}, {});
 
-	if (!model_set)
-	{
-		std::cout << "Unable to compute time series for " << modelName << std::endl;
-		return;
-	}
+	BOOST_REQUIRE_MESSAGE(model_set, "Unable to compute time series for " << modelName);
 
 	mdm_DCEVoxel vox(
 		{},
@@ -90,24 +93,21 @@ void test_model_time_fit(
 	vox.fitModel();
 
 	//Check params match (should be within 0.01)
-	std::cout << "Actual vs fitted params: ";
-	std::cout << std::fixed << std::showpoint << std::setprecision(2);
-
+	BOOST_TEST_MESSAGE("Actual vs fitted params: ");
+	
 	for (int i = 0; i < nParams; i++)
 	{
-		std::cout << "(" << trueParams[i] << ", " <<
-			model->pkParams()[i] << ") ";
+		BOOST_TEST_MESSAGE(boost::format("( %1$.2f, %2$.2f )")
+			% trueParams[i] % model->pkParams()[i]);
 	}
-	std::cout << std::endl;
-	std::cout << std::fixed << std::showpoint << std::setprecision(4);
 
-	std::cout << "Model SSE = " << vox.modelFitError() << std::endl;
-	std::string test_str = "Test DCE models, values match: " + modelName;
-	TEST(test_str.c_str(), mdm_test_utils::vectors_near_equal_rel(
-		model->pkParams(), trueParams, paramTol), true);
+	BOOST_TEST_MESSAGE(boost::format("Model SSE = %1$.4f") % vox.modelFitError());
+	BOOST_TEST_MESSAGE("Test DCE models, values match: " + modelName);
+	BOOST_CHECK(mdm_test_utils::vectors_near_equal_rel(
+		model->pkParams(), trueParams, paramTol));
 
-	test_str = "Test DCE models, SSE < tol: " + modelName;
-	TEST_NEAR(test_str.c_str(), vox.modelFitError(), 0, sseTol);
+	BOOST_TEST_MESSAGE("Test DCE models, SSE < tol: " + modelName);
+	BOOST_CHECK_SMALL(vox.modelFitError(), sseTol);
 
 	if (test_IAUC)
 	{
@@ -116,17 +116,18 @@ void test_model_time_fit(
 		for (int i = 0; i < nIAUC; i++)
 			computedIAUC[i] = vox.IAUC_val(i);
 
-		test_str = "Test IAUC values for " + modelName;
-		TEST(test_str.c_str(), mdm_test_utils::vectors_near_equal(
-			computedIAUC, IAUCVals, 0.01), true);
+		BOOST_TEST_MESSAGE("Test IAUC values for " + modelName);
+		BOOST_CHECK(mdm_test_utils::vectors_near_equal(
+			computedIAUC, IAUCVals, 0.01));
 	}
 
 	delete model;
 }
 
-void run_test_DCE_fit()
-{
-	std::cout << "======= Testing DCE model optimisation =======" << std::endl;
+BOOST_AUTO_TEST_SUITE(test_mdm)
+
+BOOST_AUTO_TEST_CASE(test_DCE_fit) {
+	BOOST_TEST_MESSAGE("======= Testing DCE model optimisation =======");
 	//Read in dynamic times from calibration file
 	int nTimes;
 	std::string timesFileName(mdm_test_utils::calibration_dir() + "dyn_times.dat");
@@ -181,10 +182,4 @@ void run_test_DCE_fit()
 		"DIBEM", {7},
 		AIF, 0.5, 0.0005);
 }
-
-void test_DCE_fit()
-{
-  run_test_DCE_fit();
-}
-
-TESTMAIN(test_DCE_fit);
+BOOST_AUTO_TEST_SUITE_END() //

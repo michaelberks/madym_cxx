@@ -1,6 +1,8 @@
-#include <testlib/testlib_test.h>
-#include "../../tests/mdm_test_utils.h"
+#include <boost/test/unit_test.hpp>
+#include <boost/format.hpp>
 #include <fstream>
+
+#include <madym/tests/mdm_test_utils.h>
 #include <madym/mdm_T1Voxel.h>
 #include <mdm_version.h>
 #include <madym/mdm_AIF.h>
@@ -8,9 +10,10 @@
 
 namespace fs = boost::filesystem;
 
-void run_test_madym_lite()
-{
-	std::cout << "======= Testing tool: madym =======" << std::endl;
+BOOST_AUTO_TEST_SUITE(test_mdm_tools)
+
+BOOST_AUTO_TEST_CASE(test_madym_lite) {
+	BOOST_TEST_MESSAGE("======= Testing tool: madym_lite =======");
 	//Need to generate input data files. To do this, load in calibration
 	//data
 
@@ -76,11 +79,8 @@ void run_test_madym_lite()
 	//Write out the concentration times
 	std::string inputDataFile = test_dir + "/Ct_input.dat";
 	std::ofstream ifs(inputDataFile, std::ios::out);
-	if (!ifs.is_open())
-	{
-		TEST("Failed to write out Ct values for madym_lite", 0, 1);
-		return;
-	}
+	BOOST_REQUIRE_MESSAGE(ifs.is_open(), "Failed to write out Ct values for madym_lite");
+
 	for (const auto c : Ct)
 		ifs << c << " ";
 	ifs.close();
@@ -88,11 +88,8 @@ void run_test_madym_lite()
 	//Writeout the dynamic time
 	std::string dynTimesFile = test_dir + "/dyn_times.dat";
 	std::ofstream dfs(dynTimesFile, std::ios::out);
-	if (!dfs.is_open())
-	{
-		TEST("Failed to write out dyn times for madym_lite", 0, 1);
-		return;
-	}
+	BOOST_REQUIRE_MESSAGE(dfs.is_open(), "Failed to write out dyn times values for madym_lite");
+	
 	for (const auto t : dynTimes)
 		dfs << t << " ";
 	dfs.close();
@@ -114,6 +111,8 @@ void run_test_madym_lite()
 
 	std::cout << "Command to run: " << cmd.str() << std::endl;
 
+	BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
+
 	int error;
 	try
 	{
@@ -121,20 +120,17 @@ void run_test_madym_lite()
 	}
 	catch (...)
 	{
-		TEST("Running madym_lite failed", 0, 1);
+		BOOST_CHECK_MESSAGE(false, "Running madym_lite failed");
 		return;
 	}
 
-	TEST("madym_lite tool ran without error", error, 0);
+	BOOST_CHECK_MESSAGE(!error, "Error returned from madym_lite tool");
 
 	//Load in the fitted parameters from the output file
 	std::string outputDataFile = Ct_output_dir + "ETM_" + outputName;
 	std::ifstream ofs(outputDataFile, std::ios::in);
-	if (!ofs.is_open())
-	{
-		TEST("Failed to read in fitted values for ETM", 0, 1);
-		return;
-	}
+	BOOST_REQUIRE_MESSAGE(ofs.is_open(), "Failed to read in fitted values for ETM");
+	
 	int fit_errors, enhancing;
 	double model_fit, ktrans_fit, ve_fit, vp_fit, tau_fit;
 	std::vector<double> IAUC_fit(nIAUC);
@@ -150,16 +146,36 @@ void run_test_madym_lite()
 	ofs.close();
 
 	//Check the model parameters have fitted correctly
-	double tol = 0.01;
-	TEST_NEAR("Fitted ktrans", ktrans_fit, trueParams[0], tol);
-	TEST_NEAR("Fitted Ve", ve_fit, trueParams[1], tol);
-	TEST_NEAR("Fitted Vp", vp_fit, trueParams[2], tol);
-	TEST_NEAR("Fitted tau", tau_fit, trueParams[3], tol);
-	TEST_NEAR("Model", model_fit, 0, tol);
-	TEST("Error codes zero", fit_errors, 0);
-	TEST("Enhancing", enhancing, 1);
+	double tol = 0.1;
+	BOOST_TEST_MESSAGE(boost::format("Fitted ktrans (%1.2f, %2.2f)")
+		% ktrans_fit % trueParams[0]);
+	BOOST_CHECK_CLOSE(ktrans_fit, trueParams[0], tol);
+	BOOST_TEST_MESSAGE(boost::format("Fitted Ve (%1.2f, %2.2f)")
+		% ve_fit % trueParams[1]);
+	BOOST_CHECK_CLOSE(ve_fit, trueParams[1], tol);
+	BOOST_TEST_MESSAGE(boost::format("Fitted Vp (%1.2f, %2.2f)")
+		% vp_fit % trueParams[2]);
+	BOOST_CHECK_CLOSE(vp_fit, trueParams[2], tol);
+	BOOST_TEST_MESSAGE(boost::format("Fitted tau (%1.2f, %2.2f)")
+		% tau_fit % trueParams[3]);
+	BOOST_CHECK_CLOSE(tau_fit, trueParams[3], tol);
+
+	//Check model fit, error codes and enhancing
+	BOOST_TEST_MESSAGE(boost::format("Model residuals = %1%") 
+		% model_fit);
+	BOOST_CHECK_SMALL(model_fit, 0.01);
+	BOOST_TEST_MESSAGE("No error code");
+	BOOST_CHECK(!fit_errors);
+	BOOST_TEST_MESSAGE("Enhancing");
+	BOOST_CHECK(enhancing);
+
+	
 	for (int i = 0; i < nIAUC; i++)
-		TEST_NEAR(("IAUC " + std::to_string(IAUCTimes[i])).c_str(), IAUC_fit[i], IAUCVals[i], tol);
+	{
+		BOOST_TEST_MESSAGE("IAUC " + std::to_string(IAUCTimes[i]));
+		BOOST_CHECK_CLOSE(IAUC_fit[i], IAUCVals[i], tol);
+	}
+	
 
 	//Tidy up
 	fs::remove(inputDataFile);
@@ -167,9 +183,4 @@ void run_test_madym_lite()
 	fs::remove_all(Ct_output_dir);
 }
 
-void test_madym_lite()
-{
-	run_test_madym_lite();
-}
-
-TESTMAIN(test_madym_lite);
+BOOST_AUTO_TEST_SUITE_END() //

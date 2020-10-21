@@ -2,10 +2,13 @@
 #   Mike Berks
 #
 
-LINK_LIBRARIES(mdm testlib)
+project(test_mdm)
 
-ADD_EXECUTABLE( mdm_tools_test_driver
-  test_driver.cxx
+# external libraries
+find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+
+ADD_EXECUTABLE( test_mdm_tools
+  test_mdm_tools.cxx
 
   test_config.cxx
   test_madym.cxx
@@ -15,9 +18,8 @@ ADD_EXECUTABLE( mdm_tools_test_driver
 
 )
 
-add_test( NAME mdm_tools_test_config COMMAND $<TARGET_FILE:mdm_tools_test_driver> test_config )
-add_test( NAME mdm_tools_test_madym COMMAND $<TARGET_FILE:mdm_tools_test_driver> test_madym )
-add_test( NAME mdm_tools_test_madym_lite COMMAND $<TARGET_FILE:mdm_tools_test_driver> test_madym_lite )
-add_test( NAME mdm_tools_test_calculate_T1 COMMAND $<TARGET_FILE:mdm_tools_test_driver> test_calculate_T1 )
-add_test( NAME mdm_tools_test_calculate_T1_lite COMMAND $<TARGET_FILE:mdm_tools_test_driver> test_calculate_T1_lite )
+target_link_libraries(test_mdm_tools Boost::unit_test_framework mdm)
+target_compile_definitions(test_mdm_tools PUBLIC BOOST_TEST_DYN_LINK)
+enable_testing()
+add_test(NAME test_mdm_tools COMMAND test_mdm_tools)
 
