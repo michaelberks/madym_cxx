@@ -68,7 +68,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API bool loadS0Image(const std::string &S0path);
+	MDM_API bool loadM0Image(const std::string &M0path);
 
 		/**
 	* @brief
@@ -216,7 +216,7 @@ private:
 	std::vector<std::string>  catPaths_;
 
 	std::string  T1Path_;
-	std::string  S0Path_;
+	std::string  M0Path_;
 	std::string  AIFPath_;
   std::string  PIFPath_;
 	std::string  ROIPath_;

@@ -34,7 +34,7 @@ const int mdm_ErrorTracker::T1_INIT_FAIL = 2;				// Initialisation of T1 fitting
 const int mdm_ErrorTracker::T1_FIT_FAIL = 4;				// Error in main T1 calculation routine    - Binary bit 3 set  
 const int mdm_ErrorTracker::T1_MAX_ITER = 8;				// Hit max iterations in T1 calculation    - Binary bit 4 set  
 const int mdm_ErrorTracker::T1_MAD_VALUE = 16;			// (T1 < 0.0) || (T1 > 6000.0)             - Binary bit 5 set  
-const int mdm_ErrorTracker::S0_NEGATIVE = 32;				// Earlier error condition caused S0 = 0.0 - Binary bit 6 set 
+const int mdm_ErrorTracker::M0_NEGATIVE = 32;				// Earlier error condition caused M0 = 0.0 - Binary bit 6 set 
 const int mdm_ErrorTracker::NON_ENH_IAUC = 64;			// Voxel non-enhancing by IAUC60 < 0.0     - Binary bit 7 set  
 const int mdm_ErrorTracker::CA_IS_NAN = 128;				// [CA](t) == NaN                          - Binary bit 8 set 
 const int mdm_ErrorTracker::DYNT1_NEGATIVE = 256;		// T1(t) < 0.0                             - Binary bit 9 set 

@@ -46,7 +46,7 @@ MDM_API mdm_FileManager::mdm_FileManager(mdm_AIF &AIF,
 	dynPaths_(0),
 	catPaths_(0),
 	T1Path_(""),
-	S0Path_(""),
+	M0Path_(""),
 	AIFPath_(""),
   PIFPath_(""),
 	ROIPath_(""),
@@ -125,12 +125,12 @@ MDM_API bool mdm_FileManager::loadParameterMaps(const std::string &paramDir)
 
 MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
 {
-	//Write out T1 and S0 maps (if S0 map used)
+	//Write out T1 and M0 maps (if M0 map used)
 	if (T1Mapper_.T1Map().getNvoxels() && 
     !writeOutputMap(volumeAnalysis_.MAP_NAME_T1, T1Mapper_.T1Map(), outputDir, true))
 		return false;
-	if (T1Mapper_.S0Map().getNvoxels() && 
-		!writeOutputMap(volumeAnalysis_.MAP_NAME_S0, T1Mapper_.S0Map(), outputDir, true))
+	if (T1Mapper_.M0Map().getNvoxels() && 
+		!writeOutputMap(volumeAnalysis_.MAP_NAME_M0, T1Mapper_.M0Map(), outputDir, true))
 		return false;
 
   //Write model parameters maps
@@ -320,23 +320,23 @@ MDM_API bool mdm_FileManager::loadT1Image(const std::string &T1path)
 	return true;
 }
 
-MDM_API bool mdm_FileManager::loadS0Image(const std::string &S0path)
+MDM_API bool mdm_FileManager::loadM0Image(const std::string &M0path)
 {
-	mdm_Image3D S0_map = mdm_AnalyzeFormat::readImage3D(S0path, false);
+	mdm_Image3D M0_map = mdm_AnalyzeFormat::readImage3D(M0path, false);
 
-	if (!S0_map.getNvoxels())
+	if (!M0_map.getNvoxels())
 	{
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_FileManager::loadS0Image: Failed to read S0 map from " + S0path + "\n");
+			"ERROR: mdm_FileManager::loadM0Image: Failed to read M0 map from " + M0path + "\n");
 		return false;
 	}
 
 	mdm_ProgramLogger::logProgramMessage(
-		"Successfully read S0 map from " + S0path + "\n");
+		"Successfully read M0 map from " + M0path + "\n");
 
 	//If image successfully read, add it to the T1 mapper object
-	T1Mapper_.addS0Map(S0_map);
-	S0Path_ = S0path;
+	T1Mapper_.addM0Map(M0_map);
+	M0Path_ = M0path;
 	return true;
 }
 

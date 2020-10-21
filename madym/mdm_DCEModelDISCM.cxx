@@ -27,7 +27,7 @@ MDM_API mdm_DCEModelDISCM::mdm_DCEModelDISCM(
 		relativeLimitValues)
 {
   if (pkParamNames_.empty())
-    pkParamNames_ = { "Fp", "k2", "fa", "aoffset", "voffset" };
+    pkParamNames_ = { "F_p", "k_2", "f_a", "tau_a", "tau_v" };
   if (pkInitParams_.empty())
     pkInitParams_ = { 0.6,   1.0,  0.5,  0.025,      0.0 };
   if (optParamFlags_.empty())
@@ -66,14 +66,14 @@ MDM_API void mdm_DCEModelDISCM::computeCtModel(int nTimes)
   const double &F_p = pkParams_[0];// arterial flow rate constant
   const double &k2 = pkParams_[1];//outflow rate constant
   const double &f_a = pkParams_[2];//modified portal flow rate constant
-  const double &aoffset = pkParams_[3];//arterial delay (Tau_a in paper)
-  const double &voffset = pkParams_[4];//portal vein delay (Tau_hpv in paper)
+  const double &tau_a = pkParams_[3];//arterial delay (Tau_a in paper)
+  const double &tau_v = pkParams_[4];//portal vein delay (Tau_hpv in paper)
   const double KMAX = 1e9;
 
   //Get AIF and PIF, labelled in model equation as Ca_t and Cv_t
   //Resample AIF and get AIF times
-  AIF_.resample_AIF(nTimes, aoffset);
-  AIF_.resample_PIF(nTimes, voffset, false, true);
+  AIF_.resample_AIF(nTimes, tau_a);
+  AIF_.resample_PIF(nTimes, tau_v, false, true);
   const std::vector<double> Ca_t = AIF_.AIF();
   const std::vector<double> Cv_t = AIF_.PIF();
   const std::vector<double> &t = AIF_.AIFTimes();

@@ -125,13 +125,13 @@ void run_test_madym()
 	cmd << mdm_test_utils::tools_exe_dir() << "madym"
 		<< " -m ETM"
 		<< " -o " << Ct_output_dir
-		<< " -dyn " << dyn_dir << "Ct_"
+		<< " --dyn " << dyn_dir << "Ct_"
 		<< " -n " << nTimes
 		<< " -i " << injectionImage
 		<< " -D " << dose
 		<< " -H " << hct
-		<< " -iauc " << IAUC_str
-		<< " -Cin -overwrite "; //<< " -iauc 60"
+		<< " -I " << IAUC_str
+		<< " --Ct --overwrite "; //<< " -iauc 60"
 
 	std::cout << "Command to run: " << cmd.str() << std::endl;
 		
@@ -149,10 +149,10 @@ void run_test_madym()
 	TEST("madym tool ran without error", error, 0);
 
 	//Load in the parameter img vols and extract the single voxel from each
-	mdm_Image3D ktrans_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "ktrans.hdr", false);
-	mdm_Image3D ve_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "ve.hdr", false);
-	mdm_Image3D vp_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "vp.hdr", false);
-	mdm_Image3D tau_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "offset.hdr", false);
+	mdm_Image3D ktrans_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "Ktrans.hdr", false);
+	mdm_Image3D ve_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "v_e.hdr", false);
+	mdm_Image3D vp_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "v_p.hdr", false);
+	mdm_Image3D tau_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "tau_a.hdr", false);
 	mdm_Image3D model_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "residuals.hdr", false);
 	mdm_Image3D error_codes = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "error_codes.hdr", false);
 	mdm_Image3D enhancing = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "enhVox.hdr", false);

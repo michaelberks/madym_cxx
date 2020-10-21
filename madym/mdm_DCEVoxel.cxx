@@ -52,7 +52,7 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	const std::vector<double> &dynConc,
   const std::vector<double> &noiseVar,
 	const double T10,
-	const double S0,
+	const double M0,
 	const double r1Const,
   const int bolus_time,
 	const std::vector<double> &dynamicTimings,
@@ -68,7 +68,7 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	CtData_(dynConc),
   noiseVar_(noiseVar),
 	t10_(T10),
-	s0_(S0),
+	s0_(M0),
 	n1_(n1),
 	n2_(n2),
 	r1Const_(r1Const),
@@ -133,7 +133,7 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal()
   double sinfa = sin(FA_ * PI / 180);
   double cosfa = cos(FA_ * PI / 180);
 
-  // This is a bad check.  It assumes invalid baseline T1 is flagged by invalid S0
+  // This is a bad check.  It assumes invalid baseline T1 is flagged by invalid M0
   /*MB - so don't do it??*/
   //if (p.s0() > 0.0)
 
@@ -157,7 +157,7 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal()
       if (useRatio())
         R1value = computeT1DynPBM(signalData()[k], s_pbm, cosfa, errorCode);
       else
-        R1value = computeT1DynS0(signalData()[k], sinfa, cosfa, errorCode);    
+        R1value = computeT1DynM0(signalData()[k], sinfa, cosfa, errorCode);    
       
       CtData_[k] = (R1value - 1.0 / t10()) / R1gd;
 
@@ -173,13 +173,13 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal()
     for (size_t k = 0; k < n_times; k++)
     {
       CtData_[k] = Ca_BAD1;
-      status_ = mdm_DCEVoxelStatus::S0_BAD;
+      status_ = mdm_DCEVoxelStatus::M0_BAD;
     }      
   }
 }
 
 /**
-* @brief    Calculate dynamic T1 from S0 and dynamic signal intensity
+* @brief    Calculate dynamic T1 from M0 and dynamic signal intensity
 * @param    t1_0  - Baseline T1 value
 * @param    st    - dynamic signal intensity
 * @param    s_pbm - prebolus mean dynamic signal intensity
@@ -201,7 +201,7 @@ double mdm_DCEVoxel::computeT1DynPBM(const double &st, const double &s_pbm, cons
     errorCode = -1;
 
   double expTR_T10 = exp(-TR_ / t10());
-  double S1_S0 = st / s_pbm;
+  double S1_M0 = st / s_pbm;
 
   double denominator = 1.0 - cosfa * expTR_T10;
   if (std::abs(denominator) < T1_TOLERANCE)
@@ -209,11 +209,11 @@ double mdm_DCEVoxel::computeT1DynPBM(const double &st, const double &s_pbm, cons
 
   double fraction1 = (1.0 - expTR_T10) / denominator;
 
-  denominator = 1.0 - S1_S0 * cosfa * fraction1;
+  denominator = 1.0 - S1_M0 * cosfa * fraction1;
   if (std::abs(denominator) < T1_TOLERANCE)
     errorCode = -3;
 
-  double fraction2 = (1.0 - S1_S0 * fraction1) / denominator;
+  double fraction2 = (1.0 - S1_M0 * fraction1) / denominator;
   if (std::abs(fraction2) < T1_TOLERANCE)
     errorCode = -3;
 
@@ -228,7 +228,7 @@ double mdm_DCEVoxel::computeT1DynPBM(const double &st, const double &s_pbm, cons
 }
 
 /**
-* @brief    Calculate dynamic T1 from S0 and dynamic signal intensity
+* @brief    Calculate dynamic T1 from M0 and dynamic signal intensity
 * @param    s0    - M0 in signal intensity domain
 * @param    st    - dynamic signal intensity
 * @param    sinfa - sin(flip angle)
@@ -239,7 +239,7 @@ double mdm_DCEVoxel::computeT1DynPBM(const double &st, const double &s_pbm, cons
 * @author   Gio Buonaccorsi
 * @version  1.21.alpha (12 August 2013)
 */
-double mdm_DCEVoxel::computeT1DynS0(const double &st, const double & sinfa, const double & cosfa, int &errorCode)
+double mdm_DCEVoxel::computeT1DynM0(const double &st, const double & sinfa, const double & cosfa, int &errorCode)
 {
   errorCode = 0;
   double num = s0() * sinfa - st;

@@ -27,9 +27,9 @@ MDM_API mdm_DCEModel2CXM::mdm_DCEModel2CXM(
 		relativeLimitValues)
 {
   if (pkParamNames_.empty())
-    pkParamNames_ = { "Fp", "PS", "v_e", "v_p", "aoffset"};
+    pkParamNames_ = { "F_p", "PS", "v_e", "v_p", "tau_a"};
   if (pkInitParams_.empty())
-    pkInitParams_ = { 0.60,  0.2,  0.2,   0.2,  0.0};//{"Fp", "vecs", "kin", "kout", "fa"}
+    pkInitParams_ = { 0.60,  0.2,  0.2,   0.2,  0.0};//{"F_p", "PS", "v_e", "v_p", "tau_a"}
   if (optParamFlags_.empty())
     optParamFlags_ = { true, true, true, true, true };
   if (lowerBounds_.empty())
@@ -67,13 +67,13 @@ MDM_API void mdm_DCEModel2CXM::computeCtModel(int nTimes)
   const double &PS = pkParams_[1];// efflux flow
   const double &v_e = pkParams_[2];//extravascular, extracellular space
   const double &v_p = pkParams_[3];//plasma volume*/
-  const double &aoffset = pkParams_[4];//AIF_ delay
+  const double &tau_a = pkParams_[4];//AIF_ delay
   
   const double KMAX = 1e9;
   
   //Get AIF and PIF, labelled in model equation as Ca_t and Cv_t
   //Resample AIF and get AIF times
-  AIF_.resample_AIF(nTimes, aoffset);
+  AIF_.resample_AIF(nTimes, tau_a);
   const std::vector<double> Ca_t = AIF_.AIF();
   const std::vector<double> &AIFtimes = AIF_.AIFTimes();
 

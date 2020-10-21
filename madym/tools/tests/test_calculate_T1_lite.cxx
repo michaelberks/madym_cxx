@@ -42,10 +42,10 @@ void run_test_calculate_T1_lite()
 	std::string outputName = "madym_analysis.dat";
 	std::stringstream cmd;
 	cmd << mdm_test_utils::tools_exe_dir() << "calculate_T1_lite"
-		<< " -m VFA "
-		<< " -d " << inputDataFile
-		<< " -n 3 "
-		<< " -TR " << TR
+		<< " -T VFA "
+		<< " --data " << inputDataFile
+		<< " --n_T1 " << 3
+		<< " --tr " << TR
 		<< " -o " << T1_output_dir
 		<< " -O " << outputName;
 		;

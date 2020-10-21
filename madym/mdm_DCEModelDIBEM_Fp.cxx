@@ -27,7 +27,7 @@ MDM_API mdm_DCEModelDIBEM_Fp::mdm_DCEModelDIBEM_Fp(
 		relativeLimitValues)
 {
   if (pkParamNames_.empty())
-    pkParamNames_ = { "Fp", "Epos", "Kpos", "Kneg", "fa", "aoffset", "voffset" };
+    pkParamNames_ = { "F_p", "Epos", "Kpos", "Kneg", "f_a", "tau_a", "tau_v" };
   if (pkInitParams_.empty())
     pkInitParams_ = {    1.0,    0.5,    1.0,    1.0,  0.5,       0.025,    0.0};
   if (optParamFlags_.empty())
@@ -68,8 +68,8 @@ MDM_API void mdm_DCEModelDIBEM_Fp::computeCtModel(int nTimes)
   const double &K_pos = pkParams_[2];//extravascular, extracellular space
   const double &K_neg = pkParams_[3];//plasma volume*/
   const double &f_a = pkParams_[4];//the arterial fraction
-  const double &aoffset = pkParams_[5];//AIF delay
-  const double &voffset = pkParams_[6];//the arterial fraction
+  const double &tau_a = pkParams_[5];//AIF delay
+  const double &tau_v = pkParams_[6];//the arterial fraction
   double f_v = 1 - f_a; // estimate of hepatic portal venous fraction
   const double KMAX = 1e6;
 
@@ -78,7 +78,7 @@ MDM_API void mdm_DCEModelDIBEM_Fp::computeCtModel(int nTimes)
   std::vector<double> Ca_t;
   if (f_a)
   {
-    AIF_.resample_AIF(nTimes, aoffset);
+    AIF_.resample_AIF(nTimes, tau_a);
     Ca_t = AIF_.AIF();
   }
   else
@@ -87,7 +87,7 @@ MDM_API void mdm_DCEModelDIBEM_Fp::computeCtModel(int nTimes)
   std::vector<double> Cv_t;
   if (f_v)
   {
-    AIF_.resample_PIF(nTimes, voffset, false, true);
+    AIF_.resample_PIF(nTimes, tau_v, false, true);
     Cv_t = AIF_.PIF();
   }
   else

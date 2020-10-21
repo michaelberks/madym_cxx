@@ -14,7 +14,7 @@ IF ( BUILD_SHARED_LIBS )
 ENDIF ( BUILD_SHARED_LIBS )
 
 ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK )
-FIND_PACKAGE(Boost COMPONENTS system filesystem REQUIRED)
+FIND_PACKAGE(Boost COMPONENTS system filesystem program_options REQUIRED)
 
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
@@ -47,6 +47,7 @@ SET(mdm_sources
 		mdm_T1Voxel.cxx					mdm_T1Voxel.h
 		mdm_T1VolumeAnalysis.cxx		mdm_T1VolumeAnalysis.h	
 
+		mdm_InputOptions.cxx			mdm_InputOptions.h
 		mdm_vul_arg.h
 		mdm_platform_defs.h
 		mdm_api.h
@@ -59,6 +60,7 @@ TARGET_LINK_LIBRARIES( mdm LINK_PUBLIC
   mdm_opt
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
 )
 
 IF ( MSVC )
@@ -79,7 +81,7 @@ if ( BUILD_QT_GUI )
 endif ()
 
 if ( BUILD_TESTING )
-	SUBDIRS(tests)
+  SUBDIRS(tests)
 endif ( BUILD_TESTING )
 
 #if ( BUILD_PYTHON )

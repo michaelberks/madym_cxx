@@ -27,9 +27,9 @@ MDM_API mdm_DCEModelAUEM::mdm_DCEModelAUEM(
 		relativeLimitValues)
 {
   if (pkParamNames_.empty())
-    pkParamNames_ = { "Fp", "ve", "ki", "kef", "fa", "aoffset", "voffset" };
+    pkParamNames_ = { "F_p", "v_ecs", "k_i", "k_ef", "f_a", "tau_a", "tau_v" };
   if (pkInitParams_.empty())
-    pkInitParams_ = { 0.6,  0.2,  0.2,   0.1,  0.5,      0.025,     0.00 };//{"Fp", "vecs", "kin", "kout", "fa"}
+    pkInitParams_ = { 0.6,  0.2,  0.2,   0.1,  0.5,      0.025,     0.00 };//
   if (optParamFlags_.empty())
     optParamFlags_ = { true, true, true, true, true, true, true };
   if (lowerBounds_.empty())
@@ -68,15 +68,15 @@ MDM_API void mdm_DCEModelAUEM::computeCtModel(int nTimes)
   const double &k_i = pkParams_[2];//transport constant to liver tissue
   const double &k_ef = pkParams_[3];//efflux to bile duct transfer constant
   const double &f_a = pkParams_[4];//the arterial fraction
-  const double &aoffset = pkParams_[5];//the arterial fraction
-  const double &voffset = pkParams_[6];//the arterial fraction
+  const double &tau_a = pkParams_[5];//the arterial fraction
+  const double &tau_v = pkParams_[6];//the arterial fraction
 
   const double TMIN = 1e-9;
 
   //Get AIF and PIF, labelled in model equation as Ca_t and Cv_t
   //Resample AIF and get AIF times
-  AIF_.resample_AIF(nTimes, aoffset);
-  AIF_.resample_PIF(nTimes, voffset, false, true);
+  AIF_.resample_AIF(nTimes, tau_a);
+  AIF_.resample_PIF(nTimes, tau_v, false, true);
   const std::vector<double> Ca_t = AIF_.AIF();
   const std::vector<double> Cv_t = AIF_.PIF();
   const std::vector<double> &AIFtimes = AIF_.AIFTimes();

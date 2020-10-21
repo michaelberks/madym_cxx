@@ -25,7 +25,7 @@ const std::string mdm_DCEVolumeAnalysis::MAP_NAME_RESDIUALS = "residuals";
 const std::string mdm_DCEVolumeAnalysis::MAP_NAME_ENHANCING = "enhVox";
 const std::string mdm_DCEVolumeAnalysis::MAP_NAME_ROI = "ROI";
 const std::string mdm_DCEVolumeAnalysis::MAP_NAME_T1 = "T1";
-const std::string mdm_DCEVolumeAnalysis::MAP_NAME_S0 = "S0";
+const std::string mdm_DCEVolumeAnalysis::MAP_NAME_M0 = "M0";
 const std::string mdm_DCEVolumeAnalysis::MAP_NAME_CT_SIG = "Ct_sig"; //Signal derived concentration - appended with volume number
 const std::string mdm_DCEVolumeAnalysis::MAP_NAME_CT_MOD = "Ct_mod"; //Model estimated concentration - appended with volume number
 const std::string mdm_DCEVolumeAnalysis::MAP_NAME_ERROR_CODE = "error_codes";
@@ -35,8 +35,8 @@ MDM_API mdm_DCEVolumeAnalysis::mdm_DCEVolumeAnalysis(mdm_ErrorTracker &errorTrac
 	T1_mapper_(T1_mapper),
 	testEnhancement_(false),
 	useRatio_(true),
-  outputCt_(false),
-  outputCmod_(false),
+  outputCt_sig_(false),
+  outputCt_modod_(false),
   useNoise_(false),
   dynamicTimes_(0),
   noiseVar_(0),
@@ -79,7 +79,7 @@ MDM_API void mdm_DCEVolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
       noiseVar_.push_back(noise);
   }
   
-	if (outputCt_ && (CtDataMaps_.size() == StDataMaps_.size()-1))
+	if (outputCt_sig_ && (CtDataMaps_.size() == StDataMaps_.size()-1))
 	{
 		mdm_Image3D catMap;
 		catMap.copyFields(dynImg);
@@ -87,7 +87,7 @@ MDM_API void mdm_DCEVolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
 		catMap.setType(mdm_Image3D::imageType::TYPE_CAMAP);
 		CtDataMaps_.push_back(catMap);
 	}
-  if (outputCmod_ && (CtModelMaps_.size() == StDataMaps_.size() - 1))
+  if (outputCt_modod_ && (CtModelMaps_.size() == StDataMaps_.size() - 1))
   {
     mdm_Image3D cModMap;
     cModMap.copyFields(dynImg);
@@ -291,13 +291,13 @@ MDM_API void mdm_DCEVolumeAnalysis::setComputeCt(bool flag)
 //Flag to see if we need to output computed concentration
 MDM_API void mdm_DCEVolumeAnalysis::setOutputCt(bool flag)
 {
-	outputCt_ = flag;
+	outputCt_sig_ = flag;
 }
 
 //Flag to see if we need to output modelled concentration
 MDM_API void mdm_DCEVolumeAnalysis::setOutputCmod(bool flag)
 {
-  outputCmod_ = flag;
+  outputCt_modod_ = flag;
 }
 
 //Set the time points at which we calculate IAUC
@@ -391,9 +391,9 @@ void mdm_DCEVolumeAnalysis::setVoxelErrors(int voxelIndex, const mdm_DCEVoxel &v
   {
     errorTracker_.updateVoxel(voxelIndex, mdm_ErrorTracker::DYNT1_NEGATIVE);
   }
-  else if (voxelOk == mdm_DCEVoxel::S0_BAD)
+  else if (voxelOk == mdm_DCEVoxel::M0_BAD)
   {
-    errorTracker_.updateVoxel(voxelIndex, mdm_ErrorTracker::S0_NEGATIVE);
+    errorTracker_.updateVoxel(voxelIndex, mdm_ErrorTracker::M0_NEGATIVE);
   }
 }
 
@@ -425,14 +425,14 @@ void mdm_DCEVolumeAnalysis::setVoxelInAllMaps(int voxelIndex, const mdm_DCEVoxel
   enhVoxMap_.setVoxel(voxelIndex,  vox.enhancing());
 
   /** 2.0 */
-  if (outputCt_)
+  if (outputCt_sig_)
   {
     for (int i = 0; i < getNDyns(); i++)
     {
       CtDataMaps_[i].setVoxel(voxelIndex, vox.CtData()[i]);
     }
   }
-  if (outputCmod_)
+  if (outputCt_modod_)
   {
     for (int i = 0; i < getNDyns(); i++)
     {
@@ -474,14 +474,14 @@ void mdm_DCEVolumeAnalysis::nanVoxelInAllMaps(int voxelIndex)
   enhVoxMap_.setVoxel(voxelIndex, NAN);
 
   /** 1.22 */
-  if (outputCt_)
+  if (outputCt_sig_)
   {
     for (i = 0; i < getNDyns(); i++)
     {
       CtDataMaps_[i].setVoxel(voxelIndex, NAN);
     }
   }
-  if (outputCmod_)
+  if (outputCt_modod_)
   {
     for (i = 0; i < getNDyns(); i++)
     {
@@ -518,7 +518,7 @@ void mdm_DCEVolumeAnalysis::zeroVoxelInAllMaps(int voxelIndex)
   enhVoxMap_.setVoxel(voxelIndex,   0.0);
 
   /** 1.22 */
-  if (outputCt_)
+  if (outputCt_sig_)
   {
     for (i = 0; i < getNDyns(); i++)
     {
@@ -526,7 +526,7 @@ void mdm_DCEVolumeAnalysis::zeroVoxelInAllMaps(int voxelIndex)
     }
   }
 
-  if (outputCmod_)
+  if (outputCt_modod_)
   {
     for (i = 0; i < getNDyns(); i++)
     {
@@ -630,7 +630,7 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
             r1Const = r1Const_;
             t10 = T1_mapper_.T1atVoxel(voxelIndex);
             if (!useRatio_)
-              s0 = T1_mapper_.S0atVoxel(voxelIndex);
+              s0 = T1_mapper_.M0atVoxel(voxelIndex);
             getSignalsFromVoxel(voxelIndex, signalData);
           }
           else
@@ -640,7 +640,7 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
             CtData,//dynConc
             noiseVar_,//noiseVar
             t10,//T10
-            s0,//S0
+            s0,//M0
             r1Const,//r1Const
             model_->AIF().prebolus(),//bolus_time
             dynamicTimes_,//dynamicTimings
@@ -764,7 +764,7 @@ MDM_API bool mdm_DCEVolumeAnalysis::createParameterMaps()
 	}
 
   //
-  if (outputCmod_)
+  if (outputCt_modod_)
   {
     const int &nDyns = getNDyns();
     CtModelMaps_.resize(nDyns);

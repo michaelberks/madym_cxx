@@ -27,7 +27,7 @@ public:
     DYN_T1_BAD = 1,
     CA_NAN = 2,
     T10_BAD = 3,
-    S0_BAD = 4
+    M0_BAD = 4
   };
 
 	//Force initialization with data required to make model fit? If so, make default constructor
@@ -43,7 +43,7 @@ public:
 		const std::vector<double> &dynConc,
     const std::vector<double> &noiseVar,
 		const double T10,
-		const double S01,
+		const double M01,
 		const double r1Const,
     const int bolus_time,
 		const std::vector<double> &dynamicTimings,
@@ -265,7 +265,7 @@ private:
 	/*METHODS*/
 
   /**
-  * @brief    Calculate dynamic T1 from S0 and dynamic signal intensity
+  * @brief    Calculate dynamic T1 from M0 and dynamic signal intensity
   * @param    t1_0  - Baseline T1 value
   * @param    st    - dynamic signal intensity
   * @param    s_pbm - prebolus mean dynamic signal intensity
@@ -279,7 +279,7 @@ private:
   double computeT1DynPBM(const double &st, const double &s_pbm, const double &cosfa, int &errorCode);
 
   /**
-  * @brief    Calculate dynamic T1 from S0 and dynamic signal intensity
+  * @brief    Calculate dynamic T1 from M0 and dynamic signal intensity
   * @param    s0    - M0 in signal intensity domain
   * @param    st    - dynamic signal intensity
   * @param    sinfa - sin(flip angle)
@@ -290,7 +290,7 @@ private:
   * @author   Gio Buonaccorsi
   * @version  1.21.alpha (12 August 2013)
   */
-  double computeT1DynS0(const double &st, const double & sinfa, const double & cosfa, int &errorCode);
+  double computeT1DynM0(const double &st, const double & sinfa, const double & cosfa, int &errorCode);
 
 	/**
 	* Pre-conditions:
@@ -386,7 +386,7 @@ private:
 	std::vector<double>					CtData_;				//DCE time series vector of signal-derived concentrations
   std::vector<double>					noiseVar_;			//DCE time series vector of estimated noise variance for each temporal volume
 	double								t10_;						//T1 value for this voxel
-	double								s0_;						//M0 (aka S0) value for this voxel - not used if using ratio method
+	double								s0_;						//M0 (aka M0) value for this voxel - not used if using ratio method
 	double								r1Const_;				//relaxivity constant of tissue 
   int                   bolus_time_;    //Time point of injection
 	std::vector<double>		IAUC_times_;		//Vector of times (in secs) at which to caclucate IAUC values (and the resulting values)
@@ -404,7 +404,7 @@ private:
 	//Flag to check if we're testing for enhancment
 	bool testEnhancement_;
 
-	//Flag to check if we use the ratio method for scaling signal or S0 computed alongside T1
+	//Flag to check if we use the ratio method for scaling signal or M0 computed alongside T1
 	bool useRatio_;
 
 	//Upper an lower bounds to use with optimiser

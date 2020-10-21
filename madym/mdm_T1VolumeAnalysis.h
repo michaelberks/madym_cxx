@@ -57,7 +57,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API void addS0Map(mdm_Image3D S0_img);
+	MDM_API void addM0Map(mdm_Image3D M0_img);
 
 		/**
 	* @brief
@@ -74,17 +74,17 @@ public:
 	*
 	* Post-conditions:
 	* -  T1 holds map of T1 values for the current slice, calculated from the three FA_* images
-	* -  S0 holds map of S0 values for the current slice, calculated from the three FA_* images
+	* -  M0 holds map of M0 values for the current slice, calculated from the three FA_* images
 	*
 	* Uses madym.h globals:
 	* -  first_image, second_image, third_image    (input only)
-	* -  T1value, S0value                          (output - values set)
-	* -  T1, S0 Imrect maps                        (output - values set)
+	* -  T1value, M0value                          (output - values set)
+	* -  T1, M0 Imrect maps                        (output - values set)
 	*
 	* Note:  NOT a stand-alone fn - see pre- and post-conditions, and it uses globals
 	*
 	* @author   GJM Parker
-	* @brief    Calculate T1 and S0 maps from the three pre-contrast flip angle image volumes (FA_*)
+	* @brief    Calculate T1 and M0 maps from the three pre-contrast flip angle image volumes (FA_*)
 	* @version  madym 1.21.alpha
 	*/
 		/**
@@ -115,7 +115,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API mdm_Image3D S0Map() const;
+	MDM_API mdm_Image3D M0Map() const;
 
 		/**
 	* @brief
@@ -131,7 +131,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API double S0atVoxel(int voxel) const;
+	MDM_API double M0atVoxel(int voxel) const;
 
 		/**
 	* @brief
@@ -169,7 +169,7 @@ private:
 	mdm_Image3D ROI_;
 
 	/* Output images */
-	mdm_Image3D T1_, S0_;
+	mdm_Image3D T1_, M0_;
 
 	//Reference to an error image. If we don't pass one as a constructor to the class
 	// a default empty image will be used

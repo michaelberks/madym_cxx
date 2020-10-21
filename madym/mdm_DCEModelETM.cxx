@@ -30,9 +30,9 @@ MDM_API mdm_DCEModelETM::mdm_DCEModelETM(
 {
   //Default values specific to tofts model
   if (pkParamNames_.empty())
-    pkParamNames_ = { "ktrans", "ve", "vp", "offset" };
+    pkParamNames_ = { "Ktrans", "v_e", "v_p", "tau_a" };
   if (pkInitParams_.empty())
-    pkInitParams_ = { 0.2, 0.2, 0.2, 0.0}; //{kin_, ve_, offset_, vp_, kout_}
+    pkInitParams_ = { 0.2, 0.2, 0.2, 0.0}; //
   if (optParamFlags_.empty())
     optParamFlags_ = { true, true, true, true };
   if (lowerBounds_.empty())
@@ -68,11 +68,11 @@ MDM_API void mdm_DCEModelETM::computeCtModel(int nTimes)
   const double &kTrans =   pkParams_[0];
   const double &ve =       pkParams_[1];
   const double &vp =       pkParams_[2];
-  const double &aoffset =  pkParams_[3];
+  const double &tau_a =  pkParams_[3];
 
   //Resample AIF and get AIF times (I don't usually like single letter variables
   //but to be consistent with paper formulae, use AIF times = t)
-  AIF_.resample_AIF(nTimes, aoffset);
+  AIF_.resample_AIF(nTimes, tau_a);
   const std::vector<double> Ca_t = AIF_.AIF();
   const std::vector<double> &t = AIF_.AIFTimes();
 

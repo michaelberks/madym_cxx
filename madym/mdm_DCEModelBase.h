@@ -215,6 +215,14 @@ public:
 	*/
 	MDM_API const std::vector<bool>&     optParamFlags() const;
 
+	/**
+* @brief
+
+* @param
+* @return
+*/
+	MDM_API const std::vector<double>&     relativeBounds() const;
+
   	/**
 	* @brief
 

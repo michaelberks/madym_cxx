@@ -10,6 +10,9 @@
 #include "mdm_version.h"
 #include <random>
 
+#define BOOST_CHECK_VECTORS(v1, v2) \
+	BOOST_CHECK_EQUAL_COLLECTIONS(v1.begin(), v1.end(), v2.begin(), v2.end());
+
 /**
 *  @brief   Header only class provides some utility methods for unit testing
 */

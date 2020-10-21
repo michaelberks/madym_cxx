@@ -26,6 +26,7 @@
 #include "madym_gui_processor.h"
 
 #include <mdm_RunTools.h>
+#include <mdm_InputOptions.h>
 #include <mdm_DCEModelBase.h>
 
 #include "ui_madym_gui.h"
@@ -50,6 +51,12 @@ signals:
   void series_to_process(int, bool);
   
 private slots:
+	// Menu file
+	void on_actionLoadConfigFile_triggered();
+	void on_actionSaveConfigFileDCE_triggered();
+	void on_actionSaveConfigFileT1_triggered();
+	void on_actionSaveConfigFileIF_triggered();
+	void on_actionExit_triggered();
 
 	//Main functions
 	void on_computeT1Button_clicked();
@@ -58,60 +65,67 @@ private slots:
   void on_outputStatsButton_clicked();
 
 	//DCE data options
-  void on_dceInputLineEdit_textChanged();
+  void on_dceInputLineEdit_textChanged(const QString &text);
   void on_dceInputSelect_clicked();
-  void on_dceNameLineEdit_textChanged();
-  void on_dceFormatLineEdit_textChanged();
-  void on_roiPathLineEdit_textChanged();
+  void on_dceNameLineEdit_textChanged(const QString &text);
+  void on_dceFormatLineEdit_textChanged(const QString &text);
+  void on_roiPathLineEdit_textChanged(const QString &text);
   void on_roiPathSelect_clicked();
+	void on_nDynSpinBox_valueChanged(int value);
+	void on_injectionImageSpinBox_valueChanged(int value);
 
   //T1 calculation options
   void on_t1MethodComboBox_currentIndexChanged(const QString &text);
   void on_t1InputTextEdit_textChanged();
   void on_t1InputSelect_clicked();
-  void on_t1ThresholdLineEdit_textChanged();
+  void on_t1ThresholdLineEdit_textChanged(const QString &text);
 
   //Signal to concentration_options
-  void on_r1LineEdit_textChanged();
-  void on_injectionImageSpinBox_valueChanged(int value);
-  void on_doseLineEdit_textChanged();
-  void on_hctLineEdit_textChanged();
-
-  //Baseline T1 options
   void on_s0UseRatioCheckBox_stateChanged(int state);
   void on_t1UsePrecomputedCheckBox_stateChanged(int state);
-  void on_t1VolLineEdit_textChanged();
+  void on_t1VolLineEdit_textChanged(const QString &text);
   void on_t1VolPathSelect_clicked();
-  void on_s0VolLineEdit_textChanged();
+  void on_s0VolLineEdit_textChanged(const QString &text);
   void on_s0VolPathSelect_clicked();
+	void on_r1LineEdit_textChanged(const QString &text);
 
   //Logging options
-  void on_logNameLineEdit_textChanged();
-  void on_errorCodesLineEdit_textChanged();
-  void on_auditNameLineEdit_textChanged();
-  void on_auditDirLineEdit_textChanged();
+  void on_logNameLineEdit_textChanged(const QString &text);
+  void on_errorCodesLineEdit_textChanged(const QString &text);
+  void on_auditNameLineEdit_textChanged(const QString &text);
+  void on_auditDirLineEdit_textChanged(const QString &text);
   void on_auditDirSelect_clicked();
 
   //AIF options
   void on_populationAIFCheckbox_stateChanged(int state);
-  void on_autoAIFPathLineEdit_textChanged();
+  void on_autoAIFPathLineEdit_textChanged(const QString &text);
   void on_autoAIFPathSelect_clicked();
   void on_populationPIFCheckbox_stateChanged(int state);
-  void on_autoPIFPathLineEdit_textChanged();
+  void on_autoPIFPathLineEdit_textChanged(const QString &text);
   void on_autoPIFPathSelect_clicked();
+	void on_doseLineEdit_textChanged(const QString &text);
+	void on_hctLineEdit_textChanged(const QString &text);
 
   //Output options
-  void on_outputDirLineEdit_textChanged();
+  void on_outputDirLineEdit_textChanged(const QString &text);
   void on_outputDirSelect_clicked();
-  void on_iaucTimesLineEdit_textChanged();
+  void on_iaucTimesLineEdit_textChanged(const QString &text);
+	void on_overwriteCheckBox_stateChanged(int state);
+	void on_outputCsCheckBox_stateChanged(int state);
+	void on_outputCmCheckBox_stateChanged(int state);
+	void on_sparseCheckBox_stateChanged(int state);
 
   //Model fitting
   void on_modelSelectComboBox_currentIndexChanged(const QString &text);
   void on_configureModelButton_clicked();
   void on_firstImageSpinBox_valueChanged(int value);
   void on_lastImageSpinBox_valueChanged(int value);
-  void on_optimiseFitCheckBox_stateChanged(int state);
-  void on_maxIterationsLineEdit_textChanged();
+  void on_temporalNoiseCheckBox_stateChanged(int state);
+	void on_optimiseFitCheckBox_stateChanged(int state);
+	void on_testEnhancementCheckBox_stateChanged(int state);
+  void on_maxIterationsLineEdit_textChanged(const QString &text);
+	void on_initMapsLineEdit_textChanged(const QString &text);
+	void on_initMapsDirSelect_clicked();
 
   //: Other slots
   void change_input_type(int type);
@@ -139,7 +153,8 @@ private: // Variables
 	QButtonGroup* inputTypeRadioGroup;
 
   //Options list
-  mdm_ToolsOptions madym_options_;
+  mdm_DefaultValues madym_options_;
+	mdm_InputOptions options_parser_;
 
   //model so we can configure model params
   mdm_DCEModelBase *model_;

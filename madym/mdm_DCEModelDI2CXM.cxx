@@ -27,7 +27,7 @@ MDM_API mdm_DCEModelDI2CXM::mdm_DCEModelDI2CXM(
 		relativeLimitValues)
 {
   if (pkParamNames_.empty())
-    pkParamNames_ = { "Fp", "PS", "v_e", "v_p", "fa", "aoffset", "voffset" };
+    pkParamNames_ = { "F_p", "PS", "v_e", "v_p", "f_a", "tau_a", "tau_v" };
   if (pkInitParams_.empty())
     pkInitParams_ = { 0.60,  0.2,  0.2,   0.2,    0.5,        0.0,      0.0};
   if (optParamFlags_.empty())
@@ -68,15 +68,15 @@ MDM_API void mdm_DCEModelDI2CXM::computeCtModel(int nTimes)
   const double &v_e = pkParams_[2];//extravascular, extracellular space
   const double &v_p = pkParams_[3];//plasma volume*/
   const double &f_a = pkParams_[4];//the arterial fraction
-  const double &aoffset = pkParams_[5];//AIF delay
-  const double &voffset = pkParams_[6];//the arterial fraction
+  const double &tau_a = pkParams_[5];//AIF delay
+  const double &tau_v = pkParams_[6];//the arterial fraction
   double f_v = 1 - f_a; // estimate of hepatic portal venous fraction
   const double KMAX = 1e9;
 
   //Get AIF and PIF, labelled in model equation as Ca_t and Cv_t
   //Resample AIF and get AIF times
-  AIF_.resample_AIF(nTimes, aoffset);
-  AIF_.resample_PIF(nTimes, voffset, false, true);
+  AIF_.resample_AIF(nTimes, tau_a);
+  AIF_.resample_PIF(nTimes, tau_v, false, true);
   const std::vector<double> Ca_t = AIF_.AIF();
   const std::vector<double> Cv_t = AIF_.PIF();
   const std::vector<double> &AIFtimes = AIF_.AIFTimes();

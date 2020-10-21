@@ -103,13 +103,13 @@ void run_test_madym_lite()
 	std::stringstream cmd;
 	cmd << mdm_test_utils::tools_exe_dir() << "madym_lite"
 		<< " -m ETM"
-		<< " -d " << inputDataFile
+		<< " --data " << inputDataFile
 		<< " -n " << nTimes
-		<< " -iauc " << IAUC_str
+		<< " -I " << IAUC_str
 		<< " -i " << injectionImage
 		<< " -o " << Ct_output_dir
 		<< " -O " << outputName
-		<< " -Cin"
+		<< " --Ct"
 		<< " -t " << dynTimesFile;
 
 	std::cout << "Command to run: " << cmd.str() << std::endl;

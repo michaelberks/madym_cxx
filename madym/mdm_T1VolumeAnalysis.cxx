@@ -64,9 +64,9 @@ MDM_API void mdm_T1VolumeAnalysis::addT1Map(mdm_Image3D T1_img)
 	T1_ = T1_img;
 }
 
-MDM_API void mdm_T1VolumeAnalysis::addS0Map(mdm_Image3D S0_img)
+MDM_API void mdm_T1VolumeAnalysis::addM0Map(mdm_Image3D M0_img)
 {
-	S0_ = S0_img;
+	M0_ = M0_img;
 }
 
 MDM_API void mdm_T1VolumeAnalysis::addROI(mdm_Image3D ROI)
@@ -81,20 +81,20 @@ MDM_API void mdm_T1VolumeAnalysis::addROI(mdm_Image3D ROI)
  *
  * Post-conditions:
  * -  T1 holds map of T1 values for the current slice, calculated from the three FA_* images
- * -  S0 holds map of S0 values for the current slice, calculated from the three FA_* images
+ * -  M0 holds map of M0 values for the current slice, calculated from the three FA_* images
  *
  * Uses mdm_permFit.c file-scope static:
  * -  noise_threshold                           (input only - via its accessor function)
  *
  * Uses madym.h globals:
  * -  first_image, second_image, third_image    (input only)
- * -  T1value, S0value                          (output - values set)
- * -  T1, S0 maps                               (output - values set)
+ * -  T1value, M0value                          (output - values set)
+ * -  T1, M0 maps                               (output - values set)
  *
  * Note:  NOT a stand-alone fn - see pre- and post-conditions, and it uses madym.h globals
  *
  * @author   GJM Parker with structural mods by Gio Buonaccorsi
- * @brief    Calculate T1 and S0 maps from the three pre-contrast flip angle image volumes (FA_*)
+ * @brief    Calculate T1 and M0 maps from the three pre-contrast flip angle image volumes (FA_*)
  * @version  madym 1.20
  */
 MDM_API void mdm_T1VolumeAnalysis::T1_mapVarFlipAngle()
@@ -120,17 +120,17 @@ MDM_API void mdm_T1VolumeAnalysis::T1_mapVarFlipAngle()
    * assumption is never tested.  It would robustify the code to include tests at the file-reading stage.
    */
 
-	//MB T1_ and S0_ are no longer globals - they're member variables and must be accessed as such from other
+	//MB T1_ and M0_ are no longer globals - they're member variables and must be accessed as such from other
 	//calling functions
 	T1_.copyFields(FA_images_[0]);
 	T1_.setType(mdm_Image3D::imageType::TYPE_T1BASELINE);
   
-  S0_.copyFields(FA_images_[0]);
-  S0_.setType(mdm_Image3D::imageType::TYPE_S0MAP);
+  M0_.copyFields(FA_images_[0]);
+  M0_.setType(mdm_Image3D::imageType::TYPE_M0MAP);
 
   /* Loop through images having fun ... */
 	int nX, nY, nZ;
-	S0_.getMatrixDims(nX, nY, nZ);
+	M0_.getMatrixDims(nX, nY, nZ);
 
 	//Get flip angles (and convert to radians) of the images we've got
 	std::vector<double> FAs;
@@ -169,9 +169,9 @@ MDM_API void mdm_T1VolumeAnalysis::T1_mapVarFlipAngle()
 				//TODO - MB, why only check the first signal?				
         if (signal[0] > noiseThreshold_)
         {
-          double T1, S0;
+          double T1, M0;
           T1Calculator.setSignals(signal);
-					errCode = T1Calculator.fitT1_VFA(T1, S0);
+					errCode = T1Calculator.fitT1_VFA(T1, M0);
 
           if (errCode != mdm_ErrorTracker::OK)
           {
@@ -180,7 +180,7 @@ MDM_API void mdm_T1VolumeAnalysis::T1_mapVarFlipAngle()
           }
           /* ... and use them to fill the image maps. */
           T1_.setVoxel(voxelIndex, T1);
-          S0_.setVoxel(voxelIndex, S0);
+          M0_.setVoxel(voxelIndex, M0);
         }
         else
         {
@@ -212,9 +212,9 @@ MDM_API mdm_Image3D mdm_T1VolumeAnalysis::T1Map() const
 {
 	return T1_;
 }
-MDM_API mdm_Image3D mdm_T1VolumeAnalysis::S0Map() const
+MDM_API mdm_Image3D mdm_T1VolumeAnalysis::M0Map() const
 {
-	return S0_;
+	return M0_;
 }
 
 MDM_API double mdm_T1VolumeAnalysis::T1atVoxel(int voxel) const
@@ -222,15 +222,15 @@ MDM_API double mdm_T1VolumeAnalysis::T1atVoxel(int voxel) const
 	return T1_.getVoxel(voxel);
 }
 
-MDM_API double mdm_T1VolumeAnalysis::S0atVoxel(int voxel) const
+MDM_API double mdm_T1VolumeAnalysis::M0atVoxel(int voxel) const
 {
-	return S0_.getVoxel(voxel);
+	return M0_.getVoxel(voxel);
 }
 
 MDM_API void mdm_T1VolumeAnalysis::zeroVoxel(int voxel)
 {
 	T1_.setVoxel(voxel, 0);
-	S0_.setVoxel(voxel, 0);
+	M0_.setVoxel(voxel, 0);
 }
 
 MDM_API double  mdm_T1VolumeAnalysis::noiseThreshold() const

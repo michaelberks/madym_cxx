@@ -16,228 +16,25 @@
 
 #include <madym/mdm_ProgramLogger.h>
 
-#include <boost/filesystem.hpp>
-
 namespace fs = boost::filesystem;
 
-const std::string mdm_ToolsOptions::empty_str = "<>";
-
-template < class T >
-inline std::ostream& operator << (std::ostream& os, const std::vector<T>& v)
-{
-	os << "[ " << v.size() << " :";
-	for (const auto ii : v)
-		os << " " << ii;
-	
-	os << " ]";
-	return os;
-}
-
-template < class T >
-inline std::istream& operator >> (std::istream& is, std::vector<T>& v)
-{
-	std::string s;
-	int n;
-
-	//Get the opening brace
-	is >> s;
-
-	//Get the number of elements
-	is >> n;
-
-	//Get the :
-	is >> s;
-
-	v.resize(n);
-	for (auto &element : v)
-		is >> element;
-
-	//Get the closing brace
-	is >> s;
-	return is;
-}
-
-inline std::istream& read_str(std::istream& is, std::string& s)
-{
-	is >> s;
-	if (s == mdm_ToolsOptions::empty_str)
-		s.clear();
-	return is;
-}
 
 //
-MDM_API bool mdm_ToolsOptions::to_stream(std::ostream &stream) const
-{
-	stream 
-		<< "configFile " << configFile << "\n"
-		<< "dataDir " << dataDir << "\n"
-		<< "inputCt " << inputCt << "\n"
-		<< "dynDir " << (dynDir.empty() ? mdm_ToolsOptions::empty_str : dynDir) << "\n"
-		<< "dynName " << (dynName.empty() ? mdm_ToolsOptions::empty_str : dynName) << "\n"
-		<< "dynFormat " << (dynFormat.empty() ? mdm_ToolsOptions::empty_str : dynFormat) << "\n"
-		<< "roiName " << (roiName.empty() ? mdm_ToolsOptions::empty_str : roiName) << "\n"
-		<< "inputDataFile " << (inputDataFile.empty() ? mdm_ToolsOptions::empty_str : inputDataFile) << "\n"
-		<< "dynTimesFile " << (dynTimesFile.empty() ? mdm_ToolsOptions::empty_str : dynTimesFile) << "\n"
-		<< "nDyns " << nDyns << "\n"
-		<< "T1method " << (T1method.empty() ? mdm_ToolsOptions::empty_str : T1method) << "\n"
-		<< "T1inputNames " << T1inputNames << "\n"
-		<< "T1noiseThresh " << T1noiseThresh << "\n"
-		<< "r1Const " << r1Const << "\n"
-		<< "injectionImage " << injectionImage << "\n"
-		<< "dose " << dose << "\n"
-		<< "hct " << hct << "\n"
-		<< "TR " << TR << "\n"
-		<< "FA " << FA << "\n"
-		<< "T1Name " << (T1Name.empty() ? mdm_ToolsOptions::empty_str : T1Name) << "\n"
-		<< "S0Name " << (S0Name.empty() ? mdm_ToolsOptions::empty_str : S0Name) << "\n"
-		<< "useRatio " << useRatio << "\n"
-		<< "errorCodesName " << (errorCodesName.empty() ? mdm_ToolsOptions::empty_str : errorCodesName) << "\n"
-		<< "programLogName " << (programLogName.empty() ? mdm_ToolsOptions::empty_str : programLogName) << "\n"
-		<< "auditLogBaseName " << (auditLogBaseName.empty() ? mdm_ToolsOptions::empty_str : auditLogBaseName) << "\n"
-		<< "auditLogDir " << (auditLogDir.empty() ? mdm_ToolsOptions::empty_str : auditLogDir) << "\n"
-		<< "aifName " << (aifName.empty() ? mdm_ToolsOptions::empty_str : aifName) << "\n"
-		<< "pifName " << (pifName.empty() ? mdm_ToolsOptions::empty_str : pifName) << "\n"
-		<< "aifSlice " << aifSlice << "\n"
-		<< "outputDir " << (outputDir.empty() ? mdm_ToolsOptions::empty_str : outputDir) << "\n"
-		<< "outputName " << (outputName.empty() ? mdm_ToolsOptions::empty_str : outputName) << "\n"
-		<< "overwrite " << overwrite << "\n"
-		<< "outputCt " << outputCt << "\n"
-		<< "outputCm " << outputCm << "\n"
-		<< "sparseWrite " << sparseWrite << "\n"
-		<< "IAUCTimes " << IAUCTimes << "\n"
-		<< "model " << (model.empty() ? mdm_ToolsOptions::empty_str : model) << "\n"
-		<< "initParams " << initParams << "\n"
-		<< "initMapsDir " << (initMapsDir.empty() ? mdm_ToolsOptions::empty_str : initMapsDir) << "\n"
-		<< "initMapParams " << initMapParams << "\n"
-		<< "initParamsFile " << (initParamsFile.empty() ? mdm_ToolsOptions::empty_str : initParamsFile) << "\n"
-		<< "paramNames " << paramNames << "\n"
-		<< "fixedParams " << fixedParams << "\n"
-		<< "fixedValues " << fixedValues << "\n"
-		<< "relativeLimitParams " << relativeLimitParams << "\n"
-		<< "relativeLimitValues " << relativeLimitValues << "\n"
-		<< "firstImage " << firstImage << "\n"
-		<< "lastImage " << lastImage << "\n"
-		<< "noOptimise " << noOptimise << "\n"
-		<< "dynNoise " << dynNoise << "\n"
-		<< "dynNoiseFile " << (dynNoiseFile.empty() ? mdm_ToolsOptions::empty_str : dynNoiseFile) << "\n"
-		<< "noEnhFlag " << noEnhFlag << "\n"
-		<< "maxIterations " << maxIterations;
-	return true;
-}
-
-//
-MDM_API bool mdm_ToolsOptions::to_file(const std::string &filename) const
-{
-	std::ofstream filestream(filename, std::ios::out);
-	if (!filestream.is_open())
-		return false;
-	to_stream(filestream);
-
-	filestream.close();
-	return true;
-}
-
-//
-MDM_API bool mdm_ToolsOptions::from_file(const std::string &filename)
-{
-	std::ifstream ifs(filename, std::ios::in);
-
-	if (!ifs.is_open())
-		return false;
-	
-	const int MAXLEN = 255;
-	std::string str;
-	char *line = new char[MAXLEN];
-
-	while (ifs >> std::ws, !ifs.eof())
-	{
-		(ifs) >> str;
-		if (!str.compare(0, 2, "//"))
-		{
-			// Comment line, so read to end
-			ifs.getline(line, MAXLEN);
-			std::cout << "Comment read from file: " << line << std::endl;
-		}
-		else if (str == "configFile")				{ read_str(ifs, configFile); }
-		else if (str == "dataDir")					{ read_str(ifs, dataDir); }
-		else if (str == "inputCt")					{ (ifs) >> inputCt; }
-		else if (str == "dynDir")						{ read_str(ifs, dynDir); }
-		else if (str == "dynName")					{ read_str(ifs, dynName); }
-		else if (str == "dynFormat")				{ read_str(ifs, dynFormat); }
-		else if (str == "roiName")					{ read_str(ifs, roiName); }
-		else if (str == "inputDataFile")		{ read_str(ifs, inputDataFile); }
-		else if (str == "dynTimesFile")			{ read_str(ifs, dynTimesFile); }
-		else if (str == "nDyns")						{ (ifs) >> nDyns; }
-		else if (str == "T1method")					{ read_str(ifs, T1method); }
-		else if (str == "T1inputNames")			{ (ifs) >> T1inputNames; }
-		else if (str == "T1noiseThresh")		{ (ifs) >> T1noiseThresh; }
-		else if (str == "r1Const")					{ (ifs) >> r1Const; }
-		else if (str == "injectionImage")		{ (ifs) >> injectionImage; }
-		else if (str == "dose")							{ (ifs) >> dose; }
-		else if (str == "hct")							{ (ifs) >> hct; }
-		else if (str == "TR")								{ (ifs) >> TR; }
-		else if (str == "FA")								{ (ifs) >> FA; }
-		else if (str == "T1Name")						{ read_str(ifs, T1Name); }
-		else if (str == "S0Name")						{ read_str(ifs, S0Name); }
-		else if (str == "useRatio")					{ (ifs) >> useRatio; }
-		else if (str == "errorCodesName")		{ read_str(ifs, errorCodesName); }
-		else if (str == "programLogName") { read_str(ifs, programLogName); }
-		else if (str == "auditLogBaseName") { read_str(ifs, auditLogBaseName); }
-		else if (str == "auditLogDir")			{ read_str(ifs, auditLogDir); }
-		else if (str == "aifName")					{ read_str(ifs, aifName); }
-		else if (str == "pifName")					{ read_str(ifs, pifName); }
-		else if (str == "aifSlice")					{ (ifs) >> aifSlice; }
-		else if (str == "outputDir")				{ read_str(ifs, outputDir); }
-		else if (str == "outputName")				{ read_str(ifs, outputName); }
-		else if (str == "overwrite")				{ (ifs) >> overwrite; }
-		else if (str == "outputCt")					{ (ifs) >> outputCt; }
-		else if (str == "outputCm")					{ (ifs) >> outputCm; }
-		else if (str == "sparseWrite")			{ (ifs) >> sparseWrite; }
-		else if (str == "IAUCTimes")				{ (ifs) >> IAUCTimes; }
-		else if (str == "model")						{ read_str(ifs, model); }
-		else if (str == "initParams")				{ (ifs) >> initParams; }
-		else if (str == "initMapsDir")			{ read_str(ifs, initMapsDir); }
-		else if (str == "initMapParams")		{ (ifs) >> initMapParams; }
-		else if (str == "initParamsFile")		{ read_str(ifs, initParamsFile); }
-		else if (str == "paramNames")				{ (ifs) >> paramNames; }
-		else if (str == "fixedParams")			{ (ifs) >> fixedParams; }
-		else if (str == "fixedValues")			{ (ifs) >> fixedValues; }
-		else if (str == "relativeLimitParams") { (ifs) >> relativeLimitParams; }
-		else if (str == "relativeLimitValues") { (ifs) >> relativeLimitValues; }
-		else if (str == "firstImage")				{ (ifs) >> firstImage; }
-		else if (str == "lastImage")				{ (ifs) >> lastImage; }
-		else if (str == "noOptimise")				{ (ifs) >> noOptimise; }
-		else if (str == "dynNoise")					{ (ifs) >> dynNoise; }
-		else if (str == "dynNoiseFile")			{ read_str(ifs, dynNoiseFile); }
-		else if (str == "noEnhFlag")				{ (ifs) >> noEnhFlag; }
-		else if (str == "maxIterations")		{ (ifs) >> maxIterations; }
-		else
-			std::cout << "Label" << str << " not recognised." << std::endl;
-
-	}
-	(ifs).close();
-
-	//Tidy up and return
-	delete[] line;
-	return true;
-	return true;
-}
-
-//
-MDM_API mdm_RunTools::mdm_RunTools(mdm_ToolsOptions &options)
+MDM_API mdm_RunTools::mdm_RunTools(mdm_DefaultValues &options, mdm_InputOptions &options_parser)
   :
   T1Mapper_(errorTracker_),
   volumeAnalysis_(errorTracker_, T1Mapper_),
   model_(NULL),
   fileManager_(AIF_, T1Mapper_, volumeAnalysis_, errorTracker_),
-  options_(options)
+  options_(options),
+	options_parser_(options_parser)
 {
 	//Make the audit log absolute before we change directory
-	options_.auditLogDir = fs::absolute(options_.auditLogDir).string();
+	options_.auditLogDir.set( fs::absolute(options_.auditLogDir()).string() );
 
 	//If dataDir is set in the options, change the current path to this
-	if (!options_.dataDir.empty())
-		fs::current_path(fs::absolute(options_.dataDir));
+	if (!options_.dataDir().empty())
+		fs::current_path(fs::absolute(options_.dataDir()));
 }
 
 
@@ -252,65 +49,64 @@ MDM_API mdm_RunTools::~mdm_RunTools()
 * @version  madym 2.2+
 * @param    msg   String message to print on exit
 */
-MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::string &exeString)
+MDM_API int mdm_RunTools::run_DCEFit()
 {
-  exeString_ = exeString;
 
-  if (options_.model.empty())
+  if (options_.model().empty())
   {
     mdm_progAbort("model (option -m) must be provided");
   }
 
-  if (options_.outputDir.empty())
+  if (options_.outputDir().empty())
   {
     mdm_progAbort("output directory (option -o) must be provided");
   }
 
-  if (!options_.T1Name.empty() && options_.T1Name.at(0) == '-')
+  if (!options_.T1Name().empty() && options_.T1Name().at(0) == '-')
     mdm_progAbort("Error no value associated with T1 map name from command-line");
 
-  if (!options_.S0Name.empty() && options_.S0Name.at(0) == '-')
-    mdm_progAbort("Error no value associated with S0 map name from command-line");
+  if (!options_.M0Name().empty() && options_.M0Name().at(0) == '-')
+    mdm_progAbort("Error no value associated with M0 map name from command-line");
 
-  if (!options_.dynName.empty() && options_.dynName.at(0) == '-')
+  if (!options_.dynName().empty() && options_.dynName().at(0) == '-')
     mdm_progAbort("Error no value associated with dynamic series file name from command-line");
 
   //Set parameters in data objects from user input
-  fileManager_.setWriteCtDataMaps(options_.outputCt);
-  fileManager_.setWriteCtModelMaps(options_.outputCm);
-	fileManager_.setSparseWrite(options_.sparseWrite);
+  fileManager_.setWriteCtDataMaps(options_.outputCt_sig());
+  fileManager_.setWriteCtModelMaps(options_.outputCt_mod());
+	fileManager_.setSparseWrite(options_.sparseWrite());
 
-  AIF_.setPrebolus(options_.injectionImage);
-  AIF_.setHct(options_.hct);
-  AIF_.setDose(options_.dose);
+  AIF_.setPrebolus(options_.injectionImage());
+  AIF_.setHct(options_.hct());
+  AIF_.setDose(options_.dose());
 
   //Set which type of model we're using
-  setModel(options_.model, !options_.aifName.empty(), !options_.pifName.empty(),
-    options_.paramNames, options_.initParams, 
-		options_.fixedParams, options_.fixedValues,
-		options_.relativeLimitParams, options_.relativeLimitValues);
+  setModel(options_.model(), !options_.aifName().empty(), !options_.pifName().empty(),
+    options_.paramNames(), options_.initParams(),
+		options_.fixedParams(), options_.fixedValues(),
+		options_.relativeLimitParams(), options_.relativeLimitValues());
 
-  volumeAnalysis_.setComputeCt(!options_.inputCt);
-  volumeAnalysis_.setOutputCt(options_.outputCt);
-  volumeAnalysis_.setOutputCmod(options_.outputCm);
-  volumeAnalysis_.setRelaxCoeff(options_.r1Const);
-  volumeAnalysis_.setTestEnhancement(!options_.noEnhFlag);
-  volumeAnalysis_.setUseNoise(options_.dynNoise);
-  volumeAnalysis_.setUseRatio(options_.useRatio);
-  if (options_.firstImage)
-    volumeAnalysis_.setFirstImage(options_.firstImage - 1);
-  if (options_.lastImage > 0)
-    volumeAnalysis_.setLastImage(options_.lastImage);
+  volumeAnalysis_.setComputeCt(!options_.inputCt());
+  volumeAnalysis_.setOutputCt(options_.outputCt_sig());
+  volumeAnalysis_.setOutputCmod(options_.outputCt_mod());
+  volumeAnalysis_.setRelaxCoeff(options_.r1Const());
+  volumeAnalysis_.setTestEnhancement(options_.testEnhancement());
+  volumeAnalysis_.setUseNoise(options_.dynNoise());
+  volumeAnalysis_.setUseRatio(options_.M0Ratio());
+  if (options_.firstImage())
+    volumeAnalysis_.setFirstImage(options_.firstImage() - 1);
+  if (options_.lastImage() > 0)
+    volumeAnalysis_.setLastImage(options_.lastImage());
 
-  T1Mapper_.setNoiseThreshold(options_.T1noiseThresh);
+  T1Mapper_.setNoiseThreshold(options_.T1noiseThresh());
 
   //If these are empty, the defaults 60, 90, 120 will be set in volumeAnalysis
-  if (!options_.IAUCTimes.empty())
-    volumeAnalysis_.setIAUCtimes(options_.IAUCTimes);
+  if (!options_.IAUCTimes().empty())
+    volumeAnalysis_.setIAUCtimes(options_.IAUCTimes());
 
   //Using boost filesyetm, can call one line to make absolute path from input
   //regardless of whether relative or absolute path has been given
-  fs::path outputPath = fs::absolute(options_.outputDir);
+  fs::path outputPath = fs::absolute(options_.outputDir());
 
   //We probably don't need to check if directory exists, just call create... regardless
   //but we do so anyway
@@ -318,42 +114,13 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
     create_directories(outputPath);
 
   /* If we've got this file already warn user of previous analysis and quit */
-  if (!options_.overwrite && !is_empty(outputPath))
+  if (!options_.overwrite() && !is_empty(outputPath))
   {
     mdm_progAbort("Output directory is not empty (use option -O to overwrite existing data)");
   }
 
-  //Set up paths to error image and audit logs, using default names if not user supplied
-  // and using boost::filesystem to make absolute paths
-	std::string auditName = exeString_ + timeNow() + options_.auditLogBaseName;
-	std::string programName = exeString_ + timeNow() + options_.programLogName;
-	std::string configName = exeString_ + timeNow() + options_.outputConfigFileName;
-
-  fs::path errorCodesPath = outputPath / options_.errorCodesName;
-  fs::path programLogPath = outputPath / programName;
-	fs::path configFilePath = outputPath / configName;
-
-  //Note the default audit path doesn't use the output directory (unless user specifically set so)
-	fs::path auditDir = fs::absolute(options_.auditLogDir);
-	if (!is_directory(auditDir))
-		create_directories(auditDir);
-  fs::path auditPath = auditDir / auditName;
-
-	std::string caller = exeString_ + " " + MDM_VERSION;
-  mdm_ProgramLogger::openAuditLog(auditPath.string(), caller);
-	mdm_ProgramLogger::logAuditMessage("Command args: " + exe_args);
-	mdm_ProgramLogger::openProgramLog(programLogPath.string(), caller);
-	mdm_ProgramLogger::logProgramMessage("Command args: " + exe_args);
-	std::cout << "Opened audit log at " << auditPath.string() << std::endl;
-
-	//Save the config file of input options
-	options_.to_file(configFilePath.string());
-
-  //Log location of program log and config file in audit log
-	mdm_ProgramLogger::logAuditMessage(
-    "Program log saved to " + programLogPath.string() + "\n");
-	mdm_ProgramLogger::logAuditMessage(
-		"Config file saved to " + configFilePath.string() + "\n");
+  //Set up logging trail
+	set_up_logging(outputPath);
 
   /*
   *  Now it's time for the fun ...
@@ -365,9 +132,9 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
   *  5.  Fit model (unless user has requested no fit)
   */
 
-  if (!options_.roiName.empty())
+  if (!options_.roiName().empty())
   {
-    std::string roiPath = fs::absolute(options_.roiName).string();
+    std::string roiPath = fs::absolute(options_.roiName()).string();
     if (!fileManager_.loadROI(roiPath))
     {
       mdm_progAbort("error loading ROI");
@@ -376,10 +143,10 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
 
   /*Load in all the required images for madym processing. The user has 4 options:
   1) Process everything from scratch:
-  - Need paths to variable flip angle images to compute T1 and S0
+  - Need paths to variable flip angle images to compute T1 and M0
   - Need path to dynamic images folder and the prefix with which the dynamic images are labelled
   to compute concentration images
-  2) Load existing T1 and S0, use baseline S0 to scale signals
+  2) Load existing T1 and M0, use baseline M0 to scale signals
   - Need dynamic images
   3) Load existing T1, use ratio method to scale signals
   4) Load existing concentration images
@@ -388,17 +155,18 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
 	
 	//Before we start, try and load an errorImage, this allows us to add
 	//to any existing errors in a re-analysis
+	fs::path errorCodesPath = outputPath / options_.errorCodesName();
 	fileManager_.loadErrorImage(errorCodesPath.string());
 
   //Check for case 4: load pre-computed concentration maps
-  if (options_.inputCt)
+  if (options_.inputCt())
   {
-    fs::path catPath = fs::absolute(fs::path(options_.dynDir) / options_.dynName);
+    fs::path catPath = fs::absolute(fs::path(options_.dynDir()) / options_.dynName());
     std::string catPrefix = catPath.filename().string();
     std::string catBasePath = catPath.remove_filename().string();
     if (!catBasePath.empty() && !catPrefix.empty())
     {
-      if (!fileManager_.loadCtDataMaps(catBasePath, catPrefix, options_.nDyns))
+      if (!fileManager_.loadCtDataMaps(catBasePath, catPrefix, options_.nDyns()))
       {
         mdm_progAbort("error loading catMaps");
       }
@@ -410,7 +178,7 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
   }
   else
   {
-    fs::path dynPath = fs::absolute(fs::path(options_.dynDir) / options_.dynName);
+    fs::path dynPath = fs::absolute(fs::path(options_.dynDir()) / options_.dynName());
     std::string dynPrefix = dynPath.filename().string();
     std::string dynBasePath = dynPath.remove_filename().string();
 
@@ -423,59 +191,59 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
       }
 
       //Load the dynamic image
-      if (!fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns))
+      if (!fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns()))
       {
         mdm_progAbort("error loading dynamic images");
       }
     }
 
     //Now check if we've suuplied an existing T1 map
-    if (!options_.T1Name.empty())
+    if (!options_.T1Name().empty())
     {
-      fs::path T1Path = fs::absolute(options_.T1Name);
+      fs::path T1Path = fs::absolute(options_.T1Name());
       if (!fileManager_.loadT1Image(T1Path.string()))
       {
         mdm_progAbort("error loading T1 map");
       }
 
-      //Now check for cases 2 and 3, if useBaselineS0 is true
-      //we need both S0 and T1, otherwise we can just use T1
-      if (!options_.useRatio)
+      //Now check for cases 2 and 3, if useBaselineM0 is true
+      //we need both M0 and T1, otherwise we can just use T1
+      if (!options_.M0Ratio())
       {
 
-        if (options_.S0Name.empty())
+        if (options_.M0Name().empty())
         {
-          mdm_progAbort("S0MapFlag set to true, but path to S0 not set");
+          mdm_progAbort("M0MapFlag set to true, but path to M0 not set");
         }
-        //Otherwise load S0 and return
-        fs::path S0Path = fs::absolute(options_.S0Name);
-        if (!fileManager_.loadS0Image(S0Path.string()))
+        //Otherwise load M0 and return
+        fs::path M0Path = fs::absolute(options_.M0Name());
+        if (!fileManager_.loadM0Image(M0Path.string()))
         {
-          mdm_progAbort("error loading S0 map");
+          mdm_progAbort("error loading M0 map");
         }
       }
     }
     else
     {
       //We need to load FA images
-      if (options_.T1inputNames.size() < mdm_T1Voxel::MINIMUM_FAS)
+      if (options_.T1inputNames().size() < mdm_T1Voxel::MINIMUM_FAS)
       {
         mdm_progAbort("Not enough variable flip angle file names");
       }
-      else if (options_.T1inputNames.size() > mdm_T1Voxel::MAXIMUM_FAS)
+      else if (options_.T1inputNames().size() > mdm_T1Voxel::MAXIMUM_FAS)
       {
         mdm_progAbort("Too many variable flip angle file names");
       }
 
       std::vector<std::string> T1inputPaths(0);
-      for (std::string fa : options_.T1inputNames)
+      for (std::string fa : options_.T1inputNames())
         T1inputPaths.push_back(fs::absolute(fa).string());
 
       if (!fileManager_.loadFAImages(T1inputPaths))
       {
         mdm_progAbort("error loading input images for baseline T1 calculation");
       }
-      //FA images loaded, try computing T1 and S0 maps
+      //FA images loaded, try computing T1 and M0 maps
       T1Mapper_.T1_mapVarFlipAngle();
     }
   }
@@ -486,36 +254,36 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
     /*Load the AIF from file if using model VP auto
     *must do this *after* loading either dynamic signals or concentration maps
     */
-    if (!options_.aifName.empty())
+    if (!options_.aifName().empty())
     {
-      std::string aifPath = fs::absolute(options_.aifName).string();
+      std::string aifPath = fs::absolute(options_.aifName()).string();
       if (aifPath.empty())
       {
-        mdm_progAbort(options_.model + " chosen as model but no AIF filename set");
+        mdm_progAbort(options_.model() + " chosen as model but no AIF filename set");
       }
       if (!fileManager_.loadAIF(aifPath))
       {
-        mdm_progAbort("error loading AIF for model " + options_.model);
+        mdm_progAbort("error loading AIF for model " + options_.model());
       }
     }
-    if (!options_.pifName.empty())
+    if (!options_.pifName().empty())
     {
-      std::string pifPath = fs::absolute(options_.pifName).string();
+      std::string pifPath = fs::absolute(options_.pifName()).string();
       if (pifPath.empty())
       {
-        mdm_progAbort(options_.model + " chosen as model but no AIF filename set");
+        mdm_progAbort(options_.model() + " chosen as model but no AIF filename set");
       }
       if (!fileManager_.loadPIF(pifPath))
       {
-        mdm_progAbort("error loading PIF for model " + options_.model);
+        mdm_progAbort("error loading PIF for model " + options_.model());
       }
     }
 
     //If supplied with initial maps, load these now
     bool paramMapsInitialised = false;
-    if (!options_.initMapsDir.empty())
+    if (!options_.initMapsDir().empty())
     {
-      fs::path initMapsPath = fs::absolute(options_.initMapsDir);
+      fs::path initMapsPath = fs::absolute(options_.initMapsDir());
       if (!fileManager_.loadParameterMaps(initMapsPath.string()))
       {
         mdm_progAbort("error loading parameter maps");
@@ -525,11 +293,11 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
 
     /*If we're here, then we should have either:
     1) A set of concentration images in volumeAnalysis OR
-    2) A set of dynamic images and a T1 map and either an S0 map or the use baseline S0 flag set to false*/
+    2) A set of dynamic images and a T1 map and either an M0 map or the use baseline M0 flag set to false*/
 
     /* Finally, we can do the actual model fitting inside volumeAnalysis */
     bool modelsFitted =
-      volumeAnalysis_.fitDCEModel(paramMapsInitialised, !options_.noOptimise, options_.initMapParams);
+      volumeAnalysis_.fitDCEModel(paramMapsInitialised, !options_.noOptimise(), options_.initMapParams());
 
     if (!modelsFitted)
     {
@@ -553,30 +321,29 @@ MDM_API int mdm_RunTools::run_DCEFit(const std::string &exe_args, const std::str
 }
 
 //
-MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std::string &exeString)
+MDM_API int mdm_RunTools::run_DCEFit_lite()
 {
-	exeString_ = exeString;
 
-	if (options_.model.empty())
+	if (options_.model().empty())
 	{
 		mdm_progAbort("model (option -m) must be provided");
 	}
-	if (options_.inputDataFile.empty())
+	if (options_.inputDataFile().empty())
 	{
 		mdm_progAbort("input data file (option -i) must be provided");
 	}
-	if (!options_.nDyns)
+	if (!options_.nDyns())
 	{
 		mdm_progAbort("number of dynamics (option -n) must be provided");
 	}
-	if (options_.outputDir.empty())
+	if (options_.outputDir().empty())
 	{
 		mdm_progAbort("output directory (option -o) must be provided");
 	}
 
 	//Using boost filesyetm, can call one line to make absolute path from input
 	//regardless of whether relative or absolute path has been given
-	fs::path outPath = fs::absolute(options_.outputDir);
+	fs::path outPath = fs::absolute(options_.outputDir());
 
 	//We probably don't need to check if directory exists, just call create... regardless
 	//but we do so anyway
@@ -584,7 +351,7 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 		create_directories(outPath);
 
 	std::string outputDataFile = outPath.string() + "/" + 
-		options_.model + "_" + options_.outputName;
+		options_.model() + "_" + options_.outputName();
 
 	/*
 	 *  Now it's time for the fun ...
@@ -596,32 +363,32 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 	 */
 
 	//Set which type of model we're using
-	setModel(options_.model, 
-		!options_.aifName.empty(), !options_.pifName.empty(),
-		options_.paramNames, options_.initParams, 
-		options_.fixedParams, options_.fixedValues,
-		options_.relativeLimitParams, options_.relativeLimitValues);
-	AIF_.setPrebolus(options_.injectionImage);
-	AIF_.setHct(options_.hct);
-	AIF_.setDose(options_.dose);
+	setModel(options_.model(),
+		!options_.aifName().empty(), !options_.pifName().empty(),
+		options_.paramNames(), options_.initParams(),
+		options_.fixedParams(), options_.fixedValues(),
+		options_.relativeLimitParams(), options_.relativeLimitValues());
+	AIF_.setPrebolus(options_.injectionImage());
+	AIF_.setHct(options_.hct());
+	AIF_.setDose(options_.dose());
 
 	//If we're using an auto AIF read from file, it will use the times encoded in the file
 	//but if we're using a population AIF we need to read these times and set them in the AIF object
-	if (options_.aifName.empty())
+	if (options_.aifName().empty())
 	{
 		//Using population AIF
-		if (options_.dynTimesFile.empty())
+		if (options_.dynTimesFile().empty())
 		{
 			mdm_progAbort("if not using an auto-AIF, a dynamic times file must be provided");
 		}
 		//Try and open the file and read in the times
-		std::ifstream dynTimesStream(options_.dynTimesFile, std::ios::in);
+		std::ifstream dynTimesStream(options_.dynTimesFile(), std::ios::in);
 		if (!dynTimesStream.is_open())
 		{
 			mdm_progAbort("error opening dynamic times file, Check it exists");
 		}
 		std::vector<double> dynamicTimes;
-		for (int i = 0; i < options_.nDyns; i++)
+		for (int i = 0; i < options_.nDyns(); i++)
 		{
 			double t;
 			dynTimesStream >> t;
@@ -631,43 +398,39 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 	}
 	else //If we're using an auto-generated AIF, read it from file now
 	{
-		std::string aifPath = fs::absolute(options_.aifName).string();
+		std::string aifPath = fs::absolute(options_.aifName()).string();
 		if (aifPath.empty())
 		{
-			mdm_progAbort(options_.model + " chosen as model but no AIF filename set");
+			mdm_progAbort(options_.model() + " chosen as model but no AIF filename set");
 		}
-		if (!AIF_.readAIF(aifPath, options_.nDyns))
+		if (!AIF_.readAIF(aifPath, options_.nDyns()))
 		{
-			mdm_progAbort("error loading AIF for model " + options_.model);
+			mdm_progAbort("error loading AIF for model " + options_.model());
 		}
 	}
 
 	//If we're using an auto-generated PIF, read it from file now
-	if (!options_.pifName.empty())
+	if (!options_.pifName().empty())
 	{
-		std::string pifPath = fs::absolute(options_.pifName).string();
+		std::string pifPath = fs::absolute(options_.pifName()).string();
 		if (pifPath.empty())
 		{
-			mdm_progAbort(options_.model + " chosen as model but no AIF filename set");
+			mdm_progAbort(options_.model() + " chosen as model but no AIF filename set");
 		}
-		if (!AIF_.readPIF(pifPath, options_.nDyns))
+		if (!AIF_.readPIF(pifPath, options_.nDyns()))
 		{
-			mdm_progAbort("error loading AIF for model " + options_.model);
+			mdm_progAbort("error loading AIF for model " + options_.model());
 		}
 	}
 
 	//If we're converting from signal to concentration, make sure we've been supplied TR and FA values
-	if (!options_.inputCt && (!options_.TR || !options_.FA || !options_.r1Const))
+	if (!options_.inputCt() && (!options_.TR() || !options_.FA() || !options_.r1Const()))
 	{
 		mdm_progAbort("TR, FA, r1 must be set to convert from signal concentration");
 	}
 
-	//Set-up default IAUC times
-	if (options_.IAUCTimes.empty())
-		options_.IAUCTimes = { 60.0, 90.0, 120.0 };
-
 	//Open the input data file
-	std::ifstream inputData(options_.inputDataFile, std::ios::in);
+	std::ifstream inputData(options_.inputDataFile(), std::ios::in);
 	if (!inputData.is_open())
 	{
 		mdm_progAbort("error opening input data file, Check it exists");
@@ -684,9 +447,9 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 	//containing these
 	std::ifstream inputParams;
 	bool load_params = false;
-	if (!options_.initParamsFile.empty())
+	if (!options_.initParamsFile().empty())
 	{
-		inputParams.open(options_.initParamsFile, std::ios::in);
+		inputParams.open(options_.initParamsFile(), std::ios::in);
 		if (!inputParams.is_open())
 		{
 			mdm_progAbort("error opening input parameter file, Check it exists");
@@ -696,15 +459,15 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 
 	//Check if we've been given a file defining varying dynamic noise
 	std::vector<double> noiseVar;
-	if (!options_.dynNoiseFile.empty())
+	if (!options_.dynNoiseFile().empty())
 	{
 		//Try and open the file and read in the noise values
-		std::ifstream dynNoiseStream(options_.dynNoiseFile, std::ios::in);
+		std::ifstream dynNoiseStream(options_.dynNoiseFile(), std::ios::in);
 		if (!dynNoiseStream.is_open())
 		{
 			mdm_progAbort("error opening dynamic times file, Check it exists");
 		}
-		for (int i = 0; i < options_.nDyns; i++)
+		for (int i = 0; i < options_.nDyns(); i++)
 		{
 			double sigma;
 			dynNoiseStream >> sigma;
@@ -713,15 +476,16 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 	}
 
 	//Set valid first image
-	if (options_.lastImage <= 0)
-		options_.lastImage = options_.nDyns;
+	if (options_.lastImage() <= 0)
+		options_.lastImage.set(options_.nDyns());
 
 	//Convert IAUC times to minutes
-	std::sort(options_.IAUCTimes.begin(), options_.IAUCTimes.end());
-	for (auto &t : options_.IAUCTimes)
+	auto iauc_t = options_.IAUCTimes();
+	std::sort(iauc_t.begin(), iauc_t.end());
+	for (auto &t : iauc_t)
 		t /= 60;
 
-	std::vector<double> ts(options_.nDyns, 0);
+	std::vector<double> ts(options_.nDyns(), 0);
 
 	double d;
 	double t10 = 0.0;
@@ -729,11 +493,11 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 	int col_counter = 0;
 	int row_counter = 0;
 
-	int col_length = options_.nDyns;
-	if (!options_.inputCt)
+	int col_length = options_.nDyns();
+	if (!options_.inputCt())
 	{
 		col_length++;
-		if (!options_.useRatio)
+		if (!options_.M0Ratio())
 			col_length++;
 	}
 
@@ -757,20 +521,20 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 			}
 
 			//Fit the series
-			fit_series(outputData, ts, options_.inputCt,
+			fit_series(outputData, ts, options_.inputCt(),
 				noiseVar,
 				t10, s0,
-				options_.r1Const,
-				options_.TR,
-				options_.FA,
-				options_.firstImage,
-				options_.lastImage,
-				options_.noEnhFlag,
-				options_.useRatio,
-				options_.IAUCTimes,
-				options_.outputCm,
-				options_.outputCt,
-				!options_.noOptimise);
+				options_.r1Const(),
+				options_.TR(),
+				options_.FA(),
+				options_.firstImage(),
+				options_.lastImage(),
+				options_.testEnhancement(),
+				options_.M0Ratio(),
+				iauc_t,
+				options_.outputCt_mod(),
+				options_.outputCt_sig(),
+				!options_.noOptimise());
 
 			col_counter = 0;
 
@@ -782,10 +546,10 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 		{
 			inputData >> d;
 
-			if (col_counter == options_.nDyns)
+			if (col_counter == options_.nDyns())
 				t10 = d;
 
-			else if (col_counter == options_.nDyns + 1)
+			else if (col_counter == options_.nDyns() + 1)
 				s0 = d;
 
 			else //col_counter < nDyns()
@@ -812,29 +576,28 @@ MDM_API int mdm_RunTools::run_DCEFit_lite(const std::string &exe_args, const std
 }
 
 //
-MDM_API int mdm_RunTools::run_CalculateT1(const std::string &exe_args, const std::string &exeString)
+MDM_API int mdm_RunTools::run_CalculateT1()
 {
-  exeString_ = exeString;
 
-  if (options_.T1inputNames.empty())
+  if (options_.T1inputNames().empty())
   {
     mdm_progAbort("input map names (option -maps) must be provided");
   }
 
-  if (options_.outputDir.empty())
+  if (options_.outputDir().empty())
   {
     mdm_progAbort("output directory (option -o) must be provided");
   }
 
   //Set which type of model we're using
-  if (!setT1Method(options_.T1method))
+  if (!setT1Method(options_.T1method()))
     return 1;
 
-  T1Mapper_.setNoiseThreshold(options_.T1noiseThresh);
+  T1Mapper_.setNoiseThreshold(options_.T1noiseThresh());
 
   //Using boost filesystem, can call one line to make absolute path from input
   //regardless of whether relative or absolute path has been given
-  fs::path outputPath = fs::absolute(options_.outputDir);
+  fs::path outputPath = fs::absolute(options_.outputDir());
 
   //We probably don't need to check if directory exists, just call create... regardless
   //but we do so anyway
@@ -842,39 +605,13 @@ MDM_API int mdm_RunTools::run_CalculateT1(const std::string &exe_args, const std
     create_directories(outputPath);
 
   // If we've got this file already warn user of previous analysis and quit
-  if (!options_.overwrite && !is_empty(outputPath))
+  if (!options_.overwrite() && !is_empty(outputPath))
   {
     mdm_progAbort("output directory is not empty (use option O to overwrite existing data)");
   }
 
-  //Set up paths to error image and audit logs, using default names if not user supplied
-  // and using boost::filesystem to make absolute paths
-  fs::path errorCodesPath = outputPath / options_.errorCodesName;
-  fs::path programLogPath = outputPath / options_.programLogName;
-	fs::path configFilePath = outputPath / options_.outputConfigFileName;
-
-	//Note the default audit path doesn't use the output directory (unless user specifically set so)
-	fs::path auditPath = fs::absolute(options_.auditLogDir);
-	if (!is_directory(auditPath))
-		create_directories(auditPath);
-	std::string auditName = exeString_ + timeNow() + options_.auditLogBaseName;
-	fs::path auditBasePath = auditPath / auditName;
-
-  std::string caller = exeString_ + " " + MDM_VERSION;
-
-  mdm_ProgramLogger::openAuditLog(auditBasePath.string(), caller);
-	mdm_ProgramLogger::logAuditMessage(exe_args);
-	mdm_ProgramLogger::openProgramLog(programLogPath.string(), caller);
-	mdm_ProgramLogger::logProgramMessage(exe_args);
-
-	//Save the config file of input options
-	options_.to_file(configFilePath.string());
-
-	//Log location of program log and config file in audit log
-	mdm_ProgramLogger::logAuditMessage(
-		"Program log saved to " + programLogPath.string() + "\n");
-	mdm_ProgramLogger::logAuditMessage(
-		"Config file saved to " + configFilePath.string() + "\n");
+  //Set up logging and audit trail
+	set_up_logging(outputPath);
 
   /*
   *  Now it's time for the fun ...
@@ -886,11 +623,12 @@ MDM_API int mdm_RunTools::run_CalculateT1(const std::string &exe_args, const std
 
 	//Before we start, try and load an errorImage, this allows us to add
 	//to any existing errors in a re-analysis
+	fs::path errorCodesPath = outputPath / options_.errorCodesName();
 	fileManager_.loadErrorImage(errorCodesPath.string());
 
-  if (!options_.roiName.empty())
+  if (!options_.roiName().empty())
   {
-    std::string roiPath = fs::absolute(options_.roiName).string();
+    std::string roiPath = fs::absolute(options_.roiName()).string();
     if (!fileManager_.loadROI(roiPath))
     {
       mdm_progAbort("error loading ROI");
@@ -899,10 +637,10 @@ MDM_API int mdm_RunTools::run_CalculateT1(const std::string &exe_args, const std
 
   /*Load in all the required images for madym processing. The user has 4 options:
   1) Process everything from scratch:
-  - Need paths to variable flip angle images to compute T1 and S0
+  - Need paths to variable flip angle images to compute T1 and M0
   - Need path to dynamic images folder and the prefix with which the dynamic images are labelled
   to compute concentration images
-  2) Load existing T1 and S0, use baseline S0 to scale signals
+  2) Load existing T1 and M0, use baseline M0 to scale signals
   - Need dynamic images
   3) Load existing T1, use ratio method to scale signals
   4) Load existing concentration images
@@ -910,17 +648,17 @@ MDM_API int mdm_RunTools::run_CalculateT1(const std::string &exe_args, const std
   */
 
   //We need to load FA images
-  if (options_.T1inputNames.size() < mdm_T1Voxel::MINIMUM_FAS)
+  if (options_.T1inputNames().size() < mdm_T1Voxel::MINIMUM_FAS)
   {
     mdm_progAbort("not enough variable flip angle file names");
   }
-  else if (options_.T1inputNames.size() > mdm_T1Voxel::MAXIMUM_FAS)
+  else if (options_.T1inputNames().size() > mdm_T1Voxel::MAXIMUM_FAS)
   {
     mdm_progAbort("too many variable flip angle file names");
   }
 
   std::vector<std::string> T1inputPaths(0);
-  for (std::string mapName : options_.T1inputNames)
+  for (std::string mapName : options_.T1inputNames())
     T1inputPaths.push_back(fs::absolute(mapName).string());
 
   if (!fileManager_.loadFAImages(T1inputPaths))
@@ -928,12 +666,12 @@ MDM_API int mdm_RunTools::run_CalculateT1(const std::string &exe_args, const std
     mdm_progAbort("error loading FA images");
   }
 
-  //FA images loaded, try computing T1 and S0 maps
+  //FA images loaded, try computing T1 and M0 maps
   T1Mapper_.T1_mapVarFlipAngle();
 
   if (!fileManager_.writeOutputMaps(outputPath.string()))
   {
-    std::cerr << exeString_ << ": error saving maps" << std::endl;
+    std::cerr << options_parser_.exe_cmd() << ": error saving maps" << std::endl;
     //Don't quit here, we may as well try and save the error image anyway
     //nothing else depends on the success of the save
   }
@@ -946,34 +684,32 @@ MDM_API int mdm_RunTools::run_CalculateT1(const std::string &exe_args, const std
 }
 
 //
-MDM_API int mdm_RunTools::run_CalculateT1_lite(const std::string &exe_args, const std::string &exeString,
-	const int nSignals)
+MDM_API int mdm_RunTools::run_CalculateT1_lite()
 {
-	exeString_ = exeString;
 
-	if (options_.inputDataFile.empty())
+	if (options_.inputDataFile().empty())
 	{
 		mdm_progAbort("input data file (option -s) must be provided");
 	}
-	if (!nSignals)
+	if (!options_.nT1Inputs())
 	{
 		mdm_progAbort("number of signals (option -n) must be provided");
 	}
-	if (!options_.TR)
+	if (!options_.TR())
 	{
 		mdm_progAbort("TR (option -TR) must be provided");
 	}
-	if (options_.outputDir.empty())
+	if (options_.outputDir().empty())
 	{
 		mdm_progAbort("output directory (option -o) must be provided");
 	}
 
 	//Set which type of model we're using - throws error if method not recognised
-	setT1Method(options_.T1method);
+	setT1Method(options_.T1method());
 
 	//Using boost filesyetm, can call one line to make absolute path from input
 	//regardless of whether relative or absolute path has been given
-	fs::path outPath = fs::absolute(options_.outputDir);
+	fs::path outPath = fs::absolute(options_.outputDir());
 
 	//We probably don't need to check if directory exists, just call create... regardless
 	//but we do so anyway
@@ -981,10 +717,10 @@ MDM_API int mdm_RunTools::run_CalculateT1_lite(const std::string &exe_args, cons
 		fs::create_directories(outPath);
 
 	std::string outputDataFile = outPath.string() + "/" + 
-		options_.T1method + "_" + options_.outputName;
+		options_.T1method() + "_" + options_.outputName();
 
 	//Open the input data (FA and signals) file
-	std::ifstream inputData(options_.inputDataFile, std::ios::in);
+	std::ifstream inputData(options_.inputDataFile(), std::ios::in);
 	if (!inputData.is_open())
 	{
 		mdm_progAbort("error opening input data file, Check it exists");
@@ -1001,6 +737,7 @@ MDM_API int mdm_RunTools::run_CalculateT1_lite(const std::string &exe_args, cons
 	int col_counter = 0;
 	int row_counter = 0;
 
+	const int &nSignals = options_.nT1Inputs();
 	const int &col_length = 2*nSignals;
 
 	std::vector<double> signals(nSignals, 0);
@@ -1009,23 +746,23 @@ MDM_API int mdm_RunTools::run_CalculateT1_lite(const std::string &exe_args, cons
 
 	//Make T1 calculator
 	mdm_T1Voxel T1Calculator;
-	T1Calculator.setTR(options_.TR);
+	T1Calculator.setTR(options_.TR());
 
 	//Loop through the file, reading in each line
 	while (true)
 	{
 		if (col_counter == col_length)
 		{
-			double T1, S0;
+			double T1, M0;
 			T1Calculator.setFAs(FAs);
 			T1Calculator.setSignals(signals);
-			int errCode = T1Calculator.fitT1_VFA(T1, S0);
+			int errCode = T1Calculator.fitT1_VFA(T1, M0);
 			col_counter = 0;
 
 			//Now write the output
 			outputData <<
 				T1 << " " <<
-				S0 << " " <<
+				M0 << " " <<
 				errCode << std::endl;
 
 			row_counter++;
@@ -1062,42 +799,41 @@ MDM_API int mdm_RunTools::run_CalculateT1_lite(const std::string &exe_args, cons
 
 //
 //Fit auto AIF
-MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::string &exeString)
+MDM_API int mdm_RunTools::run_AIFFit()
 {
-  exeString_ = exeString;
 
-  if (options_.outputDir.empty())
+  if (options_.outputDir().empty())
   {
     mdm_progAbort("output directory (option -o) must be provided");
   }
 
-  if (!options_.T1Name.empty() && options_.T1Name.at(0) == '-')
+  if (!options_.T1Name().empty() && options_.T1Name().at(0) == '-')
     mdm_progAbort("Error no value associated with T1 map name from command-line");
 
-  if (!options_.S0Name.empty() && options_.S0Name.at(0) == '-')
-    mdm_progAbort("Error no value associated with S0 map name from command-line");
+  if (!options_.M0Name().empty() && options_.M0Name().at(0) == '-')
+    mdm_progAbort("Error no value associated with M0 map name from command-line");
 
-  if (!options_.dynName.empty() && options_.dynName.at(0) == '-')
+  if (!options_.dynName().empty() && options_.dynName().at(0) == '-')
     mdm_progAbort("Error no value associated with dynamic series file name from command-line");
 
   //Set parameters in data objects from user input
-  AIF_.setPrebolus(options_.injectionImage);
-  AIF_.setHct(options_.hct);
-  AIF_.setDose(options_.dose);
+  AIF_.setPrebolus(options_.injectionImage());
+  AIF_.setHct(options_.hct());
+  AIF_.setDose(options_.dose());
 
-  volumeAnalysis_.setComputeCt(!options_.inputCt);
-  volumeAnalysis_.setRelaxCoeff(options_.r1Const);
-  volumeAnalysis_.setUseRatio(options_.useRatio);
-  if (options_.firstImage)
-    volumeAnalysis_.setFirstImage(options_.firstImage - 1);
-  if (options_.lastImage)
-    volumeAnalysis_.setLastImage(options_.lastImage);
+  volumeAnalysis_.setComputeCt(!options_.inputCt());
+  volumeAnalysis_.setRelaxCoeff(options_.r1Const());
+  volumeAnalysis_.setUseRatio(options_.M0Ratio());
+  if (options_.firstImage())
+    volumeAnalysis_.setFirstImage(options_.firstImage() - 1);
+  if (options_.lastImage())
+    volumeAnalysis_.setLastImage(options_.lastImage());
 
-  T1Mapper_.setNoiseThreshold(options_.T1noiseThresh);
+  T1Mapper_.setNoiseThreshold(options_.T1noiseThresh());
 
   //Using boost filesyetm, can call one line to make absolute path from input
   //regardless of whether relative or absolute path has been given
-  fs::path outputPath = fs::absolute(options_.outputDir);
+  fs::path outputPath = fs::absolute(options_.outputDir());
 
   //We probably don't need to check if directory exists, just call create... regardless
   //but we do so anyway
@@ -1105,38 +841,13 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
     create_directories(outputPath);
 
   /* If we've got this file already warn user of previous analysis and quit */
-  if (!options_.overwrite && !is_empty(outputPath))
+  if (!options_.overwrite() && !is_empty(outputPath))
   {
     mdm_progAbort("Output directory is not empty (use option O to overwrite existing data)");
   }
 
-  //Set up paths to error image and audit logs, using default names if not user supplied
-  // and using boost::filesystem to make absolute paths
-  fs::path errorCodesPath = outputPath / options_.errorCodesName;
-  fs::path programLogPath = outputPath / options_.programLogName;
-	fs::path configFilePath = outputPath / options_.outputConfigFileName;
-
-	//Note the default audit path doesn't use the output directory (unless user specifically set so)
-	fs::path auditPath = fs::absolute(options_.auditLogDir);
-	if (!is_directory(auditPath))
-		create_directories(auditPath);
-	std::string auditName = exeString_ + timeNow() + options_.auditLogBaseName;
-	fs::path auditBasePath = auditPath / auditName;
-
-  std::string caller = exeString_ + " " + MDM_VERSION;
-  mdm_ProgramLogger::openAuditLog(auditBasePath.string(), caller);
-	mdm_ProgramLogger::logAuditMessage(exe_args);
-	mdm_ProgramLogger::openProgramLog(programLogPath.string(), caller);
-	mdm_ProgramLogger::logProgramMessage(exe_args);
-
-	//Save the config file of input options
-	options_.to_file(configFilePath.string());
-
-	//Log location of program log and config file in audit log
-	mdm_ProgramLogger::logAuditMessage(
-		"Program log saved to " + programLogPath.string() + "\n");
-	mdm_ProgramLogger::logAuditMessage(
-		"Config file saved to " + configFilePath.string() + "\n");
+  //Set up logging and auti trail
+	set_up_logging(outputPath);
 
   /*
   *  Now it's time for the fun ...
@@ -1150,10 +861,10 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
 
   /*Load in all the required images for madym processing. The user has 4 options:
   1) Process everything from scratch:
-  - Need paths to variable flip angle images to compute T1 and S0
+  - Need paths to variable flip angle images to compute T1 and M0
   - Need path to dynamic images folder and the prefix with which the dynamic images are labelled
   to compute concentration images
-  2) Load existing T1 and S0, use baseline S0 to scale signals
+  2) Load existing T1 and M0, use baseline M0 to scale signals
   - Need dynamic images
   3) Load existing T1, use ratio method to scale signals
   4) Load existing concentration images
@@ -1162,17 +873,18 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
 
 	//Before we start, try and load an errorImage, this allows us to add
 	//to any existing errors in a re-analysis
+	fs::path errorCodesPath = outputPath / options_.errorCodesName();
 	fileManager_.loadErrorImage(errorCodesPath.string());
 
   //Check for case 4: load pre-computed concentration maps
-  if (options_.inputCt)
+  if (options_.inputCt())
   {
-    fs::path catPath = fs::absolute(options_.dynDir) / options_.dynName;
+    fs::path catPath = fs::absolute(options_.dynDir()) / options_.dynName();
     std::string catPrefix = catPath.filename().string();
     std::string catBasePath = catPath.remove_filename().string();
     if (!catBasePath.empty() && !catPrefix.empty())
     {
-      if (!fileManager_.loadCtDataMaps(catBasePath, catPrefix, options_.nDyns))
+      if (!fileManager_.loadCtDataMaps(catBasePath, catPrefix, options_.nDyns()))
       {
         mdm_progAbort("error loading catMaps");
       }
@@ -1184,7 +896,7 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
   }
   else
   {
-    fs::path dynPath = fs::absolute(options_.dynName);
+    fs::path dynPath = fs::absolute(options_.dynName());
     std::string dynPrefix = dynPath.filename().string();
     std::string dynBasePath = dynPath.remove_filename().string();
 
@@ -1195,51 +907,51 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
     }
 
     //Load the dynamic image
-    if (!fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns))
+    if (!fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns()))
     {
       mdm_progAbort("error loading dynamic images");
     }
 
     //Now check if we've suuplied an existing T1 map
-    if (!options_.T1Name.empty())
+    if (!options_.T1Name().empty())
     {
-      fs::path T1Path = fs::absolute(options_.T1Name);
+      fs::path T1Path = fs::absolute(options_.T1Name());
       if (!fileManager_.loadT1Image(T1Path.string()))
       {
         mdm_progAbort("error loading T1 map");
       }
 
-      //Now check for cases 2 and 3, if useBaselineS0 is true
-      //we need both S0 and T1, otherwise we can just use T1
-      if (!options_.useRatio)
+      //Now check for cases 2 and 3, if useBaselineM0 is true
+      //we need both M0 and T1, otherwise we can just use T1
+      if (!options_.M0Ratio())
       {
 
-        if (options_.S0Name.empty())
+        if (options_.M0Name().empty())
         {
-          mdm_progAbort("S0MapFlag set to true, but path to S0 not set");
+          mdm_progAbort("M0MapFlag set to true, but path to M0 not set");
         }
-        //Otherwise load S0 and return
-        fs::path S0Path = fs::absolute(options_.S0Name);
-        if (!fileManager_.loadS0Image(S0Path.string()))
+        //Otherwise load M0 and return
+        fs::path M0Path = fs::absolute(options_.M0Name());
+        if (!fileManager_.loadM0Image(M0Path.string()))
         {
-          mdm_progAbort("error loading S0 map");
+          mdm_progAbort("error loading M0 map");
         }
       }
     }
     else
     {
       //We need to load FA images
-      if (options_.T1inputNames.size() < mdm_T1Voxel::MINIMUM_FAS)
+      if (options_.T1inputNames().size() < mdm_T1Voxel::MINIMUM_FAS)
       {
         mdm_progAbort("Not enough variable flip angle file names");
       }
-      else if (options_.T1inputNames.size() > mdm_T1Voxel::MAXIMUM_FAS)
+      else if (options_.T1inputNames().size() > mdm_T1Voxel::MAXIMUM_FAS)
       {
         mdm_progAbort("Too many variable flip angle file names");
       }
 
       std::vector<std::string> T1inputPaths(0);
-      for (std::string fa : options_.T1inputNames)
+      for (std::string fa : options_.T1inputNames())
         T1inputPaths.push_back(fs::absolute(fa).string());
 
       if (!fileManager_.loadFAImages(T1inputPaths))
@@ -1247,26 +959,26 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
         mdm_progAbort("error loading input images for baseline T1 calculation");
       }
 
-      //FA images loaded, try computing T1 and S0 maps
+      //FA images loaded, try computing T1 and M0 maps
       T1Mapper_.T1_mapVarFlipAngle();
     }
   }
 
   /*If we're here, then we should have either:
   1) A set of concentration images in volumeAnalysis OR
-  2) A set of dynamic images and a T1 map and either an S0 map or the use baseline S0 flag set to false*/
-  const std::vector<mdm_Image3D> &maps = options_.inputCt ?
+  2) A set of dynamic images and a T1 map and either an M0 map or the use baseline M0 flag set to false*/
+  const std::vector<mdm_Image3D> &maps = options_.inputCt() ?
     volumeAnalysis_.CtDataMaps() : volumeAnalysis_.StDataMaps();
-  AIF_.computeAutoAIF(maps, T1Mapper_.T1Map(), options_.aifSlice, options_.r1Const, options_.inputCt);
+  AIF_.computeAutoAIF(maps, T1Mapper_.T1Map(), options_.aifSlice(), options_.r1Const(), options_.inputCt());
 
 
   /*Call the file manager to write out the AIF*/
-  std::string AIFname = "slice_" + std::to_string(options_.aifSlice) + "_Auto_AIF.txt";
+  std::string AIFname = "slice_" + std::to_string(options_.aifSlice()) + "_Auto_AIF.txt";
   fs::path AIFpath = outputPath / AIFname;
 
   if (!fileManager_.saveAIF(AIFpath.string()))
   {
-    std::cerr << exeString_ << ": error saving AIF\n";
+    std::cerr << options_parser_.exe_cmd() << ": error saving AIF\n";
   }
 
 	//Write out the error image
@@ -1284,7 +996,7 @@ MDM_API int mdm_RunTools::run_AIFFit(const std::string &exe_args, const std::str
 //-----------------------------------------------------------
 int mdm_RunTools::mdm_progExit()
 {
-	std::string success_msg = exeString_ + " completed successfully.\n";
+	std::string success_msg = options_parser_.exe_cmd() + " completed successfully.\n";
 	mdm_ProgramLogger::logProgramMessage(success_msg);
 	mdm_ProgramLogger::logAuditMessage(success_msg);
 	mdm_ProgramLogger::closeAuditLog();
@@ -1295,7 +1007,7 @@ int mdm_RunTools::mdm_progExit()
 void mdm_RunTools::mdm_progAbort(const std::string &err_str)
 {
 
-  std::string error_msg = exeString_ + " ABORTING: " + err_str + "\n";
+  std::string error_msg = options_parser_.exe_cmd() + " ABORTING: " + err_str + "\n";
 
 	mdm_ProgramLogger::logProgramMessage(error_msg);
 	mdm_ProgramLogger::logAuditMessage(error_msg);
@@ -1374,11 +1086,11 @@ void mdm_RunTools::fit_series(std::ostream &outputData,
 	const double & FA,
 	const int &firstImage,
 	const int &lastImage,
-	const bool&noEnhFlag,
+	const bool&testEnhancement,
 	const bool&useRatio,
 	const std::vector<double> &IAUCTimes,
-	const bool &outputCm,
-	const bool &outputCt,
+	const bool &outputCt_mod,
+	const bool &outputCt_sig,
 	const bool &optimiseModel)
 {
 	std::vector<double> signalData;
@@ -1405,7 +1117,7 @@ void mdm_RunTools::fit_series(std::ostream &outputData,
 		FA,
 		firstImage,
 		lastImage,
-		!noEnhFlag,
+		testEnhancement,
 		useRatio,
 		IAUCTimes);
 	vox.initialiseModelFit(*model_);
@@ -1428,14 +1140,14 @@ void mdm_RunTools::fit_series(std::ostream &outputData,
 		outputData << " " << model_->pkParams(i);
 
 
-	if (outputCm)
+	if (outputCt_mod)
 	{
 		const std::vector<double> &Cm_t = vox.CtModel();
 		for (int i = 0; i < nDyns; i++)
 			outputData << " " << Cm_t[i];
 	}
 
-	if (outputCt)
+	if (outputCt_sig)
 	{
 		const std::vector<double> &Cs_t = vox.CtData();
 		for (int i = 0; i < nDyns; i++)
@@ -1443,4 +1155,39 @@ void mdm_RunTools::fit_series(std::ostream &outputData,
 	}
 
 	outputData << std::endl;
+}
+
+void mdm_RunTools::set_up_logging(fs::path outputPath)
+{
+	//Set up paths to error image and audit logs, using default names if not user supplied
+	// and using boost::filesystem to make absolute paths
+	const std::string exe_cmd = fs::path(options_parser_.exe_cmd()).stem().string();
+	std::string auditName = exe_cmd + timeNow() + options_.auditLogBaseName();
+	std::string programName = exe_cmd + timeNow() + options_.programLogName();
+	std::string configName = exe_cmd + timeNow() + options_.outputConfigFileName();
+
+	fs::path programLogPath = outputPath / programName;
+	fs::path configFilePath = outputPath / configName;
+
+	//Note the default audit path doesn't use the output directory (unless user specifically set so)
+	fs::path auditDir = fs::absolute(options_.auditLogDir());
+	if (!is_directory(auditDir))
+		create_directories(auditDir);
+	fs::path auditPath = auditDir / auditName;
+
+	std::string caller = options_parser_.exe_cmd() + " " + MDM_VERSION;
+	mdm_ProgramLogger::openAuditLog(auditPath.string(), caller);
+	mdm_ProgramLogger::logAuditMessage("Command args: " + options_parser_.exe_args());
+	mdm_ProgramLogger::openProgramLog(programLogPath.string(), caller);
+	mdm_ProgramLogger::logProgramMessage("Command args: " + options_parser_.exe_args());
+	std::cout << "Opened audit log at " << auditPath.string() << std::endl;
+
+	//Save the config file of input options
+	options_parser_.to_file(configFilePath.string(), options_);
+
+	//Log location of program log and config file in audit log
+	mdm_ProgramLogger::logAuditMessage(
+		"Program log saved to " + programLogPath.string() + "\n");
+	mdm_ProgramLogger::logAuditMessage(
+		"Config file saved to " + configFilePath.string() + "\n");
 }

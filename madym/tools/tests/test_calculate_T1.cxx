@@ -17,7 +17,7 @@ void run_test_calculate_T1()
 
 	//Generate some signals from sample FA, TR, T1 and S0 values
 	double T1 = 1000;
-	double S0 = 2000;
+	double M0 = 2000;
 	double TR = 3.5;
 	std::vector<double>	FAs = { 2, 10, 18 };
 	const auto PI = acos(-1.0);
@@ -36,7 +36,7 @@ void run_test_calculate_T1()
 		FA_img.setVoxelDims(1, 1, 1);
 		FA_img.info_.flipAngle.setValue(FAs[i_fa]);
 		FA_img.info_.TR.setValue(TR);
-		FA_img.setVoxel(0, mdm_T1Voxel::T1toSignal(T1, S0, PI*FAs[i_fa]/180, TR));
+		FA_img.setVoxel(0, mdm_T1Voxel::T1toSignal(T1, M0, PI*FAs[i_fa]/180, TR));
 
 		FA_names[i_fa] = FA_dir + "FA_" + std::to_string((int)FAs[i_fa]);
 
@@ -48,9 +48,10 @@ void run_test_calculate_T1()
 	std::string T1_output_dir = test_dir + "/calculate_T1/";
 	std::stringstream cmd;
 	cmd << mdm_test_utils::tools_exe_dir() << "calculate_T1"
-		<< " -m VFA "
-		<< " -maps " << FA_names[0] << "," << FA_names[1] << "," << FA_names[2]
-		<< " -o " << T1_output_dir;
+		<< " -T VFA "
+		<< " --T1_vols " << FA_names[0] << "," << FA_names[1] << "," << FA_names[2]
+		<< " -o " << T1_output_dir
+		<< " --overwrite";
 
 	std::cout << "Command to run: " << cmd.str() << std::endl;
 
@@ -69,12 +70,12 @@ void run_test_calculate_T1()
 
 	//Load in the parameter img vols and extract the single voxel from each
 	mdm_Image3D T1_fit = mdm_AnalyzeFormat::readImage3D(T1_output_dir + "T1.hdr", false);
-	mdm_Image3D S0_fit = mdm_AnalyzeFormat::readImage3D(T1_output_dir + "S0.hdr", false);
+	mdm_Image3D M0_fit = mdm_AnalyzeFormat::readImage3D(T1_output_dir + "M0.hdr", false);
 
 	//Check the model parameters have fitted correctly
 	double tol = 0.1;
 	TEST_NEAR("Fitted T1", T1_fit.getVoxel(0), T1, tol);
-	TEST_NEAR("Fitted S0", S0_fit.getVoxel(0), S0, tol);
+	TEST_NEAR("Fitted M0", M0_fit.getVoxel(0), M0, tol);
 
 	//Tidy up
 	fs::remove_all(FA_dir);

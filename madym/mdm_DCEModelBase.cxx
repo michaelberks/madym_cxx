@@ -233,6 +233,11 @@ MDM_API const std::vector<bool>&     mdm_DCEModelBase::optParamFlags() const
   return optParamFlags_;
 }
 
+MDM_API const std::vector<double>&     mdm_DCEModelBase::relativeBounds() const
+{
+	return relativeBounds_;
+}
+
 MDM_API const mdm_AIF&     mdm_DCEModelBase::AIF() const
 {
   return AIF_;

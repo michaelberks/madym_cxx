@@ -78,7 +78,7 @@ MDM_API void mdm_T1Voxel::setTR(const double TR)
 }
 
 MDM_API int mdm_T1Voxel::fitT1_VFA(
-	double &T1value, double &S0value)
+	double &T1value, double &M0value)
 {
 	assert(signals_.size() == nFAs_);
 	//
@@ -97,7 +97,7 @@ MDM_API int mdm_T1Voxel::fitT1_VFA(
 	}
 	catch (alglib::ap_error e)
 	{
-		setErrorValuesAndTidyUp("Error 2 - alglib:CG() failed", T1value, S0value);
+		setErrorValuesAndTidyUp("Error 2 - alglib:CG() failed", T1value, M0value);
 		return mdm_ErrorTracker::T1_FIT_FAIL;
 	}
 	int iterations = rep_.iterationscount;
@@ -108,58 +108,58 @@ MDM_API int mdm_T1Voxel::fitT1_VFA(
 	/* Check for non-convergence */
 	if (iterations >= maxIterations_)
 	{
-		setErrorValuesAndTidyUp("Error 3 - alglib:CG() hit max iterations", T1value, S0value);
+		setErrorValuesAndTidyUp("Error 3 - alglib:CG() hit max iterations", T1value, M0value);
 		return mdm_ErrorTracker::T1_MAX_ITER;
 	}
 
 	/* Check for crap fit or bonkers result*/
 	if (x[0] < 0.0 || x[0] > 6000.0)
 	{
-		setErrorValuesAndTidyUp("Error 4 - Mad values", T1value, S0value);
+		setErrorValuesAndTidyUp("Error 4 - Mad values", T1value, M0value);
 		return mdm_ErrorTracker::T1_MAD_VALUE;
 	}
 
 	T1value = x[0];
-	S0value = x[1];
+	M0value = x[1];
 	return mdm_ErrorTracker::OK;
 }
 
 //
 MDM_API double mdm_T1Voxel::T1toSignal(
-	const double T1, const double S0, const double FA, const double TR)
+	const double T1, const double M0, const double FA, const double TR)
 {
 	double E1 = std::exp(-TR / T1);
-	return S0 * std::sin(FA) * (1 - E1) / (1 - std::cos(FA) * E1);
+	return M0 * std::sin(FA) * (1 - E1) / (1 - std::cos(FA) * E1);
 }
 
 //
-void mdm_T1Voxel::setErrorValuesAndTidyUp(const std::string msg, double &T1, double &S0)
+void mdm_T1Voxel::setErrorValuesAndTidyUp(const std::string msg, double &T1, double &M0)
 {
 	mdm_ProgramLogger::logProgramMessage(
 		"WARNING: mdm_T1Voxel::T1_calcVarFlipAngle:   " + msg + "\n");
 
-	//Set default values for S0 and T1
+	//Set default values for M0 and T1
 	T1 = 0.0;
-	S0 = 0.0;
+	M0 = 0.0;
 }
 
-void mdm_T1Voxel::computeSignalGradient(const double &T1, const double &S0,
+void mdm_T1Voxel::computeSignalGradient(const double &T1, const double &M0,
 	const double &cosFA, const double &sinFA,
-	double &signal, double &signal_dT1, double &signal_dS0)
+	double &signal, double &signal_dT1, double &signal_dM0)
 {
 	// Preliminary Calculations
 	double E = T1 ? exp(-TR_ / T1) : 0.0; //Only set if non-zero T1
 	double A = 1.0 - E * cosFA;
 
 	// signal intensity relationship - most efficient to compute
-	//ds/dS0, then multiply to get s
-	signal_dS0 = sinFA * (1 - E) / A;
-	signal = S0 * signal_dS0;
+	//ds/dM0, then multiply to get s
+	signal_dM0 = sinFA * (1 - E) / A;
+	signal = M0 * signal_dM0;
 
 	//Compute deriavtives with respect to T1 - only valid if T1 > 0
 	if (T1)
 		// First derivative - ds/dT1
-		signal_dT1 = S0 * sinFA * TR_ * E * (cosFA-1)
+		signal_dT1 = M0 * sinFA * TR_ * E * (cosFA-1)
 			/ (A * A * T1 * T1);
 	else
 		signal_dT1 = 1000000000.0; // something very big
@@ -169,19 +169,19 @@ void mdm_T1Voxel::computeSSEGradient(
 	const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad)
 {
 	const double &T1 = x[0];
-	const double &S0 = x[1];
+	const double &M0 = x[1];
 	func = 0;
 	grad[0] = 0;
 	grad[1] = 0;
-	double s, s_dT1, s_dS0;
+	double s, s_dT1, s_dM0;
 	for (int i = 0; i < nFAs_; i++)
 	{
-		computeSignalGradient(T1, S0, cosFAs_[i], sinFAs_[i],
-			s, s_dT1, s_dS0);
+		computeSignalGradient(T1, M0, cosFAs_[i], sinFAs_[i],
+			s, s_dT1, s_dM0);
 		double diff = s - signals_[i];
 		func += diff * diff;
 		grad[0] += 2 * s_dT1*diff;
-		grad[1] += 2 * s_dS0*diff;
+		grad[1] += 2 * s_dM0*diff;
 	}
 }
 
@@ -209,18 +209,18 @@ MDM_API int mdm_T1Voxel::fitT1_VFA(
 	const std::vector<double> &signal, const std::vector<double> &fa,
 	const std::vector<double> &sigma,
 	const double tr,
-	double &T1value, double &S0value)
+	double &T1value, double &M0value)
 {
 	assert(signal.size() >= MINIMUM_FAS);
 assert(fa.size() == signal.size());
 
-//Initialise sensible values for T1 and S0
+//Initialise sensible values for T1 and M0
 T1value = 1000.0;
-S0value = signal[0] * 30.0;
+M0value = signal[0] * 30.0;
 
 // Initialise A and list a for mrmqmin
 double  deltavalue = 1.0; //Flip angle factor
-std::vector<double> a = { T1value, S0value, deltavalue, tr };
+std::vector<double> a = { T1value, M0value, deltavalue, tr };
 std::vector <int> opt_idx = { 0, 1 };
 
 //Set up remaining inputs for mrqmin   
@@ -234,7 +234,7 @@ double chisq = (double)LONG_MAX;   //
 //
 if (mdm_NRUtils::mrqmin(fa, signal, sigma, a, opt_idx, covar, covar, da, da, chisq, T1toSignal, alambda, 0) != 0)
 {
-	setErrorValuesAndTidyUp("Error 1 - mrqmin() failed initialisation", T1value, S0value);
+	setErrorValuesAndTidyUp("Error 1 - mrqmin() failed initialisation", T1value, M0value);
 	return mdm_ErrorTracker::T1_INIT_FAIL;
 }
 // We got here so we're OK - save the value of chi-squared
@@ -247,7 +247,7 @@ for (; itr < maxIterations; itr++)
 {
 	if (mdm_NRUtils::mrqmin(fa, signal, sigma, a, opt_idx, covar, covar, da, da, chisq, T1toSignal, alambda, 0) != 0)
 	{
-		setErrorValuesAndTidyUp("Error 2 - mrqmin() failed during main loop", T1value, S0value);
+		setErrorValuesAndTidyUp("Error 2 - mrqmin() failed during main loop", T1value, M0value);
 		return mdm_ErrorTracker::T1_FIT_FAIL;
 	}
 
@@ -261,20 +261,20 @@ for (; itr < maxIterations; itr++)
 // Check for non-convergence
 if (itr >= maxIterations)
 {
-	setErrorValuesAndTidyUp("Error 3 - mrqmin() hit max iterations", T1value, S0value);
+	setErrorValuesAndTidyUp("Error 3 - mrqmin() hit max iterations", T1value, M0value);
 	return mdm_ErrorTracker::T1_MAX_ITER;
 }
 
 // Check for crap fit or bonkers result
 if (a[0] < 0.0 || a[0] > 6000.0)
 {
-	setErrorValuesAndTidyUp("Error 4 - Mad values", T1value, S0value);
+	setErrorValuesAndTidyUp("Error 4 - Mad values", T1value, M0value);
 	return mdm_ErrorTracker::T1_MAD_VALUE;
 }
 
 ///We got here so we're OK
 T1value = a[0];
-S0value = a[1];
+M0value = a[1];
 
 return mdm_ErrorTracker::OK;
 }
@@ -284,7 +284,7 @@ MDM_API void mdm_T1Voxel::T1toSignal(const double x_FA, std::vector<double> a,
 	double &y_SI, std::vector<double> &dyda)
 {
 	const double &T1 = a[0];
-	const double &S0 = a[1];
+	const double &M0 = a[1];
 	const double &delta = a[2];
 	const double &TR = a[3];
 
@@ -295,18 +295,18 @@ MDM_API void mdm_T1Voxel::T1toSignal(const double x_FA, std::vector<double> a,
 	double A = 1.0 - Exp * cosine;
 
 	// signal intensity relationship
-	y_SI = S0 * sine * (1 - Exp) / A;
+	y_SI = M0 * sine * (1 - Exp) / A;
 
 	//Compute deriavtives with respect to each member of a
 	dyda.resize(4);
 	if (T1)
 	{
 		// First derivative - ds/dT1
-		dyda[0] = S0 * sine * TR * Exp * (-1 + cosine)
+		dyda[0] = M0 * sine * TR * Exp * (-1 + cosine)
 			/ ((-1 + cosine * Exp) * (-1 + cosine * Exp)) / (T1 * T1);
 
 		// First derivative - ds/dTR
-		dyda[3] = -S0 * sine * Exp * (-1 + cosine)
+		dyda[3] = -M0 * sine * Exp * (-1 + cosine)
 			/ ((-1 + cosine * Exp) * (-1 + cosine * Exp)) / T1;
 	}
 
@@ -316,11 +316,11 @@ MDM_API void mdm_T1Voxel::T1toSignal(const double x_FA, std::vector<double> a,
 		dyda[3] = 1000000000.0; // something very big
 	}
 
-	// First derivative - ds/dS0
-	dyda[1] = y_SI / S0;
+	// First derivative - ds/dM0
+	dyda[1] = y_SI / M0;
 
 	// First derivative - ds/ddelta
-	dyda[2] = S0 * x_FA * (-1 + Exp) *
+	dyda[2] = M0 * x_FA * (-1 + Exp) *
 		(-cosine + cosine * cosine * Exp + sine * sine * Exp)
 		/ ((-1 + cosine * Exp) * (-1 + cosine * Exp));
 
@@ -335,7 +335,7 @@ void T1_funcVarFlipAngle(double x_FA, double *a, double *y_SI, double *dyda, int
 {
   double cosine, sine, Exp, A;
 
-  // a[1]:T1 a[2]:S0 a[3]:delta a[4]:TR x_FA:flip angle
+  // a[1]:T1 a[2]:M0 a[3]:delta a[4]:TR x_FA:flip angle
   // Preliminary Calculations
   cosine = cos(a[3] * x_FA);
   sine   = sin(a[3] * x_FA);
@@ -356,7 +356,7 @@ void T1_funcVarFlipAngle(double x_FA, double *a, double *y_SI, double *dyda, int
   else
     dyda[1] = 1000000000.0; // something very big
 
-  // First derivative - ds/dS0
+  // First derivative - ds/dM0
   dyda[2] = *y_SI / a[2];
 
   // First derivative - ds/ddelta
@@ -374,7 +374,7 @@ void T1_funcVarFlipAngle(double x_FA, double *a, double *y_SI, double *dyda, int
 /
 
 //
-void setErrorValuesAndTidyUp(double **covar, double **alpha, double *a, double *x, double *y, double *z, int *opt_idx, const std::string msg, double &T1, double &S0)
+void setErrorValuesAndTidyUp(double **covar, double **alpha, double *a, double *x, double *y, double *z, int *opt_idx, const std::string msg, double &T1, double &M0)
 {
   std::string logmsg, errString;
 
@@ -398,14 +398,14 @@ void setErrorValuesAndTidyUp(double **covar, double **alpha, double *a, double *
 	mdm_NRUtils::free_matrix(alpha, 1, 4, 1, 4);
 	mdm_NRUtils::free_matrix(covar, 1, 4, 1, 4);
 
-	//Set default values for S0 and T1
+	//Set default values for M0 and T1
 	T1 = 0.0;
-	S0 = 0.0;
+	M0 = 0.0;
 }
 
 MDM_API int mdm_T1Voxel::T1_calcVarFlipAngle(const std::vector<double> &signal, const std::vector<double> &fa,
   const double tr,
-  double &T1value, double &S0value)
+  double &T1value, double &M0value)
 {
   const int    nFAs = signal.size();     // This amounts to an assumption that MDM_NFAS flip angles have been used
   //double x_FA[nFAs+1], y_SI[nFAs + 1], sigma[nFAs + 1];        // Input arrays for mrqmin - need 4 elements cos NR stuff doesn't use element 0
@@ -433,7 +433,7 @@ MDM_API int mdm_T1Voxel::T1_calcVarFlipAngle(const std::vector<double> &signal, 
 
   //
   // Initialise values for fitting - MB NOT ANY MORE!
-  // Note:  T1value, and S0value are globals from madym.h
+  // Note:  T1value, and M0value are globals from madym.h
   //
   T1value = 1000.0;
   for (int i = nFAs; i > 0; i--)
@@ -442,8 +442,8 @@ MDM_API int mdm_T1Voxel::T1_calcVarFlipAngle(const std::vector<double> &signal, 
     y_SI[i] = signal[i - 1];             // Sig int of image FA_(i - 1)
     sigma[i] = 0.1;                       // Initial estimate of stdev
   }
-  // Initialise S0 to something reasonable
-  S0value = y_SI[1] * 30.0;
+  // Initialise M0 to something reasonable
+  M0value = y_SI[1] * 30.0;
 
   // matrix() is from mdm_NRUtils.c - gets memory for alpha[][] and covar[][]
   alpha = mdm_NRUtils::matrix(1, 4, 1, 4);
@@ -453,7 +453,7 @@ MDM_API int mdm_T1Voxel::T1_calcVarFlipAngle(const std::vector<double> &signal, 
   a = (double *)malloc(sizeof(double) * 5);
   opt_idx = (int *)malloc(sizeof(double) * 5);
   a[1] = T1value;     // T1 from the madym.h global ... 
-  a[2] = S0value;     // S0 from the madym.h global ... 
+  a[2] = M0value;     // M0 from the madym.h global ... 
   a[3] = deltavalue;  // Flip angle factor 
   a[4] = tr;
   opt_idx[1] = 1;       // 1 => variable parameter in minimisation 
@@ -478,7 +478,7 @@ MDM_API int mdm_T1Voxel::T1_calcVarFlipAngle(const std::vector<double> &signal, 
   if (mdm_NRUtils::mrqmin(x_FA, y_SI, sigma, nFAs, a, 4, opt_idx, nfit, covar, alpha, &chisq, T1_funcVarFlipAngle, &alambda, 0) != 0)
   {
     setErrorValuesAndTidyUp(covar, alpha, a, x_FA, y_SI, sigma,
-      opt_idx, "Error 1 - mrqmin() failed initialisation", T1value, S0value);
+      opt_idx, "Error 1 - mrqmin() failed initialisation", T1value, M0value);
     return MDMERR_T1INITFAILED;
   }
   // We got here so we're OK - save the value of chi-squared
@@ -491,7 +491,7 @@ MDM_API int mdm_T1Voxel::T1_calcVarFlipAngle(const std::vector<double> &signal, 
     if (mdm_NRUtils::mrqmin(x_FA, y_SI, sigma, nFAs, a, 4, opt_idx, nfit, covar, alpha, &chisq, T1_funcVarFlipAngle, &alambda, 0) != 0)
     {
       setErrorValuesAndTidyUp(covar, alpha, a, x_FA, y_SI, sigma,
-        opt_idx, "Error 2 - mrqmin() failed during main loop", T1value, S0value);
+        opt_idx, "Error 2 - mrqmin() failed during main loop", T1value, M0value);
       return MDMERR_T1MAINFAILED;
     }
 
@@ -515,7 +515,7 @@ MDM_API int mdm_T1Voxel::T1_calcVarFlipAngle(const std::vector<double> &signal, 
   if (itr >= maxIterations)
   {
     setErrorValuesAndTidyUp(covar, alpha, a, x_FA, y_SI, sigma,
-      opt_idx, "Error 3 - mrqmin() hit max iterations", T1value, S0value);
+      opt_idx, "Error 3 - mrqmin() hit max iterations", T1value, M0value);
     return MDMERR_T1MAXITER;
   }
 
@@ -523,14 +523,14 @@ MDM_API int mdm_T1Voxel::T1_calcVarFlipAngle(const std::vector<double> &signal, 
   if (a[1] < 0.0 || a[1] > 6000.0)
   {
     setErrorValuesAndTidyUp(covar, alpha, a, x_FA, y_SI, sigma,
-      opt_idx, "Error 4 - Mad values", T1value, S0value);
+      opt_idx, "Error 4 - Mad values", T1value, M0value);
     return MDMERR_T1MADVALUE;
   }
 
   //We got here so we're OK
   // Set madym.h global values, tidy up heap memory and return
   T1value = a[1];
-  S0value = a[2];
+  M0value = a[2];
 
   free(a);
   free(opt_idx);

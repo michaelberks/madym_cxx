@@ -29,7 +29,7 @@ public:
 	const static std::string   MAP_NAME_ENHANCING;
 	const static std::string   MAP_NAME_ROI;
 	const static std::string   MAP_NAME_T1;
-	const static std::string   MAP_NAME_S0;
+	const static std::string   MAP_NAME_M0;
 	const static std::string   MAP_NAME_CT_SIG; //Signal derived concentration - appended with volume number
 	const static std::string   MAP_NAME_CT_MOD; //Model estimated concentration - appended with volume number
 	const static std::string   MAP_NAME_ERROR_CODE;
@@ -398,10 +398,10 @@ private:
 	bool computeCt_;
 
 	//Flag to see if we need to output computed concentration
-	bool outputCt_;
+	bool outputCt_sig_;
 
   //Flag to see if we need to output modelled concentration
-  bool outputCmod_;
+  bool outputCt_modod_;
 
   //Flag if we're using temporal varying noise if it's econded in the dynamic series xtr headers
   bool useNoise_;

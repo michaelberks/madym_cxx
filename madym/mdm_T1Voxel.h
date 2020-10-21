@@ -1,6 +1,6 @@
 /**
 *  @file    mdm_T1Voxel.h
-*  @brief   Class for estimating T1 (and S0) in a single voxel
+*  @brief   Class for estimating T1 (and M0) in a single voxel
 *  @details Currently only variable flip angle method supported
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 */
@@ -13,7 +13,7 @@
 #include "opt/optimization.h"
 
 /**
-*  @brief   Estimating T1 (and S0) in a single voxel
+*  @brief   Estimating T1 (and M0) in a single voxel
 *  @details Currently only variable flip angle method supported
 */
 class mdm_T1Voxel {
@@ -75,7 +75,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API int fitT1_VFA(double &T1value, double &S0value);
+	MDM_API int fitT1_VFA(double &T1value, double &M0value);
 
   /**
 	* @brief
@@ -84,14 +84,14 @@ public:
 	* @return
 	*/
 	MDM_API static double T1toSignal(
-		const double T1, const double S0, const double FA, const double TR);
+		const double T1, const double M0, const double FA, const double TR);
 
 private:
-	static void setErrorValuesAndTidyUp(const std::string msg, double &T1, double &S0);
+	static void setErrorValuesAndTidyUp(const std::string msg, double &T1, double &M0);
 
-	void computeSignalGradient(const double &T1, const double &S0,
+	void computeSignalGradient(const double &T1, const double &M0,
 		const double &cosFA, const double &sinFA,
-		double &signal, double &signal_dT1, double &signal_dS0);
+		double &signal, double &signal_dT1, double &signal_dM0);
 
 	void computeSSEGradient(
 		const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad);

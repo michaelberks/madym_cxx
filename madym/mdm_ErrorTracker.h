@@ -36,7 +36,7 @@ public:
 	static const int T1_FIT_FAIL;				// Error in main T1 calculation routine    - Binary bit 3 set  
 	static const int T1_MAX_ITER;				// Hit max iterations in T1 calculation    - Binary bit 4 set  
 	static const int T1_MAD_VALUE;			// (T1 < 0.0) || (T1 > 6000.0)             - Binary bit 5 set  
-	static const int S0_NEGATIVE;				// Earlier error condition caused S0 = 0.0 - Binary bit 6 set 
+	static const int M0_NEGATIVE;				// Earlier error condition caused M0 = 0.0 - Binary bit 6 set 
 	static const int NON_ENH_IAUC;			// Voxel non-enhancing by IAUC60 < 0.0     - Binary bit 7 set  
 	static const int CA_IS_NAN;					// [CA](t) == NaN                          - Binary bit 8 set 
 	static const int DYNT1_NEGATIVE;		// T1(t) < 0.0                             - Binary bit 9 set 
