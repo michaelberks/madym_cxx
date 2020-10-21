@@ -107,48 +107,10 @@ IF (BUILD_DOCUMENTATION)
 
 endif(BUILD_DOCUMENTATION)
 
+IF( BUILD_TESTING )
+	ENABLE_TESTING()
+ENDIF( BUILD_TESTING )
 
-#################################################################
-
-#################################################################
-# The CMake command FIND_PACKAGE(VXL) attempts to find VXL binary
-# installation.  CMake will look in the directory specified by the
-# CMake variable VXL_DIR.  Normally, CMake will initially not find
-# VXL, will warn you that it could not find VXL, and then give you the
-# chance to set the variable VXL_DIR and reconfigure.  VXL_DIR now
-# replaces VXL_BINARY_PATH.
-
-FIND_PACKAGE(VXL)
-
-# Whether FIND_PACKAGE(VXL) worked is stored in the variable
-# VXL_FOUND.  If VXL was found we then include `UseVXL.cmake'
-# which will set many variables prefixed with VXL_ that your project
-# can use to determine what parts of VXL are present and how to use
-# them.  `UseVXL.cmake' holds all the necessary definitions that
-# CMake needs to use VXL.
-IF(VXL_FOUND)
-
-  IF( BUILD_TESTING )
-    ENABLE_TESTING()
-  ENDIF( BUILD_TESTING )
-
-  OPTION( BUILD_TESTING "Should the tests be built?" YES )
-
-  INCLUDE(${VXL_CMAKE_DIR}/UseVXL.cmake)
-
-  # The following indicates where VXL specific CMake modules are to be found
-  # It may only be necessary if you keep your ISBE clue libraries in a separate directory tree from VXL
-  SET(MODULE_PATH ${VXL_CMAKE_DIR})
-
-  # Tell the system where to find the VXL source 
-  # It may be possible to pick this up from the UseVXL.cmake, but this works too.
-  SET(VXL_SOURCE_DIR )
-
-  INCLUDE_DIRECTORIES(${VXL_ROOT_SOURCE_DIR})
-  INCLUDE_DIRECTORIES(${VXL_CORE_INCLUDE_DIR})
-
-  message(“VXL found”)
-
-ENDIF(VXL_FOUND)
+OPTION( BUILD_TESTING "Should the tests be built?" YES )
 
 SUBDIRS(madym)

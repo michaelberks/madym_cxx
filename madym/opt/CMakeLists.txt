@@ -6,23 +6,6 @@
 
 SET( CMAKE_VERBOSE_MAKEFILE ON)
 
-#SET(mdm_opt_sources
-#	#mdm_opt_api.h
-#	opt/alglibinternal.cpp		opt/alglibinternal.h
-#	opt/alglibmisc.cpp			opt/alglibmisc.h
-#	opt/ap.cpp					opt/ap.h
-#	opt/dataanalysis.cpp		opt/dataanalysis.h
-#	opt/diffequations.cpp		opt/diffequations.h
-#	opt/fasttransforms.cpp		opt/fasttransforms.h
-#	opt/integration.cpp			opt/integration.h
-#	opt/interpolation.cpp		opt/interpolation.h
-#	opt/linalg.cpp				opt/linalg.h
-#	opt/optimization.cpp		opt/optimization.h
-#	opt/solvers.cpp				opt/solvers.h
-#	opt/specialfunctions.cpp	opt/specialfunctions.h
-#	opt/statistics.cpp			opt/statistics.h
-#	opt/stdafx.h     PARENT_SCOPE
-#)
 SET(mdm_opt_sources
 	#mdm_opt_api.h
 	alglibinternal.cpp		alglibinternal.h

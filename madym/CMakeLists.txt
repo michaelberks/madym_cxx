@@ -48,7 +48,6 @@ SET(mdm_sources
 		mdm_T1VolumeAnalysis.cxx		mdm_T1VolumeAnalysis.h	
 
 		mdm_InputOptions.cxx			mdm_InputOptions.h
-		mdm_vul_arg.h
 		mdm_platform_defs.h
 		mdm_api.h
 )

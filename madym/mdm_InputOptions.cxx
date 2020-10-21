@@ -1,9 +1,11 @@
 /**
-*  @file    mdm_RunTools.h
-*  @brief   Defines class mdm_RunTools and associated helper class mdm_ToolsOptions
-*  @details More info...
-*  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
-*/
+ *  @file    mdm_InputOptions.cxx
+ *  @brief   Implementation of mdm_InputOptions class
+ */
+
+#ifndef MDM_API_EXPORTS
+#define MDM_API_EXPORTS
+#endif // !MDM_API_EXPORTS
 
 #include "mdm_InputOptions.h"
 #include <mdm_version.h>
@@ -19,43 +21,43 @@
 const std::string mdm_InputOptions::empty_str = "\"\"";
 
 template <>
-const std::string& mdm_input_string::operator() ()  const// specialize only one member
+MDM_API const std::string& mdm_input_string::operator() ()  const// specialize only one member
 {
 	return value_();
 }
 
 template <>
-const std::vector<std::string>& mdm_input_strings::operator() ()  const// specialize only one member
+MDM_API const std::vector<std::string>& mdm_input_strings::operator() ()  const// specialize only one member
 {
 	return value_();
 }
 
 template <>
-const std::vector<int>& mdm_input_ints::operator() ()  const// specialize only one member
+MDM_API const std::vector<int>& mdm_input_ints::operator() ()  const// specialize only one member
 {
 	return value_();
 }
 
 template <>
-const std::vector<double>& mdm_input_doubles::operator() ()  const// specialize only one member
+MDM_API const std::vector<double>& mdm_input_doubles::operator() ()  const// specialize only one member
 {
 	return value_();
 }
 
 template <>
-const int& mdm_input_int::operator() ()  const// specialize only one member
+MDM_API const int& mdm_input_int::operator() ()  const// specialize only one member
 {
 	return value_;
 }
 
 template <>
-const double& mdm_input_double::operator() ()  const// specialize only one member
+MDM_API const double& mdm_input_double::operator() ()  const// specialize only one member
 {
 	return value_;
 }
 
 template <>
-const bool& mdm_input_bool::operator() ()  const// specialize only one member
+MDM_API const bool& mdm_input_bool::operator() ()  const// specialize only one member
 {
 	return value_;
 }

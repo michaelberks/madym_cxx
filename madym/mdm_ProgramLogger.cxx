@@ -14,7 +14,6 @@
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
 #endif
-#include "mdm_api.h"
 
 #include "mdm_ProgramLogger.h"
 
@@ -86,18 +85,6 @@ MDM_API bool mdm_ProgramLogger::closeProgramLog()
 	}
 	
 	return true;
-}
-
-/**
- */
-MDM_API std::string mdm_ProgramLogger::logTime()
-{
-	auto now = std::chrono::system_clock::now();
-	auto in_time_t = std::chrono::system_clock::to_time_t(now);
-
-	std::stringstream ss;
-	ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
-	return ss.str();
 }
 
 /**
@@ -183,5 +170,19 @@ MDM_API bool mdm_ProgramLogger::logAuditMessage(const std::string &message)
 	return true;
 }
 
+//****************************************************************************
+// Private
+//****************************************************************************
+/**
+ */
+std::string mdm_ProgramLogger::logTime()
+{
+	auto now = std::chrono::system_clock::now();
+	auto in_time_t = std::chrono::system_clock::to_time_t(now);
+
+	std::stringstream ss;
+	ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
+	return ss.str();
+}
 /*
  */

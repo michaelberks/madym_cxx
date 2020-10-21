@@ -1,8 +1,3 @@
-# nailfold/qtools/ncm_qcapture/CMakeLists.txt
-#
-#   Phil Tresadern
-#
-
 # Add folder where .h files are created (from the .ui files) to the search path
 INCLUDE_DIRECTORIES( ${CMAKE_CURRENT_BINARY_DIR} )
 
@@ -41,7 +36,7 @@ ADD_EXECUTABLE( madym_gui
 	${madym_gui_res_files}
 )
 
-TARGET_LINK_LIBRARIES( madym_gui mdm vul)
+TARGET_LINK_LIBRARIES( madym_gui mdm)
 
 qt5_use_modules(madym_gui Widgets)
 qt5_use_modules(madym_gui Core)

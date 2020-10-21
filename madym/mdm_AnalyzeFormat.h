@@ -84,7 +84,7 @@ public:
 	 * @param   fileName   string full filename to be stripped
 	 * @return  string filename with extension stripped
 	 */
-	static std::string stripAnalyzeExtension(const std::string & fileName);
+	MDM_API static std::string stripAnalyzeExtension(const std::string & fileName);
 
 	/**
 	 * @brief    Test for existence of the file with the specified basename and all Analyze extensions (.img, .hdr)
@@ -93,7 +93,7 @@ public:
 	 * @param    warn       bool, triggers warning for program logger if files don't exit
 	 * @return   bool true if files exist, false otherwise
 	 */
-	static bool filesExist(const std::string & baseName, bool &xtrExistsFlag, 
+	MDM_API static bool filesExist(const std::string & baseName, bool &xtrExistsFlag,
 		bool warn = false);
 
 protected:

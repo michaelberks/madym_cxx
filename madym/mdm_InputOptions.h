@@ -39,8 +39,8 @@ public:
 	const char* key_short() const { return key_short_.c_str(); }
 	const char* combined_key() const { return combined_key_.c_str(); }
 
-	const T_out& operator() () const;
-	T& value() { return value_; }
+	MDM_API const T_out& operator() () const;
+	MDM_API T& value() { return value_; }
 	void set(const T_out &v) { value_ = T(v); }
 	
 

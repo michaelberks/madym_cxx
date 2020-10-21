@@ -9,10 +9,9 @@
  *  Version info and list of modifications in comment at end of file
  */
 
-#ifndef MDM_ERR_API_EXPORTS
-#define MDM_ERR_API_EXPORTS
+#ifndef MDM_API_EXPORTS
+#define MDM_API_EXPORTS
 #endif
-#include "mdm_api.h"
 
 #include "mdm_ErrorTracker.h"
 

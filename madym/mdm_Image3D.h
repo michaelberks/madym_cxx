@@ -351,7 +351,7 @@ class mdm_Image3D
 		* @brief    
 		* @return  
 		*/
-		MDM_API template <class T> bool toBinaryStream(std::ostream &ofs, bool nonZero) const;
+		template <class T> MDM_API bool toBinaryStream(std::ostream &ofs, bool nonZero) const;
 
 		/*
 		* @brief
@@ -359,7 +359,7 @@ class mdm_Image3D
 		*
 		* Note:   Don't forget to free the new int array ...
 		*/
-		MDM_API template <class T> bool fromBinaryStream(std::istream &ifs, 
+		template <class T> MDM_API bool fromBinaryStream(std::istream &ifs,
 			bool nonZero, bool swapBytes);
 	
 

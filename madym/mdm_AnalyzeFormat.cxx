@@ -151,7 +151,8 @@ MDM_API bool mdm_AnalyzeFormat::readImage3D(const std::string & fileName, mdm_Im
 	return true;
 }
 
-//
+/*
+*/
 MDM_API mdm_Image3D mdm_AnalyzeFormat::readImage3D(const std::string &fileName,
 	bool load_xtr)
 {
@@ -167,6 +168,109 @@ MDM_API mdm_Image3D mdm_AnalyzeFormat::readImage3D(const std::string &fileName,
 	return img;
 }
 
+/*
+*/
+MDM_API bool mdm_AnalyzeFormat::writeImage3D(const std::string &baseName,
+	const mdm_Image3D &img,
+	const Data_type dataTypeFlag, const XTR_type xtrTypeFlag,
+	bool sparse)
+{
+	//int   nVoxels = img.getNvoxels();
+
+	struct dsr  hdr;
+	assert(!baseName.empty());
+
+	// Ensure all hdr fields have been initialised, set the req'd fields from
+	// img and the req'd data type fields and write hdr to file.
+	hdrBlankInit(&hdr);
+	setHdrFieldsFromImage3D(&hdr, img, dataTypeFlag, sparse);
+	if (!writeAnalyzeHdr(baseName, &hdr))
+	{
+		mdm_ProgramLogger::logProgramMessage(
+			"ERROR: mdm_AnalyzeFormat::writeImage3D: "
+			"Failed to write Analyze header to " + baseName + "\n");
+		return false;
+	}
+
+	//TODO: we don't bother writing scaling any more. I can't see the point
+	//and just causes hassle
+	hdr.dime.roi_scale = 1.0;
+
+	//Write analyze now takes care of different output types
+	if (!writeAnalyzeImg(baseName, img, dataTypeFlag, sparse))
+	{
+		mdm_ProgramLogger::logProgramMessage(
+			"ERROR: mdm_AnalyzeFormat::writeImage3D: "
+			"Failed to write output to " + baseName + "\n");
+		return false;
+	}
+
+	// Write *.xtr files only if info has been set (default values are all NaN)
+	// But ignore TE for now ... GAB 5 June 2007
+	if (xtrTypeFlag != NO_XTR)
+	{
+		writeAnalyzeXtr(baseName, img, xtrTypeFlag);
+	}
+
+	return true;
+}
+
+/*
+*/
+MDM_API std::string mdm_AnalyzeFormat::stripAnalyzeExtension(const std::string & fileName)
+{
+
+	assert(!fileName.empty());
+
+	return (boost::filesystem::path(fileName).parent_path() /
+		boost::filesystem::path(fileName).stem()).string();
+}
+
+/*
+*/
+MDM_API bool mdm_AnalyzeFormat::filesExist(const std::string & baseName, bool &xtrExistsFlag,
+	bool warn)
+{
+
+	assert(!baseName.empty());
+	xtrExistsFlag = false;
+
+	std::string fileName = baseName + ".hdr";
+	if (!boost::filesystem::exists(fileName))
+	{
+		if (warn)
+			mdm_ProgramLogger::logProgramMessage(
+				"WARNING: mdm_AnalyzeFormat::filesExist: "
+				+ fileName + " does not exist");
+		return false;
+	}
+
+
+	fileName = baseName + ".img";
+	if (!boost::filesystem::exists(fileName))
+	{
+		if (warn)
+			mdm_ProgramLogger::logProgramMessage(
+				"WARNING: mdm_AnalyzeFormat::filesExist: "
+				+ fileName + " does not exist");
+		return false;
+	}
+
+	fileName = baseName + ".xtr";
+	if (!boost::filesystem::exists(fileName))
+	{
+		xtrExistsFlag = false;
+	}
+	else
+		xtrExistsFlag = true;
+
+	return true;
+}
+
+
+//**********************************************************************
+//Private 
+//**********************************************************************
 //
 bool mdm_AnalyzeFormat::writeNewXtr(std::ofstream *xtrFileStream,
 	const mdm_Image3D &img)
@@ -356,57 +460,6 @@ bool mdm_AnalyzeFormat::writeAnalyzeImg(const std::string &baseName,
 }
 
 //
-MDM_API bool mdm_AnalyzeFormat::writeImage3D(const std::string &baseName,
-                            const mdm_Image3D &img,
-                            const Data_type dataTypeFlag, const XTR_type xtrTypeFlag,
-														bool sparse)
-{
-  //int   nVoxels = img.getNvoxels();
-
-  struct dsr  hdr;
-  assert(!baseName.empty());
-
-  // Ensure all hdr fields have been initialised, set the req'd fields from
-  // img and the req'd data type fields and write hdr to file.
-  hdrBlankInit(&hdr);
-  setHdrFieldsFromImage3D(&hdr, img, dataTypeFlag, sparse);
-  if (!writeAnalyzeHdr(baseName, &hdr))
-	{
-		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_AnalyzeFormat::writeImage3D: "
-			"Failed to write Analyze header to " + baseName + "\n");
-		return false;
-	}
-
-	//TODO: we don't bother writing scaling any more. I can't see the point
-	//and just causes hassle
-	hdr.dime.roi_scale = 1.0;
-
-	//Write analyze now takes care of different output types
-	if (!writeAnalyzeImg(baseName, img, dataTypeFlag, sparse))
-	{
-		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_AnalyzeFormat::writeImage3D: "
-			"Failed to write output to " + baseName + "\n");
-		return false;
-	}
-
-  // Write *.xtr files only if info has been set (default values are all NaN)
-  // But ignore TE for now ... GAB 5 June 2007
-  if (xtrTypeFlag != NO_XTR)
-  {
-    writeAnalyzeXtr(baseName, img, xtrTypeFlag);
-  }
-
-  return true;
-}
-
-//
-//----------------------------------------------------------------------------
-//Private functions
-//
-//
-
 bool mdm_AnalyzeFormat::readAnalyzeImg(const std::string &imgFileName,
 	mdm_Image3D &img,
 	const struct dsr *const hdr,
@@ -604,7 +657,7 @@ bool mdm_AnalyzeFormat::readAnalyzeXtr(const std::string &xtrFileName,
 
 //
 //----------------------------------------------------------------------------
-MDM_API void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(struct dsr *const hdr,
+void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(struct dsr *const hdr,
 	const mdm_Image3D img,
 	const int typeFlag,
 	bool sparse)
@@ -662,7 +715,7 @@ MDM_API void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(struct dsr *const hdr,
 }
 
 //
-MDM_API void  mdm_AnalyzeFormat::hdrBlankInit(struct dsr *const hdr)
+void  mdm_AnalyzeFormat::hdrBlankInit(struct dsr *const hdr)
 {
 	int i;
 
@@ -734,56 +787,7 @@ MDM_API void  mdm_AnalyzeFormat::hdrBlankInit(struct dsr *const hdr)
 }
 
 //
-MDM_API std::string mdm_AnalyzeFormat::stripAnalyzeExtension(const std::string & fileName)
-{
-
-	assert(!fileName.empty());
-
-	return (boost::filesystem::path(fileName).parent_path() /
-		boost::filesystem::path(fileName).stem()).string();
-}
-
-//
-MDM_API bool mdm_AnalyzeFormat::filesExist(const std::string & baseName, bool &xtrExistsFlag,
-	bool warn)
-{
-
-	assert(!baseName.empty());
-	xtrExistsFlag = false;
-
-	std::string fileName = baseName + ".hdr";
-	if (!boost::filesystem::exists(fileName))
-	{
-		if (warn)
-			mdm_ProgramLogger::logProgramMessage(
-				"WARNING: mdm_AnalyzeFormat::filesExist: "
-				+ fileName + " does not exist");
-		return false;
-	}
-		
-
-	fileName = baseName + ".img";
-	if (!boost::filesystem::exists(fileName))
-	{
-		if (warn)
-			mdm_ProgramLogger::logProgramMessage(
-				"WARNING: mdm_AnalyzeFormat::filesExist: "
-				+ fileName + " does not exist");
-		return false;
-	}
-
-	fileName = baseName + ".xtr";
-	if (!boost::filesystem::exists(fileName))
-	{
-		xtrExistsFlag = false;
-	}
-	else
-		xtrExistsFlag = true;
-
-	return true;
-}
-
-MDM_API void  mdm_AnalyzeFormat::hdrToString(std::string &hdrString, const struct dsr *const hdr)
+void  mdm_AnalyzeFormat::hdrToString(std::string &hdrString, const struct dsr *const hdr)
 {
 
 	assert(hdr != NULL);

@@ -16,8 +16,6 @@
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
 #endif
-#include "mdm_api.h"
-
 #include "mdm_Image3D.h"
 
 #include <string>
@@ -460,7 +458,7 @@ MDM_API void mdm_Image3D::nonZero(std::vector<int> &idx, std::vector<double> &va
 }
 
 //
-MDM_API template <class T> bool mdm_Image3D::toBinaryStream(std::ostream &ofs, bool nonZero)  const
+template <class T> MDM_API bool mdm_Image3D::toBinaryStream(std::ostream &ofs, bool nonZero)  const
 {
 	size_t elSize = sizeof(T);
 	if (nonZero)
@@ -502,18 +500,18 @@ MDM_API template <class T> bool mdm_Image3D::toBinaryStream(std::ostream &ofs, b
 
 //Now force instantiation of the templated functions for the datatype we
 //need or we'll get linker errors
-MDM_API	template bool mdm_Image3D::toBinaryStream<char>(
+template MDM_API	bool mdm_Image3D::toBinaryStream<char>(
 	std::ostream &ofs, bool nonZero)  const;
-MDM_API	template bool mdm_Image3D::toBinaryStream<short>(
+template MDM_API	bool mdm_Image3D::toBinaryStream<short>(
 	std::ostream &ofs, bool nonZero)  const;
-MDM_API	template bool mdm_Image3D::toBinaryStream<int>(
+template MDM_API	bool mdm_Image3D::toBinaryStream<int>(
 	std::ostream &ofs, bool nonZero)  const;
-MDM_API	template bool mdm_Image3D::toBinaryStream<float>(
+template MDM_API	bool mdm_Image3D::toBinaryStream<float>(
 	std::ostream &ofs, bool nonZero)  const;
-MDM_API	template bool mdm_Image3D::toBinaryStream<double>(
+template MDM_API	bool mdm_Image3D::toBinaryStream<double>(
 	std::ostream &ofs, bool nonZero)  const;
 
-MDM_API template <class T> bool mdm_Image3D::fromBinaryStream(
+template <class T> MDM_API bool mdm_Image3D::fromBinaryStream(
 	std::istream &ifs, bool nonZero, bool swapBytes)
 {
 	//TODO endian check if swap is true - not currently implemented
@@ -584,15 +582,15 @@ MDM_API template <class T> bool mdm_Image3D::fromBinaryStream(
 
 //Now force instantiation of the templated functions for the datatype we
 //need or we'll get linker errors
-MDM_API	template bool mdm_Image3D::fromBinaryStream<char>(
+template MDM_API bool mdm_Image3D::fromBinaryStream<char>(
 	std::istream &ifs, bool nonZero, bool swapBytes);
-MDM_API	template bool mdm_Image3D::fromBinaryStream<short>(
+template MDM_API	bool mdm_Image3D::fromBinaryStream<short>(
 	std::istream &ifs, bool nonZero, bool swapBytes);
-MDM_API	template bool mdm_Image3D::fromBinaryStream<int>(
+template MDM_API	bool mdm_Image3D::fromBinaryStream<int>(
 	std::istream &ifs, bool nonZero, bool swapBytes);
-MDM_API	template bool mdm_Image3D::fromBinaryStream<float>(
+template MDM_API	bool mdm_Image3D::fromBinaryStream<float>(
 	std::istream &ifs, bool nonZero, bool swapBytes);
-MDM_API	template bool mdm_Image3D::fromBinaryStream<double>(
+template MDM_API	bool mdm_Image3D::fromBinaryStream<double>(
 	std::istream &ifs, bool nonZero, bool swapBytes);
 
 /*
