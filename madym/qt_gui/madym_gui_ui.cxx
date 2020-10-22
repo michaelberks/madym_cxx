@@ -1,6 +1,9 @@
 #include "madym_gui_ui.h"
 
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
+#include <madym/run/mdm_RunTools_calculateT1.h>
+#include <madym/run/mdm_RunTools_madym.h>
+
 #include "madym_gui_model_configure.h"
 #include <iomanip>
 
@@ -210,8 +213,8 @@ void madym_gui_ui::on_computeT1Button_clicked()
 	options_parser_.calculate_T1_inputs(T1_ARGV, madym_options_);
 
   //Instantiate new madym_exe object with these options and run
-  mdm_RunTools madym_exe(madym_options_, options_parser_);
-  int result = madym_exe.run_CalculateT1();
+  mdm_RunTools_calculateT1 madym_exe(madym_options_, options_parser_);
+  int result = madym_exe.run();
 }
 
 void madym_gui_ui::on_computeIFButton_clicked()
@@ -243,8 +246,8 @@ void madym_gui_ui::on_computeIFButton_clicked()
 	options_parser_.madym_inputs(AIF_ARGV, madym_options_);
 
 	//Instantiate new madym_exe object with these options and run
-	mdm_RunTools madym_exe(madym_options_, options_parser_);
-	int result = madym_exe.run_AIFFit();
+	mdm_RunTools_madym madym_exe(madym_options_, options_parser_);
+	int result = madym_exe.run();
 }
 void madym_gui_ui::on_fitModelButton_clicked()
 {
@@ -275,8 +278,8 @@ void madym_gui_ui::on_fitModelButton_clicked()
 	options_parser_.madym_inputs(DCE_ARGV, madym_options_);
 
 	//Instantiate new madym_exe object with these options and run
-	mdm_RunTools madym_exe(madym_options_, options_parser_);
-	int result = madym_exe.run_DCEFit();
+	mdm_RunTools_madym madym_exe(madym_options_, options_parser_);
+	int result = madym_exe.run();
 }
 void madym_gui_ui::on_outputStatsButton_clicked()
 {

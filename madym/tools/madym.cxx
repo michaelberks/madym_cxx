@@ -5,8 +5,8 @@
 * @author MA Berks(c) Copyright QBI Lab, University of Manchester 2020
 */
 
-#include <mdm_RunTools.h>
-#include <mdm_OptionsParser.h>
+#include <madym/run/mdm_RunTools_madym.h>
+#include <madym/mdm_OptionsParser.h>
 
 mdm_OptionsParser options_parser_;
 mdm_InputOptions options_;
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 		return parse_error;
 	
 	//Instantiate new madym_exe object with these options and run
-	mdm_RunTools madym_exe(options_, options_parser_);
-	return madym_exe.run_DCEFit();
+	mdm_RunTools_madym madym_exe(options_, options_parser_);
+	return madym_exe.run();
 
 }

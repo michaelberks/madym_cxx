@@ -52,89 +52,23 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API int run_DCEFit();
-
-	/**
-	* @brief
-
-	* @param
-	* @return
-	*/
-	MDM_API int run_DCEFit_lite();
-  	
-	/**
-	* @brief
-
-	* @param
-	* @return
-	*/
-	MDM_API int run_CalculateT1();
-
-	/**
-	* @brief
-
-	* @param
-	* @return
-	*/
-	MDM_API int run_CalculateT1_lite();
-  	
-	/**
-	* @brief
-
-	* @param
-	* @return
-	*/
-	MDM_API int run_AIFFit();
+	MDM_API virtual int run() = 0;
 
 protected:
-  
-
-private:
-  //Methods:
 	int mdm_progExit();
-  void mdm_progAbort(const std::string &err_str);
+	void mdm_progAbort(const std::string &err_str);
 
 	std::string timeNow();
 
-  void setModel(const std::string &model_name, bool auto_aif, bool auto_pif,
-    const std::vector<std::string> &paramNames,
-    const std::vector<double> &initParams,
-    const std::vector<int> fixedParams,
-    const std::vector<double> fixedValues,
-		const std::vector<int> relativeLimitParams,
-		const std::vector<double> relativeLimitValues);
-
-  bool setT1Method(const std::string &method);
-
-	void fit_series(std::ostream &outputData, 
-		const std::vector<double> &ts, const bool &inputCt,
-		const std::vector<double> &noiseVar,
-		const double &t10, const double &s0,
-		const double &r1,
-		const double &TR,
-		const double & FA,
-		const int &firstImage,
-		const int &lastImage,
-		const bool&testEnhancement,
-		const bool&useRatio,
-		const std::vector<double> &IAUCTimes,
-		const bool &outputCt_mod,
-		const bool &outputCt_sig,
-		const bool &optimiseModel);
-
 	void set_up_logging(boost::filesystem::path outputPath);
 
-  //Variables:
+	//Variables:
 	mdm_InputOptions options_;
 	mdm_OptionsParser options_parser_;
+	
 
-  mdm_ErrorTracker errorTracker_;
-  mdm_AIF AIF_;
-  mdm_T1VolumeAnalysis T1Mapper_;
-  mdm_DCEVolumeAnalysis volumeAnalysis_;
-  mdm_DCEModelBase *model_;
-
-  mdm_FileManager fileManager_;
+private:
+  //Methods:
 	
 };
 
