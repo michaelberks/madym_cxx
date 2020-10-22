@@ -7,7 +7,7 @@
 #include <QCheckBox>
 
 #include <mdm_DCEModelBase.h>
-#include <mdm_InputOptions.h>
+#include <mdm_OptionsParser.h>
 #include "ui_madym_model_configure.h"
 
 struct paramControls {
@@ -31,7 +31,7 @@ class madym_gui_model_configure : public QDialog
 
 public:
 	madym_gui_model_configure(const mdm_DCEModelBase &model, const QString &modelName,
-    mdm_DefaultValues &madym_options,
+    mdm_InputOptions &madym_options,
     QWidget *parent = 0);
 
 
@@ -60,7 +60,7 @@ private slots: //
 private: // Variables
   Ui::modelDialog ui;
 
-  mdm_DefaultValues &madym_options_;
+  mdm_InputOptions &madym_options_;
   const mdm_DCEModelBase &model_;
 
   std::vector<paramControls> paramControls_;

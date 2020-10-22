@@ -9,7 +9,7 @@
 //
 
 madym_gui_model_configure::madym_gui_model_configure(const mdm_DCEModelBase &model, const QString &modelName,
-	mdm_DefaultValues &madym_options,
+	mdm_InputOptions &madym_options,
   QWidget *parent)
   :QDialog(parent),
   madym_options_(madym_options),

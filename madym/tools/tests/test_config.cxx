@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <madym/tests/mdm_test_utils.h>
-#include <madym/mdm_InputOptions.h>
+#include <madym/mdm_OptionsParser.h>
 
 BOOST_AUTO_TEST_SUITE(test_mdm_tools)
 
@@ -9,8 +9,8 @@ BOOST_AUTO_TEST_CASE(test_config) {
 	BOOST_TEST_MESSAGE("======= Testing generation of config files for madym tools =======");
 
 	std::string params_name = mdm_test_utils::temp_dir() + "/params.txt";
-	mdm_DefaultValues options;
-	mdm_InputOptions options_parser_;
+	mdm_InputOptions options;
+	mdm_OptionsParser options_parser_;
 
 	options.aifName.set("Aif.txt"); //Str
 	options.IAUCTimes.set({ 20.0, 40.0 }); //vector<double>
@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(test_config) {
 	BOOST_TEST_MESSAGE("Writing params file");
 	BOOST_CHECK(options_parser_.to_file(params_name, options));
 
-	mdm_DefaultValues options_in;
+	mdm_InputOptions options_in;
 	options_in.configFile.set(params_name);
 	BOOST_TEST_MESSAGE("Reading params file");
 	BOOST_CHECK(!options_parser_.madym_inputs("test_read", options_in));

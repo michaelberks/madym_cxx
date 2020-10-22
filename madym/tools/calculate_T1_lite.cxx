@@ -11,10 +11,10 @@
 */
 
 #include <mdm_RunTools.h>
-#include <mdm_InputOptions.h>
+#include <mdm_OptionsParser.h>
 
-mdm_InputOptions options_parser_;
-mdm_DefaultValues options_;
+mdm_OptionsParser options_parser_;
+mdm_InputOptions options_;
 
 /******************************************************************************************
 *       Model fitting                                                                    *

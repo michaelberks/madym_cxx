@@ -9,7 +9,7 @@
 #define MDM_RUNTOOLS_HDR
 #include "mdm_api.h"
 #include <mdm_version.h>
-#include <mdm_InputOptions.h>
+#include <mdm_OptionsParser.h>
 #include <madym/mdm_FileManager.h>
 #include <madym/mdm_DCEVolumeAnalysis.h>
 #include <madym/mdm_AIF.h>
@@ -36,7 +36,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API mdm_RunTools(mdm_DefaultValues &options, mdm_InputOptions &options_parser_);
+	MDM_API mdm_RunTools(mdm_InputOptions &options, mdm_OptionsParser &options_parser_);
 		
 	/**
 	* @brief
@@ -125,8 +125,8 @@ private:
 	void set_up_logging(boost::filesystem::path outputPath);
 
   //Variables:
-	mdm_DefaultValues options_;
-	mdm_InputOptions options_parser_;
+	mdm_InputOptions options_;
+	mdm_OptionsParser options_parser_;
 
   mdm_ErrorTracker errorTracker_;
   mdm_AIF AIF_;

@@ -20,7 +20,7 @@ namespace fs = boost::filesystem;
 
 
 //
-MDM_API mdm_RunTools::mdm_RunTools(mdm_DefaultValues &options, mdm_InputOptions &options_parser)
+MDM_API mdm_RunTools::mdm_RunTools(mdm_InputOptions &options, mdm_OptionsParser &options_parser)
   :
   T1Mapper_(errorTracker_),
   volumeAnalysis_(errorTracker_, T1Mapper_),

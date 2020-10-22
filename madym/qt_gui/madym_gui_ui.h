@@ -26,7 +26,7 @@
 #include "madym_gui_processor.h"
 
 #include <mdm_RunTools.h>
-#include <mdm_InputOptions.h>
+#include <mdm_OptionsParser.h>
 #include <mdm_DCEModelBase.h>
 
 #include "ui_madym_gui.h"
@@ -153,8 +153,8 @@ private: // Variables
 	QButtonGroup* inputTypeRadioGroup;
 
   //Options list
-  mdm_DefaultValues madym_options_;
-	mdm_InputOptions options_parser_;
+  mdm_InputOptions madym_options_;
+	mdm_OptionsParser options_parser_;
 
   //model so we can configure model params
   mdm_DCEModelBase *model_;

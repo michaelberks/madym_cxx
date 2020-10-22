@@ -1,14 +1,13 @@
 /**
- *  @file    mdm_InputOptions.cxx
- *  @brief   Implementation of mdm_InputOptions class
+ *  @file    mdm_OptionsParser.cxx
+ *  @brief   Implementation of mdm_OptionsParser class
  */
 
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
 
-#include "mdm_InputOptions.h"
-#include <mdm_version.h>
+#include "mdm_OptionsParser.h"
 
 #include <iostream>
 #include <fstream>
@@ -18,54 +17,12 @@
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 
-const std::string mdm_InputOptions::empty_str = "\"\"";
-
-template <>
-MDM_API const std::string& mdm_input_string::operator() ()  const// specialize only one member
-{
-	return value_();
-}
-
-template <>
-MDM_API const std::vector<std::string>& mdm_input_strings::operator() ()  const// specialize only one member
-{
-	return value_();
-}
-
-template <>
-MDM_API const std::vector<int>& mdm_input_ints::operator() ()  const// specialize only one member
-{
-	return value_();
-}
-
-template <>
-MDM_API const std::vector<double>& mdm_input_doubles::operator() ()  const// specialize only one member
-{
-	return value_();
-}
-
-template <>
-MDM_API const int& mdm_input_int::operator() ()  const// specialize only one member
-{
-	return value_;
-}
-
-template <>
-MDM_API const double& mdm_input_double::operator() ()  const// specialize only one member
-{
-	return value_;
-}
-
-template <>
-MDM_API const bool& mdm_input_bool::operator() ()  const// specialize only one member
-{
-	return value_;
-}
+const std::string mdm_OptionsParser::EMPTY_STR = "\"\"";
 
 inline std::ostream& operator << (std::ostream& os, const mdm_input_str& v)
 {
 	if (v().empty())
-		os << mdm_InputOptions::empty_str;
+		os << mdm_OptionsParser::EMPTY_STR;
 	else
 		os << v();
 	return os;
@@ -82,7 +39,7 @@ inline std::ostream& operator << (std::ostream& os, const mdm_input_string_list&
 		if (i < v().size())
 			os << ",";
 	}
-		
+
 
 	os << "]";
 	return os;
@@ -122,7 +79,7 @@ void validate(boost::any& v,
 	// Do regex match and convert the interesting part to 
 	// int.
 
-	if (s == mdm_InputOptions::empty_str)
+	if (s == mdm_OptionsParser::EMPTY_STR)
 		v = mdm_input_str("");
 		
 
@@ -218,7 +175,7 @@ void validate(boost::any& v,
 					po::bool_switch(&flag.value())->default_value(flag())->multitoken(),\
 					flag.info())
 
-MDM_API  mdm_InputOptions::mdm_InputOptions()
+MDM_API  mdm_OptionsParser::mdm_OptionsParser()
 {
 	help_.add_options()
 		("help,h", "Print options and quit")
@@ -226,8 +183,8 @@ MDM_API  mdm_InputOptions::mdm_InputOptions()
 		;
 }
 
-MDM_API bool mdm_InputOptions::to_stream(std::ostream &stream, 
-	const mdm_DefaultValues &options) const
+MDM_API bool mdm_OptionsParser::to_stream(std::ostream &stream, 
+	const mdm_InputOptions &options) const
 {
 	//Print out the config and cwd options first, commented so they don't get
 	//read in by the Boosts config reader
@@ -261,8 +218,8 @@ MDM_API bool mdm_InputOptions::to_stream(std::ostream &stream,
 	return true;
 }
 
-MDM_API bool mdm_InputOptions::to_file(const std::string &filename, 
-	const mdm_DefaultValues &options) const
+MDM_API bool mdm_OptionsParser::to_file(const std::string &filename, 
+	const mdm_InputOptions &options) const
 {
 	std::ofstream filestream(filename, std::ios::out);
 	if (!filestream.is_open())
@@ -273,8 +230,8 @@ MDM_API bool mdm_InputOptions::to_file(const std::string &filename,
 	return true;
 }
 
-MDM_API int mdm_InputOptions::madym_inputs(int argc, const char *argv[],
-	mdm_DefaultValues &options)
+MDM_API int mdm_OptionsParser::madym_inputs(int argc, const char *argv[],
+	mdm_InputOptions &options)
 {
 	po::options_description cmdline_options("madym options");
 	po::options_description config_options("madym config options");
@@ -375,8 +332,8 @@ MDM_API int mdm_InputOptions::madym_inputs(int argc, const char *argv[],
 	
 }
 
-MDM_API int mdm_InputOptions::madym_lite_inputs(int argc, const char *argv[],
-	mdm_DefaultValues &options)
+MDM_API int mdm_OptionsParser::madym_lite_inputs(int argc, const char *argv[],
+	mdm_InputOptions &options)
 {
 	po::options_description config_options("madym-lite config options");
 
@@ -446,8 +403,8 @@ MDM_API int mdm_InputOptions::madym_lite_inputs(int argc, const char *argv[],
 	return 0;
 }
 
-MDM_API int mdm_InputOptions::calculate_T1_inputs(int argc, const char *argv[],
-	mdm_DefaultValues &options)
+MDM_API int mdm_OptionsParser::calculate_T1_inputs(int argc, const char *argv[],
+	mdm_InputOptions &options)
 {
 	po::options_description cmdline_options("calculate_T1 options");
 	po::options_description config_options("calculate_T1 config options");
@@ -504,8 +461,8 @@ MDM_API int mdm_InputOptions::calculate_T1_inputs(int argc, const char *argv[],
 	return 0;
 }
 
-MDM_API int mdm_InputOptions::calculate_T1_lite_inputs(int argc, const char *argv[],
-	mdm_DefaultValues &options)
+MDM_API int mdm_OptionsParser::calculate_T1_lite_inputs(int argc, const char *argv[],
+	mdm_InputOptions &options)
 {
 	po::options_description config_options("calculate_T1_lite config options");
 
@@ -541,40 +498,40 @@ MDM_API int mdm_InputOptions::calculate_T1_lite_inputs(int argc, const char *arg
 }
 
 //Overrides for non-commandline input
-MDM_API int mdm_InputOptions::madym_inputs(const std::string &argv,
-	mdm_DefaultValues &options)
+MDM_API int mdm_OptionsParser::madym_inputs(const std::string &argv,
+	mdm_InputOptions &options)
 {
 	const char*argvc[] = { argv.c_str() };
 	return madym_inputs(0, argvc, options);
 }
 
-MDM_API int mdm_InputOptions::madym_lite_inputs(const std::string &argv,
-	mdm_DefaultValues &options)
+MDM_API int mdm_OptionsParser::madym_lite_inputs(const std::string &argv,
+	mdm_InputOptions &options)
 {
 	const char*argvc[] = { argv.c_str() };
 	return madym_lite_inputs(0, argvc, options);
 }
 
-MDM_API int mdm_InputOptions::calculate_T1_inputs(const std::string &argv,
-	mdm_DefaultValues &options)
+MDM_API int mdm_OptionsParser::calculate_T1_inputs(const std::string &argv,
+	mdm_InputOptions &options)
 {
 	const char*argvc[] = { argv.c_str() };
 	return calculate_T1_inputs(0, argvc, options);
 }
 
-MDM_API int mdm_InputOptions::calculate_T1_lite_inputs(const std::string &argv,
-	mdm_DefaultValues &options)
+MDM_API int mdm_OptionsParser::calculate_T1_lite_inputs(const std::string &argv,
+	mdm_InputOptions &options)
 {
 	const char*argvc[] = { argv.c_str() };
 	return calculate_T1_lite_inputs(0, argvc, options);
 }
 
-MDM_API const std::string& mdm_InputOptions::exe_args() const
+MDM_API const std::string& mdm_OptionsParser::exe_args() const
 {
 	return exe_args_;
 }
 
-MDM_API const std::string& mdm_InputOptions::exe_cmd() const
+MDM_API const std::string& mdm_OptionsParser::exe_cmd() const
 {
 	return exe_cmd_;
 }
@@ -583,7 +540,7 @@ MDM_API const std::string& mdm_InputOptions::exe_cmd() const
 // Private functions
 //****************************************************************************
 
-bool mdm_InputOptions::parse_command_line(int argc, const char *argv[],
+bool mdm_OptionsParser::parse_command_line(int argc, const char *argv[],
 	const po::options_description &combined_options)
 {
 	//Combine argv into a standard string
@@ -619,7 +576,7 @@ bool mdm_InputOptions::parse_command_line(int argc, const char *argv[],
 	return true;
 }
 
-bool mdm_InputOptions::help_set(int argc, const po::options_description &combined_options)
+bool mdm_OptionsParser::help_set(int argc, const po::options_description &combined_options)
 {
 	//Check if help set, if so, just display options and quit
 	if (argc == 1 || vm_.count("help")) {
@@ -629,7 +586,7 @@ bool mdm_InputOptions::help_set(int argc, const po::options_description &combine
 	return false;
 }
 
-bool mdm_InputOptions::version_set()
+bool mdm_OptionsParser::version_set()
 {
 	//Check if version set
 	if (vm_.count("version")) {
@@ -639,8 +596,8 @@ bool mdm_InputOptions::version_set()
 	return false;
 }
 
-bool mdm_InputOptions::parse_config_file(const po::options_description &config_options,
-	const mdm_DefaultValues &options)
+bool mdm_OptionsParser::parse_config_file(const po::options_description &config_options,
+	const mdm_InputOptions &options)
 {
 	try
 	{
@@ -682,7 +639,7 @@ bool mdm_InputOptions::parse_config_file(const po::options_description &config_o
 	return true;
 }
 
-void mdm_InputOptions::make_exe_args(int argc, const char *argv[])
+void mdm_OptionsParser::make_exe_args(int argc, const char *argv[])
 {
 	exe_cmd_ = std::string(argv[0]);
 	exe_args_ = exe_cmd_;

@@ -47,9 +47,11 @@ SET(mdm_sources
 		mdm_T1Voxel.cxx					mdm_T1Voxel.h
 		mdm_T1VolumeAnalysis.cxx		mdm_T1VolumeAnalysis.h	
 
-		mdm_InputOptions.cxx			mdm_InputOptions.h
-		mdm_platform_defs.h
-		mdm_api.h
+		mdm_OptionsParser.cxx			mdm_OptionsParser.h
+		mdm_InputTypes.cxx				mdm_InputTypes.h
+										mdm_InputOptions.h
+										mdm_platform_defs.h
+										mdm_api.h
 )
 
 ADD_LIBRARY(mdm 
