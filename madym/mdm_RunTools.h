@@ -16,7 +16,7 @@
 #include <madym/mdm_T1VolumeAnalysis.h>
 #include <madym/mdm_ErrorTracker.h>
 
-#include <madym/mdm_DCEModelBase.h>
+#include <madym/dce_models/mdm_DCEModelBase.h>
 #include <boost/filesystem.hpp>
 
 #include <string>

@@ -6,7 +6,7 @@
 #include <madym/mdm_T1Voxel.h>
 #include <mdm_version.h>
 #include <madym/mdm_AIF.h>
-#include <madym/mdm_DCEModelGenerator.h>
+#include <madym/dce_models/mdm_DCEModelGenerator.h>
 
 namespace fs = boost::filesystem;
 

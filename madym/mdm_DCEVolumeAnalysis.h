@@ -7,14 +7,14 @@
 
 #ifndef mdm_DCEVolumeAnalysis_HDR
 #define mdm_DCEVolumeAnalysis_HDR
-#include "mdm_api.h"
+#include <madym/mdm_api.h>
 
-#include "mdm_Image3D.h"
+#include <madym/mdm_Image3D.h>
 
-#include "mdm_ErrorTracker.h"
-#include "mdm_DCEVoxel.h"
-#include "mdm_DCEModelBase.h"
-#include "mdm_T1VolumeAnalysis.h"
+#include <madym/mdm_ErrorTracker.h>
+#include <madym/mdm_DCEVoxel.h>
+#include <madym/dce_models/mdm_DCEModelBase.h>
+#include <madym/mdm_T1VolumeAnalysis.h>
 
 /**
 * @brief Manager class for DCE analysis, stores input images and output parameter maps

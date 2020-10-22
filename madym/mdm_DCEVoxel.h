@@ -7,11 +7,11 @@
 
 #ifndef MDM_DCEVOXEL_HDR
 #define MDM_DCEVOXEL_HDR
-#include "mdm_api.h"
+#include <madym/mdm_api.h>
 
-#include "mdm_DCEModelBase.h"
+#include <madym/dce_models/mdm_DCEModelBase.h>
 
-#include "opt/linalg.h"
+#include <madym/opt/linalg.h>
 
 #include <vector>
 

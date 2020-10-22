@@ -1,6 +1,6 @@
 #include "madym_gui_ui.h"
 
-#include <mdm_DCEModelGenerator.h>
+#include <madym/dce_models/mdm_DCEModelGenerator.h>
 #include "madym_gui_model_configure.h"
 #include <iomanip>
 

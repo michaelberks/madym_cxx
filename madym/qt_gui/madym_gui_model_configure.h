@@ -6,8 +6,8 @@
 #include <QLineEdit>
 #include <QCheckBox>
 
-#include <mdm_DCEModelBase.h>
-#include <mdm_OptionsParser.h>
+#include <madym/dce_models/mdm_DCEModelBase.h>
+#include <madym/mdm_OptionsParser.h>
 #include "ui_madym_model_configure.h"
 
 struct paramControls {

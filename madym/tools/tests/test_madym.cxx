@@ -6,7 +6,7 @@
 #include <madym/tests/mdm_test_utils.h>
 
 #include <madym/mdm_AIF.h>
-#include <madym/mdm_DCEModelGenerator.h>
+#include <madym/dce_models/mdm_DCEModelGenerator.h>
 #include <madym/mdm_AnalyzeFormat.h>
 #include <madym/mdm_Image3D.h>
 #include <cmath>

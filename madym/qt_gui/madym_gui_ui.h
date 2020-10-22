@@ -25,9 +25,9 @@
 
 #include "madym_gui_processor.h"
 
-#include <mdm_RunTools.h>
-#include <mdm_OptionsParser.h>
-#include <mdm_DCEModelBase.h>
+#include <madym/mdm_RunTools.h>
+#include <madym/mdm_OptionsParser.h>
+#include <madym/dce_models/mdm_DCEModelBase.h>
 
 #include "ui_madym_gui.h"
 

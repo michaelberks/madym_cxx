@@ -5,7 +5,7 @@
 
 #include <madym/tests/mdm_test_utils.h>
 #include <madym/mdm_AIF.h>
-#include <madym/mdm_DCEModelGenerator.h>
+#include <madym/dce_models/mdm_DCEModelGenerator.h>
 
 void test_model_time_series(
 	const std::string &modelName,

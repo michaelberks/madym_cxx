@@ -25,18 +25,8 @@ SET(mdm_sources
 		mdm_RunTools.cxx				mdm_RunTools.h
 		mdm_AIF.cxx						mdm_AIF.h
 		mdm_AnalyzeFormat.cxx			mdm_AnalyzeFormat.h
-		mdm_ErrorTracker.cxx			mdm_ErrorTracker.h		
+		mdm_ErrorTracker.cxx			mdm_ErrorTracker.h			
 		
-		mdm_DCEModelGenerator.h
-		mdm_DCEModelBase.cxx			mdm_DCEModelBase.h
-		mdm_DCEModelETM.cxx				mdm_DCEModelETM.h
-		mdm_DCEModelDIETM.cxx			mdm_DCEModelDIETM.h
-		mdm_DCEModelAUEM.cxx			mdm_DCEModelAUEM.h
-		mdm_DCEModel2CXM.cxx			mdm_DCEModel2CXM.h
-		mdm_DCEModelDI2CXM.cxx			mdm_DCEModelDI2CXM.h
-		mdm_DCEModelDIBEM.cxx			mdm_DCEModelDIBEM.h
-		mdm_DCEModelDIBEM_Fp.cxx		mdm_DCEModelDIBEM_Fp.h
-		mdm_DCEModelDISCM.cxx			mdm_DCEModelDISCM.h
 		mdm_DCEVolumeAnalysis.cxx		mdm_DCEVolumeAnalysis.h
 		mdm_DCEVoxel.cxx				mdm_DCEVoxel.h
 		
@@ -54,8 +44,22 @@ SET(mdm_sources
 										mdm_api.h
 )
 
+SET(mdm_dce_model_sources
+  #Models
+  dce_models/mdm_DCEModelGenerator.h
+  dce_models/mdm_DCEModelBase.cxx			dce_models/mdm_DCEModelBase.h
+  dce_models/mdm_DCEModelETM.cxx			dce_models/mdm_DCEModelETM.h
+  dce_models/mdm_DCEModelDIETM.cxx		dce_models/mdm_DCEModelDIETM.h
+  dce_models/mdm_DCEModelAUEM.cxx			dce_models/mdm_DCEModelAUEM.h
+  dce_models/mdm_DCEModel2CXM.cxx			dce_models/mdm_DCEModel2CXM.h
+  dce_models/mdm_DCEModelDI2CXM.cxx		dce_models/mdm_DCEModelDI2CXM.h
+  dce_models/mdm_DCEModelDIBEM.cxx		dce_models/mdm_DCEModelDIBEM.h
+  dce_models/mdm_DCEModelDIBEM_Fp.cxx	dce_models/mdm_DCEModelDIBEM_Fp.h
+  dce_models/mdm_DCEModelDISCM.cxx		dce_models/mdm_DCEModelDISCM.h
+)
+
 ADD_LIBRARY(mdm 
-	${mdm_sources})
+	${mdm_sources} ${mdm_dce_model_sources})
 
 TARGET_LINK_LIBRARIES( mdm LINK_PUBLIC 
   mdm_opt

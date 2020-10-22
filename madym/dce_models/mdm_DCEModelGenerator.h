@@ -26,15 +26,15 @@ std::cout << "Model type " << modelType_ << " not recognised" << std::endl;
 #include "mdm_api.h"
 #include <mdm_AIF.h>
 
-#include <madym/mdm_DCEModelBase.h>
-#include <madym/mdm_DCEModelETM.h>
-#include <madym/mdm_DCEModelDIETM.h>
-#include <madym/mdm_DCEModelAUEM.h>
-#include <madym/mdm_DCEModelDISCM.h>
-#include <madym/mdm_DCEModel2CXM.h>
-#include <madym/mdm_DCEModelDI2CXM.h>
-#include <madym/mdm_DCEModelDIBEM.h>
-#include <madym/mdm_DCEModelDIBEM_Fp.h>
+#include <madym/dce_models/mdm_DCEModelBase.h>
+#include <madym/dce_models/mdm_DCEModelETM.h>
+#include <madym/dce_models/mdm_DCEModelDIETM.h>
+#include <madym/dce_models/mdm_DCEModelAUEM.h>
+#include <madym/dce_models/mdm_DCEModelDISCM.h>
+#include <madym/dce_models/mdm_DCEModel2CXM.h>
+#include <madym/dce_models/mdm_DCEModelDI2CXM.h>
+#include <madym/dce_models/mdm_DCEModelDIBEM.h>
+#include <madym/dce_models/mdm_DCEModelDIBEM_Fp.h>
 
 /**
 	* @brief Header only class to generate specific instances of DCE models
