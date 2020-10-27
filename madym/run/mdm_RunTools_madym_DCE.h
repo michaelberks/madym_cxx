@@ -5,16 +5,17 @@
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 */
 
-#ifndef MDM_RUNTOOLS_CALCULATET1_HDR
-#define MDM_RUNTOOLS_CALCULATET1_HDR
+#ifndef MDM_RUNTOOLS_MADYM_DCE_HDR
+#define MDM_RUNTOOLS_MADYM_DCE_HDR
 #include "mdm_api.h"
+#include <madym/run/mdm_RunToolsDCEFit.h>
 #include <madym/run/mdm_RunToolsT1Fit.h>
 
 /**
 *  @brief   Called by command line/GUI tools to run DCE-analysis or T1 mapper
 *  @details More info...
 */
-class mdm_RunTools_calculateT1 : public mdm_RunToolsT1Fit {
+class mdm_RunTools_madym_DCE : public mdm_RunToolsDCEFit, mdm_RunToolsT1Fit {
 
 public:
 
@@ -25,7 +26,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API mdm_RunTools_calculateT1(mdm_InputOptions &options, mdm_OptionsParser &options_parser_);
+	MDM_API mdm_RunTools_madym_DCE(mdm_InputOptions &options, mdm_OptionsParser &options_parser_);
 		
 	/**
 	* @brief
@@ -33,7 +34,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API ~mdm_RunTools_calculateT1();
+	MDM_API ~mdm_RunTools_madym_DCE();
   	
 	/**
 	* @brief
@@ -42,6 +43,15 @@ public:
 	* @return
 	*/
 	MDM_API int run();
+
+	/**
+	* @brief
+
+	* @param
+	* @return
+	*/
+	using mdm_RunTools::parse_inputs;
+	MDM_API int parse_inputs(int argc, const char *argv[]);
 
 protected:
   
@@ -54,7 +64,6 @@ private:
 	mdm_DCEVolumeAnalysis volumeAnalysis_;
 	mdm_FileManager fileManager_;
 	mdm_ErrorTracker errorTracker_;
-	mdm_AIF AIF_;
 };
 
 #endif

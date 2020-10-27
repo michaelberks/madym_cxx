@@ -99,7 +99,7 @@ MDM_API void mdm_T1VolumeAnalysis::addROI(mdm_Image3D ROI)
  */
 MDM_API void mdm_T1VolumeAnalysis::T1_mapVarFlipAngle()
 {
-  int errCode = mdm_ErrorTracker::OK;
+	mdm_ErrorTracker::ErrorCode errCode = mdm_ErrorTracker::OK;
 
   /*
    * To allow variable number of flip angles, these are now stored in a vector container
@@ -122,15 +122,15 @@ MDM_API void mdm_T1VolumeAnalysis::T1_mapVarFlipAngle()
 
 	//MB T1_ and M0_ are no longer globals - they're member variables and must be accessed as such from other
 	//calling functions
-	T1_.copyFields(FA_images_[0]);
-	T1_.setType(mdm_Image3D::imageType::TYPE_T1BASELINE);
+	T1_.copy(FA_images_[0]);
+	T1_.setType(mdm_Image3D::ImageType::TYPE_T1BASELINE);
   
-  M0_.copyFields(FA_images_[0]);
-  M0_.setType(mdm_Image3D::imageType::TYPE_M0MAP);
+  M0_.copy(FA_images_[0]);
+  M0_.setType(mdm_Image3D::ImageType::TYPE_M0MAP);
 
   /* Loop through images having fun ... */
 	int nX, nY, nZ;
-	M0_.getMatrixDims(nX, nY, nZ);
+	M0_.getDimensions(nX, nY, nZ);
 
 	//Get flip angles (and convert to radians) of the images we've got
 	std::vector<double> FAs;
@@ -139,7 +139,7 @@ MDM_API void mdm_T1VolumeAnalysis::T1_mapVarFlipAngle()
 		FAs.push_back(FA_images_[i_f].info_.flipAngle.value()  * PI / 180);
   const std::vector<double> sigma(numFAs, 0.1);
 
-	bool useROI = ROI_.getNvoxels() > 0;
+	bool useROI = ROI_.numVoxels() > 0;
 
 	//Get tr value from first FA image - assume same for all images?
 	double tr = FA_images_[0].info_.TR.value();
@@ -158,13 +158,13 @@ MDM_API void mdm_T1VolumeAnalysis::T1_mapVarFlipAngle()
       {
         int voxelIndex = x + (y * nX) + (z * nX * nY);
         
-				if (useROI && !ROI_.getVoxel(voxelIndex))
+				if (useROI && !ROI_.voxel(voxelIndex))
 					continue;
 
 				//Get signals at this voxel
 				std::vector<double> signal(numFAs);
 				for (int i_f = 0; i_f < numFAs; i_f++)
-					signal[i_f] = FA_images_[i_f].getVoxel(voxelIndex);   /* sig FA_1 */
+					signal[i_f] = FA_images_[i_f].voxel(voxelIndex);   /* sig FA_1 */
         
 				//TODO - MB, why only check the first signal?				
         if (signal[0] > noiseThreshold_)
@@ -219,12 +219,12 @@ MDM_API mdm_Image3D mdm_T1VolumeAnalysis::M0Map() const
 
 MDM_API double mdm_T1VolumeAnalysis::T1atVoxel(int voxel) const
 {
-	return T1_.getVoxel(voxel);
+	return T1_.voxel(voxel);
 }
 
 MDM_API double mdm_T1VolumeAnalysis::M0atVoxel(int voxel) const
 {
-	return M0_.getVoxel(voxel);
+	return M0_.voxel(voxel);
 }
 
 MDM_API void mdm_T1VolumeAnalysis::zeroVoxel(int voxel)

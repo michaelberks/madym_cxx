@@ -5,7 +5,7 @@
 * @author MA Berks(c) Copyright QBI Lab, University of Manchester 2020
 */
 
-#include <madym/run/mdm_RunTools_madym.h>
+#include <madym/run/mdm_RunTools_madym_DCE.h>
 #include <madym/mdm_OptionsParser.h>
 
 mdm_OptionsParser options_parser_;
@@ -21,15 +21,16 @@ mdm_InputOptions options_;
 */
 int main(int argc, char *argv[])
 {
-	//Check if any input, if not, then display usage and quit, otherwise
-	//take copy of input command line for our records
-	int parse_error = options_parser_.madym_inputs(argc, (const char **)argv, options_);
+	
+	//Instantiate new madym_exe object
+	mdm_RunTools_madym_DCE madym_exe(options_, options_parser_);
 
+	//Parse inputs
+	int parse_error = madym_exe.parse_inputs(argc, (const char **)argv);
 	if (parse_error)
 		return parse_error;
-	
-	//Instantiate new madym_exe object with these options and run
-	mdm_RunTools_madym madym_exe(options_, options_parser_);
+
+	//If inputs ok, then run
 	return madym_exe.run();
 
 }

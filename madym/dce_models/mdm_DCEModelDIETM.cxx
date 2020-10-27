@@ -16,14 +16,14 @@ const double mdm_DCEModelDIETM::ETM_KEPMAX = 42.0;
 
 MDM_API mdm_DCEModelDIETM::mdm_DCEModelDIETM(
   mdm_AIF &AIF,
-  const std::vector<std::string> &pkParamNames,
-  const std::vector<double> &pkInitParams,
+  const std::vector<std::string> &paramNames,
+  const std::vector<double> &initialParams,
   const std::vector<int> &fixedParams,
   const std::vector<double> &fixedValues,
 	const std::vector<int> &relativeLimitParams,
 	const std::vector<double> &relativeLimitValues)
 	:mdm_DCEModelBase(
-		AIF, pkParamNames, pkInitParams,
+		AIF, paramNames, initialParams,
 		fixedParams, fixedValues,
 		relativeLimitParams,
 		relativeLimitValues)
@@ -73,8 +73,8 @@ MDM_API void mdm_DCEModelDIETM::computeCtModel(int nTimes)
   const double &tau_v = pkParams_[5];
 
   //Resample AIF and get AIF times
-  AIF_.resample_AIF(nTimes, tau_a);
-  AIF_.resample_PIF(nTimes, tau_v, false, true);
+  AIF_.resample_AIF( tau_a);
+  AIF_.resample_PIF( tau_v, false, true);
   const std::vector<double> Ca_t = AIF_.AIF();
   const std::vector<double> Cv_t = AIF_.PIF();
   const std::vector<double> &t = AIF_.AIFTimes();

@@ -15,8 +15,8 @@
 
 MDM_API mdm_DCEModelBase::mdm_DCEModelBase(
   mdm_AIF &AIF,
-  const std::vector<std::string> &pkParamNames,
-  const std::vector<double> &pkInitParams,
+  const std::vector<std::string> &paramNames,
+  const std::vector<double> &initialParams,
   const std::vector<int> &fixedParams,
   const std::vector<double> &fixedValues,
 	const std::vector<int> relativeLimitParams,
@@ -25,8 +25,8 @@ MDM_API mdm_DCEModelBase::mdm_DCEModelBase(
   AIF_(AIF),
   pkParams_(0),
   pkParamsOpt_(0),
-  pkParamNames_(pkParamNames),
-  pkInitParams_(pkInitParams),
+  pkParamNames_(paramNames),
+  pkInitParams_(initialParams),
 	errorCode_(mdm_ErrorTracker::OK),
 	BAD_FIT_SSD(DBL_MAX)
 {
@@ -64,11 +64,11 @@ MDM_API void mdm_DCEModelBase::init(
   }
 
 	//Set relative limits for any specified parameters
-	relativeBounds_.resize(num_dims(), 0);
+	relativeBounds_.resize(num_params(), 0);
 	for (int i = 0; i < relativeLimitParams.size(); i++)
 	{
 		int rp = relativeLimitParams[i] - 1;
-		if (rp < num_dims())
+		if (rp < num_params())
 		{
 			//If fixed values are supplied, use these to overwrite default
 			//initial parameters
@@ -78,7 +78,7 @@ MDM_API void mdm_DCEModelBase::init(
 	}
     
   //Set upper and lower bounds for parameters to be optimised
-  for (int i = 0; i < num_dims(); i++)
+  for (int i = 0; i < num_params(); i++)
   {
     if (optParamFlags_[i])
     {
@@ -95,7 +95,7 @@ MDM_API void mdm_DCEModelBase::reset(int nTimes)
 {
   pkParams_ = pkInitParams_;
   pkParamsOpt_.clear();
-  for (int i = 0, j = 0; i < num_dims(); i++)
+  for (int i = 0, j = 0; i < num_params(); i++)
   {
     if (optParamFlags_[i])
     {
@@ -106,19 +106,19 @@ MDM_API void mdm_DCEModelBase::reset(int nTimes)
   CtModel_.resize(nTimes);
 }
 
-MDM_API int mdm_DCEModelBase::num_dims() const
+MDM_API int mdm_DCEModelBase::num_params() const
 {
   return pkInitParams_.size();
 }
 
-MDM_API int mdm_DCEModelBase::num_opt() const
+MDM_API int mdm_DCEModelBase::num_optimised() const
 {
   return pkParamsOpt_.size();  
 }
 
 MDM_API int mdm_DCEModelBase::num_fixed() const
 {
-  return num_dims() - num_opt();
+  return num_params() - num_optimised();
 }
 
 MDM_API const std::vector<double>& mdm_DCEModelBase::CtModel()
@@ -126,30 +126,30 @@ MDM_API const std::vector<double>& mdm_DCEModelBase::CtModel()
   return CtModel_;
 }
 
-MDM_API std::vector<double>& mdm_DCEModelBase::optParams()
+MDM_API std::vector<double>& mdm_DCEModelBase::optimisedParams()
 {
   return pkParamsOpt_;
 }
 
-MDM_API void mdm_DCEModelBase::setPkParams(const std::vector<double>& optParams)
+MDM_API void mdm_DCEModelBase::setOptimisedParams(const std::vector<double>& optimisedParams)
 {
-  for (int i = 0, j = 0, n = num_dims(); i < n; i++)
+  for (int i = 0, j = 0, n = num_params(); i < n; i++)
   {
     if (optParamFlags_[i])
     {
-      pkParams_[i] = optParams[j];
-      pkParamsOpt_[j] = optParams[j];
+      pkParams_[i] = optimisedParams[j];
+      pkParamsOpt_[j] = optimisedParams[j];
       j++;
     }
   }
 }
 
-MDM_API void mdm_DCEModelBase::setPkInitParams(const std::vector<double>& params)
+MDM_API void mdm_DCEModelBase::setInitialParams(const std::vector<double>& params)
 {
   pkInitParams_ = params;
 	
 	//See if we have any relative bounds to update
-	for (int i = 0, n = num_dims(), j = 0; i < n; i++)
+	for (int i = 0, n = num_params(), j = 0; i < n; i++)
 	{
 		if (optParamFlags_[i])
 		{
@@ -167,30 +167,30 @@ MDM_API void mdm_DCEModelBase::setPkInitParams(const std::vector<double>& params
 
 MDM_API void mdm_DCEModelBase::zeroParams()
 {
-  for (int i = 0, n = num_dims(); i < n; i++)
+  for (int i = 0, n = num_params(); i < n; i++)
     pkParams_[i] = 0;
 }
 
-MDM_API const std::vector<double>& mdm_DCEModelBase::lowerBoundsOpt()
+MDM_API const std::vector<double>& mdm_DCEModelBase::optimisedLowerBounds()
 {
   return lowerBoundsOpt_;
 }
 
-MDM_API const std::vector<double>& mdm_DCEModelBase::upperBoundsOpt()
+MDM_API const std::vector<double>& mdm_DCEModelBase::optimisedUpperBounds()
 {
   return upperBoundsOpt_;
 }
 
-MDM_API const std::vector<double>& mdm_DCEModelBase::pkParams() const
+MDM_API const std::vector<double>& mdm_DCEModelBase::params() const
 {
 	return pkParams_;
 }
 
-MDM_API double     mdm_DCEModelBase::pkParams(int paramIdx) const
+MDM_API double     mdm_DCEModelBase::params(int paramIdx) const
 {
   return pkParams_[paramIdx];
 }
-MDM_API double     mdm_DCEModelBase::pkParams(const std::string &paramName) const
+MDM_API double     mdm_DCEModelBase::params(const std::string &paramName) const
 {
   for (int i = 0; i < pkParamNames_.size(); i++)
   {
@@ -200,16 +200,16 @@ MDM_API double     mdm_DCEModelBase::pkParams(const std::string &paramName) cons
   return FLT_MIN;
 }
 
-MDM_API const std::vector<double>&     mdm_DCEModelBase::pkInitParams() const
+MDM_API const std::vector<double>&     mdm_DCEModelBase::initialParams() const
 {
 	return pkInitParams_;
 }
 
-MDM_API double     mdm_DCEModelBase::pkInitParams(int paramIdx) const
+MDM_API double     mdm_DCEModelBase::initialParams(int paramIdx) const
 {
   return pkInitParams_[paramIdx];
 }
-MDM_API double     mdm_DCEModelBase::pkInitParams(const std::string &paramName) const
+MDM_API double     mdm_DCEModelBase::initialParams(const std::string &paramName) const
 {
   for (int i = 0; i < pkParamNames_.size(); i++)
   {
@@ -219,16 +219,16 @@ MDM_API double     mdm_DCEModelBase::pkInitParams(const std::string &paramName) 
   return FLT_MIN;
 }
 
-MDM_API const std::string&     mdm_DCEModelBase::pkParamName(int paramIdx) const
+MDM_API const std::string&     mdm_DCEModelBase::paramName(int paramIdx) const
 {
   return pkParamNames_[paramIdx];
 }
-MDM_API const std::vector<std::string>&     mdm_DCEModelBase::pkParamNames() const
+MDM_API const std::vector<std::string>&     mdm_DCEModelBase::paramNames() const
 {
   return pkParamNames_;
 }
 
-MDM_API const std::vector<bool>&     mdm_DCEModelBase::optParamFlags() const
+MDM_API const std::vector<bool>&     mdm_DCEModelBase::optimisedParamFlags() const
 {
   return optParamFlags_;
 }
@@ -243,7 +243,7 @@ MDM_API const mdm_AIF&     mdm_DCEModelBase::AIF() const
   return AIF_;
 }
 
-MDM_API int mdm_DCEModelBase::getModelErrorCode()
+MDM_API mdm_ErrorTracker::ErrorCode mdm_DCEModelBase::getModelErrorCode()
 {
 	return errorCode_;
 }

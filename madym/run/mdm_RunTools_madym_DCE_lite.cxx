@@ -2,30 +2,28 @@
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
 
-#include "mdm_RunTools_madym_lite.h"
+#include "mdm_RunTools_madym_DCE_lite.h"
 
 #include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_T1Voxel.h>
-#include <madym/dce_models/mdm_DCEModelGenerator.h>
 
 namespace fs = boost::filesystem;
 
 //
-MDM_API mdm_RunTools_madym_lite::mdm_RunTools_madym_lite(mdm_InputOptions &options, mdm_OptionsParser &options_parser)
+MDM_API mdm_RunTools_madym_DCE_lite::mdm_RunTools_madym_DCE_lite(mdm_InputOptions &options_, mdm_OptionsParser &options_parser)
 	: 
 	mdm_RunToolsDCEFit(), 
-	mdm_RunTools(options, options_parser)
+	mdm_RunTools(options_, options_parser)
 {
 }
 
 
-MDM_API mdm_RunTools_madym_lite::~mdm_RunTools_madym_lite()
+MDM_API mdm_RunTools_madym_DCE_lite::~mdm_RunTools_madym_DCE_lite()
 {
 
 }
 
 //
-MDM_API int mdm_RunTools_madym_lite::run()
+MDM_API int mdm_RunTools_madym_DCE_lite::run()
 {
 	if (options_.model().empty())
 	{
@@ -38,10 +36,6 @@ MDM_API int mdm_RunTools_madym_lite::run()
 	if (!options_.nDyns())
 	{
 		mdm_progAbort("number of dynamics (option -n) must be provided");
-	}
-	if (options_.outputDir().empty())
-	{
-		mdm_progAbort("output directory (option -o) must be provided");
 	}
 
 	//Using boost filesyetm, can call one line to make absolute path from input
@@ -66,7 +60,7 @@ MDM_API int mdm_RunTools_madym_lite::run()
  //Set which type of model we're using
 	setModel(options_.model(),
 		!options_.aifName().empty(), !options_.pifName().empty(),
-		options_.paramNames(), options_.initParams(),
+		options_.paramNames(), options_.initialParams(),
 		options_.fixedParams(), options_.fixedValues(),
 		options_.relativeLimitParams(), options_.relativeLimitValues());
 	AIF_.setPrebolus(options_.injectionImage());
@@ -210,15 +204,15 @@ MDM_API int mdm_RunTools_madym_lite::run()
 			//Check if input parameters to read
 			if (load_params)
 			{
-				int n = model_->num_dims();
-				std::vector<double> initParams(n, 0);
+				int n = model_->num_params();
+				std::vector<double> initialParams(n, 0);
 				double vox;
 				for (int i = 0; i < n; i++)
 				{
 					inputParams >> vox;
-					initParams[i] = vox;
+					initialParams[i] = vox;
 				}
-				model_->setPkInitParams(initParams);
+				model_->setInitialParams(initialParams);
 			}
 
 			//Fit the series
@@ -276,10 +270,72 @@ MDM_API int mdm_RunTools_madym_lite::run()
 	return mdm_progExit();
 }
 
+/**
+	* @brief
+
+	* @param
+	* @return
+	*/
+MDM_API int mdm_RunTools_madym_DCE_lite::parse_inputs(int argc, const char *argv[])
+{
+	po::options_description config_options("madym-lite config options_");
+	
+	options_parser_.add_option(config_options, options_.dataDir);
+
+		//DCE input options_
+	options_parser_.add_option(config_options, options_.inputDataFile);
+	options_parser_.add_option(config_options, options_.inputCt);
+	options_parser_.add_option(config_options, options_.dynTimesFile);
+	options_parser_.add_option(config_options, options_.nDyns);
+	options_parser_.add_option(config_options, options_.injectionImage);
+
+		//Signal to concentration options_
+	options_parser_.add_option(config_options, options_.M0Ratio);
+	options_parser_.add_option(config_options, options_.r1Const);
+	options_parser_.add_option(config_options, options_.FA);
+	options_parser_.add_option(config_options, options_.TR);
+
+		//AIF options_
+	options_parser_.add_option(config_options, options_.aifName);
+	options_parser_.add_option(config_options, options_.pifName);
+	options_parser_.add_option(config_options, options_.dose);
+	options_parser_.add_option(config_options, options_.hct);
+
+		//Model options_
+	options_parser_.add_option(config_options, options_.model);
+	options_parser_.add_option(config_options, options_.initialParams);
+	options_parser_.add_option(config_options, options_.initParamsFile);
+	options_parser_.add_option(config_options, options_.paramNames);
+	options_parser_.add_option(config_options, options_.fixedParams);
+	options_parser_.add_option(config_options, options_.fixedValues);
+	options_parser_.add_option(config_options, options_.relativeLimitParams);
+	options_parser_.add_option(config_options, options_.relativeLimitValues);
+	options_parser_.add_option(config_options, options_.firstImage);
+	options_parser_.add_option(config_options, options_.lastImage);
+
+	options_parser_.add_option(config_options, options_.noOptimise);
+	options_parser_.add_option(config_options, options_.dynNoiseFile);
+	options_parser_.add_option(config_options, options_.testEnhancement);
+	options_parser_.add_option(config_options, options_.maxIterations);
+
+		//DCE only output options_
+	options_parser_.add_option(config_options, options_.outputCt_sig);
+	options_parser_.add_option(config_options, options_.outputCt_mod);
+	options_parser_.add_option(config_options, options_.IAUCTimes);
+
+		//General output options_
+	options_parser_.add_option(config_options, options_.outputName);
+	options_parser_.add_option(config_options, options_.outputDir);
+
+	return options_parser_.parse_inputs(
+		config_options,
+		argc, argv);
+}
+
 //*******************************************************************************
 // Private:
 //*******************************************************************************
-void mdm_RunTools_madym_lite::fit_series(std::ostream &outputData,
+void mdm_RunTools_madym_DCE_lite::fit_series(std::ostream &outputData,
 	const std::vector<double> &ts, const bool &inputCt,
 	const std::vector<double> &noiseVar,
 	const double &t10, const double &s0,
@@ -289,7 +345,7 @@ void mdm_RunTools_madym_lite::fit_series(std::ostream &outputData,
 	const int &firstImage,
 	const int &lastImage,
 	const bool&testEnhancement,
-	const bool&useRatio,
+	const bool&useM0Ratio,
 	const std::vector<double> &IAUCTimes,
 	const bool &outputCt_mod,
 	const bool &outputCt_sig,
@@ -320,11 +376,11 @@ void mdm_RunTools_madym_lite::fit_series(std::ostream &outputData,
 		firstImage,
 		lastImage,
 		testEnhancement,
-		useRatio,
+		useM0Ratio,
 		IAUCTimes);
-	vox.initialiseModelFit(*model_);
+	vox.initialiseModel(*model_);
 
-	vox.calculateIAUC();
+	vox.computeIAUC();
 
 	if (optimiseModel)
 		vox.fitModel();
@@ -338,8 +394,8 @@ void mdm_RunTools_madym_lite::fit_series(std::ostream &outputData,
 	for (int i = 0; i < IAUCTimes.size(); i++)
 		outputData << " " << vox.IAUC_val(i);
 
-	for (int i = 0; i < model_->num_dims(); i++)
-		outputData << " " << model_->pkParams(i);
+	for (int i = 0; i < model_->num_params(); i++)
+		outputData << " " << model_->params(i);
 
 
 	if (outputCt_mod)

@@ -7,15 +7,13 @@
  *	compiling an application that sees only the header interface, we need to import the symbols)
  *	On linux this should just work, and it is also not needed if we're building static libraries
  *
- *	However we need to build an exportable shared library if we want to use or libraries in Python,
+ *	However we need to build an exportable shared library if we want to use the libraries in Python,
  *	hence the requirement to add in all this bumf
  *
  */
 
 #ifndef MDM_API_H
 #define MDM_API_H
-
-/*MB TODO: For cross platform compatibility, look-up whether I need to wrap everything in the extern C macro*/
 
 #if _WIN32 /*MB TODO: Better to check _MSC_VER?*/
 

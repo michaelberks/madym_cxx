@@ -5,8 +5,8 @@
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 */
 
-#ifndef MDM_RUNTOOLS_MADYM_LITE_HDR
-#define MDM_RUNTOOLS_MADYM_LITE_HDR
+#ifndef MDM_RUNTOOLS_MADYM_DCE_LITE_HDR
+#define MDM_RUNTOOLS_MADYM_DCE_LITE_HDR
 #include "mdm_api.h"
 #include <madym/run/mdm_RunToolsDCEFit.h>
 
@@ -14,7 +14,7 @@
 *  @brief   Called by command line/GUI tools to run DCE-analysis or T1 mapper
 *  @details More info...
 */
-class mdm_RunTools_madym_lite : public mdm_RunToolsDCEFit {
+class mdm_RunTools_madym_DCE_lite : public mdm_RunToolsDCEFit {
 
 public:
 
@@ -25,7 +25,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API mdm_RunTools_madym_lite(mdm_InputOptions &options, mdm_OptionsParser &options_parser_);
+	MDM_API mdm_RunTools_madym_DCE_lite(mdm_InputOptions &options, mdm_OptionsParser &options_parser_);
 		
 	/**
 	* @brief
@@ -33,7 +33,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API ~mdm_RunTools_madym_lite();
+	MDM_API ~mdm_RunTools_madym_DCE_lite();
   	
 	/**
 	* @brief
@@ -42,6 +42,15 @@ public:
 	* @return
 	*/
 	MDM_API int run();
+
+	/**
+	* @brief
+
+	* @param
+	* @return
+	*/
+	using mdm_RunTools::parse_inputs;
+	MDM_API int parse_inputs(int argc, const char *argv[]);
 
 protected:
   
@@ -58,7 +67,7 @@ private:
 		const int &firstImage,
 		const int &lastImage,
 		const bool&testEnhancement,
-		const bool&useRatio,
+		const bool&useM0Ratio,
 		const std::vector<double> &IAUCTimes,
 		const bool &outputCt_mod,
 		const bool &outputCt_sig,

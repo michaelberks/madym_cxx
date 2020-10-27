@@ -8,6 +8,7 @@
 #ifndef MDM_T1VOXEL_HDR
 #define MDM_T1VOXEL_HDR
 #include "mdm_api.h"
+#include "mdm_ErrorTracker.h"
 
 #include <vector>
 #include "opt/optimization.h"
@@ -75,7 +76,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API int fitT1_VFA(double &T1value, double &M0value);
+	MDM_API mdm_ErrorTracker::ErrorCode fitT1_VFA(double &T1value, double &M0value);
 
   /**
 	* @brief

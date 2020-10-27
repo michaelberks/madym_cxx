@@ -14,14 +14,14 @@
 
 MDM_API mdm_DCEModelDIBEM::mdm_DCEModelDIBEM(
   mdm_AIF &AIF,
-  const std::vector<std::string> &pkParamNames,
-  const std::vector<double> &pkInitParams,
+  const std::vector<std::string> &paramNames,
+  const std::vector<double> &initialParams,
   const std::vector<int> &fixedParams,
   const std::vector<double> &fixedValues,
 	const std::vector<int> &relativeLimitParams,
 	const std::vector<double> &relativeLimitValues)
 	:mdm_DCEModelBase(
-		AIF, pkParamNames, pkInitParams,
+		AIF, paramNames, initialParams,
 		fixedParams, fixedValues,
 		relativeLimitParams,
 		relativeLimitValues)
@@ -78,7 +78,7 @@ MDM_API void mdm_DCEModelDIBEM::computeCtModel(int nTimes)
   std::vector<double> Ca_t;
   if (f_a)
   {
-    AIF_.resample_AIF(nTimes, tau_a);
+    AIF_.resample_AIF( tau_a);
     Ca_t = AIF_.AIF();
   }
   else
@@ -87,7 +87,7 @@ MDM_API void mdm_DCEModelDIBEM::computeCtModel(int nTimes)
   std::vector<double> Cv_t;
   if (f_v)
   {
-    AIF_.resample_PIF(nTimes, tau_v, false, true);
+    AIF_.resample_PIF( tau_v, false, true);
     Cv_t = AIF_.PIF();
   }
   else

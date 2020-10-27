@@ -13,7 +13,7 @@ namespace fs = boost::filesystem;
 BOOST_AUTO_TEST_SUITE(test_mdm_tools)
 
 BOOST_AUTO_TEST_CASE(test_madym_lite) {
-	BOOST_TEST_MESSAGE("======= Testing tool: madym_lite =======");
+	BOOST_TEST_MESSAGE("======= Testing tool: madym_DCE_lite =======");
 	//Need to generate input data files. To do this, load in calibration
 	//data
 
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(test_madym_lite) {
 	//Write out the concentration times
 	std::string inputDataFile = test_dir + "/Ct_input.dat";
 	std::ofstream ifs(inputDataFile, std::ios::out);
-	BOOST_REQUIRE_MESSAGE(ifs.is_open(), "Failed to write out Ct values for madym_lite");
+	BOOST_REQUIRE_MESSAGE(ifs.is_open(), "Failed to write out Ct values for madym_DCE_lite");
 
 	for (const auto c : Ct)
 		ifs << c << " ";
@@ -88,17 +88,17 @@ BOOST_AUTO_TEST_CASE(test_madym_lite) {
 	//Writeout the dynamic time
 	std::string dynTimesFile = test_dir + "/dyn_times.dat";
 	std::ofstream dfs(dynTimesFile, std::ios::out);
-	BOOST_REQUIRE_MESSAGE(dfs.is_open(), "Failed to write out dyn times values for madym_lite");
+	BOOST_REQUIRE_MESSAGE(dfs.is_open(), "Failed to write out dyn times values for madym_DCE_lite");
 	
 	for (const auto t : dynTimes)
 		dfs << t << " ";
 	dfs.close();
 
 	//Call madym_lite to fit ETM
-	std::string Ct_output_dir = test_dir + "/madym_lite/";
+	std::string Ct_output_dir = test_dir + "/madym_DCE_lite/";
 	std::string outputName = "madym_analysis.dat";
 	std::stringstream cmd;
-	cmd << mdm_test_utils::tools_exe_dir() << "madym_lite"
+	cmd << mdm_test_utils::tools_exe_dir() << "madym_DCE_lite"
 		<< " -m ETM"
 		<< " --data " << inputDataFile
 		<< " -n " << nTimes
@@ -109,8 +109,6 @@ BOOST_AUTO_TEST_CASE(test_madym_lite) {
 		<< " --Ct"
 		<< " -t " << dynTimesFile;
 
-	std::cout << "Command to run: " << cmd.str() << std::endl;
-
 	BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
 
 	int error;
@@ -120,11 +118,11 @@ BOOST_AUTO_TEST_CASE(test_madym_lite) {
 	}
 	catch (...)
 	{
-		BOOST_CHECK_MESSAGE(false, "Running madym_lite failed");
+		BOOST_CHECK_MESSAGE(false, "Running madym_DCE_lite failed");
 		return;
 	}
 
-	BOOST_CHECK_MESSAGE(!error, "Error returned from madym_lite tool");
+	BOOST_CHECK_MESSAGE(!error, "Error returned from madym_DCE_lite tool");
 
 	//Load in the fitted parameters from the output file
 	std::string outputDataFile = Ct_output_dir + "ETM_" + outputName;

@@ -46,10 +46,10 @@ SET(mdm_sources
 SET(mdm_run_sources
   run/mdm_RunToolsDCEFit.cxx		run/mdm_RunToolsDCEFit.h
   run/mdm_RunToolsT1Fit.cxx			run/mdm_RunToolsT1Fit.h
-  run/mdm_RunTools_madym.cxx		run/mdm_RunTools_madym.h
-  run/mdm_RunTools_madym_lite.cxx	run/mdm_RunTools_madym_lite.h
-  run/mdm_RunTools_calculateT1.cxx		run/mdm_RunTools_calculateT1.h
-  run/mdm_RunTools_calculateT1_lite.cxx	run/mdm_RunTools_calculateT1_lite.h
+  run/mdm_RunTools_madym_DCE.cxx		run/mdm_RunTools_madym_DCE.h
+  run/mdm_RunTools_madym_DCE_lite.cxx	run/mdm_RunTools_madym_DCE_lite.h
+  run/mdm_RunTools_madym_T1.cxx		run/mdm_RunTools_madym_T1.h
+  run/mdm_RunTools_madym_T1_lite.cxx	run/mdm_RunTools_madym_T1_lite.h
 )
 SET(mdm_dce_model_sources
   #Models

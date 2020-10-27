@@ -24,7 +24,7 @@ void write_series_to_binary(const std::string filename,
 void make_model_time_series(
 	const std::string &outputDir,
 	const std::string &modelName,
-	const std::vector<double> &initParams,
+	const std::vector<double> &initialParams,
 	mdm_AIF &AIF,
 	bool makeIAUC)
 {
@@ -32,7 +32,7 @@ void make_model_time_series(
 	mdm_DCEModelBase *model = NULL;
 	bool model_set = mdm_DCEModelGenerator::setModel(model, AIF,
 		modelName, false, false, {},
-		initParams, {}, {}, {}, {});
+		initialParams, {}, {}, {}, {});
 
 	//Check it set correctly
 	if (!model_set)
@@ -49,14 +49,14 @@ void make_model_time_series(
 	//Write to binary file
 	std::string modelFileName = outputDir + "" + modelName + ".dat";
 	write_series_to_binary(modelFileName,
-		Ct, initParams);
+		Ct, initialParams);
 	std::cout << "Wrote time series for "<< modelName << " to binary calibration file" << std::endl;
 
 	//Add noise
 	mdm_test_utils::add_noise(Ct, 0.001);
 	modelFileName = outputDir + "" + modelName + "_noise.dat";
 	write_series_to_binary(modelFileName,
-		Ct, initParams);
+		Ct, initialParams);
 	std::cout << "Wrote time series with added noise for " << modelName << " to binary calibration file" << std::endl;
 
 	if (makeIAUC)
@@ -96,7 +96,7 @@ void make_model_time_series(
 		}
 
 		std::string iaucFileName = outputDir + "" + modelName + "_IAUC.dat";
-		int nParams = initParams.size();
+		int nParams = initialParams.size();
 		std::ofstream iaucFileStream(iaucFileName, std::ios::out | std::ios::binary);
 		iaucFileStream.write(reinterpret_cast<const char*>(
 			&nIAUC), sizeof(int));
@@ -140,12 +140,12 @@ int main(int argc, char *argv[])
 	double hct = 0.42;
 	double dose = 0.1;
 	mdm_AIF AIF;
-	AIF.setAIFflag(mdm_AIF::AIF_POP);
+	AIF.setAIFType(mdm_AIF::AIF_POP);
 	AIF.setPrebolus(injectionImage);
 	AIF.setHct(hct);
 	AIF.setDose(dose);
 	AIF.setAIFTimes(dynTimes);
-	AIF.resample_AIF(nTimes, 0);
+	AIF.resample_AIF( 0);
 	std::vector<double> aifVals = AIF.AIF();
 
 	//Write it out to binary file
@@ -163,8 +163,8 @@ int main(int argc, char *argv[])
 	std::cout << "Wrote AIF to binary calibration file" << std::endl;
 
 	//Write out PIF too
-	AIF.setPIFflag(mdm_AIF::PIF_POP);
-	AIF.resample_PIF(nTimes, 0);
+	AIF.setPIFType(mdm_AIF::PIF_POP);
+	AIF.resample_PIF( 0);
 	std::vector<double> pifVals = AIF.PIF();
 	std::string pifFileName(outputDir + "pif.dat");
 	std::ofstream pifFileStream(pifFileName, std::ios::out | std::ios::binary);

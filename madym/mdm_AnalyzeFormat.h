@@ -1,4 +1,4 @@
-/**
+/*!
  *  @file    mdm_AnalyzeFormat.h
  *  @brief   Class for Analyze image format reading and writing
  *  @details More info...
@@ -11,87 +11,89 @@
 #include "mdm_api.h"
 #include <madym/mdm_Image3D.h>
 
- /**
-	* @brief Analyze image format reading and writing
+ //! Analyze image format reading and writing
+	/*!
 	*/
 class mdm_AnalyzeFormat {
 
 public:
-	/**
-	* @brief    Enum of recognized Analyze data formats
-	* @details  Only DT_UNSIGNED_CHAR, DT_SIGNED_SHORT, DT_SIGNED_INT,
-	*						DT_FLOAT and DT_DOUBLE supported.
+	//!    Enum of recognized Analyze data formats
+	/*!
+	* Only DT_UNSIGNED_CHAR, DT_SIGNED_SHORT, DT_SIGNED_INT, DT_FLOAT and DT_DOUBLE supported.
   */
 	enum Data_type {
-		DT_NONE = 0,
-		DT_UNKNOWN = DT_NONE,
-		DT_BINARY = 1,
-		DT_UNSIGNED_CHAR = 2,
-		DT_SIGNED_SHORT = 4,
-		DT_SIGNED_INT = 8,
-		DT_FLOAT = 16,
-		DT_COMPLEX = 32,
-		DT_DOUBLE = 64,
-		DT_RGB = 128,
-		DT_ALL = 255
+		DT_NONE = 0, ///< No data supplied, not expected to be used
+		DT_UNKNOWN = DT_NONE, ///< Data-type not recognised, not expected to be used
+		DT_BINARY = 1, ///< 8-bit data, cast to binary true/false
+		DT_UNSIGNED_CHAR = 2, ///< 8-bit data, integers [0,255] 
+		DT_SIGNED_SHORT = 4, ///< 16-bit data, integers [-32,768,32,767]
+		DT_SIGNED_INT = 8, ///< 32-bit data, integers [-2,147,483,648, 2,147,483,647]
+		DT_FLOAT = 16, ///< 32-bit data, floating point numbers
+		DT_COMPLEX = 32, ///< Not supported
+		DT_DOUBLE = 64, ///< 62-bit data, floating point numbers
+		DT_RGB = 128, ///< Not supported
+		DT_ALL = 255 ///< Not supported
 	};
 
-	/**
-	* @brief    Enum of recognized .xtr formats
+	//!    Enum of recognized .xtr formats
+	/*!
+	.xtr files are used by Madym to encode meta-information not stored in 
+	Analyze headers. This enum checks the xtr version. The .xtr version will
+	be detected automatically during read. The new format will be used for writing.
 	*/
 	enum XTR_type {
-		NO_XTR = -1,
-		OLD_XTR = 0,
-		NEW_XTR = 1,
+		NO_XTR = -1, ///< Image does not have a matching .xtr file
+		OLD_XTR = 0, ///< Old format
+		NEW_XTR = 1, ///< Current format
 	};
 
-	/**
-	* @brief    Read Analyze format file(s) to given mdm_Image3D object
-	* @param    fileName   string name of file from which to read the data
-	* @param    img   reference to mdm_Image3D into which image data is loaded
-	* @param		loadXtr			bool flag, if true tries to load .xtr file too
-	* @return   bool, true on success, false otherwise
+	//!    Read Analyze format file(s) to given mdm_Image3D object
+	/*!
+	@param    fileName   string name of file from which to read the data
+	@param    img   reference to mdm_Image3D into which image data is loaded
+	@param		loadXtr			bool flag, if true tries to load .xtr file too
+	@return   bool, true on success, false otherwise
 	*/
 	MDM_API static bool readImage3D(const std::string& fileName, mdm_Image3D &img,
 		bool load_xtr);
 
-	/**
-	* @brief    Read Analyze format file(s) and return mdm_Image3D object
-	* @param    fileName		string name of file from which to read the data
-	* @param		loadXtr			bool flag, if true tries to load .xtr file too
-	* @return   mdm_Image3D object containing image read from disk
+	//!    Read Analyze format file(s) and return mdm_Image3D object
+	/*!
+	@param    fileName		name of file from which to read the data
+	@param		loadXtr			flag, if true tries to load .xtr file too
+	@return   mdm_Image3D object containing image read from disk
 	*/
 	MDM_API static mdm_Image3D readImage3D(const std::string& fileName,
 		bool loadXtr);
 
 	
-	/**
-	* @brief    Write mdm_Image3D to QBI extended Analyze hdr/img/xtr file set
-	* @param    baseName      base name for file (gets .hdr/.img/.xtr appended)
-	* @param    img           mdm_Image3D holding the data to be written to file
-	* @param    dataTypeFlag  integer data type flag; see Data_type enum
-	* @param    xtrTypeFlag   integer xtr type flag; 0 for old, 1 for new
-	* @param		sparse				bool flag, if true, only non-zero voxels and their indices written
-	* @return   bool 0 for success or 1 for failure
+	//!    Write mdm_Image3D to QBI extended Analyze hdr/img/xtr file set
+	/*!
+	@param    baseName      base name for file (gets .hdr/.img/.xtr appended)
+	@param    img           mdm_Image3D holding the data to be written to file
+	@param    dataTypeFlag  integer data type flag; see Data_type enum
+	@param    xtrTypeFlag   integer xtr type flag; 0 for old, 1 for new
+	@param		sparse				flag, if true, only non-zero voxels and their indices written in the .img file
+	@return   bool 0 for success or 1 for failure
 	*/
 	MDM_API static bool writeImage3D(const std::string & baseName,
 		const mdm_Image3D &img,
 		const Data_type dataTypeFlag, const XTR_type xtrTypeFlag,
 		bool sparse = false);
 
-	/**
-	 * @brief   Strip Analyze extension from a file name and return in a different string
-	 * @param   fileName   string full filename to be stripped
-	 * @return  string filename with extension stripped
+	//!   Strip Analyze extension from a file name and return in a different string
+	 /*!
+	 @param   fileName full filename to be stripped
+	 @return  filename with extension stripped
 	 */
 	MDM_API static std::string stripAnalyzeExtension(const std::string & fileName);
 
-	/**
-	 * @brief    Test for existence of the file with the specified basename and all Analyze extensions (.img, .hdr)
-	 * @param    baseName        string base name of files to test
-	 * @param    xtrExistsFlag (output)   reference to bool, stores if .xtr file also exists
-	 * @param    warn       bool, triggers warning for program logger if files don't exit
-	 * @return   bool true if files exist, false otherwise
+	//!    Test for existence of the file with the specified basename and all Analyze extensions (.img, .hdr)
+	 /*!
+	 @param    baseName base name of files to test
+	 @param    xtrExistsFlag stores if .xtr file also exists (output)
+	 @param    warn  flag, if true triggers warning for program logger if files don't exist
+	 @return   bool true if files exist, false otherwise
 	 */
 	MDM_API static bool filesExist(const std::string & baseName, bool &xtrExistsFlag,
 		bool warn = false);

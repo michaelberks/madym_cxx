@@ -17,7 +17,6 @@
 #include <cmath>            /* For cos(), sin() and exp() */
 #include <cassert>          /* For assert macro */
 
-#include "mdm_ErrorTracker.h"
 #include "mdm_ProgramLogger.h"
 
 const int mdm_T1Voxel::MINIMUM_FAS = 3;
@@ -77,7 +76,7 @@ MDM_API void mdm_T1Voxel::setTR(const double TR)
 	TR_ = TR;
 }
 
-MDM_API int mdm_T1Voxel::fitT1_VFA(
+MDM_API mdm_ErrorTracker::ErrorCode mdm_T1Voxel::fitT1_VFA(
 	double &T1value, double &M0value)
 {
 	assert(signals_.size() == nFAs_);

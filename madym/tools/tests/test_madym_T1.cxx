@@ -12,7 +12,7 @@ namespace fs = boost::filesystem;
 BOOST_AUTO_TEST_SUITE(test_mdm_tools)
 
 BOOST_AUTO_TEST_CASE(test_calculate_T1) {
-	BOOST_TEST_MESSAGE("======= Testing tool: calculate T1 =======");
+	BOOST_TEST_MESSAGE("======= Testing tool: madym T1 =======");
 
 	//Generate some signals from sample FA, TR, T1 and S0 values
 	double T1 = 1000;
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1) {
 	{
 		//Create VFA signal image
 		mdm_Image3D FA_img;
-		FA_img.setMatrixDims(1, 1, 1);
+		FA_img.setDimensions(1, 1, 1);
 		FA_img.setVoxelDims(1, 1, 1);
 		FA_img.info_.flipAngle.setValue(FAs[i_fa]);
 		FA_img.info_.TR.setValue(TR);
@@ -44,9 +44,9 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1) {
 	}
 
 	//Call calculate_T1 to fit T1 and S0
-	std::string T1_output_dir = test_dir + "/calculate_T1/";
+	std::string T1_output_dir = test_dir + "/madym_T1/";
 	std::stringstream cmd;
-	cmd << mdm_test_utils::tools_exe_dir() << "calculate_T1"
+	cmd << mdm_test_utils::tools_exe_dir() << "madym_T1"
 		<< " -T VFA "
 		<< " --T1_vols " << FA_names[0] << "," << FA_names[1] << "," << FA_names[2]
 		<< " -o " << T1_output_dir
@@ -61,11 +61,11 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1) {
 	}
 	catch (...)
 	{
-		BOOST_CHECK_MESSAGE(false, "Running calculate_T1 failed");
+		BOOST_CHECK_MESSAGE(false, "Running madym_T1 failed");
 		return;
 	}
 
-	BOOST_CHECK_MESSAGE(!error, "Error returned from calculate_T1 tool");
+	BOOST_CHECK_MESSAGE(!error, "Error returned from madym_T1 tool");
 
 	//Load in the parameter img vols and extract the single voxel from each
 	mdm_Image3D T1_fit = mdm_AnalyzeFormat::readImage3D(T1_output_dir + "T1.hdr", false);
@@ -74,9 +74,9 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1) {
 	//Check the model parameters have fitted correctly
 	double tol = 0.1;
 	BOOST_TEST_MESSAGE("Testing fitted T1");
-	BOOST_CHECK_CLOSE(T1_fit.getVoxel(0), T1, tol);
+	BOOST_CHECK_CLOSE(T1_fit.voxel(0), T1, tol);
 	BOOST_TEST_MESSAGE("Testing fitted M0");
-	BOOST_CHECK_CLOSE(M0_fit.getVoxel(0), M0, tol);
+	BOOST_CHECK_CLOSE(M0_fit.voxel(0), M0, tol);
 
 	//Tidy up
 	fs::remove_all(FA_dir);

@@ -1,4 +1,4 @@
-/**
+/*!
  *  @file    mdm_DCEVoxel.h
  *  @brief   Class that holds DCE time-series data and an asssociated tracer kinetic model
  *  @details More info...
@@ -15,248 +15,179 @@
 
 #include <vector>
 
-/**
-* @brief Holds DCE time-series data and an asssociated tracer kinetic model
+//! Holds DCE time-series data and an asssociated tracer kinetic model
+/*!
 */
 class mdm_DCEVoxel {
 public:
 
+	//! Enum of current voxel error status
+	/*!
+	*/
   enum mdm_DCEVoxelStatus
   {
-    OK = 0,
-    DYN_T1_BAD = 1,
-    CA_NAN = 2,
-    T10_BAD = 3,
-    M0_BAD = 4
+    OK = 0, ///> No errors
+    DYN_T1_BAD = 1, ///> Dynamic T1 invalid at one or more timepoints
+    CA_NAN = 2, ///> NaNs found in signal-derived concentration
+    T10_BAD = 3, ///> Baseline T1 is invalid
+    M0_BAD = 4 ///> Baseline M0 is invalid
   };
 
-	//Force initialization with data required to make model fit? If so, make default constructor
-	//private
-		/**
-	* @brief
-
-	* @param
-	* @return
+	
+	//! Constructor
+	/*!
+	
+	\param dynSignals time-series of dynamic signals (if empty, requires dynConc)
+	\param dynConc time-series of signal-derived concentration (if empty, computed from dynSignals)
+	\param noiseVar temporal-varying noise (if empty, constant noise=1 used)
+	\param T10 baseline T1
+	\param M0 baseline M0 (if not set, requires useM0Ratio true)
+	\param r1Const relaxivity coefficient of contrast-agent
+	\param bolus_time timepoint bolus injected
+	\param dynamicTimings time in minutes of each series timepoint
+	\param TR repetition time
+	\param FA flip angle
+	\param timepoint0 first timepoint used in model fit 
+	\param timepointN last timepoint used in model fit 
+	\param testEnhancement flag to test enhancement
+	\param useM0Ratio flag to use M0 ratio method
+	\param IAUC_times times at which compute IAUC
 	*/
 	MDM_API mdm_DCEVoxel(
     const std::vector<double> &dynSignals,
 		const std::vector<double> &dynConc,
     const std::vector<double> &noiseVar,
 		const double T10,
-		const double M01,
+		const double M0,
 		const double r1Const,
     const int bolus_time,
 		const std::vector<double> &dynamicTimings,
 		const double TR,
 		const double FA,
-		const int n1,
-		const int n2,
+		const int timepoint0,
+		const int timepointN,
 		const bool testEnhancement,
-		const bool useRatio,
+		const bool useM0Ratio,
 		const std::vector<double> &IAUC_times);
-		/**
-	* @brief
 
-	* @param
-	* @return
+	//! Default destructor
+	/*!
 	*/
 	MDM_API ~mdm_DCEVoxel();
 
-  /**
-  * Pre-conditions:
-  *
-  * Post-conditions
-  * -  Global T1value holds current dynamic T1
-  *
-  * Uses madym.h globals:
-  * -  concentrationMapFlag                (input only)
-  * -  T1value                             (output - value set)
-  *
-  * Note:  NOT a stand-alone fn - see pre-conditions & use of globals
-  *
-  * @brief    Convert signal intensity time-series to [CA] time series
-  * @param    p        Pointer to Permeability struct holding input data
-  * @param    tr       Float TR (repetition time) value
-  * @param    fa       Float FA (flip angle) value
-  * @return   double*   Pointer to [CA] time series array
-  */
-  	/**
-	* @brief
-
-	* @param
-	* @return
+  //! Convert signal time-series to contrast agent concentration
+	/*!
 	*/
 	MDM_API void computeCtFromSignal();
 
-  //Run an initial model fit using the current model parameters (does not optimise new parameters)
-  	/**
-	* @brief
-
-	* @param
-	* @return
+  //! Set tracer-kinetic model and compute modelled C(t) at initial model parameters
+  /*!
+	\param model reference to tracer-kinetic model object
 	*/
-	MDM_API void initialiseModelFit(mdm_DCEModelBase &model);
+	MDM_API void initialiseModel(mdm_DCEModelBase &model);
 
-	/* The business end */
-		/**
-	* @brief
-
-	* @param
-	* @return
+	//! Optimise tracer-kinetic model fit to concentration time-series
+	/*!
 	*/
 	MDM_API void  fitModel();
 
-	/**
-	* Moved here for version 2.0
-	*
-	* Depending on the model, the parameter and lambda arrays are set up (see NR)
-	* then the simplex is run and the results are copied to the global mirror
-	* variables.  Model-to-data SSD is also calculated and returned.
-	*
-	* Uses madym.h globals:
-	* -  mdmCfg.prebolus
-	*
-	* Note:  NOT a stand-alone fn - see pre-conditions & side-effects
-	*
-	* @author   GJM Parker (mods by GA Buonaccorsi)
-	* @brief    Calculate Integrated area under the CA(t) curve (simple summation)
-	* @version  madym 1.21.alpha
-	* @param    nTimes           Integer number of data points in the time series - INPUT
-	* @param    seconds         Float array of timing data                       - INPUT
-	* @param    concentration   Float array of CA(t) data                        - INPUT
-	* @param    IAUC60          Pointer to double holding AUC to 60 s             - OUTPUT
-	* @param    IAUC90          Pointer to double holding AUC to 90 s             - OUTPUT
-	* @param    IAUC120         Pointer to double holding AUC to 120 s            - OUTPUT
+	//! Compute IAUC values at selected times
+	/*!
 	*/
-		/**
-	* @brief
+	MDM_API void computeIAUC();
 
-	* @param
-	* @return
-	*/
-	MDM_API void calculateIAUC();
-
-  	/**
-	* @brief
-
-	* @param
-	* @return
+  //! Return the current error status
+	/*!
+	\see mdm_DCEVoxelStatus
 	*/
 	MDM_API mdm_DCEVoxelStatus status() const;
-		/**
-	* @brief
-
-	* @param
-	* @return
+		
+	//! Return first timepoint used in computing model fit
+	/*!
+	\return first timepoint used in computing model fit
 	*/
-	MDM_API int n1() const;
-		/**
-	* @brief
-
-	* @param
-	* @return
+	MDM_API int timepoint0() const;
+	
+	//! Return last timepoint used in computing model fit
+	/*!
+	\return last timepoint used in computing model fit
 	*/
-	MDM_API int n2() const;
-		/**
-	* @brief
-
-	* @param
-	* @return
+	MDM_API int timepointN() const;
+	
+	//! Return signal time-series
+	/*!
+	\return signal time-series
 	*/
 	MDM_API const std::vector<double>& signalData() const;
-		/**
-	* @brief
 
-	* @param
-	* @return
+	//! Return signal-derived contrast-agent concentration time-series
+	/*!
+	\return signal-derived contrast-agent concentration time-series
 	*/
 	MDM_API const std::vector<double>&	CtData() const;
-  	/**
-	* @brief
-
-	* @param
-	* @return
+  
+	//! Return signal-derived contrast-agent concentration time-series
+	/*!
+	\return model-estimated contrast-agent concentration time-series
 	*/
 	MDM_API const std::vector<double>&	CtModel() const;
-		/**
-	* @brief
-
-	* @param
-	* @return
+	
+	//! Return baseline T1
+	/*!
+	\return baseline T1
 	*/
-	MDM_API double     t10() const;
-		/**
-	* @brief
-
-	* @param
-	* @return
+	MDM_API double     T1() const;
+	
+	//! Return baseline M0
+	/*!
+	\return baseline M0
 	*/
-	MDM_API double     s0() const;
-		/**
-	* @brief
-
-	* @param
-	* @return
+	MDM_API double     M0() const;
+	
+	//! Return contrast-agent relaxivity coefficient
+	/*!
+	\return contrast-agent relaxivity coefficient
 	*/
 	MDM_API double     r1Const() const;
-		/**
-	* @brief
-
-	* @param
-	* @return
-	*/
-	MDM_API double			IAUC_val(int i) const;
-		/**
-	* @brief
-
-	* @param
-	* @return
-	*/
-	MDM_API double			IAUC_time(int i) const;
-  
-	/**
-	* @brief
-
-	* @param
-	* @return
-	*/
-	MDM_API double     pkParams(int paramIdx) const;
 	
-	/**
-	* @brief
-
-	* @param
-	* @return
+	//! Return IAUC value at specified index
+	/*!
+	\param idx index into IAUC values
+	\return IAUC value at specified index
 	*/
-	MDM_API double     pkParams(const std::string &paramName) const;
-		/**
-	* @brief
+	MDM_API double			IAUC_val(int idx) const;
 
-	* @param
-	* @return
+	//! Return IAUC time at specified index
+	/*
+	\param idx index into IAUC times
+	\return IAUC time at specified index
+	*/
+	MDM_API double			IAUC_time(int idx) const;
+	
+	//! Return model fit error (sum of squared residuals)
+	/*!
+	\return fit error
 	*/
 	MDM_API double     modelFitError() const;
-		/**
-	* @brief
-
-	* @param
-	* @return
+	
+	//! Return enhancing status
+	/*!
+	\return enhancing status, true if voxel is enhancing OR testEnhancement is set false
+	\see testEnhancement()
 	*/
 	MDM_API bool      enhancing() const;
-		/**
-	* @brief
-
-	* @param
-	* @return
+	
+	//! Return test enhancement flag
+	/*!
+	\return test enhancement flag, if true, only enhancing voxels are fitted
 	*/
 	MDM_API bool			testEnhancement() const;
-		/**
-	* @brief
-
-	* @param
-	* @return
+	
+	//! Return flag for using M0 ratio
+	/*!
+	\return test enhancement flag, if true, only enhancing voxels are fitted
 	*/
-	MDM_API bool			useRatio() const;
+	MDM_API bool			useM0Ratio() const;
 
 protected:
 
@@ -264,115 +195,50 @@ private:
 
 	/*METHODS*/
 
-  /**
-  * @brief    Calculate dynamic T1 from M0 and dynamic signal intensity
-  * @param    t1_0  - Baseline T1 value
-  * @param    st    - dynamic signal intensity
-  * @param    s_pbm - prebolus mean dynamic signal intensity
-  * @param    cosfa - cos(flip angle)
-  * @param    tr    - TR (repetition time)
-  * @return   Float dynamic T1 value (0.0 on divide by zero or other error)
+  /*!
+  //!    Calculate dynamic T1 from M0 and dynamic signal intensity
+  \param    t1_0  - Baseline T1 value
+  \param    st    - dynamic signal intensity
+  \param    s_pbm - prebolus mean dynamic signal intensity
+  \param    cosfa - cos(flip angle)
+  \param    tr    - TR (repetition time)
+  \return   Float dynamic T1 value (0.0 on divide by zero or other error)
   *
   * @author   Gio Buonaccorsi
   * @version  1.21.alpha (12 August 2013)
   */
   double computeT1DynPBM(const double &st, const double &s_pbm, const double &cosfa, int &errorCode);
 
-  /**
-  * @brief    Calculate dynamic T1 from M0 and dynamic signal intensity
-  * @param    s0    - M0 in signal intensity domain
-  * @param    st    - dynamic signal intensity
-  * @param    sinfa - sin(flip angle)
-  * @param    cosfa - cos(flip angle)
-  * @param    tr    - TR (repetition time)
-  * @return   Float dynamic T1 value (0.0 on divide by zero or other error)
+  /*!
+  //!    Calculate dynamic T1 from M0 and dynamic signal intensity
+  \param    s0    - M0 in signal intensity domain
+  \param    st    - dynamic signal intensity
+  \param    sinfa - sin(flip angle)
+  \param    cosfa - cos(flip angle)
+  \param    tr    - TR (repetition time)
+  \return   Float dynamic T1 value (0.0 on divide by zero or other error)
   *
   * @author   Gio Buonaccorsi
   * @version  1.21.alpha (12 August 2013)
   */
   double computeT1DynM0(const double &st, const double & sinfa, const double & cosfa, int &errorCode);
 
-	/**
-	* Pre-conditions:
-	* -  parameter_array has ndim valid values
-	*
-	* Post-conditions
-	* -  G* file scope static all set (see below)
-	*
-	* Uses madym.h globals:
-	* -  mdmCfg.model_flag
-	* Uses file-scope statics:
-	* -  GnData, Gx, Gy, Gdose, Gk, Gve, Gvp, Goffset, GHct
-	* -  catFromModel[]
-	*
-	* This is the cost function passed in the parameter list to simplexmin(), so its heading
-	* is fixed.  The parameter_array holds the values passed to and returned from simplex,
-	* as a simple set of values, so we have to know the ordering and their meanings.
-	*
-	* The parameter values are checked to be sure they take sensible values and a high cost
-	* (FLT_MAX) is returned if they do not.  The SSE is calculated, comparing the [CA] values
-	* calculated from the measured signal intensity time series (Gy[]) to the model (file scope
-	* static array catFromModel[]), and this SSE returned.
-	*
-	* Note:  NOT a stand-alone fn - see pre-conditions & side-effects
-	*
-	* @author   GJM Parker with mods by GA Buonaccorsi
-	* @brief    Calculate errors on CA(t) estimated from data cf. fitted model
-	* @version  madym 1.21.alpha
-	* @param    ndim              Integer number of elements in parameter_array
-	* @param    parameter_array   Double array holding model parameters (from simplex)
-	* @return   double    Sum squared differences (data to model) or FLT_MAX
+	/*!
 	*/
-	//double catSSD(int ndim, std::vector<double> &parameter_array);
 	double CtSSD(const std::vector<double> &parameter_array);
 
   double computeSSD(const std::vector<double> &catModel) const;
-
-	/*static void CtSSDalglib(const alglib::real_1d_array &x, double &func, void *context) {
-		std::vector<double> params(x.getcontent(), x.getcontent() + x.length());
-		func = static_cast<mdm_DCEVoxel*>(context)->CtSSD(params);
-	}*/
 
 	static void CtSSDalglib(const alglib::real_1d_array &x, alglib::real_1d_array &func, void *context) {
 		std::vector<double> params(x.getcontent(), x.getcontent() + x.length());
 		func[0] = static_cast<mdm_DCEVoxel*>(context)->CtSSD(params);
 	}
 
-
 	static double CtSDDforwarder(void* context, const std::vector<double> &parameter_array) {
 		return static_cast<mdm_DCEVoxel*>(context)->CtSSD(parameter_array);
 	}
 
-	/**
-	* Pre-conditions:
-	* -  All inputs adequately initialised
-	*
-	* Post-conditions
-	* -  All outputs have valid values
-	* -  G* file scope static all set (see below)
-	*
-	* Simplex set-up and results propagation.
-	*
-	* Depending on the model, the parameter and lambda arrays are set up (see NR)
-	* then the simplex is run and the results are copied to the global mirror
-	* variables.  Model-to-data SSD is also calculated and returned.
-	*
-	* Uses madym.h globals:
-	* -  mdmCfg.model_flag, max_iterations
-	* Uses file-scope statics:
-	* -  GnData, Gx, Gy, Gdose, Gk, Gve, Gvp, Goffset, GHct
-	*
-	* Note:  NOT a stand-alone fn - see pre-conditions & side-effects
-	*
-	* @author   GJM Parker (mods by GA Buonaccorsi)
-	* @brief    Set up and do simplex fit to required model
-	* @version  madym 1.21.alpha
-	* @param    nTimes    Integer number of data points in the time series - INPUT
-	* @param    kTrans   Pointer to double holding Ktrans                  - OUTPUT
-	* @param    ve       Pointer to double holding relative volume of EES  - OUTPUT
-	* @param    vp       Pointer to double holding relative plasma volume  - OUTPUT
-	* @param    offset   Pointer to double holding  offset time for AIF    - OUTPUT
-	* @param    ssd      Pointer to double holding SSD for model v data    - OUTPUT
+	/*!
 	*/
 	void optimiseModel();
 
@@ -381,12 +247,12 @@ private:
 
   mdm_DCEModelBase *model_;
 
-	int										n1_, n2_;				//n1(=0?), n2_ total number of datapoints
+	int										timepoint0_, timepointN_;				//n1(=0?), n2_ total number of datapoints
 	std::vector<double>					signalData_;		//DCE time series vector of signals
 	std::vector<double>					CtData_;				//DCE time series vector of signal-derived concentrations
   std::vector<double>					noiseVar_;			//DCE time series vector of estimated noise variance for each temporal volume
 	double								t10_;						//T1 value for this voxel
-	double								s0_;						//M0 (aka M0) value for this voxel - not used if using ratio method
+	double								m0_;						//M0 value for this voxel - not used if using ratio method
 	double								r1Const_;				//relaxivity constant of tissue 
   int                   bolus_time_;    //Time point of injection
 	std::vector<double>		IAUC_times_;		//Vector of times (in secs) at which to caclucate IAUC values (and the resulting values)
@@ -405,11 +271,9 @@ private:
 	bool testEnhancement_;
 
 	//Flag to check if we use the ratio method for scaling signal or M0 computed alongside T1
-	bool useRatio_;
+	bool useM0Ratio_;
 
 	//Upper an lower bounds to use with optimiser
-	std::vector<double> lowerBounds_;
-	std::vector<double> upperBounds_;
 	alglib::real_1d_array lowerBoundsOpt_;
 	alglib::real_1d_array upperBoundsOpt_;
 

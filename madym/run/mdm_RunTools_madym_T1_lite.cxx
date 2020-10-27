@@ -2,7 +2,7 @@
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
 
-#include "mdm_RunTools_calculateT1_lite.h"
+#include "mdm_RunTools_madym_T1_lite.h"
 
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/mdm_T1Voxel.h>
@@ -10,39 +10,36 @@
 namespace fs = boost::filesystem;
 
 //
-MDM_API mdm_RunTools_calculateT1_lite::mdm_RunTools_calculateT1_lite(mdm_InputOptions &options, mdm_OptionsParser &options_parser)
-	: mdm_RunTools(options, options_parser)
+MDM_API mdm_RunTools_madym_T1_lite::mdm_RunTools_madym_T1_lite(mdm_InputOptions &options_, mdm_OptionsParser &options_parser)
+	: mdm_RunTools(options_, options_parser)
 {
 }
 
 
-MDM_API mdm_RunTools_calculateT1_lite::~mdm_RunTools_calculateT1_lite()
+MDM_API mdm_RunTools_madym_T1_lite::~mdm_RunTools_madym_T1_lite()
 {
 
 }
 
 //
-MDM_API int mdm_RunTools_calculateT1_lite::run()
+MDM_API int mdm_RunTools_madym_T1_lite::run()
 {
 	if (options_.inputDataFile().empty())
 	{
-		mdm_progAbort("input data file (option -s) must be provided");
+		mdm_progAbort("input data file (option --data) must be provided");
 	}
 	if (!options_.nT1Inputs())
 	{
-		mdm_progAbort("number of signals (option -n) must be provided");
+		mdm_progAbort("number of signals (option --n_T1) must be provided");
 	}
 	if (!options_.TR())
 	{
-		mdm_progAbort("TR (option -TR) must be provided");
-	}
-	if (options_.outputDir().empty())
-	{
-		mdm_progAbort("output directory (option -o) must be provided");
+		mdm_progAbort("TR (option --TR) must be provided");
 	}
 
 	//Set which type of model we're using - throws error if method not recognised
-	setT1Method(options_.T1method());
+	if (!setT1Method(options_.T1method()))
+		mdm_progAbort("T1 method not recognised");
 
 	//Using boost filesyetm, can call one line to make absolute path from input
 	//regardless of whether relative or absolute path has been given
@@ -134,6 +131,30 @@ MDM_API int mdm_RunTools_calculateT1_lite::run()
 	return mdm_progExit();
 }
 
+/**
+	* @brief
+
+	* @param
+	* @return
+	*/
+MDM_API int mdm_RunTools_madym_T1_lite::parse_inputs(int argc, const char *argv[])
+{
+	po::options_description config_options("calculate_T1_lite config options_");
+	
+	options_parser_.add_option(config_options, options_.dataDir);
+	options_parser_.add_option(config_options, options_.inputDataFile);
+	options_parser_.add_option(config_options, options_.T1method);
+	options_parser_.add_option(config_options, options_.FA);
+	options_parser_.add_option(config_options, options_.TR);
+	options_parser_.add_option(config_options, options_.T1noiseThresh);
+	options_parser_.add_option(config_options, options_.nT1Inputs);
+	options_parser_.add_option(config_options, options_.outputDir);
+	options_parser_.add_option(config_options, options_.outputName);
+
+	return options_parser_.parse_inputs(
+		config_options,
+		argc, argv);
+}
 //*******************************************************************************
 // Private:
 //*******************************************************************************

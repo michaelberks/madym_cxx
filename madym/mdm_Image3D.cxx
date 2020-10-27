@@ -1,16 +1,8 @@
 /**
- *  @file    mdm_Image.cxx
- *  @brief   Functions for use with the QBI internal image format
+ *  @file    mdm_Image3D.cxx
+ *  @brief   implementation of mdm_Image3D class
  *
- *  Original author GA Buonaccorsi 9-24 February 2006
- *  (c) Copyright ISBE, University of Manchester 2006
-*
  * @author   Mike Berks
- * @version  2.0 (26 Feb 2012)
- *
- *
- *  Documentation comments are in *.h, except for static methods
- *  Version info and list of modifications in comment at end of file
  */
 
 #ifndef MDM_API_EXPORTS
@@ -23,17 +15,8 @@
 #include <sstream>
 #include <iostream>
 
-/*
- * Create a new mdm_Image3D object
- * and initialise its fields with default member data.
- *
- * Notes: 1.  The voxel data pointer is set to NULL as it needs matrix dimensions
- *        2.  The image types are #defined in the *.h file, as they may be required by users
- *        3.  The negative double values allow simple tests for "not set", as testing floats
- *            for equality to 0.0 is dangerous
- */
-
-mdm_Image3D::Info::Info()
+//
+mdm_Image3D::MetaData::MetaData()
 	: /* Defaulting to NaN llows test isnan() for unset */
 	TimeStamp("TimeStamp"),
 	flipAngle("FlipAngle"),
@@ -43,9 +26,9 @@ mdm_Image3D::Info::Info()
 	TI("TI"),
 	TA("TA"),
 	ETL("ETL"),
-	X0("X0"),
-	Y0("Y0"),
-	Z0("Z0"),
+	Xmm("Xmm"),
+	Ymm("Ymm"),
+	Zmm("Zmm"),
 	rowDirCosX("RowDirCosX"),
 	rowDirCosY("RowDirCosY"),
 	rowDirCosZ("RowDirCosZ"),
@@ -55,18 +38,15 @@ mdm_Image3D::Info::Info()
 	noiseSigma("NoiseSigma")
 {}
 
+//
 MDM_API mdm_Image3D::mdm_Image3D()
 	:
 	imgType_(TYPE_UNDEFINED),
 	nX_(0),
 	nY_(0),
 	nZ_(0),
-	xmm_(-1.0),
-	ymm_(-1.0),
-	zmm_(-1.0),
 	info_(),
 	data_(0)
-
 {   
 }
 
@@ -77,17 +57,17 @@ MDM_API mdm_Image3D::~mdm_Image3D()
 }
 
 //Return const ref to data
-MDM_API const std::vector<double>& mdm_Image3D::getData() const
+MDM_API const std::vector<double>& mdm_Image3D::data() const
 {
 	return data_;
 }
 
 //
-MDM_API double mdm_Image3D::getVoxel(int i) const
+MDM_API double mdm_Image3D::voxel(int i) const
 {
 	//Should we check the input is in range - possibly, although adds overhead?
 	//Maybe have a separate safe method?
-	assert(i >= 0 && i < getNvoxels());
+	assert(i >= 0 && i < numVoxels());
 	return data_[i];
 }
 
@@ -96,30 +76,24 @@ MDM_API void mdm_Image3D::setVoxel(int i, double value)
 {
 	//Should we check the input is in range - possibly, although adds overhead?
 	//Maybe have a separate safe method?
-	assert(i >= 0 && i < getNvoxels());
+	assert(i >= 0 && i < numVoxels());
 	data_[i] = value;
 }
 
 //
-MDM_API void mdm_Image3D::setType(const int newType)
+MDM_API void mdm_Image3D::setType(ImageType newType)
 {
-  if ((newType >= 0) && (newType < INFO_NTYPES))
-    imgType_ = newType;
-  else
-  {
-    /* LOG WARNING MESSAGE */
-    imgType_ = TYPE_UNDEFINED;
-  }
+  imgType_ = newType;
 }
 
 //
-MDM_API int mdm_Image3D::getType() const
+MDM_API mdm_Image3D::ImageType mdm_Image3D::type() const
 {
   return imgType_;
 }
 
 //
-MDM_API void mdm_Image3D::setMatrixDims(const int nX, const int nY, const int nZ)
+MDM_API void mdm_Image3D::setDimensions(const int nX, const int nY, const int nZ)
 {
   assert((nX >= 0) && (nY >= 0) && (nZ >= 0));
 
@@ -134,7 +108,14 @@ MDM_API void mdm_Image3D::setMatrixDims(const int nX, const int nY, const int nZ
 }
 
 //
-MDM_API void mdm_Image3D::getMatrixDims(int &nX, int &nY, int &nZ) const
+MDM_API void mdm_Image3D::setDimensions(const mdm_Image3D &img)
+{
+	setDimensions(img.nX_, img.nY_, img.nZ_);
+	setVoxelDims(img.info_.Xmm.value(), img.info_.Ymm.value(), img.info_.Zmm.value());
+}
+
+//
+MDM_API void mdm_Image3D::getDimensions(int &nX, int &nY, int &nZ) const
 {
   nX = nX_;
   nY = nY_;
@@ -142,7 +123,7 @@ MDM_API void mdm_Image3D::getMatrixDims(int &nX, int &nY, int &nZ) const
 }
 
 //
-MDM_API int mdm_Image3D::getNvoxels() const
+MDM_API int mdm_Image3D::numVoxels() const
 {
   return (int) (nX_ * nY_ * nZ_);
 }
@@ -152,17 +133,9 @@ MDM_API void mdm_Image3D::setVoxelDims(const double xmm, const double ymm, const
 {
   assert((xmm >= 0.0) && (ymm >= 0.0) && (zmm >= 0.0));
 
-  xmm_ = xmm;
-  ymm_ = ymm;
-  zmm_ = zmm;
-}
-
-//
-MDM_API void mdm_Image3D::getVoxelDims(double &xmm, double &ymm, double &zmm) const
-{
-  xmm = xmm_;
-  ymm = ymm_;
-  zmm = zmm_;
+  info_.Xmm.setValue(xmm);
+	info_.Ymm.setValue(ymm);
+	info_.Zmm.setValue(zmm);
 }
 
 //
@@ -172,19 +145,19 @@ MDM_API void mdm_Image3D::setTimeStamp(const double timeStamp)
 }
 
 //
-MDM_API double mdm_Image3D::getTimeStamp() const
+MDM_API double mdm_Image3D::timeStamp() const
 {
   return info_.TimeStamp.value();
 }
 
 //
-MDM_API void mdm_Image3D::decodeKeyValuePairs(const std::vector<std::string> &keys,
+MDM_API void mdm_Image3D::setMetaData(const std::vector<std::string> &keys,
 	const std::vector<double> &values)
 {
-	int nKeys = keys.size();
+	auto nKeys = keys.size();
   assert(nKeys == values.size());
 
-	for (int i = 0; i < nKeys; i++)
+	for (auto i = 0; i < nKeys; i++)
 	{
 		if (keys[i].compare(info_.TimeStamp.key()) == 0)
 			setTimeStamp( values[i]);
@@ -202,12 +175,12 @@ MDM_API void mdm_Image3D::decodeKeyValuePairs(const std::vector<std::string> &ke
 			info_.TA.setValue(values[i]);
 		else if (keys[i].compare(info_.ETL.key()) == 0)
 			info_.ETL.setValue(values[i]);
-		else if (keys[i].compare(info_.X0.key()) == 0)
-			info_.X0.setValue(values[i]);
-		else if (keys[i].compare(info_.Y0.key()) == 0)
-			info_.Y0.setValue(values[i]);
-		else if (keys[i].compare(info_.Z0.key()) == 0)
-			info_.Z0.setValue(values[i]);
+		else if (keys[i].compare(info_.Xmm.key()) == 0)
+			info_.Xmm.setValue(values[i]);
+		else if (keys[i].compare(info_.Ymm.key()) == 0)
+			info_.Ymm.setValue(values[i]);
+		else if (keys[i].compare(info_.Zmm.key()) == 0)
+			info_.Zmm.setValue(values[i]);
 		else if (keys[i].compare(info_.rowDirCosX.key()) == 0)
 			info_.rowDirCosX.setValue(values[i]);
 		else if (keys[i].compare(info_.rowDirCosY.key()) == 0)
@@ -233,7 +206,6 @@ MDM_API void mdm_Image3D::decodeKeyValuePairs(const std::vector<std::string> &ke
 }
 
 //
-//---------------------------------------------------------------------------------
 MDM_API void mdm_Image3D::getSetKeyValuePairs(std::vector<std::string> &keys,
 	std::vector<double> &values) const
 {
@@ -275,17 +247,17 @@ MDM_API void mdm_Image3D::getSetKeyValuePairs(std::vector<std::string> &keys,
 		keys.push_back(info_.ETL.key()); 
 		values.push_back(info_.ETL.value());
 	}
-	if (info_.X0.isSet()){
-		keys.push_back(info_.X0.key()); 
-		values.push_back(info_.X0.value());
+	if (info_.Xmm.isSet()){
+		keys.push_back(info_.Xmm.key()); 
+		values.push_back(info_.Xmm.value());
 	}
-	if (info_.Y0.isSet()){
-		keys.push_back(info_.Y0.key()); 
-		values.push_back(info_.Y0.value());
+	if (info_.Ymm.isSet()){
+		keys.push_back(info_.Ymm.key()); 
+		values.push_back(info_.Ymm.value());
 	}
-	if (info_.Z0.isSet()){
-		keys.push_back(info_.Z0.key()); 
-		values.push_back(info_.Z0.value());
+	if (info_.Zmm.isSet()){
+		keys.push_back(info_.Zmm.key()); 
+		values.push_back(info_.Zmm.value());
 	}
 	if (info_.rowDirCosX.isSet()){
 		keys.push_back(info_.rowDirCosX.key()); 
@@ -318,77 +290,27 @@ MDM_API void mdm_Image3D::getSetKeyValuePairs(std::vector<std::string> &keys,
 }
 
 //
-MDM_API bool mdm_Image3D::initDataArray()
-{
-	//Don't bother error checking this anymore, just assume memory will be managed correctly
-	//that's what the vector container class is for
-  int nVoxels = getNvoxels();
-  assert(nVoxels != 0);
-
-	data_.resize(nVoxels);
-
-  return true;
-}
-
-//
-MDM_API void mdm_Image3D::flipSlice(const int sliceNo)
-{
-  double  *slice_tmp, *tmp, *tmp_start, *slicePtr;
-
-  assert(getNvoxels() > 0);
-  assert(sliceNo > 0 && sliceNo <= nZ_);
-
-  int npixels   = nX_ * nY_;
-  tmp_start = (double *) malloc(sizeof(double) * npixels);
-  slicePtr  = &data_[((sliceNo - 1) * npixels)];
-
-  /* first copy slice into temp buffer */
-  tmp       = tmp_start;
-  slice_tmp = slicePtr;
-  for(int i = 0; i < npixels; i++)
-    *tmp++ = *slice_tmp++;
-
-  /* Now flip the slice back into the original buffer */
-  tmp = tmp_start;
-
-  /* *** Corrected offset bug 23/5/91 AMKS *** */
-  /* was slice_tmp = slice + (npixels-1-xdim); */
-  slice_tmp = slicePtr + (npixels - nX_);
-  for(int j = 0; j < nY_; j++)
-  {
-    for(int i = 0; i < nX_; i++)
-    {
-      *slice_tmp++ = *tmp++;
-    }
-    slice_tmp = slice_tmp - 2 * nX_;
-  }
-  free(tmp_start);
-}
-
-//
-MDM_API bool mdm_Image3D::voxelMatsMatch(const mdm_Image3D &img2)
+MDM_API bool mdm_Image3D::dimensionsMatch(const mdm_Image3D &img)
 {
   bool incompatible = false;
   bool compatible   = true;
 
   /* Following is crude test that fields have been set */
-  assert(getNvoxels()>0);
-  assert(img2.getNvoxels()>0);
+  assert(numVoxels()>0);
+  assert(img.numVoxels()>0);
 
   /* Test that voxel matrix dimensions match */
 	int nx, ny, nz;
-	img2.getMatrixDims(nx, ny, nz);
+	img.getDimensions(nx, ny, nz);
   if ((nX_ != nx)
        || (nY_ != ny)
        || (nZ_ != nz))
     return incompatible;
 
   /* Test that individual voxel mm dimensions match */
-	double xmm, ymm, zmm;
-	img2.getVoxelDims(xmm, ymm, zmm);
-  if ((fabs(xmm_ - xmm) > 0.01)
-       || (fabs(ymm_ - ymm) > 0.01)
-       || (fabs(zmm_ - zmm) > 0.01))
+	if ((fabs(info_.Xmm.value() - img.info_.Xmm.value()) > 0.01)
+       || (fabs(info_.Ymm.value() - img.info_.Ymm.value()) > 0.01)
+       || (fabs(info_.Zmm.value() - img.info_.Zmm.value()) > 0.01))
     return incompatible;
 
   /* If we got here we're OK */
@@ -396,44 +318,31 @@ MDM_API bool mdm_Image3D::voxelMatsMatch(const mdm_Image3D &img2)
 }
 
 //
-MDM_API void mdm_Image3D::copyFields(const mdm_Image3D &imgToCopy)
+MDM_API void mdm_Image3D::copy(const mdm_Image3D &imgToCopy)
 {
-	copyMatrix(imgToCopy);
+	//Copy image data, but do not copy timestamp
+	auto t = timeStamp();
 	info_ = imgToCopy.info_;
+	setTimeStamp(t);
 
-  /*for (int iKey = 0; iKey < QBIINFO_NKEYS; iKey++)
-    setInfo(iKey, imgToCopy.getInfo(iKey));*/
+	//Set dimension from the copy, this will reset and resize the data array
+	setDimensions(imgToCopy);
 
 }
 
 //
-MDM_API void mdm_Image3D::copyMatrix(const mdm_Image3D &imgToCopy)
-{
-
-  /* Following is crude test that fields have been set */
-  assert(imgToCopy.getNvoxels() > 0);
-
-  setMatrixDims(imgToCopy.nX_, imgToCopy.nY_, imgToCopy.nZ_);
-  setVoxelDims(imgToCopy.xmm_, imgToCopy.ymm_, imgToCopy.zmm_);
-
-  //Allocate but don't copy the data array
-  initDataArray();
-}
-
-/*
- * ToDo:
- * -   Print the image type string, rather than just the integer
- */
 MDM_API void mdm_Image3D::toString(std::string &imgString) const
 {
 
-  /* First clear existing contents of imgString */
-	std::stringstream ss;
+  std::stringstream ss;
 
 	ss << 
 		"mdm_Image3D:   type " << imgType_ << " image struct at location " << this << "\n" <<
 		"voxel matrix is " << nX_ << " x " << nY_ << " x " << nZ_ << 
-		", with dimensions " << xmm_ << " mm x " << ymm_ << " mm x " << zmm_ << " mm\n" <<
+		", with dimensions " << 
+		info_.Xmm.value() << " mm x " << 
+		info_.Ymm.value() << " mm x " << 
+		info_.Zmm.value() << " mm\n" <<
 		"time stamp is " << info_.TimeStamp.value() << "\n" <<
 		"info fields: flip angle is " << info_.flipAngle.value() << ", TR is " << info_.TR.value() << ",\n" <<
     "TE is " << info_.TE.value() << " and B is " << info_.B.value() << " (value < 0.0 => not set)\n" <<
@@ -443,11 +352,11 @@ MDM_API void mdm_Image3D::toString(std::string &imgString) const
 }
 
 //
-MDM_API void mdm_Image3D::nonZero(std::vector<int> &idx, std::vector<double> &vals) const
+MDM_API void mdm_Image3D::nonZeroVoxels(std::vector<int> &idx, std::vector<double> &vals) const
 {
 	idx.clear();
 	vals.clear();
-	for (int i = 0, n = getNvoxels(); i++; i < n)
+	for (int i = 0, n = numVoxels(); i < n; i++)
 	{
 		if (data_[i])
 		{
@@ -463,7 +372,7 @@ template <class T> MDM_API bool mdm_Image3D::toBinaryStream(std::ostream &ofs, b
 	size_t elSize = sizeof(T);
 	if (nonZero)
 	{
-		int nVoxels = getNvoxels();
+		int nVoxels = numVoxels();
 		std::vector<int> idx;
 		
 		for (int i = 0; i < nVoxels; i++)
@@ -500,14 +409,20 @@ template <class T> MDM_API bool mdm_Image3D::toBinaryStream(std::ostream &ofs, b
 
 //Now force instantiation of the templated functions for the datatype we
 //need or we'll get linker errors
+
+//! Template specialization declaration of toBinaryStream for char datatype
 template MDM_API	bool mdm_Image3D::toBinaryStream<char>(
 	std::ostream &ofs, bool nonZero)  const;
+//! Template specialization declaration of toBinaryStream for short datatype
 template MDM_API	bool mdm_Image3D::toBinaryStream<short>(
 	std::ostream &ofs, bool nonZero)  const;
+//! Template specialization declaration of toBinaryStream for int datatype
 template MDM_API	bool mdm_Image3D::toBinaryStream<int>(
 	std::ostream &ofs, bool nonZero)  const;
+//! Template specialization declaration of toBinaryStream for float datatype
 template MDM_API	bool mdm_Image3D::toBinaryStream<float>(
 	std::ostream &ofs, bool nonZero)  const;
+//! Template specialization declaration of toBinaryStream for double datatype
 template MDM_API	bool mdm_Image3D::toBinaryStream<double>(
 	std::ostream &ofs, bool nonZero)  const;
 
@@ -546,7 +461,6 @@ template <class T> MDM_API bool mdm_Image3D::fromBinaryStream(
 		//although we have checked buffer size?
 
 		//First read data values, casting from char* to input type
-		int t;
 		for (T &t : data)
 			ifs.read(reinterpret_cast<char*>(&t), elSize);
 
@@ -563,7 +477,7 @@ template <class T> MDM_API bool mdm_Image3D::fromBinaryStream(
 	else
 	{
 		//Check here buffer size matche nVoxels * size of input type
-		size_t expectedSize = (size_t)getNvoxels()*elSize;
+		size_t expectedSize = (size_t)numVoxels()*elSize;
 		if (expectedSize != bufferSize)
 			return false;
 
@@ -582,16 +496,37 @@ template <class T> MDM_API bool mdm_Image3D::fromBinaryStream(
 
 //Now force instantiation of the templated functions for the datatype we
 //need or we'll get linker errors
+//! Template specialization declaration of fromBinaryStream for char datatype
 template MDM_API bool mdm_Image3D::fromBinaryStream<char>(
 	std::istream &ifs, bool nonZero, bool swapBytes);
+//! Template specialization declaration of fromBinaryStream for short datatype
 template MDM_API	bool mdm_Image3D::fromBinaryStream<short>(
 	std::istream &ifs, bool nonZero, bool swapBytes);
+//! Template specialization declaration of fromBinaryStream for int datatype
 template MDM_API	bool mdm_Image3D::fromBinaryStream<int>(
 	std::istream &ifs, bool nonZero, bool swapBytes);
+//! Template specialization declaration of fromBinaryStream for float datatype
 template MDM_API	bool mdm_Image3D::fromBinaryStream<float>(
 	std::istream &ifs, bool nonZero, bool swapBytes);
+//! Template specialization declaration of fromBinaryStream for double datatype
 template MDM_API	bool mdm_Image3D::fromBinaryStream<double>(
 	std::istream &ifs, bool nonZero, bool swapBytes);
+
+//**************************************************************************
+// Private functions
+//**************************************************************************
+//
+bool mdm_Image3D::initDataArray()
+{
+	//Don't bother error checking this anymore, just assume memory will be managed correctly
+	//that's what the vector container class is for
+	int nVoxels = numVoxels();
+	assert(nVoxels != 0);
+
+	data_.resize(nVoxels);
+
+	return true;
+}
 
 /*
  *  Modifications:

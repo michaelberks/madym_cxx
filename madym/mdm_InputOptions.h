@@ -87,7 +87,7 @@ struct mdm_InputOptions {
 	mdm_input_string model = mdm_input_string(
 		mdm_input_str(""), "model", "m",
 		"Tracer-kinetic model");
-	mdm_input_doubles initParams = mdm_input_doubles(
+	mdm_input_doubles initialParams = mdm_input_doubles(
 		mdm_input_double_list({}), "init_params", "",
 		"Initial values for model parameters to be optimised");
 	mdm_input_string initMapsDir = mdm_input_string(

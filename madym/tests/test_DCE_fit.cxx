@@ -89,7 +89,7 @@ void test_model_time_fit(
 		false,
 		true,
 		IAUCTimes);
-	vox.initialiseModelFit(*model);
+	vox.initialiseModel(*model);
 	vox.fitModel();
 
 	//Check params match (should be within 0.01)
@@ -98,20 +98,20 @@ void test_model_time_fit(
 	for (int i = 0; i < nParams; i++)
 	{
 		BOOST_TEST_MESSAGE(boost::format("( %1$.2f, %2$.2f )")
-			% trueParams[i] % model->pkParams()[i]);
+			% trueParams[i] % model->params()[i]);
 	}
 
 	BOOST_TEST_MESSAGE(boost::format("Model SSE = %1$.4f") % vox.modelFitError());
 	BOOST_TEST_MESSAGE("Test DCE models, values match: " + modelName);
 	BOOST_CHECK(mdm_test_utils::vectors_near_equal_rel(
-		model->pkParams(), trueParams, paramTol));
+		model->params(), trueParams, paramTol));
 
 	BOOST_TEST_MESSAGE("Test DCE models, SSE < tol: " + modelName);
 	BOOST_CHECK_SMALL(vox.modelFitError(), sseTol);
 
 	if (test_IAUC)
 	{
-		vox.calculateIAUC();
+		vox.computeIAUC();
 		std::vector<double> computedIAUC(nIAUC);
 		for (int i = 0; i < nIAUC; i++)
 			computedIAUC[i] = vox.IAUC_val(i);

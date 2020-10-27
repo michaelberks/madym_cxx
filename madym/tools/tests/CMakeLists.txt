@@ -11,10 +11,10 @@ ADD_EXECUTABLE( test_mdm_tools
   test_mdm_tools.cxx
 
   test_config.cxx
-  test_madym.cxx
-  test_madym_lite.cxx
-  test_calculate_T1.cxx
-  test_calculate_T1_lite.cxx
+  test_madym_DCE.cxx
+  test_madym_DCE_lite.cxx
+  test_madym_T1.cxx
+  test_madym_T1_lite.cxx
 
 )
 

@@ -37,6 +37,11 @@ MDM_API mdm_RunTools::~mdm_RunTools()
 
 }
 
+MDM_API int mdm_RunTools::parse_inputs(const std::string &argv)
+{
+	const char*argvc[] = { argv.c_str() };
+	return parse_inputs(0, argvc);
+}
 
 //
 
@@ -75,6 +80,26 @@ std::string mdm_RunTools::timeNow()
 	std::stringstream ss;
 	ss << std::put_time(std::localtime(&in_time_t), "_%Y%m%d_%H%M%S_");
 	return ss.str();
+}
+
+/**/
+
+boost::filesystem::path mdm_RunTools::set_up_output_folder()
+{
+	//Using boost filesyetm, can call one line to make absolute path from input
+	//regardless of whether relative or absolute path has been given
+	fs::path outputPath = fs::absolute(options_.outputDir());
+
+	//We probably don't need to check if directory exists, just call create... regardless
+	//but we do so anyway
+	if (!is_directory(outputPath))
+		create_directories(outputPath);
+
+	/* If we've got this file already warn user of previous analysis and quit */
+	if (!options_.overwrite() && !is_empty(outputPath))
+		mdm_progAbort("Output directory is not empty (use option -O to overwrite existing data)");
+
+	return outputPath;
 }
 
 /**/

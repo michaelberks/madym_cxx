@@ -1,39 +1,16 @@
-/*
- * Edited by GAB 6 feb 2004
- * Reference to xvgr now points to /usr/local/bin
- *
- *  Mods by GAB
- *  7 April 2004 - Moved out
- *  Sep 2004     - Tidying code structure:
- *                 - Removed unnecessary includes
- *                 - Created fitModel.h to improve modularity
- *                 - Moved some functionality into functions to reduce repetition of code sections
- *                 - Made most external variables static to restrict to file scope
- *  Nov 2004     - Added Population AIF
- *  7 July 2005  - Revising fitting code to use better simplex strategy & merging the dev and std madym branches
- *                 - Fix parameter_array indexing so offset is always index 2
- *  24 October 2006 - Fixed sigmoid bug in population AIF
- *                    GJMP & GAB
- *  24 October 2006 - Modifications to allow concentration time series reading. Version 1.06
- *                    GJMP & GAB
- *  9 November 2006 - Modifications to include new definition of enhancing volume. Version 1.08
- *                    GJMP & GAB & CJR
- *                  - Based on 24 July 2006 Mods by CJR
- *                  - added code to determine if a voxel is enhancing or
- *                    not by using a Mann-Whitney-Wilcoxon rank sum test.
- *  23 April 2007   - Modification to remove concentration time series div by 1000. Version 1.09
- *                    GAB
- *  21 July 2008    - Removed 2 bad initialisation bugs in VOI pathway in fitModel.c - Version 1.13.beta GAB
- *  22 July 2011    - Refactoring and TINA removal for BiOxyDyn licensing - Version 1.20.alpha GAB
- *  22 July 2011    - Refactoring for BiOxyDyn licensing - Version 1.21.alpha GAB
- *  4 March 2014    - Moved IAUC stuff to vap.c - Version 1.22 GAB
+/*!
+ *  @file    mdm_DCEVoxel.cxx
+ *  @brief   Implementation of class that holds DCE time-series data and an asssociated tracer kinetic model
+ *  @details More info...
+ *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
  */
+
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
 #include "mdm_DCEVoxel.h"
 
-#include <cmath>      /* For exp()    */
+#include <cmath>
 
 #include "opt/optimization.h"
 #include "opt/linalg.h"
@@ -58,19 +35,19 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	const std::vector<double> &dynamicTimings,
 	const double TR,
 	const double FA,
-	const int n1,
-	const int n2,
+	const int timepoint0,
+	const int timepointN,
 	const bool testEnhancement,
-	const bool useRatio,
+	const bool useM0Ratio,
 	const std::vector<double> &IAUC_times)
 	:
   signalData_(dynSignals),
 	CtData_(dynConc),
   noiseVar_(noiseVar),
 	t10_(T10),
-	s0_(M0),
-	n1_(n1),
-	n2_(n2),
+	m0_(M0),
+	timepoint0_(timepoint0),
+	timepointN_(timepointN),
 	r1Const_(r1Const),
   bolus_time_(bolus_time),
 	IAUC_times_(IAUC_times),
@@ -81,7 +58,7 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	TR_(TR),
 	FA_(FA),
 	testEnhancement_(testEnhancement),
-	useRatio_(useRatio),
+	useM0Ratio_(useM0Ratio),
   status_(mdm_DCEVoxelStatus::OK)
 {
 }
@@ -91,37 +68,17 @@ MDM_API mdm_DCEVoxel::~mdm_DCEVoxel()
 
 }
 
-/**
-* Pre-conditions:
-*
-* Post-conditions
-* -  Global T1value holds current dynamic T1
-*
-* Uses madym.h globals:
-* -  concentrationMapFlag                (input only)
-* -  T1value                             (output - value set)
-*
-* Note:  NOT a stand-alone fn - see pre-conditions & use of globals
-*
-* @brief    Convert signal intensity time-series to [CA] time series
-* @param    p        Pointer to Permeability struct holding input data
-* @param    tr       Float TR (repetition time) value
-* @param    fa       Float FA (flip angle) value
-* @return   double*   Pointer to [CA] time series array
-*/
+//
 MDM_API void mdm_DCEVoxel::computeCtFromSignal()
 {
-  double  R1gd = r1Const() * 0.001;   /* Use millisec instead of sec (as in user interface) */
+  double  R1gd = r1Const() * 0.001;  // Use millisec instead of sec (as in user interface)
 
-  /* MB - this function is now only called when we're converting
-  signal intensities to concentration. If we already have concentrations
-  this function isn't (and logically shouldn't) be called, so no need to check
-  here*/
+  //
   const size_t &n_times = signalData().size();
   CtData_.resize(n_times);
 
   // Only calculate if T1(0) > 0.0
-  if (t10() <= 0.0)
+  if (T1() <= 0.0)
   {
 		mdm_ProgramLogger::logProgramMessage(
 			"Warning: mdm_DCEVoxel::computeCtFromSignal: Baseline T1 <= 0.0\n");
@@ -133,17 +90,13 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal()
   double sinfa = sin(FA_ * PI / 180);
   double cosfa = cos(FA_ * PI / 180);
 
-  // This is a bad check.  It assumes invalid baseline T1 is flagged by invalid M0
-  /*MB - so don't do it??*/
-  //if (p.s0() > 0.0)
-
   // Calculate dyn_pbm
   // Need to check that we've got the pb time points
-  if (bolus_time_ >= n1())
+  if (bolus_time_ >= timepoint0())
   {
     double   sum_pbm = 0.0;
     int     num_pbm = 0;
-    for (int k = n1(); k < bolus_time_; k++)
+    for (int k = timepoint0(); k < bolus_time_; k++)
     {
       sum_pbm += signalData()[k];
       num_pbm++;
@@ -154,12 +107,12 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal()
     {
       double R1value;
       int errorCode;
-      if (useRatio())
+      if (useM0Ratio())
         R1value = computeT1DynPBM(signalData()[k], s_pbm, cosfa, errorCode);
       else
         R1value = computeT1DynM0(signalData()[k], sinfa, cosfa, errorCode);    
       
-      CtData_[k] = (R1value - 1.0 / t10()) / R1gd;
+      CtData_[k] = (R1value - 1.0 / T1()) / R1gd;
 
       if (errorCode)
         status_ = mdm_DCEVoxelStatus::DYN_T1_BAD;
@@ -178,29 +131,16 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal()
   }
 }
 
-/**
-* @brief    Calculate dynamic T1 from M0 and dynamic signal intensity
-* @param    t1_0  - Baseline T1 value
-* @param    st    - dynamic signal intensity
-* @param    s_pbm - prebolus mean dynamic signal intensity
-* @param    cosfa - cos(flip angle)
-* @param    tr    - TR (repetition time)
-* @return   Float dynamic T1 value (0.0 on divide by zero or other error)
-*
-* @author   Gio Buonaccorsi
-* @version  1.21.alpha (12 August 2013)
-*/
+//
 double mdm_DCEVoxel::computeT1DynPBM(const double &st, const double &s_pbm, const double &cosfa, int &errorCode)
 {
-  /*
-  *  Yes, it looks horrible and over-complicated.  I don't care.
-  *  Too many div by zeros to account for, and a log zero to boot
-  */
+  //  Yes, it looks horrible and over-complicated.  I don't care.
+  //  Too many div by zeros to account for, and a log zero to boot
   errorCode = 0;
   if (s_pbm < T1_TOLERANCE)
     errorCode = -1;
 
-  double expTR_T10 = exp(-TR_ / t10());
+  double expTR_T10 = exp(-TR_ / T1());
   double S1_M0 = st / s_pbm;
 
   double denominator = 1.0 - cosfa * expTR_T10;
@@ -227,23 +167,12 @@ double mdm_DCEVoxel::computeT1DynPBM(const double &st, const double &s_pbm, cons
   return R1_t;
 }
 
-/**
-* @brief    Calculate dynamic T1 from M0 and dynamic signal intensity
-* @param    s0    - M0 in signal intensity domain
-* @param    st    - dynamic signal intensity
-* @param    sinfa - sin(flip angle)
-* @param    cosfa - cos(flip angle)
-* @param    tr    - TR (repetition time)
-* @return   Float dynamic T1 value (0.0 on divide by zero or other error)
-*
-* @author   Gio Buonaccorsi
-* @version  1.21.alpha (12 August 2013)
-*/
+//
 double mdm_DCEVoxel::computeT1DynM0(const double &st, const double & sinfa, const double & cosfa, int &errorCode)
 {
   errorCode = 0;
-  double num = s0() * sinfa - st;
-  double denom = s0() * sinfa - st * cosfa;
+  double num = M0() * sinfa - st;
+  double denom = M0() * sinfa - st * cosfa;
   double   R1_t = R1_t = -log(num / denom) / TR_;
 
   if (std::abs(num) < T1_TOLERANCE)
@@ -254,46 +183,11 @@ double mdm_DCEVoxel::computeT1DynM0(const double &st, const double & sinfa, cons
   return R1_t;
 }
 
-/**
- * Pre-conditions:
- * -  parameter_array has ndim valid values
- *
- * Post-conditions
- * -  G* file scope static all set (see below)
- *
- * Uses madym.h globals:
- * -  modelType_
- * Uses file-scope statics:
- * -  GnData, Gx, Gy, Gdose, Gk, Gve, Gvp, Goffset, GHct
- * -  catFromModel_[]
- *
- * This is the cost function passed in the parameter list to simplexmin(), so its heading
- * is fixed.  The parameter_array holds the values passed to and returned from simplex, 
- * as a simple set of values, so we have to know the ordering and their meanings.
- *
- * The parameter values are checked to be sure they take sensible values and a high cost
- * (FLT_MAX) is returned if they do not.  The SSE is calculated, comparing the [CA] values 
- * calculated from the measured signal intensity time series (Gy[]) to the model (file scope 
- * static array catFromModel_[]), and this SSE returned.
- *
- * Note:  NOT a stand-alone fn - see pre-conditions & side-effects
- *
- * @author   GJM Parker with mods by GA Buonaccorsi
- * @brief    Calculate errors on CA(t) estimated from data cf. fitted model
- * @version  madym 1.21.alpha
- * @param    ndim              Integer number of elements in parameter_array
- * @param    parameter_array   Double array holding model parameters (from simplex)
- * @return   double    Sum squared differences (data to model) or FLT_MAX
- */
-/*double mdm_DCEVoxel::catSSD(int ndim, std::vector<double> &parameter_array)
-{
-	return catSSD(ndim, parameter_array.data());
-}*/
-
+//
 double mdm_DCEVoxel::CtSSD(const std::vector<double> &parameter_array)
 {
   //Set the full parameter array in the model from the optimised subset
-  model_->setPkParams(parameter_array);
+  model_->setOptimisedParams(parameter_array);
 
 	//Get model to check params are ok - returns non-zero for bad value
   double model_check = model_->checkParams();
@@ -302,7 +196,7 @@ double mdm_DCEVoxel::CtSSD(const std::vector<double> &parameter_array)
 
 	//If we got this far the parameter values look OK, so ...
 	// Calculate model [CA](t) for current parameter set
-	model_->computeCtModel(n2());
+	model_->computeCtModel(timepointN());
 
 	//Compute SSD
   return computeSSD(model_->CtModel());
@@ -311,7 +205,7 @@ double mdm_DCEVoxel::CtSSD(const std::vector<double> &parameter_array)
 double mdm_DCEVoxel::computeSSD(const std::vector<double> &CtModel) const
 {
   double  ssd = 0.0;
-  for (int i = n1(); i < n2(); i++)
+  for (int i = timepoint0(); i < timepointN(); i++)
   {
     double diff = (CtData_[i] - CtModel[i]);
     ssd += (diff * diff) / noiseVar_[i];
@@ -320,48 +214,13 @@ double mdm_DCEVoxel::computeSSD(const std::vector<double> &CtModel) const
   return ssd;
 }
 
-/**
- * Pre-conditions:
- * -  All inputs adequately initialised
- *
- * Post-conditions
- * -  All outputs have valid values
- * -  G* file scope static all set (see below)
- *
- * Simplex set-up and results propagation.
- *
- * Depending on the model, the parameter and lambda arrays are set up (see NR)
- * then the simplex is run and the results are copied to the global mirror
- * variables.  Model-to-data SSD is also calculated and returned.
- *
- * Uses madym.h globals:
- * -  modelType_, max_iterations
- * Uses file-scope statics:
- * -  GnData, Gx, Gy, Gdose, Gk, Gve, Gvp, Goffset, GHct
- *
- * Note:  NOT a stand-alone fn - see pre-conditions & side-effects
- *
- * @author   GJM Parker (mods by GA Buonaccorsi)
- * @brief    Set up and do simplex fit to required model
- * @version  madym 1.21.alpha
- * @param    nTimes    Integer number of data points in the time series - INPUT
- * @param    x        Float array of timing data                       - INPUT
- * @param    y        Float array of CA(t) data                        - INPUT
- * @param    kTrans   Pointer to double holding Ktrans                  - OUTPUT
- * @param    ve       Pointer to double holding relative volume of EES  - OUTPUT
- * @param    vp       Pointer to double holding relative plasma volume  - OUTPUT
- * @param    offset   Pointer to double holding  offset time for AIF    - OUTPUT
- * @param    ssd      Pointer to double holding SSD for model v data    - OUTPUT
- */
+//
 void mdm_DCEVoxel::optimiseModel()
 {
-  /* do simplex minimisation on the parameters that aren't flagged as fixed*/
-	//mdm_simplexMin::set_max_iterations(2000);
-	//ssd = mdm_simplexMin::simplexmin(pkParamsOpt_, simplexLambdaOpt_, this, catSDDforwarder, FTOL);
 
-  std::vector<double> optParams = model_->optParams();
+  std::vector<double> optimisedParams = model_->optimisedParams();
 	alglib::real_1d_array x;
-	x.attach_to_ptr(optParams.size(), optParams.data());
+	x.attach_to_ptr(optimisedParams.size(), optimisedParams.data());
 	//alglib::minbleicstate state;
 	//alglib::minbleicreport rep;
 	alglib::minnsstate state;
@@ -399,11 +258,11 @@ void mdm_DCEVoxel::optimiseModel()
 	//
   try
   {
-    /*alglib::minbleiccreatef(x, diffstep, state);
-    alglib::minbleicsetbc(state, lowerBoundsOpt_, upperBoundsOpt_);
-    alglib::minbleicsetcond(state, epsg, epsf, epsx, maxits);
-    alglib::minbleicoptimize(state, &CtSSDalglib, NULL, this);
-    alglib::minbleicresults(state, x, rep);*/
+    //alglib::minbleiccreatef(x, diffstep, state);
+    //alglib::minbleicsetbc(state, lowerBoundsOpt_, upperBoundsOpt_);
+    //alglib::minbleicsetcond(state, epsg, epsf, epsx, maxits);
+    //alglib::minbleicoptimize(state, &CtSSDalglib, NULL, this);
+    //alglib::minbleicresults(state, x, rep);
 
 		alglib::minnscreatef(x, diffstep, state);
 		alglib::minnssetalgoags(state, radius, rho);
@@ -420,66 +279,45 @@ void mdm_DCEVoxel::optimiseModel()
   }
 	
 
-  //Copy the parameters we've optimised into optParams array
-  for (size_t i = 0, n = optParams.size(); i < n; i++)
-    optParams[i] = x[i];
+  //Copy the parameters we've optimised into optimisedParams array
+  for (size_t i = 0, n = optimisedParams.size(); i < n; i++)
+    optimisedParams[i] = x[i];
 
 	//Get the final model fit error - this also sets the parameters back to the model structure
-  modelFitError_ = CtSSD(optParams);
+  modelFitError_ = CtSSD(optimisedParams);
 }
 
 //Run an initial model fit using the current model parameters (does not optimise new parameters)
-MDM_API void mdm_DCEVoxel::initialiseModelFit(mdm_DCEModelBase &model)
+MDM_API void mdm_DCEVoxel::initialiseModel(mdm_DCEModelBase &model)
 {
   //Set the model
   model_ = &model;
 
-  /*
-  * Calculate [CA](t) from the signal intensity time-series array
-  */
+  // Calculate [CA](t) from the signal intensity time-series array
   if (CtData_.empty())
     computeCtFromSignal(); //If any problems, this will change permStatus setting
 
   if (noiseVar_.empty())
-    noiseVar_.resize(n2_, 1.0);
+    noiseVar_.resize(timepointN_, 1.0);
 
   //Reset the model
-  model_->reset(n2_);
+  model_->reset(timepointN_);
 
   //Copy the lower bounds into the container required by the optimiser
-  int nopt = model_->num_opt();
+  int nopt = model_->num_optimised();
   lowerBoundsOpt_.setlength(nopt);
   upperBoundsOpt_.setlength(nopt);
   for (int i = 0; i < nopt; i++)
   {
-    lowerBoundsOpt_[i] = model_->lowerBoundsOpt()[i];
-    upperBoundsOpt_[i] = model_->upperBoundsOpt()[i];
+    lowerBoundsOpt_[i] = model_->optimisedLowerBounds()[i];
+    upperBoundsOpt_[i] = model_->optimisedUpperBounds()[i];
   }
 
   //Get an initial SSD
-  modelFitError_ = CtSSD(model_->optParams());
+  modelFitError_ = CtSSD(model_->optimisedParams());
 }
 
-/**
- * Pre-conditions:
- * -  Permeability struct allocated and initialised
- *
- * Side-effects (Post-conditions)
- * -  Permeability struct holds valid parameter values for current voxel
- *
- * Uses madym.h globals:
- * -  full_filename[]
- *
- * Uses mdm_DCEVolumeAnalysis.h globals:
- * -  timings[]
- *
- * Note:  NOT a stand-alone fn - see pre-conditions & side-effects
- *
- * @author   GJM Parker (mods by GA Buonaccorsi)
- * @brief    Fit model for data in given Permeability struct
- * @version  madym 1.22
- * @param    p    Pointer to Permeability struct to hold model data
- */
+//
 MDM_API void mdm_DCEVoxel::fitModel()
 {
   if (!model_)
@@ -500,10 +338,7 @@ MDM_API void mdm_DCEVoxel::fitModel()
 	// Use IAUC to check for enhancement (since 1.22 unless user says no)
 	else if (testEnhancement_)
 	{
-		/*
-		 * This is where I cut CJR's enhancement stuff
-		 * GAB 22 Feb 2012 (madym 1.21.alpha at BDL)
-		 */
+		// TODO better test enhancement checks?
 		for (const auto iauc : IAUC_vals_)
 		{
 			if (iauc <= 0.0)
@@ -527,32 +362,9 @@ MDM_API void mdm_DCEVoxel::fitModel()
 	}
 }
 
-/**
-* Moved here for version 2.0
-* MB - This is a fucntion at the voxel level
-*
-* Depending on the model, the parameter and lambda arrays are set up (see NR)
-* then the simplex is run and the results are copied to the global mirror
-* variables.  Model-to-data SSD is also calculated and returned.
-*
-* Uses madym.h globals:
-* -  mdmCfg.prebolus
-*
-* Note:  NOT a stand-alone fn - see pre-conditions & side-effects
-*
-* @author   GJM Parker (mods by GA Buonaccorsi)
-* @brief    Calculate Integrated area under the CA(t) curve (simple summation)
-* @version  madym 1.21.alpha
-* @param    nTimes           Integer number of data points in the time series - INPUT
-* @param    dynamicTimings_         Float array of timing data                       - INPUT
-* @param    concentration   Float array of CA(t) data                        - INPUT
-* @param    IAUC60          Pointer to double holding AUC to 60 s             - OUTPUT
-* @param    IAUC90          Pointer to double holding AUC to 90 s             - OUTPUT
-* @param    IAUC120         Pointer to double holding AUC to 120 s            - OUTPUT
-*/
-MDM_API void mdm_DCEVoxel::calculateIAUC()
+//
+MDM_API void mdm_DCEVoxel::computeIAUC()
 {
-	/*MB must check - are dynamic timings in seconds or minutes? Adjust to seconds here if so*/
 	size_t nTimes = dynamicTimings_.size();
 
 	for (auto & iauc : IAUC_vals_)
@@ -597,13 +409,13 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxelStatus mdm_DCEVoxel::status() const
   return status_;
 }
 
-MDM_API int mdm_DCEVoxel::n1() const
+MDM_API int mdm_DCEVoxel::timepoint0() const
 {
-	return n1_;
+	return timepoint0_;
 }
-MDM_API int mdm_DCEVoxel::n2() const
+MDM_API int mdm_DCEVoxel::timepointN() const
 {
-	return n2_;
+	return timepointN_;
 }
 MDM_API const std::vector<double>& mdm_DCEVoxel::signalData() const
 {
@@ -618,13 +430,13 @@ MDM_API const std::vector<double>&	mdm_DCEVoxel::CtModel() const
   return model_->CtModel();
 }
 
-MDM_API double     mdm_DCEVoxel::t10() const
+MDM_API double     mdm_DCEVoxel::T1() const
 {
 	return t10_;
 }
-MDM_API double     mdm_DCEVoxel::s0() const
+MDM_API double     mdm_DCEVoxel::M0() const
 {
-	return s0_;
+	return m0_;
 }
 MDM_API double     mdm_DCEVoxel::r1Const() const
 {
@@ -652,7 +464,7 @@ MDM_API bool			mdm_DCEVoxel::testEnhancement() const
 {
 	return testEnhancement_;
 }
-MDM_API bool			mdm_DCEVoxel::useRatio() const
+MDM_API bool			mdm_DCEVoxel::useM0Ratio() const
 {
-	return useRatio_;
+	return useM0Ratio_;
 }

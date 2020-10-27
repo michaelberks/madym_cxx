@@ -39,7 +39,7 @@ protected:
 	//Methods:
 	void setModel(const std::string &model_name, bool auto_aif, bool auto_pif,
 		const std::vector<std::string> &paramNames,
-		const std::vector<double> &initParams,
+		const std::vector<double> &initialParams,
 		const std::vector<int> fixedParams,
 		const std::vector<double> fixedValues,
 		const std::vector<int> relativeLimitParams,

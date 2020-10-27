@@ -1,8 +1,8 @@
 #include "madym_gui_ui.h"
 
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
-#include <madym/run/mdm_RunTools_calculateT1.h>
-#include <madym/run/mdm_RunTools_madym.h>
+#include <madym/run/mdm_RunTools_madym_T1.h>
+#include <madym/run/mdm_RunTools_madym_DCE.h>
 
 #include "madym_gui_model_configure.h"
 #include <iomanip>
@@ -118,7 +118,8 @@ void madym_gui_ui::on_actionLoadConfigFile_triggered()
 	//the current madym_options_ fields into the input options
 	//variable map and then check the config file	
 	madym_options_.configFile.set(config_file.toStdString());
-	if (options_parser_.madym_inputs(DCE_ARGV, madym_options_))
+	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
+	if (madym_exe.parse_inputs(DCE_ARGV))
 	{
 		QMessageBox msgBox;
 		msgBox.setIcon(QMessageBox::Warning);
@@ -150,7 +151,8 @@ void madym_gui_ui::on_actionSaveConfigFileDCE_triggered()
 	//Make sure options config file is empty, because when we call parse args
 	//we don't want to read a config file
 	madym_options_.configFile.set("");
-	options_parser_.madym_inputs(DCE_ARGV, madym_options_);
+	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
+	madym_exe.parse_inputs(DCE_ARGV);
 	options_parser_.to_file(config_file.toStdString(), madym_options_);
 
 }
@@ -166,7 +168,8 @@ void madym_gui_ui::on_actionSaveConfigFileT1_triggered()
 	//Make sure options config file is empty, because when we call parse args
 	//we don't want to read a config file
 	madym_options_.configFile.set("");
-	options_parser_.calculate_T1_inputs(T1_ARGV, madym_options_);
+	mdm_RunTools_madym_T1 madym_exe(madym_options_, options_parser_);
+	madym_exe.parse_inputs(T1_ARGV);
 	options_parser_.to_file(config_file.toStdString(), madym_options_);
 
 }
@@ -182,7 +185,8 @@ void madym_gui_ui::on_actionSaveConfigFileIF_triggered()
 	//Make sure options config file is empty, because when we call parse args
 	//we don't want to read a config file
 	madym_options_.configFile.set("");
-	options_parser_.madym_inputs(AIF_ARGV, madym_options_);
+	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
+	madym_exe.parse_inputs(AIF_ARGV);
 	options_parser_.to_file(config_file.toStdString(), madym_options_);
 
 }
@@ -210,11 +214,9 @@ void madym_gui_ui::on_computeT1Button_clicked()
 	//Make sure options config file is empty, because when we call parse args
 	//we don't want to read a config file
 	madym_options_.configFile.set("");
-	options_parser_.calculate_T1_inputs(T1_ARGV, madym_options_);
-
-  //Instantiate new madym_exe object with these options and run
-  mdm_RunTools_calculateT1 madym_exe(madym_options_, options_parser_);
-  int result = madym_exe.run();
+	mdm_RunTools_madym_T1 madym_exe(madym_options_, options_parser_);
+	madym_exe.parse_inputs(T1_ARGV);
+	int result = madym_exe.run();
 }
 
 void madym_gui_ui::on_computeIFButton_clicked()
@@ -243,11 +245,11 @@ void madym_gui_ui::on_computeIFButton_clicked()
 	//Make sure options config file is empty, because when we call parse args
 	//we don't want to read a config file
 	madym_options_.configFile.set("");
-	options_parser_.madym_inputs(AIF_ARGV, madym_options_);
 
-	//Instantiate new madym_exe object with these options and run
-	mdm_RunTools_madym madym_exe(madym_options_, options_parser_);
+	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
+	madym_exe.parse_inputs(AIF_ARGV);
 	int result = madym_exe.run();
+
 }
 void madym_gui_ui::on_fitModelButton_clicked()
 {
@@ -275,10 +277,8 @@ void madym_gui_ui::on_fitModelButton_clicked()
 	//Make sure options config file is empty, because when we call parse args
 	//we don't want to read a config file
 	madym_options_.configFile.set("");
-	options_parser_.madym_inputs(DCE_ARGV, madym_options_);
-
-	//Instantiate new madym_exe object with these options and run
-	mdm_RunTools_madym madym_exe(madym_options_, options_parser_);
+	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
+	madym_exe.parse_inputs(DCE_ARGV);
 	int result = madym_exe.run();
 }
 void madym_gui_ui::on_outputStatsButton_clicked()
@@ -575,7 +575,7 @@ void madym_gui_ui::on_modelSelectComboBox_currentIndexChanged(const QString &tex
 		{}, {}, {}, {}, {});
 	madym_options_.model.set(text.toStdString());
   madym_options_.paramNames.set({});
-  madym_options_.initParams.set({});
+  madym_options_.initialParams.set({});
   madym_options_.fixedParams.set({});
   madym_options_.fixedValues.set({});
 	madym_options_.relativeLimitParams.set({});
@@ -599,7 +599,7 @@ void madym_gui_ui::on_configureModelButton_clicked()
   mdm_DCEModelGenerator::setModel(model_, aif,
     modelName.toStdString(),
     false, false, madym_options_.paramNames(),
-    madym_options_.initParams(), 
+    madym_options_.initialParams(), 
 		madym_options_.fixedParams(), madym_options_.fixedValues(),
 		madym_options_.relativeLimitParams(), madym_options_.relativeLimitValues());
 

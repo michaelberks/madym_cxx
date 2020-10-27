@@ -1,22 +1,10 @@
 /**
 *  @file    mdm_DCEModelGenerator.h
-*  @brief
+*  @brief Header only class to generate specific instances of DCE models
 *
 *  Original author MA Berks 24 Oct 2018
 *  (c) Copyright QBI, University of Manchester 2018
 */
-
-/*switch (modelType_)
-{
-case MDM_TOFTS:   // Basic Tofts
-break;
-case MDM_VPTOFTS: // Tofts plus Vp
-break;
-case MDM_GADOXETATE: // Gadoxetate
-break;
-default:
-std::cout << "Model type " << modelType_ << " not recognised" << std::endl;
-}*/
 
 #ifndef MDM_DCEMODELGENERATOR_HDR
 #define MDM_DCEMODELGENERATOR_HDR
@@ -77,7 +65,7 @@ public:
 	* @param auto_aif flag if the AIF associated with model is auto-generated
 	* @param auto_pif flag if the PIF associated with model is auto-generated
 	* @param paramNames if non-empty, overrides default parameter names of model
-	* @param initParams if non-empty, overrides default initial parameter values of model
+	* @param initialParams if non-empty, overrides default initial parameter values of model
 	* @param paramNames indices of any parameters to be fixed in the model
 	* @param paramNames values associated with fixed parameters (if non-empty, overrides initial parameters)
 	* @return bool true if model successfully instantiated, false otherwise
@@ -89,7 +77,7 @@ public:
 		bool auto_aif, 
 		bool auto_pif,
     const std::vector<std::string> &paramNames,
-    const std::vector<double> &initParams,
+    const std::vector<double> &initialParams,
     const std::vector<int> fixedParams,
     const std::vector<double> fixedValues,
 		const std::vector<int> relativeLimitParams,
@@ -103,148 +91,148 @@ public:
 
     if (model_name == "TOFTS")
     {
-      model = new mdm_DCEModelETM(AIF, paramNames, initParams, 
+      model = new mdm_DCEModelETM(AIF, paramNames, initialParams, 
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
 
       if (auto_aif)
-        AIF.setAIFflag(mdm_AIF::AIF_FILE);
+        AIF.setAIFType(mdm_AIF::AIF_FILE);
       else
-        AIF.setAIFflag(mdm_AIF::AIF_POP);
+        AIF.setAIFType(mdm_AIF::AIF_POP);
 
     }
 
     else if (model_name == "VPSTD")
     {
-      model = new mdm_DCEModelETM(AIF, paramNames, initParams,
+      model = new mdm_DCEModelETM(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
-      AIF.setAIFflag(mdm_AIF::AIF_STD);
+      AIF.setAIFType(mdm_AIF::AIF_STD);
     }
 
     else if (model_name == "ETM")
     {
-      model = new mdm_DCEModelETM(AIF, paramNames, initParams,
+      model = new mdm_DCEModelETM(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
-        AIF.setAIFflag(mdm_AIF::AIF_FILE);
+        AIF.setAIFType(mdm_AIF::AIF_FILE);
       else
-        AIF.setAIFflag(mdm_AIF::AIF_POP);
+        AIF.setAIFType(mdm_AIF::AIF_POP);
 
     }
 
     else if (model_name == "DIETM")
     {
-      model = new mdm_DCEModelDIETM(AIF, paramNames, initParams,
+      model = new mdm_DCEModelDIETM(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
-        AIF.setAIFflag(mdm_AIF::AIF_FILE);
+        AIF.setAIFType(mdm_AIF::AIF_FILE);
       else
-        AIF.setAIFflag(mdm_AIF::AIF_POP);
+        AIF.setAIFType(mdm_AIF::AIF_POP);
 
       if (auto_pif)
-        AIF.setPIFflag(mdm_AIF::PIF_FILE);
+        AIF.setPIFType(mdm_AIF::PIF_FILE);
       else
-        AIF.setPIFflag(mdm_AIF::PIF_POP);
+        AIF.setPIFType(mdm_AIF::PIF_POP);
 
     }
 
     else if (model_name == "AUEM" || model_name == "GADOXETATE")
     {
-      model = new mdm_DCEModelAUEM(AIF, paramNames, initParams,
+      model = new mdm_DCEModelAUEM(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
-        AIF.setAIFflag(mdm_AIF::AIF_FILE);
+        AIF.setAIFType(mdm_AIF::AIF_FILE);
       else
-        AIF.setAIFflag(mdm_AIF::AIF_POP);
+        AIF.setAIFType(mdm_AIF::AIF_POP);
 
       if (auto_pif)
-        AIF.setPIFflag(mdm_AIF::PIF_FILE);
+        AIF.setPIFType(mdm_AIF::PIF_FILE);
       else
-        AIF.setPIFflag(mdm_AIF::PIF_POP);
+        AIF.setPIFType(mdm_AIF::PIF_POP);
 
     }
 
     else if (model_name == "DISCM" || model_name == "MATERNE")
     {
-      model = new mdm_DCEModelDISCM(AIF, paramNames, initParams,
+      model = new mdm_DCEModelDISCM(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
-        AIF.setAIFflag(mdm_AIF::AIF_FILE);
+        AIF.setAIFType(mdm_AIF::AIF_FILE);
       else
-        AIF.setAIFflag(mdm_AIF::AIF_POP);
+        AIF.setAIFType(mdm_AIF::AIF_POP);
 
       if (auto_pif)
-        AIF.setPIFflag(mdm_AIF::PIF_FILE);
+        AIF.setPIFType(mdm_AIF::PIF_FILE);
       else
-        AIF.setPIFflag(mdm_AIF::PIF_POP);
+        AIF.setPIFType(mdm_AIF::PIF_POP);
 
     }
 
     else if (model_name == "2CXM")
     {
-      model = new mdm_DCEModel2CXM(AIF, paramNames, initParams,
+      model = new mdm_DCEModel2CXM(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
-        AIF.setAIFflag(mdm_AIF::AIF_FILE);
+        AIF.setAIFType(mdm_AIF::AIF_FILE);
       else
-        AIF.setAIFflag(mdm_AIF::AIF_POP);
+        AIF.setAIFType(mdm_AIF::AIF_POP);
 
     }
 
     else if (model_name == "DI2CXM")
     {
-      model = new mdm_DCEModelDI2CXM(AIF, paramNames, initParams,
+      model = new mdm_DCEModelDI2CXM(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
-        AIF.setAIFflag(mdm_AIF::AIF_FILE);
+        AIF.setAIFType(mdm_AIF::AIF_FILE);
       else
-        AIF.setAIFflag(mdm_AIF::AIF_POP);
+        AIF.setAIFType(mdm_AIF::AIF_POP);
 
       if (auto_pif)
-        AIF.setPIFflag(mdm_AIF::PIF_FILE);
+        AIF.setPIFType(mdm_AIF::PIF_FILE);
       else
-        AIF.setPIFflag(mdm_AIF::PIF_POP);
+        AIF.setPIFType(mdm_AIF::PIF_POP);
 
     }
 
     else if (model_name == "DIBEM" || model_name == "DIIRF")
     {
-      model = new mdm_DCEModelDIBEM(AIF, paramNames, initParams,
+      model = new mdm_DCEModelDIBEM(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
       if (auto_aif)
-        AIF.setAIFflag(mdm_AIF::AIF_FILE);
+        AIF.setAIFType(mdm_AIF::AIF_FILE);
       else
-        AIF.setAIFflag(mdm_AIF::AIF_POP);
+        AIF.setAIFType(mdm_AIF::AIF_POP);
 
       if (auto_pif)
-        AIF.setPIFflag(mdm_AIF::PIF_FILE);
+        AIF.setPIFType(mdm_AIF::PIF_FILE);
       else
-        AIF.setPIFflag(mdm_AIF::PIF_POP);
+        AIF.setPIFType(mdm_AIF::PIF_POP);
 
     }
 
 		else if (model_name == "DIBEM_FP")
 		{
-		model = new mdm_DCEModelDIBEM_Fp(AIF, paramNames, initParams,
+		model = new mdm_DCEModelDIBEM_Fp(AIF, paramNames, initialParams,
 			fixedParams, fixedValues,
 			relativeLimitParams, relativeLimitValues);
 		if (auto_aif)
-			AIF.setAIFflag(mdm_AIF::AIF_FILE);
+			AIF.setAIFType(mdm_AIF::AIF_FILE);
 		else
-			AIF.setAIFflag(mdm_AIF::AIF_POP);
+			AIF.setAIFType(mdm_AIF::AIF_POP);
 
 		if (auto_pif)
-			AIF.setPIFflag(mdm_AIF::PIF_FILE);
+			AIF.setPIFType(mdm_AIF::PIF_FILE);
 		else
-			AIF.setPIFflag(mdm_AIF::PIF_POP);
+			AIF.setPIFType(mdm_AIF::PIF_POP);
 
 		}
 

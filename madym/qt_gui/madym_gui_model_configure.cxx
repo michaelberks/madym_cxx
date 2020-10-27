@@ -50,9 +50,9 @@ madym_gui_model_configure::madym_gui_model_configure(const mdm_DCEModelBase &mod
 			ui.mapsCheckBox_10, ui.relLimitLineEdit_10));
 
   ui.modelName->setText(modelName);
-  int nParams = model_.num_dims();
-  const std::vector<std::string> &params = model_.pkParamNames();
-  const std::vector<bool> &paramFlags = model_.optParamFlags();
+  int nParams = model_.num_params();
+  const std::vector<std::string> &params = model_.paramNames();
+  const std::vector<bool> &paramFlags = model_.optimisedParamFlags();
 	const std::vector<double> &relativeLimits = model_.relativeBounds();
 
   for (int iParam = 0; iParam < 10; iParam++)
@@ -62,7 +62,7 @@ madym_gui_model_configure::madym_gui_model_configure(const mdm_DCEModelBase &mod
 			//Set name, value and fixed flag from model settings
       paramControls_[iParam].name_->setText(params[iParam].c_str());
       paramControls_[iParam].value_->setValidator(new QDoubleValidator(0, 1000, 4, this));
-      paramControls_[iParam].value_->setText(QString::number(model_.pkInitParams(iParam)));
+      paramControls_[iParam].value_->setText(QString::number(model_.initialParams(iParam)));
 
 			paramControls_[iParam].fixed_->setChecked(!paramFlags[iParam]);
 
@@ -124,9 +124,9 @@ madym_gui_model_configure::madym_gui_model_configure(const mdm_DCEModelBase &mod
 void madym_gui_model_configure::on_okButton_clicked()
 {
   //Set init params and fixed params in madym options
-  int nParams = model_.num_dims();
+  int nParams = model_.num_params();
   
-	std::vector<double> initParams(nParams);
+	std::vector<double> initialParams(nParams);
 	std::vector<int> fixedParams(0);
 	std::vector<int> initMapParams(0);
 	std::vector<int> relativeLimitParams(0);
@@ -136,7 +136,7 @@ void madym_gui_model_configure::on_okButton_clicked()
   {
     if (nParams >= iParam + 1)
     {
-      initParams[iParam] = 
+      initialParams[iParam] = 
         paramControls_[iParam].value_->text().toDouble();
 
       if (paramControls_[iParam].fixed_->isChecked())
@@ -154,7 +154,7 @@ void madym_gui_model_configure::on_okButton_clicked()
     }
   }
 
-	madym_options_.initParams.set(initParams);
+	madym_options_.initialParams.set(initialParams);
 	madym_options_.initMapParams.set(initMapParams);
 	madym_options_.fixedParams.set(fixedParams);
 	madym_options_.relativeLimitParams.set(relativeLimitParams);

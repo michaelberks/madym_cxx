@@ -7,6 +7,7 @@
 
 #ifndef MDM_RUNTOOLS_HDR
 #define MDM_RUNTOOLS_HDR
+
 #include "mdm_api.h"
 #include <mdm_version.h>
 #include <mdm_OptionsParser.h>
@@ -17,10 +18,10 @@
 #include <madym/mdm_ErrorTracker.h>
 
 #include <madym/dce_models/mdm_DCEModelBase.h>
-#include <boost/filesystem.hpp>
 
 #include <string>
 #include <vector>
+#include <boost/filesystem.hpp>
 
 /**
 *  @brief   Called by command line/GUI tools to run DCE-analysis or T1 mapper
@@ -54,17 +55,34 @@ public:
 	*/
 	MDM_API virtual int run() = 0;
 
+	/**
+	* @brief
+
+	* @param
+	* @return
+	*/
+	MDM_API int parse_inputs(const std::string &argv);
+
+	/**
+	* @brief
+
+	* @param
+	* @return
+	*/
+	MDM_API virtual int parse_inputs(int argc, const char *argv[]) = 0;
+
 protected:
 	int mdm_progExit();
 	void mdm_progAbort(const std::string &err_str);
 
 	std::string timeNow();
-
+	
+	boost::filesystem::path set_up_output_folder();
 	void set_up_logging(boost::filesystem::path outputPath);
 
 	//Variables:
-	mdm_InputOptions options_;
-	mdm_OptionsParser options_parser_;
+	mdm_InputOptions &options_;
+	mdm_OptionsParser &options_parser_;
 	
 
 private:

@@ -104,9 +104,9 @@ MDM_API bool mdm_AnalyzeFormat::readImage3D(const std::string & fileName, mdm_Im
 			"ERROR: " + me + ": " + baseName + " is 4D. We can only use 2D or 3D images\n");
 		return false;
 	}
-	img.setMatrixDims(nX, nY, nZ); //This now resizes the data array
+	img.setDimensions(nX, nY, nZ); //This now resizes the data array
 
-	if (img.getNvoxels() <= 0)
+	if (img.numVoxels() <= 0)
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: " + me + ": Can't allocate voxel array for image " + imgFileName + "\n");
@@ -175,7 +175,7 @@ MDM_API bool mdm_AnalyzeFormat::writeImage3D(const std::string &baseName,
 	const Data_type dataTypeFlag, const XTR_type xtrTypeFlag,
 	bool sparse)
 {
-	//int   nVoxels = img.getNvoxels();
+	//int   nVoxels = img.numVoxels();
 
 	struct dsr  hdr;
 	assert(!baseName.empty());
@@ -276,16 +276,17 @@ bool mdm_AnalyzeFormat::writeNewXtr(std::ofstream *xtrFileStream,
 	const mdm_Image3D &img)
 {
   assert(xtrFileStream);
-  assert(img.getNvoxels());
+  assert(img.numVoxels());
 
 	std::vector<std::string> keys;
 	std::vector<double> values;
 	img.getSetKeyValuePairs(keys, values);
+
 	for (int i = 0; i < keys.size(); i++)
 	{
 		if (keys[i] == img.info_.TimeStamp.key())
 			*xtrFileStream << keys[i] << "\t"
-			<< std::fixed << std::setw(11) << std::setprecision(6) << img.getTimeStamp() << std::endl;
+			<< std::fixed << std::setw(11) << std::setprecision(6) << img.timeStamp() << std::endl;
 		else
 			*xtrFileStream << keys[i] << "\t" << values[i] << std::endl;
 	}
@@ -300,19 +301,19 @@ bool mdm_AnalyzeFormat::writeOldXtr(std::ofstream *xtrFileStream,
   double secs;
 
   assert(xtrFileStream);
-  assert(img.getNvoxels());
+  assert(img.numVoxels());
 
   /* Convert and write values from extra info to file */
-	double timeStamp = img.getTimeStamp();
+	double timeStamp = img.timeStamp();
   hrs  = (int) (timeStamp / 10000);
   mins = (int) ((timeStamp - ((double) hrs * 10000.0)) / 100);
   secs = timeStamp - ((double) hrs * 10000.0) - ((double) mins * 100.0);
 
-	double xmm, ymm, zmm;
-	img.getVoxelDims(xmm, ymm, zmm);
-
   /* TEST FOR WRITE ERRORS */
-	*xtrFileStream << "voxel dimensions" << ":\t" << xmm << " " << ymm << " " << zmm << std::endl;
+	*xtrFileStream << "voxel dimensions" << ":\t" 
+		<< img.info_.Xmm.value() << " " 
+		<< img.info_.Ymm.value() << " "
+		<< img.info_.Zmm.value() << std::endl;
 	*xtrFileStream << "flip angle" << ":\t" << img.info_.flipAngle.value() << std::endl;
 	*xtrFileStream << "TR" << ":\t" << img.info_.TR.value() << std::endl;
 	*xtrFileStream << "timestamp" << ":\t" << hrs << " " << mins << " " << secs << " " << timeStamp << std::endl;
@@ -326,7 +327,7 @@ bool mdm_AnalyzeFormat::writeAnalyzeXtr(const std::string &baseName,
                       const XTR_type typeFlag)
 {
   assert(!baseName.empty());
-  assert(img.getNvoxels());
+  assert(img.numVoxels());
 
   std::string xtrFileName = baseName + ".xtr";
 
@@ -606,7 +607,7 @@ bool mdm_AnalyzeFormat::readNewXtr(std::ifstream *xtrFileStream,
 		keys.push_back(str);
 		values.push_back(f);
 	}
-	img.decodeKeyValuePairs(keys, values);
+	img.setMetaData(keys, values);
 
 	return true;
 }
@@ -663,12 +664,11 @@ void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(struct dsr *const hdr,
 	bool sparse)
 {
 	int   nX, nY, nZ;
-	double xmm, ymm, zmm;
 
 	assert(hdr != NULL);
 	assert(hdr->hk.sizeof_hdr == 348);
 
-	img.getMatrixDims(nX, nY, nZ);
+	img.getDimensions(nX, nY, nZ);
 	hdr->hk.extents = (int)(nX * nY);
 
 	hdr->dime.dim[0] = (short)4;
@@ -677,11 +677,10 @@ void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(struct dsr *const hdr,
 	hdr->dime.dim[3] = (short)nZ;
 	hdr->dime.dim[4] = (short)1;
 
-	img.getVoxelDims(xmm, ymm, zmm);
 	hdr->dime.pixdim[0] = (double) 4.0;
-	hdr->dime.pixdim[1] = (double)xmm;
-	hdr->dime.pixdim[2] = (double)ymm;
-	hdr->dime.pixdim[3] = (double)zmm;
+	hdr->dime.pixdim[1] = (double)img.info_.Xmm.value();
+	hdr->dime.pixdim[2] = (double)img.info_.Ymm.value();
+	hdr->dime.pixdim[3] = (double)img.info_.Zmm.value();
 	switch (typeFlag)
 	{
 	case DT_UNSIGNED_CHAR:

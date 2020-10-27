@@ -13,9 +13,9 @@ BOOST_AUTO_TEST_CASE(test_image3D) {
 
 	mdm_Image3D img;
 	int nx = 2, ny = 2, nz = 2;
-	img.setMatrixDims(nx, ny, nz);
+	img.setDimensions(nx, ny, nz);
 
-	int nVoxels = img.getNvoxels();
+	int nVoxels = img.numVoxels();
 	BOOST_TEST_MESSAGE("Image initialised");
 	BOOST_CHECK_EQUAL(nVoxels, nx*ny*nz);
 
@@ -28,14 +28,14 @@ BOOST_AUTO_TEST_CASE(test_image3D) {
 		img.setVoxel(i, data_in[i]);
 
 	for (int i = 0; i < nVoxels; i++)
-		data_out[i] = img.getVoxel(i);
+		data_out[i] = img.voxel(i);
 	
 	BOOST_TEST_MESSAGE("Data set / get per voxel");
 	BOOST_CHECK_VECTORS(data_in, data_out);
 
 	//Also test against the const ref to the data returned
 	BOOST_TEST_MESSAGE("Data get ref to data");
-	BOOST_CHECK_VECTORS(img.getData(), data_in);
+	BOOST_CHECK_VECTORS(img.data(), data_in);
 
 	//TODO: We probably we want to add more tests here for setting of voxel
 	//dimensions, setting meta-info etc.

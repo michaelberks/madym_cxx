@@ -31,7 +31,7 @@ MDM_API mdm_RunToolsDCEFit::~mdm_RunToolsDCEFit()
 */
 void mdm_RunToolsDCEFit::setModel(const std::string &model_name, bool auto_aif, bool auto_pif,
 	const std::vector<std::string> &paramNames,
-	const std::vector<double> &initParams,
+	const std::vector<double> &initialParams,
 	const std::vector<int> fixedParams,
 	const std::vector<double> fixedValues,
 	const std::vector<int> relativeLimitParams,
@@ -40,7 +40,7 @@ void mdm_RunToolsDCEFit::setModel(const std::string &model_name, bool auto_aif, 
 	
 	bool model_set = mdm_DCEModelGenerator::setModel(model_, AIF_,
 		model_name, auto_aif, auto_pif, paramNames,
-		initParams, fixedParams, fixedValues,
+		initialParams, fixedParams, fixedValues,
 		relativeLimitParams, relativeLimitValues);
 
 	if (!model_set)

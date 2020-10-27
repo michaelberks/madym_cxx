@@ -7,6 +7,7 @@
 
 #ifndef MDM_INPUT_TYPES_HDR
 #define MDM_INPUT_TYPES_HDR
+
 #include "mdm_api.h"
 
 #include <string>
@@ -51,32 +52,61 @@ private:
 
 class mdm_input_str {
 public:
-	mdm_input_str(std::string s) :
-		str(s)
-	{}
-	const std::string& operator() () const { return str; }
+	static const std::string EMPTY_STR;
+	mdm_input_str();
+	
+	mdm_input_str(std::string s);
+
+	~mdm_input_str();
+
+	const std::string& operator() () const;
+	
+
+private:
+	friend std::ostream & operator<<(std::ostream &os, const mdm_input_str& s);
 	std::string str;
+	
 };
 
-struct mdm_input_int_list {
-public:
-	mdm_input_int_list(std::vector<int> l) : list(l) {}
-	const std::vector<int>& operator() () const { return list; }
+class mdm_input_int_list {
 
+public:
+	mdm_input_int_list();
+	mdm_input_int_list(std::vector<int> l);
+	~mdm_input_int_list();
+
+	const std::vector<int>& operator() () const;
+
+private:
+	friend std::ostream & operator<<(std::ostream &os, const mdm_input_int_list& s);
 	std::vector<int> list;
 };
 
-struct mdm_input_double_list {
+class mdm_input_double_list {
+
 public:
-	mdm_input_double_list(std::vector<double> l) : list(l) {}
-	const std::vector<double>& operator() () const { return list; }
+	mdm_input_double_list();
+	mdm_input_double_list(std::vector<double> l);
+	~mdm_input_double_list();
+	
+	const std::vector<double>& operator() () const;
+	
+private:
+	friend std::ostream & operator<<(std::ostream &os, const mdm_input_double_list& s);
 	std::vector<double> list;
 };
 
-struct mdm_input_string_list {
+class mdm_input_string_list {
+
 public:
-	mdm_input_string_list(std::vector<std::string> l) : list(l) {}
-	const std::vector<std::string>& operator() () const { return list; }
+	mdm_input_string_list();
+	mdm_input_string_list(std::vector<std::string> l);
+	~mdm_input_string_list();
+
+	const std::vector<std::string>& operator() () const;
+	
+private:
+	friend std::ostream & operator<<(std::ostream &os, const mdm_input_string_list& s);
 	std::vector<std::string> list;
 };
 

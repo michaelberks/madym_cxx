@@ -20,8 +20,8 @@ void test_model_time_series(
 	std::ifstream modelFileStream(modelFileName, std::ios::in | std::ios::binary);
 	modelFileStream.read(reinterpret_cast<char*>(&nParams), sizeof(int));
 	
-	std::vector<double> initParams(nParams);
-	for (double &p : initParams)
+	std::vector<double> initialParams(nParams);
+	for (double &p : initialParams)
 		modelFileStream.read(reinterpret_cast<char*>(&p), sizeof(double));
 	for (double &c : CtCalibration)
 		modelFileStream.read(reinterpret_cast<char*>(&c), sizeof(double));
@@ -33,7 +33,7 @@ void test_model_time_series(
 	mdm_DCEModelBase *model = NULL;
 	bool model_set = mdm_DCEModelGenerator::setModel(model, AIF,
 		modelName, false, false, {},
-		initParams, {}, {}, {}, {});
+		initialParams, {}, {}, {}, {});
 
 	BOOST_REQUIRE_MESSAGE(model_set, "Unable to compute time series for " << modelName);
 

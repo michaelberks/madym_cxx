@@ -11,7 +11,7 @@ namespace fs = boost::filesystem;
 BOOST_AUTO_TEST_SUITE(test_mdm_tools)
 
 BOOST_AUTO_TEST_CASE(test_calculate_T1_lite) {
-	BOOST_TEST_MESSAGE("======= Testing tool: calculate T1 lite =======");
+	BOOST_TEST_MESSAGE("======= Testing tool: madym T1 lite =======");
 
 	//Generate some signals from sample FA, TR, T1 and M0 values
 	double T1 = 1000;
@@ -36,10 +36,10 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1_lite) {
 	ifs.close();
 
 	//Call calculate_T1 to fit T1 and M0
-	std::string T1_output_dir = test_dir + "/calculate_T1_lite/";
+	std::string T1_output_dir = test_dir + "/madym_T1_lite/";
 	std::string outputName = "madym_analysis.dat";
 	std::stringstream cmd;
-	cmd << mdm_test_utils::tools_exe_dir() << "calculate_T1_lite"
+	cmd << mdm_test_utils::tools_exe_dir() << "madym_T1_lite"
 		<< " -T VFA "
 		<< " --data " << inputDataFile
 		<< " --n_T1 " << 3
@@ -57,11 +57,11 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1_lite) {
 	}
 	catch (...)
 	{
-		BOOST_CHECK_MESSAGE(false, "Running calculate_T1_lite failed");
+		BOOST_CHECK_MESSAGE(false, "Running madym_T1_lite failed");
 		return;
 	}
 
-	BOOST_CHECK_MESSAGE(!error, "Error returned from calculate_T1_lite tool");
+	BOOST_CHECK_MESSAGE(!error, "Error returned from madym_T1_lite tool");
 
 	//Load in the fitted parameters from the output file
 	std::string outputDataFile = T1_output_dir + "VFA_" + outputName;

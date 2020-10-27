@@ -8,7 +8,7 @@
 * @author   MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 * @brief    Standalone T1 mapper, takes input images from disk
 */
-#include <madym/run/mdm_RunTools_calculateT1.h>
+#include <madym/run/mdm_RunTools_madym_T1.h>
 #include <madym/mdm_OptionsParser.h>
 
 mdm_OptionsParser options_parser_;
@@ -23,12 +23,14 @@ mdm_InputOptions options_;
 */
 int main(int argc, char *argv[])
 {
-	int parse_error = options_parser_.calculate_T1_inputs(argc, (const char **)argv, options_);
+	//Instantiate new madym_exe object
+	mdm_RunTools_madym_T1 madym_exe(options_, options_parser_);
 
+	//Parse inputs
+	int parse_error = madym_exe.parse_inputs(argc, (const char **)argv);
 	if (parse_error)
 		return parse_error;
 
-	//Instantiate new madym_exe object with these options and run
-	mdm_RunTools_calculateT1 madym_exe(options_, options_parser_);
-  return madym_exe.run();
+	//If inputs ok, then run
+	return madym_exe.run();
 }

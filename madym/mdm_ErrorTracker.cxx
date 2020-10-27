@@ -18,29 +18,8 @@
 #include <cassert>
 #include <madym/mdm_ProgramLogger.h>
 
-/*
-	* Error Codes
-	*
-	* Notes : Using an int(32 bits) to represent errors = > a max of 32 error conditions including "no error"
-	*        We use a 32 - bit int because Analyze 7.5 can't handle 64-bit ints - consider modifying in future
-	*
-	*        Bits 7 - 9 are not used because we removed the rank sum enhancement criterion
-	*        They may be restored in future if that criterion is restored, or re - used if it is not
-*/
-const int mdm_ErrorTracker::OK = 0;									// No error condition                      - Binary no bits set
-const int mdm_ErrorTracker::VFA_THRESH_FAIL = 1;		// SigInt(FA = 2deg) < UserSetThreshold    - Binary bit 1 set  
-const int mdm_ErrorTracker::T1_INIT_FAIL = 2;				// Initialisation of T1 fitting failed     - Binary bit 2 set  
-const int mdm_ErrorTracker::T1_FIT_FAIL = 4;				// Error in main T1 calculation routine    - Binary bit 3 set  
-const int mdm_ErrorTracker::T1_MAX_ITER = 8;				// Hit max iterations in T1 calculation    - Binary bit 4 set  
-const int mdm_ErrorTracker::T1_MAD_VALUE = 16;			// (T1 < 0.0) || (T1 > 6000.0)             - Binary bit 5 set  
-const int mdm_ErrorTracker::M0_NEGATIVE = 32;				// Earlier error condition caused M0 = 0.0 - Binary bit 6 set 
-const int mdm_ErrorTracker::NON_ENH_IAUC = 64;			// Voxel non-enhancing by IAUC60 < 0.0     - Binary bit 7 set  
-const int mdm_ErrorTracker::CA_IS_NAN = 128;				// [CA](t) == NaN                          - Binary bit 8 set 
-const int mdm_ErrorTracker::DYNT1_NEGATIVE = 256;		// T1(t) < 0.0                             - Binary bit 9 set 
-const int mdm_ErrorTracker::DCE_INVALID_INPUT = 512;// Input value NaN or -ve                  - Binary bit 10 set 
-const int mdm_ErrorTracker::DCE_FIT_FAIL = 1024;		// Error in model fitting optimisation     - Binary bit 11 set
-const int mdm_ErrorTracker::DCE_INVALID_PARAM = 2048;// Model fit produced invalid params			 - Binary bit 12 set
-
+//
+//
 MDM_API mdm_ErrorTracker::mdm_ErrorTracker()
 {
 
@@ -64,13 +43,13 @@ MDM_API bool mdm_ErrorTracker::setErrorImage(const mdm_Image3D &img)
 {
 	
   //Check input image is not empty and of correct type
-  if (img.getNvoxels() <= 0)
+  if (img.numVoxels() <= 0)
   {
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: mdm_ErrorTracker::setErrorImage : Input image is empty\n");
     return false;
   }
-	else if (img.getType() != mdm_Image3D::imageType::TYPE_ERRORMAP)
+	else if (img.type() != mdm_Image3D::ImageType::TYPE_ERRORMAP)
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: mdm_ErrorTracker::setErrorImage: "
@@ -84,15 +63,15 @@ MDM_API bool mdm_ErrorTracker::setErrorImage(const mdm_Image3D &img)
 //
 MDM_API bool mdm_ErrorTracker::initErrorImage(const mdm_Image3D &imgWithDims)
 {
-	if (errorImage_.getNvoxels() > 0)
+	if (errorImage_.numVoxels() > 0)
 		//Error image has already been set, can just return true and get on silently
 		return true;
 
-	errorImage_.setType(mdm_Image3D::imageType::TYPE_ERRORMAP);
-	errorImage_.copyMatrix(imgWithDims);
+	errorImage_.setType(mdm_Image3D::ImageType::TYPE_ERRORMAP);
+	errorImage_.setDimensions(imgWithDims);
 
 	/* ... and make sure it worked */
-	if (errorImage_.getNvoxels() <= 0)
+	if (errorImage_.numVoxels() <= 0)
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: mdm_ErrorTracker::setErrorImage Failed to set up error image\n");
@@ -102,21 +81,19 @@ MDM_API bool mdm_ErrorTracker::initErrorImage(const mdm_Image3D &imgWithDims)
 	return true;
 }
 
-/**
- * @author   GA Buonaccorsi
- * @version  1.0 (2 Mar 2012)
+/*
  */
-MDM_API bool mdm_ErrorTracker::updateVoxel(const int voxelIndex, const int errCode)
+MDM_API bool mdm_ErrorTracker::updateVoxel(const int voxelIndex, ErrorCode errCode)
 {
-  assert(voxelIndex >= 0);
+  assert(voxelIndex >= 0 && voxelIndex < errorImage_.numVoxels());
 
-  if (!errorImage_.getNvoxels())
+  if (!errorImage_.numVoxels())
   {
     return false;
   }
 
   /* Update error at given voxel here */
-  int errVal = (int)errorImage_.getVoxel(voxelIndex);
+  int errVal = (int)errorImage_.voxel(voxelIndex);
   errVal |= errCode;
 	errorImage_.setVoxel(voxelIndex, errVal);
 
@@ -130,7 +107,7 @@ MDM_API mdm_Image3D mdm_ErrorTracker::maskSingleErrorCode(const int errCodesInt)
 	mdm_Image3D maskOut;
 
 	// Following is crude test that fields have been set
-	int nVoxels = errorImage_.getNvoxels();
+	int nVoxels = errorImage_.numVoxels();
 	if (nVoxels <= 0)
 	{
 		mdm_ProgramLogger::logProgramMessage(
@@ -138,13 +115,14 @@ MDM_API mdm_Image3D mdm_ErrorTracker::maskSingleErrorCode(const int errCodesInt)
 		return maskOut;
 	}
 
-	maskOut.copyFields(errorImage_);
-	maskOut.setTimeStamp(errorImage_.getTimeStamp());
+	maskOut.copy(errorImage_);
+	maskOut.setType(mdm_Image3D::ImageType::TYPE_ERRORMAP);
+	maskOut.setTimeStamp(errorImage_.timeStamp());
 
 	/* And finally the fun bit */
 	for (int iVoxel = 0; iVoxel < nVoxels; iVoxel++)
 	{
-		double mask_val = (int)errorImage_.getVoxel(iVoxel) & errCodesInt;
+		double mask_val = (int)errorImage_.voxel(iVoxel) & errCodesInt;
 		maskOut.setVoxel(iVoxel, mask_val);
 	}
 

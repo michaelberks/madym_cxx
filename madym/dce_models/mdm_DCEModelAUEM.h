@@ -1,6 +1,8 @@
 /**
 *  @file    mdm_DCEModelAUEM.h
-*  @brief
+*  @brief Implements the active-uptake and efflux model.
+*
+*	 See git repository wiki for scientific discussion of models.
 *
 *  Original author MA Berks 24 Oct 2018
 *  (c) Copyright QBI, University of Manchester 2018
@@ -13,13 +15,16 @@
 #include "mdm_DCEModelBase.h"
 #include <vector>
 #include <mdm_AIF.h>
-
+//! Implements the active-uptake and efflux model.
 class mdm_DCEModelAUEM : public mdm_DCEModelBase {
 public:
+	
+	/*!
+	*/
   MDM_API mdm_DCEModelAUEM(
     mdm_AIF &AIF,
-    const std::vector<std::string> &pkParamNames = std::vector<std::string>(0),
-    const std::vector<double> &pkInitParams = std::vector<double>(0),
+    const std::vector<std::string> &paramNames = std::vector<std::string>(0),
+    const std::vector<double> &initialParams = std::vector<double>(0),
     const std::vector<int> &fixedParams = std::vector<int>(0),
     const std::vector<double> &fixedValues = std::vector<double>(0),
 		const std::vector<int> &relativeLimitParams = std::vector<int>(0),

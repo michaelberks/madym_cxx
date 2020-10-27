@@ -8,32 +8,32 @@ project(madym_tools)
 
 #-------------------------------------------------------------------
 # Main madym analysis tool applied to whole image volumes
-ADD_EXECUTABLE(madym 
-	madym.cxx)
+ADD_EXECUTABLE(madym_DCE 
+	madym_dce.cxx)
 
-TARGET_LINK_LIBRARIES( madym mdm
+TARGET_LINK_LIBRARIES( madym_DCE mdm
   )
 
 #-------------------------------------------------------------------
 # Lightweight tool for performing analysis on individual voxels
-ADD_EXECUTABLE(madym_lite 
-	madym_lite.cxx)
+ADD_EXECUTABLE(madym_DCE_lite 
+	madym_dce_lite.cxx)
 
-TARGET_LINK_LIBRARIES( madym_lite mdm)
+TARGET_LINK_LIBRARIES( madym_DCE_lite mdm)
 
 #-------------------------------------------------------------------
 # Standalone tool for computing T1 maps
-ADD_EXECUTABLE(calculate_T1 
-	calculate_T1.cxx)
+ADD_EXECUTABLE(madym_T1 
+	madym_T1.cxx)
 
-TARGET_LINK_LIBRARIES( calculate_T1 mdm)
+TARGET_LINK_LIBRARIES( madym_T1 mdm)
 
 #-------------------------------------------------------------------
 # Standalone tool for computing T1 values
-ADD_EXECUTABLE(calculate_T1_lite 
-	calculate_T1_lite.cxx)
+ADD_EXECUTABLE(madym_T1_lite 
+	madym_T1_lite.cxx)
 
-TARGET_LINK_LIBRARIES( calculate_T1_lite mdm)
+TARGET_LINK_LIBRARIES( madym_T1_lite mdm)
 
 #-------------------------------------------------------------------
 # Standalone tool for computing an auto AIF

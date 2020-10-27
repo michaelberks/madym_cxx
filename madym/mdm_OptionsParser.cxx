@@ -17,54 +17,6 @@
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 
-const std::string mdm_OptionsParser::EMPTY_STR = "\"\"";
-
-inline std::ostream& operator << (std::ostream& os, const mdm_input_str& v)
-{
-	if (v().empty())
-		os << mdm_OptionsParser::EMPTY_STR;
-	else
-		os << v();
-	return os;
-}
-
-inline std::ostream& operator << (std::ostream& os, const mdm_input_string_list& v)
-{
-	os << "[";
-	int i = 0;
-	for (const auto ii : v())
-	{
-		os << "" << ii;
-		i++;
-		if (i < v().size())
-			os << ",";
-	}
-
-
-	os << "]";
-	return os;
-}
-
-inline std::ostream& operator << (std::ostream& os, const mdm_input_int_list& v)
-{
-	os << "[";
-	for (const auto ii : v())
-		os << " " << ii;
-
-	os << " ]";
-	return os;
-}
-
-inline std::ostream& operator << (std::ostream& os, const mdm_input_double_list& v)
-{
-	os << "[";
-	for (const auto ii : v())
-		os << " " << ii;
-
-	os << " ]";
-	return os;
-}
-
 void validate(boost::any& v,
 	const std::vector<std::string>& values,
 	mdm_input_str* target_type, int)
@@ -78,15 +30,14 @@ void validate(boost::any& v,
 
 	// Do regex match and convert the interesting part to 
 	// int.
-
-	if (s == mdm_OptionsParser::EMPTY_STR)
+	mdm_input_str str(s);
+	if (s == mdm_input_str::EMPTY_STR)
 		v = mdm_input_str("");
 		
 
 	else
-		v = mdm_input_str(s);
+		v = str;
 }
-
 void validate(boost::any& v,
 	const std::vector<std::string>& values,
 	mdm_input_string_list* target_type, int)
@@ -166,15 +117,6 @@ void validate(boost::any& v,
 *  @brief   Defines options and their default values for all inputs to DCE analysis and T1 mapping tools
 */
 
-#define InputOption(option, option_type) \
-         (option.combined_key(), \
-					po::value<option_type>(&option.value())->default_value(option()),\
-					option.info())
-#define InputOptionFlag(flag) \
-         (flag.combined_key(), \
-					po::bool_switch(&flag.value())->default_value(flag())->multitoken(),\
-					flag.info())
-
 MDM_API  mdm_OptionsParser::mdm_OptionsParser()
 {
 	help_.add_options()
@@ -183,6 +125,8 @@ MDM_API  mdm_OptionsParser::mdm_OptionsParser()
 		;
 }
 
+/*
+*/
 MDM_API bool mdm_OptionsParser::to_stream(std::ostream &stream, 
 	const mdm_InputOptions &options) const
 {
@@ -218,6 +162,8 @@ MDM_API bool mdm_OptionsParser::to_stream(std::ostream &stream,
 	return true;
 }
 
+/*
+*/
 MDM_API bool mdm_OptionsParser::to_file(const std::string &filename, 
 	const mdm_InputOptions &options) const
 {
@@ -230,85 +176,14 @@ MDM_API bool mdm_OptionsParser::to_file(const std::string &filename,
 	return true;
 }
 
-MDM_API int mdm_OptionsParser::madym_inputs(int argc, const char *argv[],
-	mdm_InputOptions &options)
+/*
+*/
+MDM_API int mdm_OptionsParser::parse_inputs(
+	po::options_description &cmdline_options,
+	po::options_description &config_options,
+	const std::string &configFile,
+	int argc, const char *argv[])
 {
-	po::options_description cmdline_options("madym options");
-	po::options_description config_options("madym config options");
-
-	cmdline_options.add_options()
-		//Generic input options applied to all command-line tools
-		InputOption(options.configFile, mdm_input_str)
-		InputOption(options.dataDir, mdm_input_str)
-		;
-
-	config_options.add_options()
-		//DCE input options
-		InputOptionFlag(options.inputCt)
-		InputOption(options.dynName, mdm_input_str)
-		InputOption(options.dynDir, mdm_input_str)
-		InputOption(options.dynFormat, mdm_input_str)
-		InputOption(options.nDyns, int)
-		InputOption(options.injectionImage, int)
-
-		//ROI options
-		InputOption(options.roiName, mdm_input_str)
-
-		//T1 calculation options
-		InputOption(options.T1method, mdm_input_str)
-		InputOption(options.T1inputNames, mdm_input_string_list)
-		InputOption(options.T1noiseThresh, double)
-		InputOption(options.nT1Inputs, int)
-
-		//Signal to concentration options
-		InputOptionFlag(options.M0Ratio)
-		InputOption(options.T1Name, mdm_input_str)
-		InputOption(options.M0Name, mdm_input_str)
-		InputOption(options.r1Const, double)
-
-		//AIF options
-		InputOption(options.aifName, mdm_input_str)
-		InputOption(options.pifName, mdm_input_str)
-		InputOption(options.aifSlice, int)
-		InputOption(options.dose, double)
-		InputOption(options.hct, double)
-
-		//Model options
-		InputOption(options.model, mdm_input_str)
-		InputOption(options.initParams, mdm_input_double_list)
-		InputOption(options.initMapsDir, mdm_input_str)
-		InputOption(options.initMapParams, mdm_input_int_list)
-		InputOption(options.paramNames, mdm_input_string_list)
-		InputOption(options.fixedParams, mdm_input_int_list)
-		InputOption(options.fixedValues, mdm_input_double_list)
-		InputOption(options.relativeLimitParams, mdm_input_int_list)
-		InputOption(options.relativeLimitValues, mdm_input_double_list)
-		InputOption(options.firstImage, int)
-		InputOption(options.lastImage, int)
-
-		InputOptionFlag(options.noOptimise)
-		InputOptionFlag(options.dynNoise)
-		InputOptionFlag(options.testEnhancement)
-		InputOption(options.maxIterations, int)
-
-		//DCE only output options
-		InputOptionFlag(options.outputCt_sig)
-		InputOptionFlag(options.outputCt_mod)
-		InputOption(options.IAUCTimes, mdm_input_double_list)
-
-		//General output options
-		InputOption(options.outputDir, mdm_input_str)
-		InputOptionFlag(options.overwrite)
-		InputOptionFlag(options.sparseWrite)
-
-		//Logging options
-		InputOption(options.errorCodesName, mdm_input_str)
-		InputOption(options.programLogName, mdm_input_str)
-		InputOption(options.outputConfigFileName, mdm_input_str)
-		InputOption(options.auditLogBaseName, mdm_input_str)
-		InputOption(options.auditLogDir, mdm_input_str)
-		;
-
 	po::options_description combined_options("");
 	combined_options.add(cmdline_options).add(config_options).add(help_);
 
@@ -325,67 +200,16 @@ MDM_API int mdm_OptionsParser::madym_inputs(int argc, const char *argv[],
 		return 4;
 
 	//Check if config file set, if so try and open it
-	if (!parse_config_file(config_options, options))
+	if (!parse_config_file(config_options, configFile))
 		return 5;
 
 	return 0;
-	
 }
 
-MDM_API int mdm_OptionsParser::madym_lite_inputs(int argc, const char *argv[],
-	mdm_InputOptions &options)
+MDM_API int mdm_OptionsParser::parse_inputs(
+	po::options_description &config_options,
+	int argc, const char *argv[])
 {
-	po::options_description config_options("madym-lite config options");
-
-	config_options.add_options()
-		InputOption(options.dataDir, mdm_input_str)
-
-		//DCE input options
-		InputOption(options.inputDataFile, mdm_input_str)
-		InputOptionFlag(options.inputCt)
-		InputOption(options.dynTimesFile, mdm_input_str)
-		InputOption(options.nDyns, int)
-		InputOption(options.injectionImage, int)
-
-		//Signal to concentration options
-		InputOptionFlag(options.M0Ratio)
-		InputOption(options.r1Const, double)
-		InputOption(options.FA, double)
-		InputOption(options.TR, double)
-
-		//AIF options
-		InputOption(options.aifName, mdm_input_str)
-		InputOption(options.pifName, mdm_input_str)
-		InputOption(options.dose, double)
-		InputOption(options.hct, double)
-
-		//Model options
-		InputOption(options.model, mdm_input_str)
-		InputOption(options.initParams, mdm_input_double_list)
-		InputOption(options.initParamsFile, mdm_input_str)
-		InputOption(options.paramNames, mdm_input_string_list)
-		InputOption(options.fixedParams, mdm_input_int_list)
-		InputOption(options.fixedValues, mdm_input_double_list)
-		InputOption(options.relativeLimitParams, mdm_input_int_list)
-		InputOption(options.relativeLimitValues, mdm_input_double_list)
-		InputOption(options.firstImage, int)
-		InputOption(options.lastImage, int)
-
-		InputOptionFlag(options.noOptimise)
-		InputOption(options.dynNoiseFile, mdm_input_str)
-		InputOptionFlag(options.testEnhancement)
-		InputOption(options.maxIterations, int)
-
-		//DCE only output options
-		InputOptionFlag(options.outputCt_sig)
-		InputOptionFlag(options.outputCt_mod)
-		InputOption(options.IAUCTimes, mdm_input_double_list)
-
-		//General output options
-		InputOption(options.outputName, mdm_input_str)
-		InputOption(options.outputDir, mdm_input_str)
-		;
-
 	config_options.add(help_);
 
 	//Parse the command line
@@ -401,129 +225,6 @@ MDM_API int mdm_OptionsParser::madym_lite_inputs(int argc, const char *argv[],
 		return 3;
 
 	return 0;
-}
-
-MDM_API int mdm_OptionsParser::calculate_T1_inputs(int argc, const char *argv[],
-	mdm_InputOptions &options)
-{
-	po::options_description cmdline_options("calculate_T1 options");
-	po::options_description config_options("calculate_T1 config options");
-
-	cmdline_options.add_options()
-		//Generic input options applied to all command-line tools
-		InputOption(options.configFile, mdm_input_str)
-		InputOption(options.dataDir, mdm_input_str)
-		;
-
-	config_options.add_options()
-
-		//ROI options
-		InputOption(options.roiName, mdm_input_str)
-
-		//T1 calculation options
-		InputOption(options.T1method, mdm_input_str)
-		InputOption(options.T1inputNames, mdm_input_string_list)
-		InputOption(options.T1noiseThresh, double)
-		InputOption(options.nT1Inputs, int)
-
-		//General output options
-		InputOption(options.outputDir, mdm_input_str)
-		InputOptionFlag(options.sparseWrite)
-		InputOptionFlag(options.overwrite)
-
-		//Logging options
-		InputOption(options.errorCodesName, mdm_input_str)
-		InputOption(options.programLogName, mdm_input_str)
-		InputOption(options.outputConfigFileName, mdm_input_str)
-		InputOption(options.auditLogBaseName, mdm_input_str)
-		InputOption(options.auditLogDir, mdm_input_str)
-		;
-
-	po::options_description combined_options("");
-	combined_options.add(cmdline_options).add(config_options).add(help_);
-
-	//Parse the command-line
-	if (!parse_command_line(argc, argv, combined_options))
-		return 2;
-
-	//Check if help set, if so, just display options and quit
-	if (help_set(argc, combined_options))
-		return 3;
-
-	//Check if version set
-	if (version_set())
-		return 4;
-
-	//Check if config file set, if so try and open it
-	if (!parse_config_file(config_options, options))
-		return 5;
-
-	return 0;
-}
-
-MDM_API int mdm_OptionsParser::calculate_T1_lite_inputs(int argc, const char *argv[],
-	mdm_InputOptions &options)
-{
-	po::options_description config_options("calculate_T1_lite config options");
-
-	config_options.add_options()
-		InputOption(options.dataDir, mdm_input_str)
-		//T1 calculation options
-		InputOption(options.inputDataFile, mdm_input_str)
-		InputOption(options.T1method, mdm_input_str)
-		InputOption(options.FA, double)
-		InputOption(options.TR, double)
-		InputOption(options.T1noiseThresh, double)
-		InputOption(options.nT1Inputs, int)
-
-		//General output options
-		InputOption(options.outputDir, mdm_input_str)
-		InputOption(options.outputName, mdm_input_str)
-		;
-	config_options.add(help_);
-
-	//Parse the command line
-	if (!parse_command_line(argc, argv, config_options))
-		return 1;
-
-	//Check if help set, if so, just display options and quit
-	if (help_set(argc, config_options))
-		return 2;
-
-	//Check if version set
-	if (version_set())
-		return 3;
-
-	return 0;
-}
-
-//Overrides for non-commandline input
-MDM_API int mdm_OptionsParser::madym_inputs(const std::string &argv,
-	mdm_InputOptions &options)
-{
-	const char*argvc[] = { argv.c_str() };
-	return madym_inputs(0, argvc, options);
-}
-
-MDM_API int mdm_OptionsParser::madym_lite_inputs(const std::string &argv,
-	mdm_InputOptions &options)
-{
-	const char*argvc[] = { argv.c_str() };
-	return madym_lite_inputs(0, argvc, options);
-}
-
-MDM_API int mdm_OptionsParser::calculate_T1_inputs(const std::string &argv,
-	mdm_InputOptions &options)
-{
-	const char*argvc[] = { argv.c_str() };
-	return calculate_T1_inputs(0, argvc, options);
-}
-
-MDM_API int mdm_OptionsParser::calculate_T1_lite_inputs(const std::string &argv,
-	mdm_InputOptions &options)
-{
-	const char*argvc[] = { argv.c_str() };
-	return calculate_T1_lite_inputs(0, argvc, options);
 }
 
 MDM_API const std::string& mdm_OptionsParser::exe_args() const
@@ -534,6 +235,38 @@ MDM_API const std::string& mdm_OptionsParser::exe_args() const
 MDM_API const std::string& mdm_OptionsParser::exe_cmd() const
 {
 	return exe_cmd_;
+}
+
+template<class T, class T_out>
+MDM_API void mdm_OptionsParser::add_option(po::options_description &config_options, 
+	mdm_input<T, T_out> &option)
+{
+	config_options.add_options()
+		(option.combined_key(),
+		po::value<T>(&option.value())->default_value(option()),
+		option.info());
+}
+
+template void MDM_API mdm_OptionsParser::add_option(po::options_description &c, 
+	mdm_input_string &o);
+template void MDM_API mdm_OptionsParser::add_option(po::options_description &c,
+	mdm_input_int &o);
+template void MDM_API mdm_OptionsParser::add_option(po::options_description &c,
+	mdm_input_double &o);
+template void MDM_API mdm_OptionsParser::add_option(po::options_description &c,
+	mdm_input_strings &o);
+template void MDM_API mdm_OptionsParser::add_option(po::options_description &c,
+	mdm_input_ints &o);
+template void MDM_API mdm_OptionsParser::add_option(po::options_description &c,
+	mdm_input_doubles &o);
+
+template<>
+MDM_API void mdm_OptionsParser::add_option(po::options_description &config_options, mdm_input_bool &b)
+{
+	config_options.add_options()
+		(b.combined_key(), \
+			po::bool_switch(&b.value())->default_value(b())->multitoken(), \
+			b.info());
 }
 
 //****************************************************************************
@@ -597,18 +330,18 @@ bool mdm_OptionsParser::version_set()
 }
 
 bool mdm_OptionsParser::parse_config_file(const po::options_description &config_options,
-	const mdm_InputOptions &options)
+	const std::string &configFile)
 {
 	try
 	{
 		//Check if config file set, if so try and open it
-		if (!options.configFile().empty())
+		if (!configFile.empty())
 		{
-			std::ifstream ifs(options.configFile());
+			std::ifstream ifs(configFile);
 			if (!ifs)
 			{
 				//If it won't open, return an error
-				std::cout << "can not open config file: " << options.configFile() << "\n";
+				std::cout << "can not open config file: " << configFile << "\n";
 				return false;
 			}
 			else

@@ -40,10 +40,10 @@ void test_write_read(const mdm_Image3D &img, const mdm_AnalyzeFormat::Data_type 
 	BOOST_CHECK(success);
 
 	BOOST_TEST_MESSAGE("Test read, correct size: format " + format_str + sparse_str);
-	BOOST_CHECK_EQUAL(img.getNvoxels(), img_r.getNvoxels());
+	BOOST_CHECK_EQUAL(img.numVoxels(), img_r.numVoxels());
 
 	BOOST_TEST_MESSAGE("Test read, correct data: format " + format_str + sparse_str);
-	BOOST_CHECK_VECTORS(img.getData(), img_r.getData());
+	BOOST_CHECK_VECTORS(img.data(), img_r.data());
 }
 
 void test_xtr(mdm_Image3D &img)
@@ -71,7 +71,7 @@ void test_xtr(mdm_Image3D &img)
 	BOOST_TEST_MESSAGE("Tesing xtr read: TE");
 	BOOST_CHECK_CLOSE(TE, img_r.info_.TE.value(), 1e-3);
 	BOOST_TEST_MESSAGE("Tesing xtr read: timestamp");
-	BOOST_CHECK_CLOSE(time, img_r.getTimeStamp(), 1e-3);
+	BOOST_CHECK_CLOSE(time, img_r.timeStamp(), 1e-3);
 }
 
 
@@ -83,8 +83,8 @@ BOOST_AUTO_TEST_CASE(test_analyze) {
 	mdm_Image3D img_integer, img_real;
 	int nx = 2, ny = 2, nz = 2;
 	int n_voxels = nx * ny * nz;
-	img_integer.setMatrixDims(nx, ny, nz);
-	img_real.setMatrixDims(nx, ny, nz);
+	img_integer.setDimensions(nx, ny, nz);
+	img_real.setDimensions(nx, ny, nz);
 	img_integer.setVoxelDims(1, 1, 1);
 	img_real.setVoxelDims(1, 1, 1);
 

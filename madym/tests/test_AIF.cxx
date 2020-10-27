@@ -54,12 +54,12 @@ BOOST_AUTO_TEST_CASE(test_AIF) {
 
 	//Now we can test an AIF we create against these values
 	mdm_AIF AIF_pop;
-	AIF_pop.setAIFflag(mdm_AIF::AIF_POP);
+	AIF_pop.setAIFType(mdm_AIF::AIF_POP);
 	AIF_pop.setPrebolus(injectionImage);
 	AIF_pop.setHct(hct);
 	AIF_pop.setDose(dose);
 	AIF_pop.setAIFTimes(dynTimes);
-	AIF_pop.resample_AIF(nTimes, 0);
+	AIF_pop.resample_AIF( 0);
 
 	BOOST_TEST_MESSAGE("Testing population AIF values match");
 	BOOST_CHECK_VECTORS(aifVals, AIF_pop.AIF());
@@ -73,10 +73,10 @@ BOOST_AUTO_TEST_CASE(test_AIF) {
 	mdm_AIF AIF_auto;
 	AIF_auto.readAIF(aif_name, nTimes);
 	AIF_auto.setHct(0); //So we don't correct twice
-	AIF_auto.resample_AIF(nTimes, 0);
+	AIF_auto.resample_AIF( 0);
 
 	BOOST_TEST_MESSAGE("Testing reading AIF values from file");
-	BOOST_CHECK_EQUAL(AIF_auto.AIFflag(), mdm_AIF::AIF_FILE);//"Reading AIF: flag"
+	BOOST_CHECK_EQUAL(AIF_auto.AIFType(), mdm_AIF::AIF_FILE);//"Reading AIF: flag"
 	BOOST_CHECK(mdm_test_utils::vectors_near_equal(
 		AIF_auto.AIFTimes(), dynTimes, 1e-4));//"Reading AIF: times"
 
@@ -84,8 +84,8 @@ BOOST_AUTO_TEST_CASE(test_AIF) {
 		AIF_auto.AIF(), aifVals, 1e-4));//"Reading AIF: values"
 
 	//Repeat tests for PIF
-	AIF_pop.setPIFflag(mdm_AIF::PIF_POP);
-	AIF_pop.resample_PIF(nTimes, 0);
+	AIF_pop.setPIFType(mdm_AIF::PIF_POP);
+	AIF_pop.resample_PIF( 0);
 
 	BOOST_TEST_MESSAGE("Testing population PIF values match");
 	BOOST_CHECK_VECTORS(AIF_pop.PIF(), pifVals);
@@ -95,10 +95,10 @@ BOOST_AUTO_TEST_CASE(test_AIF) {
 	BOOST_CHECK(AIF_pop.writePIF(pif_name));//"Writing PIF"
 
 	AIF_auto.readPIF(pif_name, nTimes);
-	AIF_auto.resample_PIF(nTimes, 0);
+	AIF_auto.resample_PIF( 0);
 
 	BOOST_TEST_MESSAGE("Testing reading PIF from file");
-	BOOST_CHECK_EQUAL(AIF_auto.PIFflag(), mdm_AIF::PIF_FILE);//"Reading PIF: flag"
+	BOOST_CHECK_EQUAL(AIF_auto.PIFType(), mdm_AIF::PIF_FILE);//"Reading PIF: flag"
 	BOOST_CHECK(mdm_test_utils::vectors_near_equal(
 		AIF_auto.AIFTimes(), dynTimes, 1e-4));//"Reading PIF: times"
 	BOOST_CHECK(mdm_test_utils::vectors_near_equal(

@@ -25,37 +25,30 @@ class mdm_OptionsParser {
 public:
   //:All madym  options
   //--------------------------------------------------------------------
-	
-	const static std::string EMPTY_STR;
 
 	MDM_API mdm_OptionsParser();
 	MDM_API bool to_stream(std::ostream &stream, 
 		const mdm_InputOptions &options) const;
 	MDM_API bool to_file(const std::string &filename, 
 		const mdm_InputOptions &options) const;
+	
+	MDM_API int parse_inputs(
+		po::options_description &cmdline_options,
+		po::options_description &config_options,
+		const std::string &configFile,
+		int argc, const char *argv[]);
 
-	MDM_API int madym_inputs(int argc, const char *argv[],
-		mdm_InputOptions &options);
-	MDM_API int madym_lite_inputs(int argc, const char *argv[],
-		mdm_InputOptions &options);
-	MDM_API int calculate_T1_inputs(int argc, const char *argv[],
-		mdm_InputOptions &options);
-	MDM_API int calculate_T1_lite_inputs(int argc, const char *argv[],
-		mdm_InputOptions &options);
+	MDM_API int parse_inputs(
+		po::options_description &config_options,
+		int argc, const char *argv[]);
 
-	//Overrides for non-commandline input
-	MDM_API int madym_inputs(const std::string &argv,
-		mdm_InputOptions &options);
-	MDM_API int madym_lite_inputs(const std::string &argv,
-		mdm_InputOptions &options);
-	MDM_API int calculate_T1_inputs(const std::string &argv,
-		mdm_InputOptions &options);
-	MDM_API int calculate_T1_lite_inputs(const std::string &argv,
-		mdm_InputOptions &options);
 
 	MDM_API const std::string& exe_args() const;
 
 	MDM_API const std::string& exe_cmd() const;
+
+	template<class T, class T_out>
+	MDM_API void add_option(po::options_description &config_options, mdm_input<T, T_out> &option);
 
 private:
 
@@ -66,7 +59,7 @@ private:
 	bool version_set();
 
 	bool parse_config_file(const po::options_description &config_options,
-		const mdm_InputOptions &options);
+		const std::string &configFile);
 
 	void make_exe_args(int argc, const char *argv[]);
 	

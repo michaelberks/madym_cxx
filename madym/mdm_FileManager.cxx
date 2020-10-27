@@ -34,17 +34,17 @@ using namespace boost::filesystem;
 
 const int MAX_IMAGES = 1024;
 
-MDM_API mdm_FileManager::mdm_FileManager(mdm_AIF &AIF,
+MDM_API mdm_FileManager::mdm_FileManager(
 	mdm_T1VolumeAnalysis &T1Mapper,
 	mdm_DCEVolumeAnalysis &volumeAnalysis,
 	mdm_ErrorTracker &errorTracker)
-	: AIF_(AIF),
+	: 
 	T1Mapper_(T1Mapper),
 	volumeAnalysis_(volumeAnalysis),
 	errorTracker_(errorTracker),
 	FAPaths_(0),
-	dynPaths_(0),
-	catPaths_(0),
+	StPaths_(0),
+	CtPaths_(0),
 	T1Path_(""),
 	M0Path_(""),
 	AIFPath_(""),
@@ -54,37 +54,17 @@ MDM_API mdm_FileManager::mdm_FileManager(mdm_AIF &AIF,
   writeCtModelMaps_(false),
 	sparseWrite_(false)
 {
-
 }
 
 MDM_API mdm_FileManager::~mdm_FileManager()
 {}
-
-/*This depends on whther using an auto or population AIF*/
-MDM_API bool mdm_FileManager::loadAIF(const std::string &AIFpath)
-{
-	bool success = AIF_.readAIF(AIFpath, volumeAnalysis_.getNDyns());
-	if (success)
-		AIFPath_ = AIFpath;
-
-	return success;
-}
-
-MDM_API bool mdm_FileManager::loadPIF(const std::string &PIFpath)
-{
-  bool success = AIF_.readPIF(PIFpath, volumeAnalysis_.getNDyns());
-  if (success)
-    PIFPath_ = PIFpath;
-
-  return success;
-}
 
 MDM_API bool mdm_FileManager::loadROI(const std::string &ROIpath)
 {
 	// Read in ROI image volume
 	mdm_Image3D ROI_image = mdm_AnalyzeFormat::readImage3D(ROIpath, false);
 
-	if (!ROI_image.getNvoxels())
+	if (!ROI_image.numVoxels())
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: mdm_FileManager::loadROI: Failed to read ROI " + ROIpath + "\n");
@@ -110,13 +90,13 @@ MDM_API bool mdm_FileManager::loadParameterMaps(const std::string &paramDir)
 
     mdm_Image3D paramMap = mdm_AnalyzeFormat::readImage3D(paramName, false);
 
-    if (!paramMap.getNvoxels())
+    if (!paramMap.numVoxels())
     {
 			mdm_ProgramLogger::logProgramMessage(
 				"ERROR: mdm_FileManager::loadParameterMaps:  Failed to read param map from " + paramName + "\n");
       return false;
     }
-    volumeAnalysis_.setModelMap(paramNames[i], paramMap);
+    volumeAnalysis_.setDCEMap(paramNames[i], paramMap);
   }
 	mdm_ProgramLogger::logProgramMessage(
 		"Successfully read param maps from " + paramDir + "\n");
@@ -126,10 +106,10 @@ MDM_API bool mdm_FileManager::loadParameterMaps(const std::string &paramDir)
 MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
 {
 	//Write out T1 and M0 maps (if M0 map used)
-	if (T1Mapper_.T1Map().getNvoxels() && 
+	if (T1Mapper_.T1Map().numVoxels() && 
     !writeOutputMap(volumeAnalysis_.MAP_NAME_T1, T1Mapper_.T1Map(), outputDir, true))
 		return false;
-	if (T1Mapper_.M0Map().getNvoxels() && 
+	if (T1Mapper_.M0Map().numVoxels() && 
 		!writeOutputMap(volumeAnalysis_.MAP_NAME_M0, T1Mapper_.M0Map(), outputDir, true))
 		return false;
 
@@ -158,7 +138,7 @@ MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
 		return false;
 
 	//If used, write ROI
-	if (volumeAnalysis_.ROIimage().getNvoxels() && 
+	if (volumeAnalysis_.ROIimage().numVoxels() && 
     !writeOutputMap(volumeAnalysis_.MAP_NAME_ROI, volumeAnalysis_.ROIimage(), outputDir, false))
 		return false;
 
@@ -166,7 +146,7 @@ MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
 	if (writeCtDataMaps_)
 	{
 		const std::string &ctSigPrefix = volumeAnalysis_.MAP_NAME_CT_SIG;
-		for (int i = 0; i < volumeAnalysis_.getNDyns(); i++)
+		for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
 		{
 			std::string catName = ctSigPrefix + std::to_string(i + 1);
 			if (!writeOutputMap(catName, volumeAnalysis_.CtDataMap(i), outputDir, true))
@@ -176,7 +156,7 @@ MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
   if (writeCtModelMaps_)
   {
     const std::string &ctModPrefix = volumeAnalysis_.MAP_NAME_CT_MOD;
-    for (int i = 0; i < volumeAnalysis_.getNDyns(); i++)
+    for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
     {
       std::string cmodName = ctModPrefix + std::to_string(i + 1);
       if (!writeOutputMap(cmodName, volumeAnalysis_.CtModelMap(i), outputDir, false))
@@ -194,7 +174,7 @@ MDM_API bool mdm_FileManager::writeModelResiduals(const std::string &outputDir)
 MDM_API bool mdm_FileManager::writeErrorMap(const std::string &outputPath)
 {
 	const mdm_Image3D &img = errorTracker_.errorImage();
-	if (!img.getNvoxels())
+	if (!img.numVoxels())
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: mdm_FileManager::writeErrorMap: Error codes map is empty\n");
@@ -227,16 +207,6 @@ MDM_API void mdm_FileManager::setSparseWrite(bool b)
 	sparseWrite_ = b;
 }
 
-MDM_API bool mdm_FileManager::saveAIF(const std::string &AIFpath)
-{
-  return AIF_.writeAIF(AIFpath);
-}
-
-MDM_API bool mdm_FileManager::savePIF(const std::string &PIFpath)
-{
-  return AIF_.writeAIF(PIFpath);
-}
-
 MDM_API bool mdm_FileManager::loadErrorImage(const std::string &errorPath, bool warnMissing)
 {
 	//To avoid triggering all the warnings for missing images (given we speculatively
@@ -252,7 +222,7 @@ MDM_API bool mdm_FileManager::loadErrorImage(const std::string &errorPath, bool 
 	}
 		
 	mdm_Image3D img = mdm_AnalyzeFormat::readImage3D(errorPath, false);
-	img.setType(mdm_Image3D::imageType::TYPE_ERRORMAP);
+	img.setType(mdm_Image3D::ImageType::TYPE_ERRORMAP);
 
 	//Don't bother with a file manager check here - the errorTracker will
 	//check image is non-zero size and of correct type
@@ -304,7 +274,7 @@ MDM_API bool mdm_FileManager::loadT1Image(const std::string &T1path)
 {
 	mdm_Image3D T1_map = mdm_AnalyzeFormat::readImage3D(T1path, false);
 
-	if (!T1_map.getNvoxels())
+	if (!T1_map.numVoxels())
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: mdm_FileManager::loadT1Image: Failed to read T1 map from " + T1path + "\n");
@@ -324,7 +294,7 @@ MDM_API bool mdm_FileManager::loadM0Image(const std::string &M0path)
 {
 	mdm_Image3D M0_map = mdm_AnalyzeFormat::readImage3D(M0path, false);
 
-	if (!M0_map.getNvoxels())
+	if (!M0_map.numVoxels())
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: mdm_FileManager::loadM0Image: Failed to read M0 map from " + M0path + "\n");
@@ -345,7 +315,7 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 {
 	bool dynFilesExist = true;
 	int nDyn = 0;
-	dynPaths_.clear();
+	StPaths_.clear();
 
 	//Set flags for missing data and reaching max images based on whether
 	//nDyns was set or not
@@ -402,7 +372,7 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 		else
 		{
 			mdm_Image3D img = mdm_AnalyzeFormat::readImage3D(dynPath, true);
-			if (!img.getNvoxels())
+			if (!img.numVoxels())
 			{
 				mdm_ProgramLogger::logProgramMessage(
 					"ERROR: mdm_FileManager::loadStDataMaps:  Failed to read dynamic image " +
@@ -415,7 +385,7 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 			mdm_ProgramLogger::logProgramMessage(
 				"Successfully read dynamic image " +
 				std::to_string(nDyn) + " from " + dynPath + "\n");
-			dynPaths_.push_back(dynPath);
+			StPaths_.push_back(dynPath);
 
 			//For first image, try initialising errorImage, if that's already been
 			//set it will just return true
@@ -423,9 +393,6 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 				errorTracker_.initErrorImage(img);
 		}
 	}
-
-	//Set the times in the AIF from the dynamic times
-  AIF_.setAIFTimes(volumeAnalysis_.dynamicTimes());
 
 	return true;
 }
@@ -435,7 +402,7 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 {
 	bool catFilesExist = true;
 	int nCat = 0;
-	catPaths_.clear();
+	CtPaths_.clear();
 
 	//Set flags for missing data and reaching max images based on whether
 	//nDyns was set or not
@@ -491,7 +458,7 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 		else
 		{
 			mdm_Image3D img = mdm_AnalyzeFormat::readImage3D(catPath, true);
-			if (!img.getNvoxels())
+			if (!img.numVoxels())
 			{
 				mdm_ProgramLogger::logProgramMessage(
 					"ERROR: mdm_FileManager::loadCtDataMaps: Failed to read concentration image " +
@@ -505,7 +472,7 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 				"Successfully read concentration image  " +
 				std::to_string(nCat) + " from " + catPath + "\n");
 
-			catPaths_.push_back(catPath);
+			CtPaths_.push_back(catPath);
 
 			//For first image, try initialising errorImage, if that's already been
 			//set it will just return true
@@ -514,9 +481,6 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 		}
 	}
 
-  //Set the times in the AIF from the dynamic times
-  AIF_.setAIFTimes(volumeAnalysis_.dynamicTimes());
-
 	return true;
 }
 
@@ -524,7 +488,7 @@ bool mdm_FileManager::loadFAImage(const std::string& filePath, int nVFA)
 {
 	mdm_Image3D FA_img = mdm_AnalyzeFormat::readImage3D(filePath, true);
 
-	if (!FA_img.getNvoxels())
+	if (!FA_img.numVoxels())
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: mdm_FileManager::loadFAImage: Failed to read VFA " + 
@@ -548,8 +512,8 @@ bool mdm_FileManager::loadFAImage(const std::string& filePath, int nVFA)
 
 bool mdm_FileManager::writeOutputMap(const std::string &mapName, const std::string &outputDir, bool writeXtr/* = true*/)
 {
-	const mdm_Image3D &img = volumeAnalysis_.modelMap(mapName);
-  if (img.getNvoxels())
+	const mdm_Image3D &img = volumeAnalysis_.DCEMap(mapName);
+  if (img.numVoxels())
     return writeOutputMap(mapName, img, outputDir, writeXtr);
   else
     return true;
