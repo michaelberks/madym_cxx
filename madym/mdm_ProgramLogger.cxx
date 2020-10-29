@@ -1,15 +1,6 @@
 /**
- *  @file    mdm_ProgramLogger.c
- *  @brief   Functions for logging madym messages
- *
- *  Original author GA Buonaccorsi 4 April 2013
- *  (c) Copyright Bioxydyn Ltd, 2012
- *  Not for distribution, internal use only
- *
- *  Documentation comments are in *.h, except for static methods
- *  Version info and list of modifications in comment at end of file
- *
- *  NOTE:  Unix-specific because of functions in unistd.h
+ *  @file    mdm_ProgramLogger.cxx
+ *  @brief   implements the mdm_ProgramLogger class
  */
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
@@ -87,10 +78,7 @@ MDM_API bool mdm_ProgramLogger::closeProgramLog()
 	return true;
 }
 
-/**
- * @author   GA Buonaccorsi
- * @version  4 April 2013
- */
+//
 MDM_API bool mdm_ProgramLogger::logProgramMessage(const std::string &message)
 {
 	if (!program_log_stream_)
@@ -99,7 +87,6 @@ MDM_API bool mdm_ProgramLogger::logProgramMessage(const std::string &message)
 		return false;
 	}
 
-	/* First write to ASCII log */
 	program_log_stream_ << message;
 	return true;
 }
@@ -132,7 +119,7 @@ MDM_API bool  mdm_ProgramLogger::openAuditLog(const std::string &fileName,
 	return logAuditMessage(msg);
 }
 
-/**/
+//
 MDM_API bool mdm_ProgramLogger::closeAuditLog()
 {
 	if (!audit_log_stream_)
@@ -173,8 +160,7 @@ MDM_API bool mdm_ProgramLogger::logAuditMessage(const std::string &message)
 //****************************************************************************
 // Private
 //****************************************************************************
-/**
- */
+//
 std::string mdm_ProgramLogger::logTime()
 {
 	auto now = std::chrono::system_clock::now();
@@ -184,5 +170,3 @@ std::string mdm_ProgramLogger::logTime()
 	ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
 	return ss.str();
 }
-/*
- */

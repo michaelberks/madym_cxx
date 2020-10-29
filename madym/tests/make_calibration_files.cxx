@@ -3,7 +3,7 @@
 
 #include <madym/mdm_AIF.h>
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
-#include <madym/mdm_T1Voxel.h>
+#include <madym/mdm_T1VFAVoxel.h>
 #include "mdm_test_utils.h"
 
 void write_series_to_binary(const std::string filename, 
@@ -29,17 +29,17 @@ void make_model_time_series(
 	bool makeIAUC)
 {
 	//generate specific instance of model
-	mdm_DCEModelBase *model = NULL;
-	bool model_set = mdm_DCEModelGenerator::setModel(model, AIF,
-		modelName, false, false, {},
-		initialParams, {}, {}, {}, {});
-
-	//Check it set correctly
-	if (!model_set)
+	auto modelType = mdm_DCEModelGenerator::ParseModelName(modelName);
+	if (modelType == mdm_DCEModelGenerator::UNDEFINED)
 	{
-		std::cout << "Unable to write time series for " << modelName << std::endl;
+		std::cout << "Model name " << modelName << " is not defined " << std::endl;
 		return;
 	}
+
+	auto model = mdm_DCEModelGenerator::createModel(AIF,
+		modelType, false, false, {},
+		initialParams, {}, {}, {}, {});
+	
 
 	//Compute model Ct
 	int nTimes = AIF.AIF().size();
@@ -107,10 +107,6 @@ void make_model_time_series(
 		iaucFileStream.close();
 		std::cout << "Wrote IAUC values for " << modelName << " to binary calibration file" << std::endl;
 	}
-
-
-
-	delete model;
 }
 
 int main(int argc, char *argv[])
@@ -219,7 +215,7 @@ int main(int argc, char *argv[])
 	double TR = 3.5;
 	std::vector<double> signals(nFAs);
 	for (int i = 0; i < nFAs; i++)
-		signals[i] = mdm_T1Voxel::T1toSignal(T1, S0, FAs[i], TR);
+		signals[i] = mdm_T1VFAVoxel::T1toSignal(T1, S0, FAs[i], TR);
 
 	std::string T1FileName(outputDir + "T1.dat");
 	std::ofstream T1FileStream(T1FileName, std::ios::out | std::ios::binary);

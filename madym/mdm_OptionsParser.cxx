@@ -189,35 +189,35 @@ MDM_API int mdm_OptionsParser::parse_inputs(
 
 	//Parse the command-line
 	if (!parse_command_line(argc, argv, combined_options))
-		return 2;
+		return 1;
 
 	//Check if help set, if so, just display options and quit
 	if (help_set(argc, combined_options))
-		return 3;
+		return 2;
 
 	//Check if version set
 	if (version_set())
-		return 4;
+		return 3;
 
 	//Check if config file set, if so try and open it
 	if (!parse_config_file(config_options, configFile))
-		return 5;
+		return 4;
 
 	return 0;
 }
 
 MDM_API int mdm_OptionsParser::parse_inputs(
-	po::options_description &config_options,
+	po::options_description &cmdline_options,
 	int argc, const char *argv[])
 {
-	config_options.add(help_);
+	cmdline_options.add(help_);
 
 	//Parse the command line
-	if (!parse_command_line(argc, argv, config_options))
+	if (!parse_command_line(argc, argv, cmdline_options))
 		return 1;
 
 	//Check if help set, if so, just display options and quit
-	if (help_set(argc, config_options))
+	if (help_set(argc, cmdline_options))
 		return 2;
 
 	//Check if version set
@@ -239,7 +239,7 @@ MDM_API const std::string& mdm_OptionsParser::exe_cmd() const
 
 template<class T, class T_out>
 MDM_API void mdm_OptionsParser::add_option(po::options_description &config_options, 
-	mdm_input<T, T_out> &option)
+	mdm_Input<T, T_out> &option)
 {
 	config_options.add_options()
 		(option.combined_key(),
@@ -354,13 +354,13 @@ bool mdm_OptionsParser::parse_config_file(const po::options_description &config_
 	}
 	catch (const po::error &e)
 	{
-		std::cout << "Boost::program_options Error parsing command line" << std::endl;
+		std::cout << "Boost::program_options Error parsing config file" << std::endl;
 		std::cout << e.what();
 		return false;
 	}
 	catch (const boost::bad_lexical_cast &e)
 	{
-		std::cout << "Boost::error Error parsing command line" << std::endl;
+		std::cout << "Boost::error Error parsing config file" << std::endl;
 		std::cout << e.what();
 		return false;
 	}

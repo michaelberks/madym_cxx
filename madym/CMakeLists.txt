@@ -34,7 +34,9 @@ SET(mdm_sources
 		mdm_Image3D.cxx					mdm_Image3D.h
 		mdm_ProgramLogger.cxx			mdm_ProgramLogger.h
 
+		mdm_T1MethodGenerator.h
 		mdm_T1Voxel.cxx					mdm_T1Voxel.h
+		mdm_T1VFAVoxel.cxx				mdm_T1VFAVoxel.h
 		mdm_T1VolumeAnalysis.cxx		mdm_T1VolumeAnalysis.h	
 
 		mdm_OptionsParser.cxx			mdm_OptionsParser.h

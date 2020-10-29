@@ -1,124 +1,110 @@
-/**
+/*!
 *  @file    mdm_T1Voxel.h
-*  @brief   Class for estimating T1 (and M0) in a single voxel
+//!   Abstract base class for estimating T1 (and M0) in a single voxel
 *  @details Currently only variable flip angle method supported
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 */
 
 #ifndef MDM_T1VOXEL_HDR
 #define MDM_T1VOXEL_HDR
+
 #include "mdm_api.h"
 #include "mdm_ErrorTracker.h"
-
-#include <vector>
 #include "opt/optimization.h"
 
-/**
-*  @brief   Estimating T1 (and M0) in a single voxel
+#include <vector>
+#include <iostream>
+
+/*!
+//!   Abstract base class for estimating T1 (and M0) in a single voxel
 *  @details Currently only variable flip angle method supported
 */
 class mdm_T1Voxel {
 
 public:
-    /**
-	* @brief
-    */
-	const static int MINIMUM_FAS;
+
+	//! Minimum signal inputs required to fit T1
+	const static int MINIMUM_INPUTS;
     
-    /**
-	* @brief
-    */
-	const static int MAXIMUM_FAS;
-	
-	/**
-	* @brief
+  //! Maximum signal inputs required to fit T1
+  const static int MAXIMUM_INPUTS;
 
-	* @param
-	* @return
-	*/
-	MDM_API mdm_T1Voxel(const std::vector<double> &FAs, const double TR);
-
-	/**
-	* @brief
-
-	* @param
-	* @return
+	//! Default constructor
+	/*!
+	Pre-conditions alglib optimiser
 	*/
 	MDM_API mdm_T1Voxel();
 
-	/**
-	* @brief
+	//! Default destructor
+	MDM_API virtual ~mdm_T1Voxel();
 
-	* @param
-	* @return
+	//! Set signals from which T1 will be estimated
+	/*!
+	\param sigs vector of signals from which T1 will be estimated
 	*/
-	MDM_API void setFAs(const std::vector<double> &FAs);
+	MDM_API void setInputSignals(const std::vector<double> &sigs);
 
-	/**
-	* @brief
+  //! Fit T1 at a single voxel.
+	/*!
+	All sub-classes must implement this method.
 
-	* @param
-	* @return
+	\param T1value reference to hold computed T1
+	\param M0value reference to hold computed M0 
 	*/
-	MDM_API void setSignals(const std::vector<double> &signals);
+	MDM_API virtual mdm_ErrorTracker::ErrorCode fitT1(double &T1value, double &M0value) = 0;
 
-	/**
-	* @brief
+	//! Fit T1 for a single line of an input data stream buffer
+	/*!
+	All sub-classes must implement this method.
 
-	* @param
-	* @return
+	\param ifs input data stream
+	\param nSignals number of signals in sample
+	\param T1value reference to hold computed T1
+	\param M0value reference to hold computed M0
 	*/
-	MDM_API void setTR(const double TR);
+	MDM_API virtual mdm_ErrorTracker::ErrorCode fitT1(std::istream& ifs, 
+		const int nSignals, double &T1value, double &M0value, bool &eof) = 0;
 
-  /**
-	* @brief
+	//! Set any fixed scanner settings required to estimate T1
+	/*!
+	All sub-classes must implement this method.
 
-	* @param
-	* @return
+	Different T1 estimation methods may require knowledge of different scanner settings.
+	This abstract method takes a vector<double> as input. It is up to the derived sub-class
+	implementations to define how they extract data from this container.
+
+	\param settings vector of fixed scanner settings (eg TR for VFA)
 	*/
-	MDM_API mdm_ErrorTracker::ErrorCode fitT1_VFA(double &T1value, double &M0value);
+	MDM_API virtual void setFixedScannerSettings(const std::vector<double> &settings) = 0;
 
-  /**
-	* @brief
+	//! Set any variable scanner settings required to estimate T1
+	/*!
+	All sub-classes must implement this method.
 
-	* @param
-	* @return
+	Different T1 estimation methods may require knowledge of different scanner settings.
+	This abstract method takes a vector<double> as input. It is up to the derived sub-class
+	implementations to define how they extract data from this container.
+
+	\param settings vector of variable scanner settings (eg FAs for VFA)
 	*/
-	MDM_API static double T1toSignal(
-		const double T1, const double M0, const double FA, const double TR);
+	MDM_API virtual void setVariableScannerSettings(const std::vector<double> &settings) = 0;
 
-private:
+protected:
+	//! Heper method to clear up after any fit failures
+	/*
+	\param msg message to log in program log
+	\param T1value reference to hold default error-fit value for T1
+	\param M0value reference to hold default error-fit value for M0
+	*/
 	static void setErrorValuesAndTidyUp(const std::string msg, double &T1, double &M0);
-
-	void computeSignalGradient(const double &T1, const double &M0,
-		const double &cosFA, const double &sinFA,
-		double &signal, double &signal_dT1, double &signal_dM0);
-
-	void computeSSEGradient(
-		const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad);
-
-	static void computeSSEGradientAlglib(
-		const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad,
-		void *context) {
-		static_cast<mdm_T1Voxel*>(context)->computeSSEGradient(
-			x, func, grad);
-	}
-
-	void initFAs();
-
-	std::vector<double> FAs_;
+	
 	std::vector<double> signals_;
-	double TR_;
-	double delta_;
+	
 	int maxIterations_;
-
 	alglib::mincgstate state_;
 	alglib::mincgreport rep_;
 
-	//Convenient to cache these when FAs set
-	int nFAs_;
-	std::vector<double> cosFAs_;
-	std::vector<double> sinFAs_;
+private:
 	
 };
 

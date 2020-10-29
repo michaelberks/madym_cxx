@@ -1,21 +1,8 @@
 /**
- *  @file    mdm_fileLoad.c
- *  @brief   File-loading for madym
- *
- *  Original Author GJM Parker 2002
- *  Moved to this file by GA Buonaccorsi
- *  (c) Copyright ISBE, University of Manchester 2002
- *
- *  GAB mods:
- *  21 April 2004
- *  -  Copied DefineFilePopup.c active loading function here
- *     and did some serious mods
- *  -  Stripped all references to XView GUI
- *  24 October 2006
- *  - Modifications to allow concentration time series reading. GJMP & GAB. Version 1.06.
- *  28 Feb 2012
- *  - Big refactor at Bioxydyn Version 1.21.alpha
+ *  @file    mdm_FileManager.cxx
+ *  @brief   Implementation of mdm_FileManager class
  */
+
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
@@ -24,7 +11,9 @@
 
 #include <sstream>
 #include <boost/filesystem.hpp>
-using namespace boost::filesystem;
+#include <boost/format.hpp>
+
+namespace fs = boost::filesystem;
 
 #include "mdm_version.h"
 #include "mdm_AnalyzeFormat.h"
@@ -34,14 +23,11 @@ using namespace boost::filesystem;
 
 const int MAX_IMAGES = 1024;
 
-MDM_API mdm_FileManager::mdm_FileManager(
-	mdm_T1VolumeAnalysis &T1Mapper,
-	mdm_DCEVolumeAnalysis &volumeAnalysis,
-	mdm_ErrorTracker &errorTracker)
+MDM_API mdm_FileManager::mdm_FileManager(mdm_DCEVolumeAnalysis &volumeAnalysis)
 	: 
-	T1Mapper_(T1Mapper),
 	volumeAnalysis_(volumeAnalysis),
-	errorTracker_(errorTracker),
+	T1Mapper_(volumeAnalysis.T1Mapper()),
+	errorTracker_(volumeAnalysis.errorTracker()),
 	FAPaths_(0),
 	StPaths_(0),
 	CtPaths_(0),
@@ -142,7 +128,6 @@ MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
     !writeOutputMap(volumeAnalysis_.MAP_NAME_ROI, volumeAnalysis_.ROIimage(), outputDir, false))
 		return false;
 
-	/** 1.22 */
 	if (writeCtDataMaps_)
 	{
 		const std::string &ctSigPrefix = volumeAnalysis_.MAP_NAME_CT_SIG;
@@ -207,7 +192,7 @@ MDM_API void mdm_FileManager::setSparseWrite(bool b)
 	sparseWrite_ = b;
 }
 
-MDM_API bool mdm_FileManager::loadErrorImage(const std::string &errorPath, bool warnMissing)
+MDM_API bool mdm_FileManager::loadErrorMap(const std::string &errorPath, bool warnMissing)
 {
 	//To avoid triggering all the warnings for missing images (given we speculatively
 	//try to load the error on the chance it may exist, but happily create it if it
@@ -237,25 +222,25 @@ MDM_API bool mdm_FileManager::loadErrorImage(const std::string &errorPath, bool 
 }
 
 /*Does what is says on the tin*/
-MDM_API bool mdm_FileManager::loadFAImages(const std::vector<std::string> &FApaths)
+MDM_API bool mdm_FileManager::loadT1MappingInputImages(const std::vector<std::string> &FApaths)
 {
 	//Check we haven't been given too many or too few images
 	auto nVFA = FApaths.size();
 
-	if (nVFA < mdm_T1Voxel::MINIMUM_FAS)
+	if (nVFA < mdm_T1Voxel::MINIMUM_INPUTS)
 	{
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_FileManager::loadFAImages: Not enough FA image paths supplied, given " +
+			"ERROR: mdm_FileManager::loadT1MappingInputImages: Not enough FA image paths supplied, given " +
 			std::to_string(nVFA) + ", require at least " + 
-			std::to_string(mdm_T1Voxel::MINIMUM_FAS));
+			std::to_string(mdm_T1Voxel::MINIMUM_INPUTS));
 		return false;
 	}
-	else if (nVFA > mdm_T1Voxel::MAXIMUM_FAS)
+	else if (nVFA > mdm_T1Voxel::MAXIMUM_INPUTS)
 	{
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_FileManager::loadFAImages: Too many FA image paths supplied, given " +
+			"ERROR: mdm_FileManager::loadT1MappingInputImages: Too many FA image paths supplied, given " +
 			std::to_string(nVFA) + ", require at most " + 
-			std::to_string(mdm_T1Voxel::MAXIMUM_FAS));
+			std::to_string(mdm_T1Voxel::MAXIMUM_INPUTS));
 		return false;
 	}
 
@@ -270,14 +255,14 @@ MDM_API bool mdm_FileManager::loadFAImages(const std::vector<std::string> &FApat
 	return true;
 }
 
-MDM_API bool mdm_FileManager::loadT1Image(const std::string &T1path)
+MDM_API bool mdm_FileManager::loadT1Map(const std::string &T1path)
 {
 	mdm_Image3D T1_map = mdm_AnalyzeFormat::readImage3D(T1path, false);
 
 	if (!T1_map.numVoxels())
 	{
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_FileManager::loadT1Image: Failed to read T1 map from " + T1path + "\n");
+			"ERROR: mdm_FileManager::loadT1Map: Failed to read T1 map from " + T1path + "\n");
 		return false;
 	}
 
@@ -290,14 +275,14 @@ MDM_API bool mdm_FileManager::loadT1Image(const std::string &T1path)
 	return true;
 }
 
-MDM_API bool mdm_FileManager::loadM0Image(const std::string &M0path)
+MDM_API bool mdm_FileManager::loadM0Map(const std::string &M0path)
 {
 	mdm_Image3D M0_map = mdm_AnalyzeFormat::readImage3D(M0path, false);
 
 	if (!M0_map.numVoxels())
 	{
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_FileManager::loadM0Image: Failed to read M0 map from " + M0path + "\n");
+			"ERROR: mdm_FileManager::loadM0Map: Failed to read M0 map from " + M0path + "\n");
 		return false;
 	}
 
@@ -311,7 +296,7 @@ MDM_API bool mdm_FileManager::loadM0Image(const std::string &M0path)
 }
 
 MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
-	const std::string &dynPrefix, int nDyns)
+	const std::string &dynPrefix, int nDyns, const std::string &indexPattern)
 {
 	bool dynFilesExist = true;
 	int nDyn = 0;
@@ -352,7 +337,7 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 
 		/* This sets various globals (see function header comment) */
 		std::string dynPath;
-		makeSequenceFilename(dynBasePath, dynPrefix, nDyn, dynPath);
+		makeSequenceFilename(dynBasePath, dynPrefix, nDyn, dynPath, indexPattern);
 
 		if (!boost::filesystem::exists(dynPath))
 		{
@@ -398,7 +383,7 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 }
 
 MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
-	const std::string &catPrefix, int nDyns)
+	const std::string &catPrefix, int nDyns, const std::string &indexPattern)
 {
 	bool catFilesExist = true;
 	int nCat = 0;
@@ -438,7 +423,7 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 
 		/* This sets various globals (see function header comment) */
 		std::string catPath;
-		makeSequenceFilename(catBasePath, catPrefix, nCat, catPath);
+		makeSequenceFilename(catBasePath, catPrefix, nCat, catPath, indexPattern);
 
 		if (!boost::filesystem::exists(catPath))
 		{
@@ -500,7 +485,7 @@ bool mdm_FileManager::loadFAImage(const std::string& filePath, int nVFA)
 		"Successfully read VFA " + std::to_string(nVFA) + " from " + filePath + "\n");
 
 	//If image successfully read, add it to the T1 mapper object
-	T1Mapper_.addFlipAngleImage(FA_img);
+	T1Mapper_.addInputImage(FA_img);
 
 	//For first image, try initialising errorImage, if that's already been
 	//set it will just return true
@@ -537,10 +522,10 @@ bool mdm_FileManager::writeOutputMap(const std::string &mapName, const mdm_Image
 }
 
 void mdm_FileManager::makeSequenceFilename(const std::string &path, const std::string &prefix,
-	const int fileNumber, std::string &filePath)
+	const int fileNumber, std::string &filePath, const std::string &fileNumberFormat)
 {
-	std::stringstream ss;
-	ss << path << "/" << prefix << fileNumber << ".img";
-	filePath = ss.str();
+	auto formattedFilenumber = boost::format(fileNumberFormat.c_str()) % fileNumber;
+	auto imageName = boost::format("%1%%2%.img") % prefix % formattedFilenumber;
+	filePath = (fs::path(path) / imageName.str()).string();
 }
 

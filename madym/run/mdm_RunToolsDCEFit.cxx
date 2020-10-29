@@ -29,7 +29,7 @@ MDM_API mdm_RunToolsDCEFit::~mdm_RunToolsDCEFit()
 * @brief    Fit selected dynamic contrast agent concentration model
 * @version  madym 1.22
 */
-void mdm_RunToolsDCEFit::setModel(const std::string &model_name, bool auto_aif, bool auto_pif,
+void mdm_RunToolsDCEFit::setModel(const std::string &modelName, bool auto_aif, bool auto_pif,
 	const std::vector<std::string> &paramNames,
 	const std::vector<double> &initialParams,
 	const std::vector<int> fixedParams,
@@ -37,12 +37,14 @@ void mdm_RunToolsDCEFit::setModel(const std::string &model_name, bool auto_aif, 
 	const std::vector<int> relativeLimitParams,
 	const std::vector<double> relativeLimitValues)
 {
-	
-	bool model_set = mdm_DCEModelGenerator::setModel(model_, AIF_,
-		model_name, auto_aif, auto_pif, paramNames,
+	auto modelType = mdm_DCEModelGenerator::ParseModelName(modelName);
+	if (modelType == mdm_DCEModelGenerator::UNDEFINED)
+		mdm_progAbort("Invalid or unsupported model (from command-line)");
+
+	model_ = mdm_DCEModelGenerator::createModel(AIF_,
+		modelType, auto_aif, auto_pif, paramNames,
 		initialParams, fixedParams, fixedValues,
 		relativeLimitParams, relativeLimitValues);
 
-	if (!model_set)
-		mdm_progAbort("Invalid or unsupported model (from command-line)");
+	
 }

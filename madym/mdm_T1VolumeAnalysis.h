@@ -1,4 +1,4 @@
-/**
+/*!
 *  @file    mdm_T1VolumeAnalysis.h
 *  @brief   Class for mapping T1 for a full volume from input signal images
 *  @details Currently only variable flip angle method supported
@@ -11,149 +11,136 @@
 
 #include "mdm_Image3D.h"
 #include "mdm_ErrorTracker.h"
+#include "mdm_T1MethodGenerator.h"
 
-/**
-*  @brief   Mapping T1 for a full volume from input signal images
-*  @details Currently only variable flip angle method supported
+//!Mapping T1 for a full volume from input signal images
+/*!
+	Also store the resulting T1 and M0 maps, which can also be set from externally precomputed maps.
+
+	Currently only variable flip angle method supported
 */
 class mdm_T1VolumeAnalysis {
 
 public:
-
-		/**
-	* @brief
-
-	* @param
-	* @return
+	
+	//! Constructor
+	/*!
+	\param error tracker object shared acorss the volume analysis objects
 	*/
-	MDM_API mdm_T1VolumeAnalysis(mdm_ErrorTracker &errorTracker);/**/
-		/**
-	* @brief
-
-	* @param
-	* @return
+	MDM_API mdm_T1VolumeAnalysis(mdm_ErrorTracker &errorTracker);/*!/
+		
+	//!
+	/*!
 	*/
 	MDM_API ~mdm_T1VolumeAnalysis();
 
-		/**
-	* @brief
-
-	* @param
-	* @return
+	//! Add input image from which to map T1
+	/*!	
+	\param img input image (eg aquired at specific flip-angle for the VFA method)
 	*/
-	MDM_API void addFlipAngleImage(mdm_Image3D FA_img);
+	MDM_API void addInputImage(mdm_Image3D img);
 
-		/**
-	* @brief
+	//! Map baseline T1 using specified method
+	/*!
+	\param method selected T1 mapping method
+	*/
+	MDM_API void  mapT1(mdm_T1MethodGenerator::T1Methods method);
 
-	* @param
-	* @return
+	//! Map baseline T1 using default class method
+	/*!
+	\param method selected T1 mapping method
+	*/
+	MDM_API void  mapT1();
+
+	//! Add a precomputed T1 map
+	/*!
+	\param T1_img T1 map, pre-computed externally (eg from an earlier analysis) 
 	*/
 	MDM_API void addT1Map(mdm_Image3D T1_img);
 
-		/**
-	* @brief
-
-	* @param
-	* @return
+	//! Add a precomputed T1 map
+	/*!
+	\param M0_img M0 map, pre-computed externally (eg from an earlier analysis)
 	*/
 	MDM_API void addM0Map(mdm_Image3D M0_img);
 
-		/**
-	* @brief
-
-	* @param
-	* @return
+	//! Add ROI mask, mapping will only be performed for voxels set non-zero in the mask
+	/*!
+	\param ROI mask image
 	*/
 	MDM_API void addROI(mdm_Image3D ROI);
 
-	/**
-	* Pre-conditions:
-	* -  first_image, second_image & third_image loaded and holding the respective FA_* images
-	* -  noise_threshold holds a valid value for the upper noise level
-	*
-	* Post-conditions:
-	* -  T1 holds map of T1 values for the current slice, calculated from the three FA_* images
-	* -  M0 holds map of M0 values for the current slice, calculated from the three FA_* images
-	*
-	* Uses madym.h globals:
-	* -  first_image, second_image, third_image    (input only)
-	* -  T1value, M0value                          (output - values set)
-	* -  T1, M0 Imrect maps                        (output - values set)
-	*
-	* Note:  NOT a stand-alone fn - see pre- and post-conditions, and it uses globals
-	*
-	* @author   GJM Parker
-	* @brief    Calculate T1 and M0 maps from the three pre-contrast flip angle image volumes (FA_*)
-	* @version  madym 1.21.alpha
+	//! Return read-only reference to input images
+	/*!
+	\return read-only reference to input images
 	*/
-		/**
-	* @brief
+	MDM_API const std::vector<mdm_Image3D>& inputImages() const;
 
-	* @param
-	* @return
+	//! Return read-only reference to specific input image
+	/*!	
+	\param idx index of input images to return, must be >= 0, < inputImages_.size()
+	\return read-only reference to input image at index idx
 	*/
-	MDM_API void  T1_mapVarFlipAngle();
-
-		/**
-	* @brief
-
-	* @param
-	* @return
+	MDM_API const mdm_Image3D& inputImage(int idx) const;
+		
+	
+	//! Return read-only reference to T1 map
+	/*!
+	\return read-only reference to T1 map
 	*/
-	MDM_API mdm_Image3D FAImage(int i) const;
-		/**
-	* @brief
-
-	* @param
-	* @return
+	MDM_API const mdm_Image3D& T1Map() const;
+	
+	//! Return read-only reference to M0 map
+	/*!
+	\return read-only reference to M0 map
 	*/
-	MDM_API mdm_Image3D T1Map() const;
-		/**
-	* @brief
+	MDM_API const mdm_Image3D& M0Map() const;
 
-	* @param
-	* @return
-	*/
-	MDM_API mdm_Image3D M0Map() const;
-
-		/**
-	* @brief
-
-	* @param
-	* @return
+	//! Return T1 value at specified voxel
+	/*!
+	\param voxel index, must be >=0 and < T1Map_.numVoxels()
+	\return T1 value at voxel
 	*/
 	MDM_API double T1atVoxel(int voxel) const;
 
-		/**
-	* @brief
-
-	* @param
-	* @return
+	//! Return M0 value at specified voxel
+	/*!
+	\param voxel index, must be >=0 and < T1Map_.numVoxels()
+	\return T1 value at voxel
 	*/
 	MDM_API double M0atVoxel(int voxel) const;
 
-		/**
-	* @brief
-
-	* @param
-	* @return
+	//! Set T1 and M0 to zero specified voxel
+	/*!
+	\param voxel index, must be >=0 and < T1Map_.numVoxels()
 	*/
 	MDM_API void zeroVoxel(int voxel);
 
-		/**
-	* @brief
+	//! Return default T1 mapping method
+	/*!
+	\return T1 method used if no method specified in mapT1
+	\see mapT1
+	*/
+	MDM_API mdm_T1MethodGenerator::T1Methods  method() const;
 
-	* @param
-	* @return
+	//! Set default T1 mapping method
+	/*!
+	\param method used if no method specified in mapT1
+	\see mapT1
+	*/
+	MDM_API void  setMethod(mdm_T1MethodGenerator::T1Methods method);
+
+	//! Return current noise threshold
+	/*!
+	Mapping is only applied to voxels with input signal > threshold
+	\return noise threshold
 	*/
 	MDM_API double  noiseThreshold() const;
 
-		/**
-	* @brief
-
-	* @param
-	* @return
+	//! Set noise threshold
+	/*!
+	Mapping is only applied to voxels with input signal > threshold
+	\param t noise threshold
 	*/
 	MDM_API void  setNoiseThreshold(double t);
 
@@ -161,14 +148,15 @@ protected:
 
 private:
 
-	/* Input images - MB major change, store these in a vector container
-	allows for variable numbers - not fixed at requring 3*/
-	std::vector<mdm_Image3D> FA_images_;
+	//Methods:
 
-	/*MB if ROI not empty, only compute values for ROI*/
+	//
+	std::vector<mdm_Image3D> inputImages_;
+
+	// if ROI not empty, only compute values for ROI
 	mdm_Image3D ROI_;
 
-	/* Output images */
+	// Output image maps
 	mdm_Image3D T1_, M0_;
 
 	//Reference to an error image. If we don't pass one as a constructor to the class
@@ -176,6 +164,8 @@ private:
 	mdm_ErrorTracker &errorTracker_;
 
 	double noiseThreshold_;
+
+	mdm_T1MethodGenerator::T1Methods method_;
 
 };
 #endif /* mdm_T1VolumeAnalysis_HDR */

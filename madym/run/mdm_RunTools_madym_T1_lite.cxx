@@ -5,7 +5,7 @@
 #include "mdm_RunTools_madym_T1_lite.h"
 
 #include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_T1Voxel.h>
+#include <madym/mdm_T1MethodGenerator.h>
 
 namespace fs = boost::filesystem;
 
@@ -18,7 +18,6 @@ MDM_API mdm_RunTools_madym_T1_lite::mdm_RunTools_madym_T1_lite(mdm_InputOptions 
 
 MDM_API mdm_RunTools_madym_T1_lite::~mdm_RunTools_madym_T1_lite()
 {
-
 }
 
 //
@@ -67,58 +66,37 @@ MDM_API int mdm_RunTools_madym_T1_lite::run()
 		mdm_progAbort("error opening ouput data file");
 	}
 
-	double fa;
-	int col_counter = 0;
 	int row_counter = 0;
-
 	const int &nSignals = options_.nT1Inputs();
-	const int &col_length = 2 * nSignals;
 
-	std::vector<double> signals(nSignals, 0);
-	std::vector<double> FAs(nSignals, 0);
-	const auto PI = acos(-1.0);
+	//Instantiate T1 fitter of desired type
+	auto methodType = mdm_T1MethodGenerator::ParseMethodName(
+		options_.T1method());
+	if (methodType == mdm_T1MethodGenerator::UNDEFINED)
+		mdm_progAbort("T1 method not recognised");
 
-	//Make T1 calculator
-	mdm_T1Voxel T1Calculator;
-	T1Calculator.setTR(options_.TR());
+	auto T1Fitter = mdm_T1MethodGenerator::createFitter(methodType, options_);
 
 	//Loop through the file, reading in each line
-	while (true)
+	while (!inputData.eof())
 	{
-		if (col_counter == col_length)
-		{
-			double T1, M0;
-			T1Calculator.setFAs(FAs);
-			T1Calculator.setSignals(signals);
-			int errCode = T1Calculator.fitT1_VFA(T1, M0);
-			col_counter = 0;
+		bool eof;
+		double T1, M0;
+		int errCode = T1Fitter->fitT1(inputData, nSignals, T1, M0, eof);
 
-			//Now write the output
-			outputData <<
-				T1 << " " <<
-				M0 << " " <<
-				errCode << std::endl;
+		if (eof)
+			break;
 
-			row_counter++;
-			if (!fmod(row_counter, 1000))
-				std::cout << "Processed sample " << row_counter << std::endl;
-		}
+		//Now write the output
+		outputData <<
+			T1 << " " <<
+			M0 << " " <<
+			errCode << std::endl;
 
-		else
-		{
-			if (col_counter < nSignals)
-			{
-				inputData >> fa;
-				//Convert to radians
-				FAs[col_counter] = fa * PI / 180;
-			}
-			else
-				inputData >> signals[col_counter - nSignals];
+		row_counter++;
+		if (!fmod(row_counter, 1000))
+			std::cout << "Processed sample " << row_counter << std::endl;
 
-			if (inputData.eof())
-				break;
-			col_counter++;
-		}
 	}
 
 	//Close the input and output file

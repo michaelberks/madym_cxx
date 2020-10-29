@@ -9,6 +9,7 @@
 #define MDM_RUNTOOLS_DCE_FIT_HDR
 #include "mdm_api.h"
 #include <madym/mdm_RunTools.h>
+#include <memory>
 
 /**
 *  @brief   Called by command line/GUI tools to run DCE-analysis or T1 mapper
@@ -33,7 +34,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API ~mdm_RunToolsDCEFit();
+	MDM_API virtual ~mdm_RunToolsDCEFit();
 
 protected:
 	//Methods:
@@ -46,7 +47,7 @@ protected:
 		const std::vector<double> relativeLimitValues);
 
 	//Variables:
-	mdm_DCEModelBase *model_;
+	std::shared_ptr<mdm_DCEModelBase> model_;
 	mdm_AIF AIF_;
 
 private:

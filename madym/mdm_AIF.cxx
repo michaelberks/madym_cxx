@@ -744,6 +744,7 @@ void mdm_AIF::getConcTimeCourse(const std::vector<mdm_Image3D> &dynImages, const
     double T10 = T1.voxel(voxelIndex);
 
     //Use a DCE voxel object to convert to concentration
+		/*
     mdm_DCEVoxel vox(
       signalData,
       {},
@@ -761,7 +762,7 @@ void mdm_AIF::getConcTimeCourse(const std::vector<mdm_Image3D> &dynImages, const
       true,
       {});
     vox.computeCtFromSignal();
-    conc = vox.CtData();
+    conc = vox.CtData();*/
   }
   
 

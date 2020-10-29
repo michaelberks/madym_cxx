@@ -30,11 +30,11 @@ const std::string mdm_DCEVolumeAnalysis::MAP_NAME_CT_SIG = "Ct_sig"; //Signal de
 const std::string mdm_DCEVolumeAnalysis::MAP_NAME_CT_MOD = "Ct_mod"; //Model estimated concentration - appended with volume number
 const std::string mdm_DCEVolumeAnalysis::MAP_NAME_ERROR_CODE = "error_codes";
 
-MDM_API mdm_DCEVolumeAnalysis::mdm_DCEVolumeAnalysis(mdm_ErrorTracker &errorTracker, mdm_T1VolumeAnalysis &T1_mapper)
-	:errorTracker_(errorTracker),
-	T1_mapper_(T1_mapper),
+MDM_API mdm_DCEVolumeAnalysis::mdm_DCEVolumeAnalysis()
+	:
+	T1_mapper_(errorTracker_),
 	testEnhancement_(false),
-	useRatio_(true),
+	useM0Ratio_(true),
   outputCt_sig_(false),
   outputCt_modod_(false),
   useNoise_(false),
@@ -50,6 +50,16 @@ MDM_API mdm_DCEVolumeAnalysis::mdm_DCEVolumeAnalysis(mdm_ErrorTracker &errorTrac
 MDM_API mdm_DCEVolumeAnalysis::~mdm_DCEVolumeAnalysis()
 {
 
+}
+
+MDM_API mdm_ErrorTracker& mdm_DCEVolumeAnalysis::errorTracker()
+{
+	return errorTracker_;
+}
+
+MDM_API mdm_T1VolumeAnalysis& mdm_DCEVolumeAnalysis::T1Mapper()
+{
+	return T1_mapper_;
 }
 
 MDM_API void mdm_DCEVolumeAnalysis::setROIimage(const mdm_Image3D ROI)
@@ -266,7 +276,7 @@ MDM_API void mdm_DCEVolumeAnalysis::setRelaxCoeff(double rc)
 }
 
 //Flag for which model we're using - MB TODO make this an Enum
-MDM_API void mdm_DCEVolumeAnalysis::setModel(mdm_DCEModelBase *model)
+MDM_API void mdm_DCEVolumeAnalysis::setModel(std::shared_ptr<mdm_DCEModelBase> model)
 {
 	model_ = model;
 }
@@ -280,7 +290,7 @@ MDM_API void mdm_DCEVolumeAnalysis::setTestEnhancement(bool flag)
 //Flag to check if we're using ratio method for converting to concentration
 MDM_API void mdm_DCEVolumeAnalysis::setM0Ratio(bool flag)
 {
-	useRatio_ = flag;
+	useM0Ratio_ = flag;
 }
 
 //Flag to see if we need to compute concentration
@@ -630,14 +640,15 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
           {
             r1Const = r1Const_;
             t10 = T1_mapper_.T1atVoxel(voxelIndex);
-            if (!useRatio_)
+            if (!useM0Ratio_)
               s0 = T1_mapper_.M0atVoxel(voxelIndex);
             getSignalsFromVoxel(voxelIndex, signalData);
           }
           else
             getCs_tFromVoxel(voxelIndex, CtData);
 
-          mdm_DCEVoxel vox(signalData,//dynSignals
+          mdm_DCEVoxel vox(*model_,
+						signalData,//dynSignals
             CtData,//dynConc
             noiseVar_,//noiseVar
             t10,//T10
@@ -650,14 +661,14 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
             firstImage_,//n1
             lastImage_,//n2
             testEnhancement_,//testEnhancement
-            useRatio_,//useM0Ratio
+            useM0Ratio_,//useM0Ratio
 						IAUCTMinutes_);//IAUC_times
 
           //Run an initial fit (does not optimise parameters, but ensures
           //concentration has been derived from signal if not already done,
           //sets bounds on model parameters, and compute the model residual
           //for the initial model parameters
-          vox.initialiseModel(*model_);
+          vox.initialiseModelFit();
 
           //Set any error codes returned from setting up the voxel in the error codes map
           setVoxelErrors(voxelIndex, vox);

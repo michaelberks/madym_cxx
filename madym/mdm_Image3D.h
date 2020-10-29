@@ -247,10 +247,10 @@ class mdm_Image3D
 
 	//!   Copy meta data (except type and timestamp) and data dimensions from existing image
 	/*!
-	\param   imgToCopy image to copy
 	 Notes:
 	 -   We don't copy the type as we're usually copying to a new image type
 	 -   We don't copy the time stamp as it doesn't make sense
+	 \param   imgToCopy image to copy
 	*/
 	MDM_API void copy(const mdm_Image3D &imgToCopy);
 

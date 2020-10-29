@@ -20,9 +20,7 @@ MDM_API mdm_RunTools_madym_DCE::mdm_RunTools_madym_DCE(mdm_InputOptions &options
 	: 
 	mdm_RunToolsDCEFit(),
 	mdm_RunTools(options_, options_parser),
-	T1Mapper_(errorTracker_),
-	volumeAnalysis_(errorTracker_, T1Mapper_),
-	fileManager_(T1Mapper_, volumeAnalysis_, errorTracker_)
+	fileManager_(volumeAnalysis_)
 {
 }
 
@@ -75,7 +73,7 @@ MDM_API int mdm_RunTools_madym_DCE::run()
 	if (options_.lastImage() > 0)
 		volumeAnalysis_.setLastImage(options_.lastImage());
 
-	T1Mapper_.setNoiseThreshold(options_.T1noiseThresh());
+	volumeAnalysis_.T1Mapper().setNoiseThreshold(options_.T1noiseThresh());
 
 	//If these are empty, the defaults 60, 90, 120 will be set in volumeAnalysis
 	if (!options_.IAUCTimes().empty())
@@ -121,7 +119,7 @@ MDM_API int mdm_RunTools_madym_DCE::run()
 	//Before we start, try and load an errorImage, this allows us to add
 	//to any existing errors in a re-analysis
 	fs::path errorCodesPath = outputPath / options_.errorCodesName();
-	fileManager_.loadErrorImage(errorCodesPath.string());
+	fileManager_.loadErrorMap(errorCodesPath.string());
 
 	//Check for case 4: load pre-computed concentration maps
 	if (options_.inputCt())
@@ -172,7 +170,7 @@ MDM_API int mdm_RunTools_madym_DCE::run()
 		if (!options_.T1Name().empty())
 		{
 			fs::path T1Path = fs::absolute(options_.T1Name());
-			if (!fileManager_.loadT1Image(T1Path.string()))
+			if (!fileManager_.loadT1Map(T1Path.string()))
 			{
 				mdm_progAbort("error loading T1 map");
 			}
@@ -188,7 +186,7 @@ MDM_API int mdm_RunTools_madym_DCE::run()
 				}
 				//Otherwise load M0 and return
 				fs::path M0Path = fs::absolute(options_.M0Name());
-				if (!fileManager_.loadM0Image(M0Path.string()))
+				if (!fileManager_.loadM0Map(M0Path.string()))
 				{
 					mdm_progAbort("error loading M0 map");
 				}
@@ -201,11 +199,11 @@ MDM_API int mdm_RunTools_madym_DCE::run()
 				return 1;
 
 			//We need to load FA images
-			if (options_.T1inputNames().size() < mdm_T1Voxel::MINIMUM_FAS)
+			if (options_.T1inputNames().size() < mdm_T1Voxel::MINIMUM_INPUTS)
 			{
 				mdm_progAbort("Not enough variable flip angle file names");
 			}
-			else if (options_.T1inputNames().size() > mdm_T1Voxel::MAXIMUM_FAS)
+			else if (options_.T1inputNames().size() > mdm_T1Voxel::MAXIMUM_INPUTS)
 			{
 				mdm_progAbort("Too many variable flip angle file names");
 			}
@@ -214,12 +212,12 @@ MDM_API int mdm_RunTools_madym_DCE::run()
 			for (std::string fa : options_.T1inputNames())
 				T1inputPaths.push_back(fs::absolute(fa).string());
 
-			if (!fileManager_.loadFAImages(T1inputPaths))
+			if (!fileManager_.loadT1MappingInputImages(T1inputPaths))
 			{
 				mdm_progAbort("error loading input images for baseline T1 calculation");
 			}
 			//FA images loaded, try computing T1 and M0 maps
-			T1Mapper_.T1_mapVarFlipAngle();
+			volumeAnalysis_.T1Mapper().mapT1();
 		}
 	}
 
@@ -306,7 +304,6 @@ MDM_API int mdm_RunTools_madym_DCE::parse_inputs(int argc, const char *argv[])
 	po::options_description cmdline_options("madym options_");
 	po::options_description config_options("madym config options_");
 
-	options_.configFile;
 	options_parser_.add_option(cmdline_options, options_.configFile);
 	options_parser_.add_option(cmdline_options, options_.dataDir);
 

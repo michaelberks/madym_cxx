@@ -30,20 +30,19 @@ void test_model_time_series(
 		"Read time series for %1% from binary calibration file") % modelName);
 
 	//Now create the model and compute model time series
-	mdm_DCEModelBase *model = NULL;
-	bool model_set = mdm_DCEModelGenerator::setModel(model, AIF,
-		modelName, false, false, {},
+	auto modelType = mdm_DCEModelGenerator::ParseModelName(modelName);
+	BOOST_REQUIRE_MESSAGE(modelType != mdm_DCEModelGenerator::UNDEFINED,
+		"Model name " << modelName << "Is undefined ");
+
+	auto model = mdm_DCEModelGenerator::createModel(AIF,
+		modelType, false, false, {},
 		initialParams, {}, {}, {}, {});
-
-	BOOST_REQUIRE_MESSAGE(model_set, "Unable to compute time series for " << modelName);
-
+	
 	model->computeCtModel(nTimes);
 	std::vector<double> Ct = model->CtModel();
 	BOOST_TEST_MESSAGE("Test DCE models, values match: " + modelName);
 	BOOST_CHECK(mdm_test_utils::vectors_near_equal(
         Ct, CtCalibration, 0.0001));
-	
-	delete model;
 }
 
 BOOST_AUTO_TEST_SUITE(test_mdm)

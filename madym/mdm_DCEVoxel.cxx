@@ -25,6 +25,7 @@ const double mdm_DCEVoxel::DYN_T1_MAX = 1.0e9;
 const double mdm_DCEVoxel::DYN_T1_INVALID = -1.0;
 
 MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
+	mdm_DCEModelBase &model,
   const std::vector<double> &dynSignals,
 	const std::vector<double> &dynConc,
   const std::vector<double> &noiseVar,
@@ -41,6 +42,7 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	const bool useM0Ratio,
 	const std::vector<double> &IAUC_times)
 	:
+	model_(model),
   signalData_(dynSignals),
 	CtData_(dynConc),
   noiseVar_(noiseVar),
@@ -187,19 +189,19 @@ double mdm_DCEVoxel::computeT1DynM0(const double &st, const double & sinfa, cons
 double mdm_DCEVoxel::CtSSD(const std::vector<double> &parameter_array)
 {
   //Set the full parameter array in the model from the optimised subset
-  model_->setOptimisedParams(parameter_array);
+  model_.setOptimisedParams(parameter_array);
 
 	//Get model to check params are ok - returns non-zero for bad value
-  double model_check = model_->checkParams();
+  double model_check = model_.checkParams();
   if (model_check)
     return model_check;
 
 	//If we got this far the parameter values look OK, so ...
 	// Calculate model [CA](t) for current parameter set
-	model_->computeCtModel(timepointN());
+	model_.computeCtModel(timepointN());
 
 	//Compute SSD
-  return computeSSD(model_->CtModel());
+  return computeSSD(model_.CtModel());
 }
 
 double mdm_DCEVoxel::computeSSD(const std::vector<double> &CtModel) const
@@ -218,7 +220,7 @@ double mdm_DCEVoxel::computeSSD(const std::vector<double> &CtModel) const
 void mdm_DCEVoxel::optimiseModel()
 {
 
-  std::vector<double> optimisedParams = model_->optimisedParams();
+  std::vector<double> optimisedParams = model_.optimisedParams();
 	alglib::real_1d_array x;
 	x.attach_to_ptr(optimisedParams.size(), optimisedParams.data());
 	//alglib::minbleicstate state;
@@ -288,10 +290,8 @@ void mdm_DCEVoxel::optimiseModel()
 }
 
 //Run an initial model fit using the current model parameters (does not optimise new parameters)
-MDM_API void mdm_DCEVoxel::initialiseModel(mdm_DCEModelBase &model)
+MDM_API void mdm_DCEVoxel::initialiseModelFit()
 {
-  //Set the model
-  model_ = &model;
 
   // Calculate [CA](t) from the signal intensity time-series array
   if (CtData_.empty())
@@ -301,34 +301,31 @@ MDM_API void mdm_DCEVoxel::initialiseModel(mdm_DCEModelBase &model)
     noiseVar_.resize(timepointN_, 1.0);
 
   //Reset the model
-  model_->reset(timepointN_);
+  model_.reset(timepointN_);
 
   //Copy the lower bounds into the container required by the optimiser
-  int nopt = model_->num_optimised();
+  int nopt = model_.num_optimised();
   lowerBoundsOpt_.setlength(nopt);
   upperBoundsOpt_.setlength(nopt);
   for (int i = 0; i < nopt; i++)
   {
-    lowerBoundsOpt_[i] = model_->optimisedLowerBounds()[i];
-    upperBoundsOpt_[i] = model_->optimisedUpperBounds()[i];
+    lowerBoundsOpt_[i] = model_.optimisedLowerBounds()[i];
+    upperBoundsOpt_[i] = model_.optimisedUpperBounds()[i];
   }
 
   //Get an initial SSD
-  modelFitError_ = CtSSD(model_->optimisedParams());
+  modelFitError_ = CtSSD(model_.optimisedParams());
 }
 
 //
 MDM_API void mdm_DCEVoxel::fitModel()
 {
-  if (!model_)
-    return;
-
-	enhancing_ = true;
+  enhancing_ = true;
 
   //Check if any issues with voxel
   if (status_ != mdm_DCEVoxelStatus::OK && status_ != mdm_DCEVoxelStatus::DYN_T1_BAD)
   {
-    model_->zeroParams();
+    model_.zeroParams();
 		for (auto &iauc : IAUC_vals_)
 			iauc = 0.0;
     modelFitError_ = 0.0;
@@ -355,7 +352,7 @@ MDM_API void mdm_DCEVoxel::fitModel()
   }
 	else
 	{
-		model_->zeroParams();
+		model_.zeroParams();
 		for (auto &iauc : IAUC_vals_)
 			iauc = 0.0;
 		modelFitError_ = 0.0;
@@ -427,7 +424,7 @@ MDM_API const std::vector<double>&	mdm_DCEVoxel::CtData() const
 }
 MDM_API const std::vector<double>&	mdm_DCEVoxel::CtModel() const
 {
-  return model_->CtModel();
+  return model_.CtModel();
 }
 
 MDM_API double     mdm_DCEVoxel::T1() const

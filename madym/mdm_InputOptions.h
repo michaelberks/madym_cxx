@@ -1,6 +1,6 @@
 /**
-*  @file    mdm_RunTools.h
-*  @brief   Defines class mdm_RunTools and associated helper class mdm_ToolsOptions
+*  @file    mdm_InputOptions.h
+*  @brief   Header only class defines default input options for T1 mapping and DCE analysis
 *  @details More info...
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 */
@@ -11,6 +11,7 @@
 #include <mdm_version.h>
 #include <mdm_InputTypes.h>
 
+//! Input options structure defining default input options for T1 mapping and DCE analysis
 struct mdm_InputOptions {
 
 	//Generic input options applied to all command-line tools

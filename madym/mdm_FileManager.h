@@ -21,134 +21,127 @@ class mdm_FileManager {
 
 public:
 	//! Constructor
-	/*! AIF reference to AIF object
-	\param T1Mapper reference to T1 mapper object
-	\param volumeAnalysis reference to volume analysis mapper object
-	\param errorTracker reference to error tracker object
+	/*!
+	\param volumeAnalysis reference to volume analysis object
 	*/
-	MDM_API mdm_FileManager(
-		mdm_T1VolumeAnalysis &T1Mapper,
-		mdm_DCEVolumeAnalysis &volumeAnalysis,
-		mdm_ErrorTracker &errorTracker);
+	MDM_API mdm_FileManager(mdm_DCEVolumeAnalysis &volumeAnalysis);
 		
 	//! Destructor
 	/*!
 	*/
 	MDM_API ~mdm_FileManager();
 
-	//!
+	//! Load in error codes map
 	/*!
-	
-	\param
-	\return
+	\param errorPath filepath to error codes map
+	\param warnMissing flag, if true, returns false if image file doesn't exist. 
+	If false, silently creates new empty image if existing image doesn't exist.
+	\return true if image loads successfully. False if file doesn't exist (and warnMissing true) or load error.
 	*/
-	MDM_API bool loadErrorImage(const std::string &errorPath, bool warnMissing = false);
+	MDM_API bool loadErrorMap(const std::string &errorPath, bool warnMissing = false);
 
-		/*!
-	//!
-
-	\param
-	\return
+	//! Load signal image volumes for mapping baseline T1
+	/*!
+	\param T1InputPaths list of filepaths to input signal images
+	\return true if all images successfully loaded. False if any files don't exist or load errors.
 	*/
-	MDM_API bool loadFAImages(const std::vector<std::string> &FApaths);
+	MDM_API bool loadT1MappingInputImages(const std::vector<std::string> &T1InputPaths);
 
-		/*!
-	//!
-
-	\param
-	\return
+	//! Load baseline T1 image
+	/*!
+	\param T1path filepath to baseline T1 image
+	\return true if image loads successfully. False if file doesn't exist or load error.
 	*/
-	MDM_API bool loadT1Image(const std::string &T1path);
+	MDM_API bool loadT1Map(const std::string &T1path);
 
-		/*!
-	//!
-
-	\param
-	\return
+	//! Load M0 image
+	/*!
+	\param M0path filepath to M0 image
+	\return true if image loads successfully. False if file doesn't exist or load error.
 	*/
-	MDM_API bool loadM0Image(const std::string &M0path);
+	MDM_API bool loadM0Map(const std::string &M0path);
 
-		/*!
-	//!
-
-	\param
-	\return
+	//! Load DCE time-series signal volumes
+	/*!
+	DCE time-series volumes are loaded by pattern matching a base file name with the series index 1,...,nDyns
+	appended. The default pattern assumes the index is directly appended with no additional formatting, 
+	thus if the base path is dynamic/dyn_, then it will load images dynamic/dyn_1.hdr, dynamic/dyn_2.hdr, etc.
+	However a custom pattern can be specified, eg use "%03u" to load dynamic/dyn_001.hdr, dynamic/dyn_002.hdr, etc.
+	\param basePath base of filepath to dynamic time-series images, to which StPrefix is appended
+	\param StPrefix appended to basePath, forming base pattern to match files using series index
+	\param nDyns number of images to load. If 0, loads all images matching filename pattern
+	\param indexPattern string format specification, to convert integers 1,...,nDyns into a string
+	\return true if all images successfully loaded. False if any files don't exist (before nDyns reached) or load errors.
 	*/
-	MDM_API bool loadStDataMaps(const std::string &dynBasePath,
-		const std::string &dynPrefix, int nDyns);
+	MDM_API bool loadStDataMaps(const std::string &basePath,
+		const std::string &StPrefix, int nDyns, const std::string &indexPattern="%01u");
 
-		/*!
-	//!
-
-	\param
-	\return
+	//! Load DCE time-series contrast-agent concentration volumes
+	/*!
+	\param basePath base of filepath to dynamic time-series images, to which dynPrefix is appended
+	\param CtPrefix appended to basePath, forming base pattern to match files using series index
+	\param nDyns number of images to load. If 0, loads all images matching filename pattern
+	\param indexPattern string format specification, to convert integers 1,...,nDyns into a string
+	\return true if all images successfully loaded. False if any files don't exist (before nDyns reached) or load errors.
+	\see loadStDataMaps
 	*/
-	MDM_API bool loadCtDataMaps(const std::string &catBasePath,
-		const std::string &catPrefix, int nDyns);
+	MDM_API bool loadCtDataMaps(const std::string &basePath,
+		const std::string &CtPrefix, int nDyns, const std::string &indexPattern = "%01u");
 
-		/*!
-	//!
-
-	\param
-	\return
+	//! Load ROI mask image
+	/*!
+	\param ROIpath filepath to ROI mask image
+	\return true if image loads successfully. False if file doesn't exist or load error.
 	*/
 	MDM_API bool loadROI(const std::string &ROIpath);
 
-  	/*!
-	//!
-
-	\param
-	\return
+	//! Load tracer-kinetic model parameter maps
+	/*!
+	\param paramDir directory containing parameter maps. This must contain image volumes with names matching the parameter names specified in the volume analysis model
+	\return true if maps loads successfully. False if files doesn't exist or load error.
+	\see mdm_DCEModelBase#paramNames
 	*/
 	MDM_API bool loadParameterMaps(const std::string &paramDir);
 
-		/*!
-	//!
-
-	\param
-	\return
+	//! Write all output maps to disk
+	/*!
+	\param outputDir directory in which to write output maps.
+	\return true if maps saved successfully. False if save error.
 	*/
 	MDM_API bool writeOutputMaps(const std::string &outputDir);
 
-  	/*!
-	//!
-
-	\param
-	\return
+	//! Write model residuals map to disk
+	/*!
+	\param outputDir directory in which to write output map.
+	\return true if map saved successfully. False if save error.
 	*/
-	MDM_API bool writeModelResiduals(const std::string &outputPath);
+	MDM_API bool writeModelResiduals(const std::string &outputDir);
 
-		/*!
-	//!
-
-	\param
-	\return
+	//! Write error codes map to disk
+	/*!
+	\param outputDir directory in which to write output map.
+	\return true if map saved successfully. False if save error.
 	*/
 	MDM_API bool writeErrorMap(const std::string &outputDir);
 
-		/*!
-	//!
-
-	\param
-	\return
-	*/
-	MDM_API void setWriteCtDataMaps(bool b);
-
-  	/*!
-	//!
-
-	\param
-	\return
-	*/
-	MDM_API void setWriteCtModelMaps(bool b);
-
+	//! Set flag to write out signal-derived concentration time-series maps
 	/*!
-//!
+	\param flag if true, writes out time-series C(t)
+	*/
+	MDM_API void setWriteCtDataMaps(bool flag);
 
-\param
-\return
-*/
-	MDM_API void setSparseWrite(bool b);
+	//! Set flag to write out model estimated concentration time-series maps
+	/*!
+	\param flag if true, writes out time-series Cm(t)
+	*/
+	MDM_API void setWriteCtModelMaps(bool flag);
+
+	//! Set flag to write out in sparse format
+	/*!
+	\param flag if true, writes out images using sparse format
+	\see mdm_AnalyzeFormat
+	*/
+	MDM_API void setSparseWrite(bool flag);
 
 protected:
 
@@ -159,7 +152,7 @@ private:
 	bool loadFAImage(const std::string& filePath, int nVFA);
 
 	void makeSequenceFilename(const std::string &path, const std::string &prefix,
-		const int fileNumber, std::string &filePath);
+		const int fileNumber, std::string &filePath, const std::string &fileNumberFormat);
 	
 	bool writeOutputMap(const std::string &mapName, 
 		const std::string &outputDir, bool writeXtr = false);

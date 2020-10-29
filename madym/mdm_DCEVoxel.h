@@ -14,6 +14,7 @@
 #include <madym/opt/linalg.h>
 
 #include <vector>
+#include <memory>
 
 //! Holds DCE time-series data and an asssociated tracer kinetic model
 /*!
@@ -54,6 +55,7 @@ public:
 	\param IAUC_times times at which compute IAUC
 	*/
 	MDM_API mdm_DCEVoxel(
+		mdm_DCEModelBase &model,
     const std::vector<double> &dynSignals,
 		const std::vector<double> &dynConc,
     const std::vector<double> &noiseVar,
@@ -80,11 +82,10 @@ public:
 	*/
 	MDM_API void computeCtFromSignal();
 
-  //! Set tracer-kinetic model and compute modelled C(t) at initial model parameters
+  //! Compute modelled C(t) at initial model parameters
   /*!
-	\param model reference to tracer-kinetic model object
 	*/
-	MDM_API void initialiseModel(mdm_DCEModelBase &model);
+	MDM_API void initialiseModelFit();
 
 	//! Optimise tracer-kinetic model fit to concentration time-series
 	/*!
@@ -243,10 +244,11 @@ private:
 	void optimiseModel();
 
 	/*VARIABLES*/
-  mdm_DCEVoxelStatus status_;
+  mdm_DCEModelBase &model_;
 
-  mdm_DCEModelBase *model_;
+	mdm_DCEVoxelStatus status_;
 
+  
 	int										timepoint0_, timepointN_;				//n1(=0?), n2_ total number of datapoints
 	std::vector<double>					signalData_;		//DCE time series vector of signals
 	std::vector<double>					CtData_;				//DCE time series vector of signal-derived concentrations

@@ -1,0 +1,146 @@
+/**
+*  @file    mdm_T1MethodGenerator.h
+*  @brief Header only class to generate specific instances of DCE models
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2018
+*/
+
+#ifndef MDM_T1METHODGENERATOR_HDR
+#define MDM_T1METHODGENERATOR_HDR
+
+#include <memory>
+
+#include "mdm_api.h"
+
+#include <madym/mdm_Image3D.h>
+#include <madym/mdm_InputOptions.h>
+
+#include <madym/mdm_T1Voxel.h>
+#include <madym/mdm_T1VFAVoxel.h>
+
+//!Header only class to generate specific instances of DCE models
+/*! 
+	Provides factory-pattern method for instantiating an mdm_DCEModelBase pointer
+	into one of the allowed sub-class model instances, based on a given model name
+
+	Any new model implementations should be added to:
+	1) a new enum entry in ModelTypes
+	2) a new model name in implementedModels()
+	3) a new if else case in ParseModelName matching the name to the enum type
+	4) a new case in the switch statement of setModel
+	
+*/
+class mdm_T1MethodGenerator {
+
+public:
+
+	//! Defined model types - 
+	/* 
+	*/
+	enum T1Methods {
+		UNDEFINED, ///> Method not recognised
+		VFA, ///> Variable flip-angle method
+		IR ///> Inversion recovery method
+	};
+
+	/**
+	* @brief Returns list of implemented model names
+	* @return List of implemented model names
+	*/
+	MDM_API static const std::vector<std::string> implementedMethods()
+	{
+		return {
+	"VFA"
+		};
+	}
+
+	//! Convert T1 method string to enum
+	/*
+	\param method string name of T1 mapping method, must be a member of implementedMethods
+	\return method enum T1 mapping method, UNSPECIFIED if method name not recognised
+	*/
+	MDM_API static T1Methods ParseMethodName(const std::string &method) {
+		if (method == "VFA")
+			return VFA;
+		else if (method == "IR")
+			return IR;
+		else
+			abort();
+	}
+
+	//! Convert T1 method enum to string
+	/*
+	\param method enum code for T! mapping method
+	\return string name of T1 mapping emthod
+	*/
+	MDM_API static std::string MethodToString(T1Methods method) {
+		switch (method)
+		{
+		case VFA:
+			return "VFA";
+		case IR:
+			return "IR";
+		default:
+			abort();
+		}
+	}
+
+  /**
+	* @brief Instantiates pointer to abstract model class into specific model instance
+	* @details Factory-pattern static method to instantiate a DCE model of specific type.
+	*	To add a new model, include the model header above, addthe model name to the implemented
+	* models list and then add an "if (modelName==MY_MODEL)" clause to this method,
+	* instantiating the new model and setting any AIF flags associated with the model.
+	* Dual-input models should set both AIF and PIF flags, single inputs AIF only.
+	*
+	* @param model reference to base model pointer
+	*/
+	MDM_API static std::unique_ptr<mdm_T1Voxel> createFitter( 
+		T1Methods methodType, const std::vector<mdm_Image3D> &inputImages)
+  {
+		const int &nSignals = inputImages.size();
+
+    switch (methodType)
+		{
+		case VFA:
+		{
+			auto T1Fitter = std::make_unique<mdm_T1VFAVoxel>();
+			std::vector<double> FAs;
+			const auto PI = acos(-1.0);
+			for (auto img : inputImages)
+				FAs.push_back(img.info_.flipAngle.value()  * PI / 180);
+
+			//Get tr value from first FA image - assume same for all images?
+			double TR = inputImages[0].info_.TR.value();
+			T1Fitter->setFixedScannerSettings({ TR });
+			T1Fitter->setVariableScannerSettings(FAs);
+			return T1Fitter;
+		}
+
+		default:
+			abort();
+		}
+  }
+
+	MDM_API static std::unique_ptr<mdm_T1Voxel> createFitter(T1Methods method,
+		const mdm_InputOptions &options)
+	{
+		switch (method)
+		{
+		case VFA:
+		{
+			auto T1Fitter = std::make_unique<mdm_T1VFAVoxel>();
+			T1Fitter->setFixedScannerSettings({ options.TR() });
+			return T1Fitter;
+		}
+		default:
+			abort();
+		}
+
+	}
+
+};
+
+
+#endif //MDM_T1METHODGENERATOR_HDR

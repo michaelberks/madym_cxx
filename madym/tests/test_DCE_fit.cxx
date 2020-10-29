@@ -66,14 +66,16 @@ void test_model_time_fit(
 	}
 
 	//Now create the model and compute model time series
-	mdm_DCEModelBase *model = NULL;
-	bool model_set = mdm_DCEModelGenerator::setModel(model, AIF,
-		modelName, false, false, {},
+	auto modelType = mdm_DCEModelGenerator::ParseModelName(modelName);
+	BOOST_REQUIRE_MESSAGE(modelType != mdm_DCEModelGenerator::UNDEFINED,
+		"Model name " << modelName << " is undefined");
+
+	auto model = mdm_DCEModelGenerator::createModel(AIF,
+		modelType, false, false, {},
 		{}, fixedParams, {}, {}, {});
 
-	BOOST_REQUIRE_MESSAGE(model_set, "Unable to compute time series for " << modelName);
-
 	mdm_DCEVoxel vox(
+		*model,
 		{},
 		CtCalibration,
 		{},
@@ -89,7 +91,7 @@ void test_model_time_fit(
 		false,
 		true,
 		IAUCTimes);
-	vox.initialiseModel(*model);
+	vox.initialiseModelFit();
 	vox.fitModel();
 
 	//Check params match (should be within 0.01)
@@ -120,8 +122,6 @@ void test_model_time_fit(
 		BOOST_CHECK(mdm_test_utils::vectors_near_equal(
 			computedIAUC, IAUCVals, 0.01));
 	}
-
-	delete model;
 }
 
 BOOST_AUTO_TEST_SUITE(test_mdm)

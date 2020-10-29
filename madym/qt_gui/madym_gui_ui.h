@@ -22,6 +22,7 @@
 #include <iosfwd>
 #include <vector>
 #include <cstddef>
+#include <memory>
 
 #include "madym_gui_processor.h"
 
@@ -156,7 +157,7 @@ private: // Variables
 	mdm_OptionsParser options_parser_;
 
   //model so we can configure model params
-  mdm_DCEModelBase *model_;
+  std::shared_ptr<mdm_DCEModelBase> model_;
 
 };
 

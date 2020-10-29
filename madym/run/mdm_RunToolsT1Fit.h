@@ -33,7 +33,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API ~mdm_RunToolsT1Fit();
+	MDM_API virtual ~mdm_RunToolsT1Fit();
 
 protected:
 	//Methods:

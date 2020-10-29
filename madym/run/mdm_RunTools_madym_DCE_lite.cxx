@@ -363,6 +363,7 @@ void mdm_RunTools_madym_DCE_lite::fit_series(std::ostream &outputData,
 
 	//Create a perm object
 	mdm_DCEVoxel vox(
+		*model_,
 		signalData,
 		CtData,
 		noiseVar,
@@ -378,7 +379,7 @@ void mdm_RunTools_madym_DCE_lite::fit_series(std::ostream &outputData,
 		testEnhancement,
 		useM0Ratio,
 		IAUCTimes);
-	vox.initialiseModel(*model_);
+	vox.initialiseModelFit();
 
 	vox.computeIAUC();
 

@@ -10,8 +10,6 @@
 #ifndef MDM_PLATFORM_DEFS
 #define MDM_PLATFORM_DEFS
 
-/*MB TODO: For cross platform compatibility, look-up whether I need to wrap everything in the extern C macro*/
-
 #if _WIN32 /*MB TODO: Better to check _MSC_VER?*/
 //Alternatives needed for windows
 #include <direct.h>

@@ -14,9 +14,7 @@ MDM_API mdm_RunTools_madym_T1::mdm_RunTools_madym_T1(mdm_InputOptions &options_,
 	: 
 	mdm_RunToolsT1Fit(),
 	mdm_RunTools(options_, options_parser),
-	T1Mapper_(errorTracker_),
-	volumeAnalysis_(errorTracker_, T1Mapper_),
-	fileManager_(T1Mapper_, volumeAnalysis_, errorTracker_)
+	fileManager_(volumeAnalysis_)
 {}
 
 
@@ -34,7 +32,7 @@ MDM_API int mdm_RunTools_madym_T1::run()
 	if (!setT1Method(options_.T1method()))
 		mdm_progAbort("T1 method not recognised");
 
-	T1Mapper_.setNoiseThreshold(options_.T1noiseThresh());
+	volumeAnalysis_.T1Mapper().setNoiseThreshold(options_.T1noiseThresh());
 
 	//Create output folder/check overwrite
 	fs::path outputPath = set_up_output_folder();
@@ -50,7 +48,7 @@ MDM_API int mdm_RunTools_madym_T1::run()
 	//Before we start, try and load an errorImage, this allows us to add
 	//to any existing errors in a re-analysis
 	fs::path errorCodesPath = outputPath / options_.errorCodesName();
-	fileManager_.loadErrorImage(errorCodesPath.string());
+	fileManager_.loadErrorMap(errorCodesPath.string());
 
 	if (!options_.roiName().empty())
 	{
@@ -74,11 +72,11 @@ MDM_API int mdm_RunTools_madym_T1::run()
 	*/
 
 	//We need to load FA images
-	if (options_.T1inputNames().size() < mdm_T1Voxel::MINIMUM_FAS)
+	if (options_.T1inputNames().size() < mdm_T1Voxel::MINIMUM_INPUTS)
 	{
 		mdm_progAbort("not enough variable flip angle file names");
 	}
-	else if (options_.T1inputNames().size() > mdm_T1Voxel::MAXIMUM_FAS)
+	else if (options_.T1inputNames().size() > mdm_T1Voxel::MAXIMUM_INPUTS)
 	{
 		mdm_progAbort("too many variable flip angle file names");
 	}
@@ -87,13 +85,13 @@ MDM_API int mdm_RunTools_madym_T1::run()
 	for (std::string mapName : options_.T1inputNames())
 		T1inputPaths.push_back(fs::absolute(mapName).string());
 
-	if (!fileManager_.loadFAImages(T1inputPaths))
+	if (!fileManager_.loadT1MappingInputImages(T1inputPaths))
 	{
 		mdm_progAbort("error loading FA images");
 	}
 
 	//FA images loaded, try computing T1 and M0 maps
-	T1Mapper_.T1_mapVarFlipAngle();
+	volumeAnalysis_.T1Mapper().mapT1();
 
 	if (!fileManager_.writeOutputMaps(outputPath.string()))
 	{

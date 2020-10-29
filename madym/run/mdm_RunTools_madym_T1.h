@@ -59,10 +59,8 @@ private:
   //Methods:
 
 	//Variables:
-	mdm_T1VolumeAnalysis T1Mapper_;
 	mdm_DCEVolumeAnalysis volumeAnalysis_;
 	mdm_FileManager fileManager_;
-	mdm_ErrorTracker errorTracker_;
 };
 
 #endif

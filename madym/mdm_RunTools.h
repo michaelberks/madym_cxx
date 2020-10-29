@@ -45,7 +45,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API ~mdm_RunTools();
+	MDM_API virtual ~mdm_RunTools();
   	
 	/**
 	* @brief

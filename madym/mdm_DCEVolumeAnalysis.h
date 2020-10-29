@@ -16,6 +16,8 @@
 #include <madym/dce_models/mdm_DCEModelBase.h>
 #include <madym/mdm_T1VolumeAnalysis.h>
 
+#include <memory>
+
 //! Manager class for DCE analysis, stores input images and output parameter maps
 /*!
 */
@@ -36,15 +38,25 @@ public:
 
 	//! Default constructor
 	/*!
-	\param errorTracker reference to error tracker map
-	\param T1_mapper reference to T1 mapper object
 	*/
-	MDM_API mdm_DCEVolumeAnalysis(mdm_ErrorTracker &errorTracker, mdm_T1VolumeAnalysis &T1_mapper);
+	MDM_API mdm_DCEVolumeAnalysis();
 	
 	//! Default destructor
 	/*!
 	*/
 	MDM_API ~mdm_DCEVolumeAnalysis();
+
+	//! Return reference to error tracker
+	/*!
+	\return reference to error tracker
+	*/
+	MDM_API mdm_ErrorTracker &errorTracker();
+
+	//! Return reference to T1 mapper
+	/*!
+	\return reference to T1 mapper
+	*/
+	MDM_API mdm_T1VolumeAnalysis &T1Mapper();
 
 	//! Set ROI mask image
 	/*!
@@ -174,7 +186,7 @@ public:
 	/*!
 	\param model pointer to an instantiation of a specific DCE model
 	*/
-	MDM_API void setModel(mdm_DCEModelBase *model);
+	MDM_API void setModel(std::shared_ptr<mdm_DCEModelBase> model);
 
 	//! Set test enhancement flag
 	/*!
@@ -311,13 +323,12 @@ private:
 	std::vector<mdm_Image3D> StDataMaps_;
 	std::vector<mdm_Image3D> CtDataMaps_;
   std::vector<mdm_Image3D> CtModelMaps_;
-	mdm_T1VolumeAnalysis &T1_mapper_;
   std::vector<double> dynamicTimes_;
   std::vector<double> noiseVar_;
-  mdm_DCEModelBase *model_;
+	std::shared_ptr < mdm_DCEModelBase > model_;
 
-	//Reference to global error tracker
-	mdm_ErrorTracker &errorTracker_;
+	mdm_T1VolumeAnalysis T1_mapper_;
+	mdm_ErrorTracker errorTracker_;
 
 	/* Images for inputs and output */
 	std::vector<mdm_Image3D> pkParamMaps_;
@@ -335,7 +346,7 @@ private:
 	bool testEnhancement_;
 
 	//Flag to check if we're using ratio method for converting to concentration
-	bool useRatio_;
+	bool useM0Ratio_;
 
 	//Flag to see if we need to compute concentration
 	bool computeCt_;

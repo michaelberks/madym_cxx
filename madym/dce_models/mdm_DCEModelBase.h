@@ -46,7 +46,7 @@ public:
 	//! Default destructor
 	/*!
 	*/
-  MDM_API ~mdm_DCEModelBase();
+  MDM_API virtual ~mdm_DCEModelBase();
 
   //! Initialise the model
 	/*!
