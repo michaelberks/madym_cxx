@@ -2,7 +2,7 @@
 
 #include <madym/tests/mdm_test_utils.h>
 
-#include <madym/mdm_T1VFAVoxel.h>
+#include <madym/t1_methods/mdm_T1FitterVFA.h>
 #include <madym/mdm_AnalyzeFormat.h>
 #include <madym/mdm_Image3D.h>
 #include <mdm_version.h>
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1) {
 		FA_img.setVoxelDims(1, 1, 1);
 		FA_img.info_.flipAngle.setValue(FAs[i_fa]);
 		FA_img.info_.TR.setValue(TR);
-		FA_img.setVoxel(0, mdm_T1VFAVoxel::T1toSignal(T1, M0, PI*FAs[i_fa]/180, TR));
+		FA_img.setVoxel(0, mdm_T1FitterVFA::T1toSignal(T1, M0, PI*FAs[i_fa]/180, TR));
 
 		FA_names[i_fa] = FA_dir + "FA_" + std::to_string((int)FAs[i_fa]);
 

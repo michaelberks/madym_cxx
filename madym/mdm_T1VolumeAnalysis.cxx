@@ -12,7 +12,6 @@
 #include <chrono>  // chrono::system_clock
 #include <sstream> // stringstream
 
-#include "mdm_T1VFAVoxel.h"
 #include "mdm_ErrorTracker.h"
 #include "mdm_ProgramLogger.h"
 
@@ -59,7 +58,6 @@ MDM_API void  mdm_T1VolumeAnalysis::mapT1(mdm_T1MethodGenerator::T1Methods metho
 {
 	//
 	int nSignals = inputImages_.size();
-	assert(nSignals >= mdm_T1Voxel::MINIMUM_INPUTS);
 
 	//Instantiate T1 fitter object of required method type
 	auto T1Fitter = mdm_T1MethodGenerator::createFitter(method, inputImages_);

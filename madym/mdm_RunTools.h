@@ -23,6 +23,7 @@
 #include <vector>
 #include <boost/filesystem.hpp>
 
+namespace fs = boost::filesystem;
 /**
 *  @brief   Called by command line/GUI tools to run DCE-analysis or T1 mapper
 *  @details More info...
@@ -77,13 +78,13 @@ protected:
 
 	std::string timeNow();
 	
-	boost::filesystem::path set_up_output_folder();
-	void set_up_logging(boost::filesystem::path outputPath);
+	void set_up_output_folder();
+	void set_up_logging();
 
 	//Variables:
 	mdm_InputOptions &options_;
 	mdm_OptionsParser &options_parser_;
-	
+	fs::path outputPath_;
 
 private:
   //Methods:

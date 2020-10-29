@@ -3,7 +3,7 @@
 
 #include <madym/mdm_AIF.h>
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
-#include <madym/mdm_T1VFAVoxel.h>
+#include <madym/t1_methods/mdm_T1FitterVFA.h>
 #include "mdm_test_utils.h"
 
 void write_series_to_binary(const std::string filename, 
@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
 	double TR = 3.5;
 	std::vector<double> signals(nFAs);
 	for (int i = 0; i < nFAs; i++)
-		signals[i] = mdm_T1VFAVoxel::T1toSignal(T1, S0, FAs[i], TR);
+		signals[i] = mdm_T1FitterVFA::T1toSignal(T1, S0, FAs[i], TR);
 
 	std::string T1FileName(outputDir + "T1.dat");
 	std::ofstream T1FileStream(T1FileName, std::ios::out | std::ios::binary);

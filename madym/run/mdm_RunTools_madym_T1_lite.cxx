@@ -5,7 +5,7 @@
 #include "mdm_RunTools_madym_T1_lite.h"
 
 #include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_T1MethodGenerator.h>
+#include <madym/t1_methods/mdm_T1MethodGenerator.h>
 
 namespace fs = boost::filesystem;
 
@@ -23,60 +23,44 @@ MDM_API mdm_RunTools_madym_T1_lite::~mdm_RunTools_madym_T1_lite()
 //
 MDM_API int mdm_RunTools_madym_T1_lite::run()
 {
+	//Check required fields are set
 	if (options_.inputDataFile().empty())
-	{
 		mdm_progAbort("input data file (option --data) must be provided");
-	}
-	if (!options_.nT1Inputs())
-	{
+	
+	const int &nSignals = options_.nT1Inputs();
+	if (!nSignals)
 		mdm_progAbort("number of signals (option --n_T1) must be provided");
-	}
+	
 	if (!options_.TR())
-	{
 		mdm_progAbort("TR (option --TR) must be provided");
-	}
 
-	//Set which type of model we're using - throws error if method not recognised
-	if (!setT1Method(options_.T1method()))
-		mdm_progAbort("T1 method not recognised");
+	//Parse T1 method from string, will abort if method type not recognised
+	auto methodType = parseMethod(options_.T1method());
 
-	//Using boost filesyetm, can call one line to make absolute path from input
-	//regardless of whether relative or absolute path has been given
-	fs::path outPath = fs::absolute(options_.outputDir());
+	//Instantiate T1 fitter of desired type
+	auto T1Fitter = mdm_T1MethodGenerator::createFitter(methodType, options_);
 
-	//We probably don't need to check if directory exists, just call create... regardless
-	//but we do so anyway
-	if (!fs::is_directory(outPath))
-		fs::create_directories(outPath);
+	//Check number of inputs is valid
+	checkNumInputs(methodType, nSignals);
 
-	std::string outputDataFile = outPath.string() + "/" +
+	//Set up output path and output file
+	set_up_output_folder();
+
+	std::string outputDataFile = outputPath_.string() + "/" +
 		options_.T1method() + "_" + options_.outputName();
 
 	//Open the input data (FA and signals) file
 	std::ifstream inputData(options_.inputDataFile(), std::ios::in);
 	if (!inputData.is_open())
-	{
 		mdm_progAbort("error opening input data file, Check it exists");
-	}
-
+	
 	//Open up an output file
 	std::ofstream outputData(outputDataFile, std::ios::out);
 	if (!outputData.is_open())
-	{
 		mdm_progAbort("error opening ouput data file");
-	}
 
 	int row_counter = 0;
-	const int &nSignals = options_.nT1Inputs();
-
-	//Instantiate T1 fitter of desired type
-	auto methodType = mdm_T1MethodGenerator::ParseMethodName(
-		options_.T1method());
-	if (methodType == mdm_T1MethodGenerator::UNDEFINED)
-		mdm_progAbort("T1 method not recognised");
-
-	auto T1Fitter = mdm_T1MethodGenerator::createFitter(methodType, options_);
-
+	
 	//Loop through the file, reading in each line
 	while (!inputData.eof())
 	{
@@ -128,6 +112,9 @@ MDM_API int mdm_RunTools_madym_T1_lite::parse_inputs(int argc, const char *argv[
 	options_parser_.add_option(config_options, options_.nT1Inputs);
 	options_parser_.add_option(config_options, options_.outputDir);
 	options_parser_.add_option(config_options, options_.outputName);
+
+	//Always set overwrite true for lite methods
+	options_.overwrite.set(true);
 
 	return options_parser_.parse_inputs(
 		config_options,

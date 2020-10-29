@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <vector>
-#include <madym/mdm_T1VFAVoxel.h>
+#include <madym/t1_methods/mdm_T1FitterVFA.h>
 #include <madym/tests/mdm_test_utils.h>
 
 BOOST_AUTO_TEST_SUITE(test_mdm)
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(test_T1) {
 	BOOST_TEST_MESSAGE("Testing signals from VFA (calibration, computed): ");
 	for (int i = 0; i < nFAs; i++)
 	{
-		signals[i] = mdm_T1VFAVoxel::T1toSignal(T1, M0, FAs[i], TR);
+		signals[i] = mdm_T1FitterVFA::T1toSignal(T1, M0, FAs[i], TR);
 		BOOST_TEST_MESSAGE(boost::format("(%1%, %2%)")
 			% signalsCalibration[i] % signals[i]);
 	}
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(test_T1) {
 
 	//Next fit the signals to recover M0 and T1
 	double T1fit, M0fit;
-	mdm_T1VFAVoxel T1Calculator(FAs, TR);
+	mdm_T1FitterVFA T1Calculator(FAs, TR);
 	T1Calculator.setInputSignals(signalsCalibration);
 	int errCode = T1Calculator.fitT1(T1fit, M0fit);
 	BOOST_CHECK_MESSAGE(!errCode, "T1 fit returned error " << errCode);

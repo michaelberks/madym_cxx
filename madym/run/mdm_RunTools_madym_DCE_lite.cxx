@@ -19,12 +19,12 @@ MDM_API mdm_RunTools_madym_DCE_lite::mdm_RunTools_madym_DCE_lite(mdm_InputOption
 
 MDM_API mdm_RunTools_madym_DCE_lite::~mdm_RunTools_madym_DCE_lite()
 {
-
 }
 
 //
 MDM_API int mdm_RunTools_madym_DCE_lite::run()
 {
+	//Check required inputs
 	if (options_.model().empty())
 	{
 		mdm_progAbort("model (option -m) must be provided");
@@ -38,25 +38,12 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 		mdm_progAbort("number of dynamics (option -n) must be provided");
 	}
 
-	//Using boost filesyetm, can call one line to make absolute path from input
-	//regardless of whether relative or absolute path has been given
-	fs::path outPath = fs::absolute(options_.outputDir());
-
-	//We probably don't need to check if directory exists, just call create... regardless
-	//but we do so anyway
-	if (!is_directory(outPath))
-		create_directories(outPath);
-
-	std::string outputDataFile = outPath.string() + "/" +
+	//Set-up output folder and output file
+	set_up_output_folder();
+	std::string outputDataFile = outputPath_.string() + "/" +
 		options_.model() + "_" + options_.outputName();
 
-	//  Now it's time for the fun ...
-	//
-	//  - Load in the data, can either be dynamic signals or concentrations
-	//	- Fit the models
-	//	- Write the output file
-	//
-
+	
  //Set which type of model we're using
 	setModel(options_.model(),
 		!options_.aifName().empty(), !options_.pifName().empty(),

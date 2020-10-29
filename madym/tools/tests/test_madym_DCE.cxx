@@ -7,6 +7,7 @@
 
 #include <madym/mdm_AIF.h>
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
+#include <madym/run/mdm_RunTools_madym_DCE.h>
 #include <madym/mdm_AnalyzeFormat.h>
 #include <madym/mdm_Image3D.h>
 #include <cmath>
@@ -33,6 +34,57 @@ double mins_to_timestamp(double t_in_mins)
 	//into the xtr timestamp format
 	//hhmmss.msecs represented as a single decimal number
 	return secs_to_timestamp(60 * t_in_mins);
+}
+
+void check_output(
+	const std::string& Ct_output_dir,
+	const std::vector<double> &trueParams,
+	const std::vector<double> IAUCTimes,
+	const std::vector<double> IAUCVals)
+{
+	//Load in the parameter img vols and extract the single voxel from each
+	mdm_Image3D ktrans_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "Ktrans.hdr", false);
+	mdm_Image3D ve_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "v_e.hdr", false);
+	mdm_Image3D vp_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "v_p.hdr", false);
+	mdm_Image3D tau_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "tau_a.hdr", false);
+	mdm_Image3D model_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "residuals.hdr", false);
+	mdm_Image3D error_codes = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "error_codes.hdr", false);
+	mdm_Image3D enhancing = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "enhVox.hdr", false);
+
+	//Check the model parameters have fitted correctly
+	double tol = 0.1;
+	BOOST_TEST_MESSAGE(boost::format("Fitted ktrans (%1.2f, %2.2f)")
+		% ktrans_fit.voxel(0) % trueParams[0]);
+	BOOST_CHECK_CLOSE(ktrans_fit.voxel(0), trueParams[0], tol);
+	BOOST_TEST_MESSAGE(boost::format("Fitted Ve (%1.2f, %2.2f)")
+		% ve_fit.voxel(0) % trueParams[1]);
+	BOOST_CHECK_CLOSE(ve_fit.voxel(0), trueParams[1], tol);
+	BOOST_TEST_MESSAGE(boost::format("Fitted Vp (%1.2f, %2.2f)")
+		% vp_fit.voxel(0) % trueParams[2]);
+	BOOST_CHECK_CLOSE(vp_fit.voxel(0), trueParams[2], tol);
+	BOOST_TEST_MESSAGE(boost::format("Fitted tau (%1.2f, %2.2f)")
+		% tau_fit.voxel(0) % trueParams[3]);
+	BOOST_CHECK_CLOSE(tau_fit.voxel(0), trueParams[3], tol);
+
+	//Check model fit, error codes and enhancing
+	BOOST_TEST_MESSAGE(boost::format("Model residuals = %1%")
+		% model_fit.voxel(0));
+	BOOST_TEST_MESSAGE("No error code");
+	BOOST_CHECK(!error_codes.voxel(0));
+	BOOST_TEST_MESSAGE("Enhancing");
+	BOOST_CHECK(enhancing.voxel(0));
+
+	//Check IAUC
+	for (auto i = 0; i < IAUCTimes.size(); i++)
+	{
+		std::string iauc_name = Ct_output_dir + "IAUC" + std::to_string((int)IAUCTimes[i]) + ".hdr";
+		mdm_Image3D iauc = mdm_AnalyzeFormat::readImage3D(iauc_name, false);
+		BOOST_TEST_MESSAGE("Fitted IAUC" + std::to_string((int)IAUCTimes[i]));
+		BOOST_CHECK_CLOSE(iauc.voxel(0), IAUCVals[i], tol);
+	}
+
+	//Tidy up
+	fs::remove_all(Ct_output_dir);
 }
 	
 
@@ -120,12 +172,18 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 			mdm_AnalyzeFormat::DT_FLOAT, mdm_AnalyzeFormat::NEW_XTR, false);
 	}
 
-	std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct/";
+	//Run 2 tests:
+	// 1) Using a run tools object, this runs the complete pipeline but doesn't involve a system call
+	// 2) Calling system to run a command line call
 
+	//-------------------------------------------------------------------------------
+	// 2) From the command line
+	//-------------------------------------------------------------------------------
+	std::string Ct_output_dir2 = test_dir + "/mdm_analysis_Ct2/";
 	std::stringstream cmd;
 	cmd << mdm_test_utils::tools_exe_dir() << "madym_DCE"
 		<< " -m ETM"
-		<< " -o " << Ct_output_dir
+		<< " -o " << Ct_output_dir2
 		<< " --dyn " << dyn_dir << "Ct_"
 		<< " -n " << nTimes
 		<< " -i " << injectionImage
@@ -148,51 +206,42 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 	}
 
 	BOOST_CHECK_MESSAGE(!error, "Error returned from madym_DCE tool");
+	check_output(Ct_output_dir2,
+		trueParams,
+		IAUCTimes,
+		IAUCVals);
 
-	//Load in the parameter img vols and extract the single voxel from each
-	mdm_Image3D ktrans_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "Ktrans.hdr", false);
-	mdm_Image3D ve_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "v_e.hdr", false);
-	mdm_Image3D vp_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "v_p.hdr", false);
-	mdm_Image3D tau_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "tau_a.hdr", false);
-	mdm_Image3D model_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "residuals.hdr", false);
-	mdm_Image3D error_codes = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "error_codes.hdr", false);
-	mdm_Image3D enhancing = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "enhVox.hdr", false);
+	//-------------------------------------------------------------------------------
+	// 1) Using a run tools object
+	//-------------------------------------------------------------------------------
+	std::string Ct_output_dir1 = test_dir + "/mdm_analysis_Ct1/";
+	mdm_InputOptions madym_options;
+	mdm_OptionsParser options_parser;
+	madym_options.model.set("ETM");
+	madym_options.outputDir.set(Ct_output_dir1);
+	madym_options.dynDir.set(dyn_dir);
+	madym_options.dynName.set("Ct_");
+	madym_options.nDyns.set(nTimes);
+	madym_options.injectionImage.set(injectionImage);
+	madym_options.dose.set(dose);
+	madym_options.hct.set(hct);
+	madym_options.IAUCTimes.set(IAUCTimes);
+	madym_options.inputCt.set(true);
+	madym_options.overwrite.set(true);
 
-	//Check the model parameters have fitted correctly
-	double tol = 0.1;
-	BOOST_TEST_MESSAGE(boost::format("Fitted ktrans (%1.2f, %2.2f)")
-		% ktrans_fit.voxel(0) % trueParams[0]);
-	BOOST_CHECK_CLOSE(ktrans_fit.voxel(0), trueParams[0], tol);
-	BOOST_TEST_MESSAGE(boost::format("Fitted Ve (%1.2f, %2.2f)")
-		% ve_fit.voxel(0) % trueParams[1]);
-	BOOST_CHECK_CLOSE(ve_fit.voxel(0), trueParams[1], tol);
-	BOOST_TEST_MESSAGE(boost::format("Fitted Vp (%1.2f, %2.2f)")
-		% vp_fit.voxel(0) % trueParams[2]);
-	BOOST_CHECK_CLOSE(vp_fit.voxel(0), trueParams[2], tol);
-	BOOST_TEST_MESSAGE(boost::format("Fitted tau (%1.2f, %2.2f)")
-		% tau_fit.voxel(0) % trueParams[3]);
-	BOOST_CHECK_CLOSE(tau_fit.voxel(0), trueParams[3], tol);
+	mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
+	madym_exe.parse_inputs("test_madym_DCE");
+	int result = madym_exe.run();
 
-	//Check model fit, error codes and enhancing
-	BOOST_TEST_MESSAGE(boost::format("Model residuals = %1%")
-		% model_fit.voxel(0));
-	BOOST_TEST_MESSAGE("No error code");
-	BOOST_CHECK(!error_codes.voxel(0));
-	BOOST_TEST_MESSAGE("Enhancing");
-	BOOST_CHECK(enhancing.voxel(0));
-	
-	//Check IAUC
-	for (int i = 0; i < nIAUC; i++)
-	{
-		std::string iauc_name = Ct_output_dir + "IAUC" + std::to_string((int)IAUCTimes[i]) + ".hdr";
-		mdm_Image3D iauc = mdm_AnalyzeFormat::readImage3D(iauc_name, false);
-		BOOST_TEST_MESSAGE("Fitted IAUC" + std::to_string((int)IAUCTimes[i]));
-		BOOST_CHECK_CLOSE(iauc.voxel(0), IAUCVals[i], tol);
-	}
-	
+	BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
+	check_output(Ct_output_dir1,
+		trueParams,
+		IAUCTimes,
+		IAUCVals);
+
+	//---------------------------------------------------------------------------
 	//Tidy up
 	fs::remove_all(dyn_dir);
-	fs::remove_all(Ct_output_dir);
 }
 
 BOOST_AUTO_TEST_SUITE_END() //

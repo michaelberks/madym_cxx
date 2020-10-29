@@ -1,12 +1,12 @@
 /**
- *  @file    mdm_T1VFAVoxel.cxx
- *  @brief   Implementation of the mdm_T1VFAVoxel class
+ *  @file    mdm_T1FitterVFA.cxx
+ *  @brief   Implementation of the mdm_T1FitterVFA class
  */
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
 
-#include "mdm_T1VFAVoxel.h"
+#include "mdm_T1FitterVFA.h"
 
 #include <stdio.h>                
 #include <stdlib.h>                
@@ -15,12 +15,12 @@
 
 #include "mdm_ProgramLogger.h"
 
-const double mdm_T1VFAVoxel::PI = acos(-1.0);
+const double mdm_T1FitterVFA::PI = acos(-1.0);
 
 //
-MDM_API mdm_T1VFAVoxel::mdm_T1VFAVoxel(const std::vector<double> &FAs, const double TR)
+MDM_API mdm_T1FitterVFA::mdm_T1FitterVFA(const std::vector<double> &FAs, const double TR)
 	:
-	mdm_T1Voxel(),
+	mdm_T1FitterBase(),
 	delta_(1.0),
 	FAs_(FAs),
 	TR_(TR)
@@ -30,32 +30,32 @@ MDM_API mdm_T1VFAVoxel::mdm_T1VFAVoxel(const std::vector<double> &FAs, const dou
 }
 
 //
-MDM_API mdm_T1VFAVoxel::~mdm_T1VFAVoxel()
+MDM_API mdm_T1FitterVFA::~mdm_T1FitterVFA()
 {
 
 }
 
 //
-MDM_API mdm_T1VFAVoxel::mdm_T1VFAVoxel()
-	: mdm_T1VFAVoxel({}, 0)
+MDM_API mdm_T1FitterVFA::mdm_T1FitterVFA()
+	: mdm_T1FitterVFA({}, 0)
 {
 
 }
 
 //
-MDM_API void mdm_T1VFAVoxel::setFAs(const std::vector<double> &FAs)
+MDM_API void mdm_T1FitterVFA::setFAs(const std::vector<double> &FAs)
 {
 	FAs_ = FAs;
 	initFAs();
 }
 
 //
-MDM_API void mdm_T1VFAVoxel::setTR(const double TR)
+MDM_API void mdm_T1FitterVFA::setTR(const double TR)
 {
 	TR_ = TR;
 }
 
-MDM_API mdm_ErrorTracker::ErrorCode mdm_T1VFAVoxel::fitT1(
+MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 	double &T1value, double &M0value)
 {
 	assert(signals_.size() == nFAs_);
@@ -103,7 +103,7 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1VFAVoxel::fitT1(
 }
 
 //
-MDM_API mdm_ErrorTracker::ErrorCode mdm_T1VFAVoxel::fitT1(std::istream& ifs,
+MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(std::istream& ifs,
 	const int nSignals, double &T1value, double &M0value, bool &eof)
 {
 	eof = false;
@@ -128,21 +128,33 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1VFAVoxel::fitT1(std::istream& ifs,
 }
 
 //
-MDM_API void mdm_T1VFAVoxel::setFixedScannerSettings(const std::vector<double> &settings)
+MDM_API void mdm_T1FitterVFA::setFixedScannerSettings(const std::vector<double> &settings)
 {
 	assert(settings.size() == 1);
 	setTR(settings[0]);
 }
 
 //
-MDM_API void mdm_T1VFAVoxel::setVariableScannerSettings(const std::vector<double> &settings)
+MDM_API void mdm_T1FitterVFA::setVariableScannerSettings(const std::vector<double> &settings)
 {
 	//Would be nice to assert size match to signals, but don't know if signals have been set yet?
 	setFAs(settings);
 }
 
 //
-MDM_API double mdm_T1VFAVoxel::T1toSignal(
+MDM_API int mdm_T1FitterVFA::minimumInputs() const
+{
+	return 3;
+}
+
+//
+MDM_API int mdm_T1FitterVFA::maximumInputs() const
+{
+	return 10;
+}
+
+//
+MDM_API double mdm_T1FitterVFA::T1toSignal(
 	const double T1, const double M0, const double FA, const double TR)
 {
 	double E1 = std::exp(-TR / T1);
@@ -153,7 +165,7 @@ MDM_API double mdm_T1VFAVoxel::T1toSignal(
 //Private methods
 //**********************************************************************
 
-void mdm_T1VFAVoxel::computeSignalGradient(const double &T1, const double &M0,
+void mdm_T1FitterVFA::computeSignalGradient(const double &T1, const double &M0,
 	const double &cosFA, const double &sinFA,
 	double &signal, double &signal_dT1, double &signal_dM0)
 {
@@ -175,7 +187,7 @@ void mdm_T1VFAVoxel::computeSignalGradient(const double &T1, const double &M0,
 		signal_dT1 = 1000000000.0; // something very big
 }
 
-void mdm_T1VFAVoxel::computeSSEGradient(
+void mdm_T1FitterVFA::computeSSEGradient(
 	const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad)
 {
 	const double &T1 = x[0];
@@ -196,10 +208,10 @@ void mdm_T1VFAVoxel::computeSSEGradient(
 }
 
 //
-void mdm_T1VFAVoxel::initFAs()
+void mdm_T1FitterVFA::initFAs()
 {
 	nFAs_ = FAs_.size();
-	assert(nFAs_ >= MINIMUM_INPUTS);
+	assert(nFAs_ >= minimumInputs() && nFAs_ <= maximumInputs());
 
 	cosFAs_.resize(nFAs_);
 	sinFAs_.resize(nFAs_);

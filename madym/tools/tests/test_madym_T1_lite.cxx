@@ -3,7 +3,7 @@
 #include <madym/tests/mdm_test_utils.h>
 
 #include <fstream>
-#include <madym/mdm_T1VFAVoxel.h>
+#include <madym/t1_methods/mdm_T1FitterVFA.h>
 #include <mdm_version.h>
 
 namespace fs = boost::filesystem;
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1_lite) {
 
 	//Compute signal for each FA and write out value
 	for (int i_fa = 0; i_fa < 3; i_fa++)
-		ifs << mdm_T1VFAVoxel::T1toSignal(T1, M0, PI*FAs[i_fa]/180, TR) << " ";
+		ifs << mdm_T1FitterVFA::T1toSignal(T1, M0, PI*FAs[i_fa]/180, TR) << " ";
 	ifs.close();
 
 	//Call calculate_T1 to fit T1 and M0

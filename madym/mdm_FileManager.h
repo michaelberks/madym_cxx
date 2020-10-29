@@ -149,7 +149,7 @@ private:
 
 	/*METHODS*/
 
-	bool loadFAImage(const std::string& filePath, int nVFA);
+	bool loadT1InputImage(const std::string& filePath, int nVFA);
 
 	void makeSequenceFilename(const std::string &path, const std::string &prefix,
 		const int fileNumber, std::string &filePath, const std::string &fileNumberFormat);
@@ -169,14 +169,12 @@ private:
 	mdm_ErrorTracker &errorTracker_;
 
 	/*Full file paths to loaded images and AIF*/
-	std::vector<std::string>  FAPaths_;
+	std::vector<std::string>  T1InputPaths_;
 	std::vector<std::string>  StPaths_;
 	std::vector<std::string>  CtPaths_;
 
 	std::string  T1Path_;
 	std::string  M0Path_;
-	std::string  AIFPath_;
-  std::string  PIFPath_;
 	std::string  ROIPath_;
 
 	bool writeCtDataMaps_;

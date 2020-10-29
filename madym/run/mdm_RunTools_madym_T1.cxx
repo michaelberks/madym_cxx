@@ -5,7 +5,7 @@
 #include "mdm_RunTools_madym_T1.h"
 
 #include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_T1Voxel.h>
+#include <madym/t1_methods/mdm_T1FitterBase.h>
 
 namespace fs = boost::filesystem;
 
@@ -13,8 +13,8 @@ namespace fs = boost::filesystem;
 MDM_API mdm_RunTools_madym_T1::mdm_RunTools_madym_T1(mdm_InputOptions &options_, mdm_OptionsParser &options_parser)
 	: 
 	mdm_RunToolsT1Fit(),
-	mdm_RunTools(options_, options_parser),
-	fileManager_(volumeAnalysis_)
+	mdm_RunToolsVolumeAnalysis(),
+	mdm_RunTools(options_, options_parser)	
 {}
 
 
@@ -23,85 +23,38 @@ MDM_API mdm_RunTools_madym_T1::~mdm_RunTools_madym_T1()
 
 MDM_API int mdm_RunTools_madym_T1::run()
 {
+	//Check inputs set by user
 	if (options_.T1inputNames().empty())
-	{
 		mdm_progAbort("input map names (option --T1_vols) must be provided");
-	}
 
-	//Set which type of model we're using
-	if (!setT1Method(options_.T1method()))
-		mdm_progAbort("T1 method not recognised");
+	//Parse T1 method from string, will abort if method type not recognised
+	auto methodType = parseMethod(options_.T1method());
 
-	volumeAnalysis_.T1Mapper().setNoiseThreshold(options_.T1noiseThresh());
+	//Check number of signal inputs, will abort if too many/too few
+	checkNumInputs(methodType, options_.T1inputNames().size());
 
 	//Create output folder/check overwrite
-	fs::path outputPath = set_up_output_folder();
+	set_up_output_folder();
 
 	//Set up logging and audit trail
-	set_up_logging(outputPath);
+	set_up_logging();
 
-	//  Now it's time for the fun ...
-	//  1.  Set parameter values
-	//  2.  Load files
-	//  3.  Do T1 map
+	//Load existing error image if it exists
+	loadErrorMap();
 
-	//Before we start, try and load an errorImage, this allows us to add
-	//to any existing errors in a re-analysis
-	fs::path errorCodesPath = outputPath / options_.errorCodesName();
-	fileManager_.loadErrorMap(errorCodesPath.string());
+	//Load ROI
+	loadROI();
 
-	if (!options_.roiName().empty())
-	{
-		std::string roiPath = fs::absolute(options_.roiName()).string();
-		if (!fileManager_.loadROI(roiPath))
-		{
-			mdm_progAbort("error loading ROI");
-		}
-	}
-
-	/*Load in all the required images for madym processing. The user has 4 options_:
-		1) Process everything from scratch:
-		- Need paths to variable flip angle images to compute T1 and M0
-		- Need path to dynamic images folder and the prefix with which the dynamic images are labelled
-		to compute concentration images
-		2) Load existing T1 and M0, use baseline M0 to scale signals
-		- Need dynamic images
-		3) Load existing T1, use ratio method to scale signals
-		4) Load existing concentration images
-		- Just need folder the concentration images are stored in and the prefix with which they're labelled
-	*/
-
-	//We need to load FA images
-	if (options_.T1inputNames().size() < mdm_T1Voxel::MINIMUM_INPUTS)
-	{
-		mdm_progAbort("not enough variable flip angle file names");
-	}
-	else if (options_.T1inputNames().size() > mdm_T1Voxel::MAXIMUM_INPUTS)
-	{
-		mdm_progAbort("too many variable flip angle file names");
-	}
-
-	std::vector<std::string> T1inputPaths(0);
-	for (std::string mapName : options_.T1inputNames())
-		T1inputPaths.push_back(fs::absolute(mapName).string());
-
-	if (!fileManager_.loadT1MappingInputImages(T1inputPaths))
-	{
-		mdm_progAbort("error loading FA images");
-	}
+	//Load T1 inputs
+	loadT1Inputs();
 
 	//FA images loaded, try computing T1 and M0 maps
+	volumeAnalysis_.T1Mapper().setMethod(methodType);
+	volumeAnalysis_.T1Mapper().setNoiseThreshold(options_.T1noiseThresh());
 	volumeAnalysis_.T1Mapper().mapT1();
 
-	if (!fileManager_.writeOutputMaps(outputPath.string()))
-	{
-		std::cerr << options_parser_.exe_cmd() << ": error saving maps" << std::endl;
-		//Don't quit here, we may as well try and save the error image anyway
-		//nothing else depends on the success of the save
-	}
-
-	//Write out the error image
-	fileManager_.writeErrorMap(errorCodesPath.string());
+	//Write output
+	writeOuput();
 
 	//Tidy up the logging objects
 	return mdm_progExit();

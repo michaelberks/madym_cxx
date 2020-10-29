@@ -1,5 +1,5 @@
 /*!
-*  @file    mdm_T1Voxel.h
+*  @file    mdm_T1FitterBase.h
 *  @brief   Class for estimating T1 (and M0) in a single voxel
 *  @details Currently only variable flip angle method supported
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
@@ -8,11 +8,11 @@
 #ifndef MDM_T1VFAVOXEL_HDR
 #define MDM_T1VFAVOXEL_HDR
 #include "mdm_api.h"
-#include "mdm_T1Voxel.h"
+#include "mdm_T1FitterBase.h"
 #include "mdm_ErrorTracker.h"
 
 //! Class for estimating T1 (and M0) in a single voxel using VFA method
-class mdm_T1VFAVoxel : public mdm_T1Voxel {
+class mdm_T1FitterVFA : public mdm_T1FitterBase {
 
 public:
     
@@ -22,17 +22,17 @@ public:
 	\param FAs vector of variable flip-angles in radians
 	\param TR repetition time in ms
 	*/
-	MDM_API mdm_T1VFAVoxel(const std::vector<double> &FAs, const double TR);
+	MDM_API mdm_T1FitterVFA(const std::vector<double> &FAs, const double TR);
 
 	//! Default constructor
 	/*!
 	*/
-	MDM_API mdm_T1VFAVoxel();
+	MDM_API mdm_T1FitterVFA();
 
 	//! Default denstructor
 	/*!
 	*/
-	MDM_API ~mdm_T1VFAVoxel();
+	MDM_API ~mdm_T1FitterVFA();
 
 	//! Set variable flip angles
 	/*!
@@ -77,6 +77,18 @@ public:
 	*/
 	MDM_API void setVariableScannerSettings(const std::vector<double> &settings);
 
+	//! Return minimum inputs required, must be implemented by derived subclass
+	/*
+	\return minimum number of input signals required for T1 fitting method
+	*/
+	MDM_API int minimumInputs() const;
+
+	//! Return maximum inputs allowed, must be implemented by derived subclass
+	/*
+	\return maximum number of input signals allowed in T1 fitting method
+	*/
+	MDM_API int maximumInputs() const;
+
 	//! Compute signal using SPGR equation, given T1, M0, FA and TR
 	/*!
 	\param T1  in ms
@@ -101,7 +113,7 @@ private:
 	static void computeSSEGradientAlglib(
 		const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad,
 		void *context) {
-		static_cast<mdm_T1VFAVoxel*>(context)->computeSSEGradient(
+		static_cast<mdm_T1FitterVFA*>(context)->computeSSEGradient(
 			x, func, grad);
 	}
 

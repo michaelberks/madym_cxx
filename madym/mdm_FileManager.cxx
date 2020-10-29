@@ -17,7 +17,6 @@ namespace fs = boost::filesystem;
 
 #include "mdm_version.h"
 #include "mdm_AnalyzeFormat.h"
-#include "mdm_T1Voxel.h"
 
 #include "mdm_ProgramLogger.h"
 
@@ -28,13 +27,11 @@ MDM_API mdm_FileManager::mdm_FileManager(mdm_DCEVolumeAnalysis &volumeAnalysis)
 	volumeAnalysis_(volumeAnalysis),
 	T1Mapper_(volumeAnalysis.T1Mapper()),
 	errorTracker_(volumeAnalysis.errorTracker()),
-	FAPaths_(0),
+	T1InputPaths_(0),
 	StPaths_(0),
 	CtPaths_(0),
 	T1Path_(""),
 	M0Path_(""),
-	AIFPath_(""),
-  PIFPath_(""),
 	ROIPath_(""),
 	writeCtDataMaps_(false),
   writeCtModelMaps_(false),
@@ -222,36 +219,19 @@ MDM_API bool mdm_FileManager::loadErrorMap(const std::string &errorPath, bool wa
 }
 
 /*Does what is says on the tin*/
-MDM_API bool mdm_FileManager::loadT1MappingInputImages(const std::vector<std::string> &FApaths)
+MDM_API bool mdm_FileManager::loadT1MappingInputImages(const std::vector<std::string> &T1InputPaths)
 {
 	//Check we haven't been given too many or too few images
-	auto nVFA = FApaths.size();
-
-	if (nVFA < mdm_T1Voxel::MINIMUM_INPUTS)
-	{
-		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_FileManager::loadT1MappingInputImages: Not enough FA image paths supplied, given " +
-			std::to_string(nVFA) + ", require at least " + 
-			std::to_string(mdm_T1Voxel::MINIMUM_INPUTS));
-		return false;
-	}
-	else if (nVFA > mdm_T1Voxel::MAXIMUM_INPUTS)
-	{
-		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_FileManager::loadT1MappingInputImages: Too many FA image paths supplied, given " +
-			std::to_string(nVFA) + ", require at most " + 
-			std::to_string(mdm_T1Voxel::MAXIMUM_INPUTS));
-		return false;
-	}
+	auto nNumImgs = T1InputPaths.size();
 
 	//Loop through filePaths, loaded each variable flip angle images
-	for (int i = 0; i < nVFA; i++)
+	for (int i = 0; i < nNumImgs; i++)
 	{
-		if (!loadFAImage(FApaths[i], i + 1))
+		if (!loadT1InputImage(T1InputPaths[i], i + 1))
 			return false;
 
 	}
-	FAPaths_ = FApaths;
+	T1InputPaths_ = T1InputPaths;
 	return true;
 }
 
@@ -469,28 +449,28 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 	return true;
 }
 
-bool mdm_FileManager::loadFAImage(const std::string& filePath, int nVFA)
+bool mdm_FileManager::loadT1InputImage(const std::string& filePath, int nVFA)
 {
-	mdm_Image3D FA_img = mdm_AnalyzeFormat::readImage3D(filePath, true);
+	mdm_Image3D img = mdm_AnalyzeFormat::readImage3D(filePath, true);
 
-	if (!FA_img.numVoxels())
+	if (!img.numVoxels())
 	{
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_FileManager::loadFAImage: Failed to read VFA " + 
+			"ERROR: mdm_FileManager::loadFAImage: Failed to read T1 input image " + 
 			std::to_string(nVFA) + " file from " + filePath + "\n");
 		return false;
 	}
 
 	mdm_ProgramLogger::logProgramMessage(
-		"Successfully read VFA " + std::to_string(nVFA) + " from " + filePath + "\n");
+		"Successfully read T1 input image " + std::to_string(nVFA) + " from " + filePath + "\n");
 
 	//If image successfully read, add it to the T1 mapper object
-	T1Mapper_.addInputImage(FA_img);
+	T1Mapper_.addInputImage(img);
 
 	//For first image, try initialising errorImage, if that's already been
 	//set it will just return true
 	if (nVFA == 1)
-		errorTracker_.initErrorImage(FA_img);
+		errorTracker_.initErrorImage(img);
 
 	return true;
 }

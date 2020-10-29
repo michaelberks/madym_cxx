@@ -9,7 +9,6 @@
 #define MDM_RUNTOOLS_MADYM_T1_LITE_HDR
 #include "mdm_api.h"
 #include <madym/run/mdm_RunToolsT1Fit.h>
-#include <madym/mdm_T1Voxel.h>
 
 /**
 *  @brief   Called by command line/GUI tools to run DCE-analysis or T1 mapper

@@ -5,17 +5,18 @@
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 */
 
-#ifndef MDM_RUNTOOLS_T1_FIT_HDR
-#define MDM_RUNTOOLS_T1_FIT_HDR
+#ifndef MDM_RUNTOOLS_VOLUMEANALYSIS_HDR
+#define MDM_RUNTOOLS_VOLUMEANALYSIS_HDR
 #include "mdm_api.h"
 #include <madym/mdm_RunTools.h>
-#include <madym/t1_methods/mdm_T1MethodGenerator.h>
+
+namespace fs = boost::filesystem;
 
 /**
 *  @brief   Called by command line/GUI tools to run DCE-analysis or T1 mapper
 *  @details More info...
 */
-class mdm_RunToolsT1Fit : public virtual mdm_RunTools {
+class mdm_RunToolsVolumeAnalysis : public virtual mdm_RunTools {
 
 public:
 
@@ -26,7 +27,7 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API mdm_RunToolsT1Fit();
+	MDM_API mdm_RunToolsVolumeAnalysis();
 		
 	/**
 	* @brief
@@ -34,18 +35,24 @@ public:
 	* @param
 	* @return
 	*/
-	MDM_API virtual ~mdm_RunToolsT1Fit();
+	MDM_API virtual ~mdm_RunToolsVolumeAnalysis();
 
 protected:
 	//Methods:
-	mdm_T1MethodGenerator::T1Methods parseMethod(const std::string &method);
+	MDM_API void loadErrorMap();
 
-	bool checkNumInputs(mdm_T1MethodGenerator::T1Methods methodType, const int& numInputs);
+	MDM_API void loadROI();
+
+	MDM_API void loadT1Inputs();
+
+	MDM_API void writeOuput();
 
 	//Variables:
+	mdm_FileManager fileManager_;
+	mdm_DCEVolumeAnalysis volumeAnalysis_;
 
 private:
-
+	fs::path errorMapPath_;
 };
 
 #endif

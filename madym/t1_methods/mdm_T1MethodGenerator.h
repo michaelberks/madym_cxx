@@ -1,5 +1,5 @@
 /**
-*  @file    mdm_T1MethodGenerator.h
+*  @file    t1_methods/mdm_T1MethodGenerator.h
 *  @brief Header only class to generate specific instances of DCE models
 *
 *  Original author MA Berks 24 Oct 2018
@@ -16,8 +16,8 @@
 #include <madym/mdm_Image3D.h>
 #include <madym/mdm_InputOptions.h>
 
-#include <madym/mdm_T1Voxel.h>
-#include <madym/mdm_T1VFAVoxel.h>
+#include <madym/t1_methods/mdm_T1FitterBase.h>
+#include <madym/t1_methods/mdm_T1FitterVFA.h>
 
 //!Header only class to generate specific instances of DCE models
 /*! 
@@ -96,7 +96,7 @@ public:
 	*
 	* @param model reference to base model pointer
 	*/
-	MDM_API static std::unique_ptr<mdm_T1Voxel> createFitter( 
+	MDM_API static std::unique_ptr<mdm_T1FitterBase> createFitter( 
 		T1Methods methodType, const std::vector<mdm_Image3D> &inputImages)
   {
 		const int &nSignals = inputImages.size();
@@ -105,7 +105,7 @@ public:
 		{
 		case VFA:
 		{
-			auto T1Fitter = std::make_unique<mdm_T1VFAVoxel>();
+			auto T1Fitter = std::make_unique<mdm_T1FitterVFA>();
 			std::vector<double> FAs;
 			const auto PI = acos(-1.0);
 			for (auto img : inputImages)
@@ -123,14 +123,14 @@ public:
 		}
   }
 
-	MDM_API static std::unique_ptr<mdm_T1Voxel> createFitter(T1Methods method,
+	MDM_API static std::unique_ptr<mdm_T1FitterBase> createFitter(T1Methods method,
 		const mdm_InputOptions &options)
 	{
 		switch (method)
 		{
 		case VFA:
 		{
-			auto T1Fitter = std::make_unique<mdm_T1VFAVoxel>();
+			auto T1Fitter = std::make_unique<mdm_T1FitterVFA>();
 			T1Fitter->setFixedScannerSettings({ options.TR() });
 			return T1Fitter;
 		}

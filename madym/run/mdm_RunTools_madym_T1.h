@@ -9,12 +9,13 @@
 #define MDM_RUNTOOLS_MADYM_T1_HDR
 #include "mdm_api.h"
 #include <madym/run/mdm_RunToolsT1Fit.h>
+#include <madym/run/mdm_RunToolsVolumeAnalysis.h>
 
 /**
 *  @brief   Called by command line/GUI tools to run DCE-analysis or T1 mapper
 *  @details More info...
 */
-class mdm_RunTools_madym_T1 : public mdm_RunToolsT1Fit {
+class mdm_RunTools_madym_T1 : public mdm_RunToolsT1Fit, mdm_RunToolsVolumeAnalysis {
 
 public:
 
@@ -58,9 +59,6 @@ protected:
 private:
   //Methods:
 
-	//Variables:
-	mdm_DCEVolumeAnalysis volumeAnalysis_;
-	mdm_FileManager fileManager_;
 };
 
 #endif

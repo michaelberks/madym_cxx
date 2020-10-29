@@ -84,27 +84,25 @@ std::string mdm_RunTools::timeNow()
 
 /**/
 
-boost::filesystem::path mdm_RunTools::set_up_output_folder()
+void mdm_RunTools::set_up_output_folder()
 {
 	//Using boost filesyetm, can call one line to make absolute path from input
 	//regardless of whether relative or absolute path has been given
-	fs::path outputPath = fs::absolute(options_.outputDir());
+	outputPath_ = fs::absolute(options_.outputDir());
 
 	//We probably don't need to check if directory exists, just call create... regardless
 	//but we do so anyway
-	if (!is_directory(outputPath))
-		create_directories(outputPath);
+	if (!fs::is_directory(outputPath_))
+		fs::create_directories(outputPath_);
 
 	/* If we've got this file already warn user of previous analysis and quit */
-	if (!options_.overwrite() && !is_empty(outputPath))
+	if (!options_.overwrite() && !fs::is_empty(outputPath_))
 		mdm_progAbort("Output directory is not empty (use option -O to overwrite existing data)");
-
-	return outputPath;
 }
 
 /**/
 
-void mdm_RunTools::set_up_logging(fs::path outputPath)
+void mdm_RunTools::set_up_logging()
 {
 	//Set up paths to error image and audit logs, using default names if not user supplied
 	// and using boost::filesystem to make absolute paths
@@ -113,8 +111,8 @@ void mdm_RunTools::set_up_logging(fs::path outputPath)
 	std::string programName = exe_cmd + timeNow() + options_.programLogName();
 	std::string configName = exe_cmd + timeNow() + options_.outputConfigFileName();
 
-	fs::path programLogPath = outputPath / programName;
-	fs::path configFilePath = outputPath / configName;
+	fs::path programLogPath = outputPath_ / programName;
+	fs::path configFilePath = outputPath_ / configName;
 
 	//Note the default audit path doesn't use the output directory (unless user specifically set so)
 	fs::path auditDir = fs::absolute(options_.auditLogDir());

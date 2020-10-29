@@ -11,7 +11,7 @@
 
 #include "mdm_Image3D.h"
 #include "mdm_ErrorTracker.h"
-#include "mdm_T1MethodGenerator.h"
+#include "t1_methods/mdm_T1MethodGenerator.h"
 
 //!Mapping T1 for a full volume from input signal images
 /*!

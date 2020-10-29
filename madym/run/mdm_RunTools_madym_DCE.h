@@ -10,12 +10,13 @@
 #include "mdm_api.h"
 #include <madym/run/mdm_RunToolsDCEFit.h>
 #include <madym/run/mdm_RunToolsT1Fit.h>
+#include <madym/run/mdm_RunToolsVolumeAnalysis.h>
 
 /**
 *  @brief   Called by command line/GUI tools to run DCE-analysis or T1 mapper
 *  @details More info...
 */
-class mdm_RunTools_madym_DCE : public mdm_RunToolsDCEFit, mdm_RunToolsT1Fit {
+class mdm_RunTools_madym_DCE : public mdm_RunToolsDCEFit, mdm_RunToolsT1Fit, mdm_RunToolsVolumeAnalysis {
 
 public:
 
@@ -58,10 +59,30 @@ protected:
 
 private:
   //Methods:
+	void checkRequiredInputs();
+
+	void setFileManagerParams();
+
+	void setAIFParams();
+
+	void setVolumeAnalysisParams();
+
+	void loadSt();
+
+	void loadCt();
+
+	void loadT1();
+
+	void mapT1();
+
+	void loadAIF();
+
+	void loadInitParamMaps();
+
+	void fitModel();
 
 	//Variables:
-	mdm_DCEVolumeAnalysis volumeAnalysis_;
-	mdm_FileManager fileManager_;
+	bool paramMapsInitialised_;
 };
 
 #endif

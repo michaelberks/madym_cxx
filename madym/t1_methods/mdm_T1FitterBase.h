@@ -1,5 +1,5 @@
 /*!
-*  @file    mdm_T1Voxel.h
+*  @file    mdm_T1FitterBase.h
 //!   Abstract base class for estimating T1 (and M0) in a single voxel
 *  @details Currently only variable flip angle method supported
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
@@ -19,24 +19,18 @@
 //!   Abstract base class for estimating T1 (and M0) in a single voxel
 *  @details Currently only variable flip angle method supported
 */
-class mdm_T1Voxel {
+class mdm_T1FitterBase {
 
 public:
-
-	//! Minimum signal inputs required to fit T1
-	const static int MINIMUM_INPUTS;
-    
-  //! Maximum signal inputs required to fit T1
-  const static int MAXIMUM_INPUTS;
 
 	//! Default constructor
 	/*!
 	Pre-conditions alglib optimiser
 	*/
-	MDM_API mdm_T1Voxel();
+	MDM_API mdm_T1FitterBase();
 
 	//! Default destructor
-	MDM_API virtual ~mdm_T1Voxel();
+	MDM_API virtual ~mdm_T1FitterBase();
 
 	//! Set signals from which T1 will be estimated
 	/*!
@@ -88,6 +82,18 @@ public:
 	\param settings vector of variable scanner settings (eg FAs for VFA)
 	*/
 	MDM_API virtual void setVariableScannerSettings(const std::vector<double> &settings) = 0;
+
+	//! Return minimum inputs required, must be implemented by derived subclass
+	/*
+	\return minimum number of input signals required for T1 fitting method
+	*/
+	MDM_API virtual int minimumInputs() const = 0;
+
+	//! Return maximum inputs allowed, must be implemented by derived subclass
+	/*
+	\return maximum number of input signals allowed in T1 fitting method
+	*/
+	MDM_API virtual int maximumInputs() const = 0;
 
 protected:
 	//! Heper method to clear up after any fit failures

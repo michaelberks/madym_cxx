@@ -34,9 +34,6 @@ SET(mdm_sources
 		mdm_Image3D.cxx					mdm_Image3D.h
 		mdm_ProgramLogger.cxx			mdm_ProgramLogger.h
 
-		mdm_T1MethodGenerator.h
-		mdm_T1Voxel.cxx					mdm_T1Voxel.h
-		mdm_T1VFAVoxel.cxx				mdm_T1VFAVoxel.h
 		mdm_T1VolumeAnalysis.cxx		mdm_T1VolumeAnalysis.h	
 
 		mdm_OptionsParser.cxx			mdm_OptionsParser.h
@@ -46,29 +43,36 @@ SET(mdm_sources
 										mdm_api.h
 )
 SET(mdm_run_sources
-  run/mdm_RunToolsDCEFit.cxx		run/mdm_RunToolsDCEFit.h
-  run/mdm_RunToolsT1Fit.cxx			run/mdm_RunToolsT1Fit.h
+  run/mdm_RunToolsDCEFit.cxx			run/mdm_RunToolsDCEFit.h
+  run/mdm_RunToolsT1Fit.cxx				run/mdm_RunToolsT1Fit.h
+  run/mdm_RunToolsVolumeAnalysis.cxx	run/mdm_RunToolsVolumeAnalysis.h
   run/mdm_RunTools_madym_DCE.cxx		run/mdm_RunTools_madym_DCE.h
   run/mdm_RunTools_madym_DCE_lite.cxx	run/mdm_RunTools_madym_DCE_lite.h
-  run/mdm_RunTools_madym_T1.cxx		run/mdm_RunTools_madym_T1.h
+  run/mdm_RunTools_madym_T1.cxx			run/mdm_RunTools_madym_T1.h
   run/mdm_RunTools_madym_T1_lite.cxx	run/mdm_RunTools_madym_T1_lite.h
 )
 SET(mdm_dce_model_sources
   #Models
   dce_models/mdm_DCEModelGenerator.h
-  dce_models/mdm_DCEModelBase.cxx			dce_models/mdm_DCEModelBase.h
-  dce_models/mdm_DCEModelETM.cxx			dce_models/mdm_DCEModelETM.h
+  dce_models/mdm_DCEModelBase.cxx		dce_models/mdm_DCEModelBase.h
+  dce_models/mdm_DCEModelETM.cxx		dce_models/mdm_DCEModelETM.h
   dce_models/mdm_DCEModelDIETM.cxx		dce_models/mdm_DCEModelDIETM.h
-  dce_models/mdm_DCEModelAUEM.cxx			dce_models/mdm_DCEModelAUEM.h
-  dce_models/mdm_DCEModel2CXM.cxx			dce_models/mdm_DCEModel2CXM.h
+  dce_models/mdm_DCEModelAUEM.cxx		dce_models/mdm_DCEModelAUEM.h
+  dce_models/mdm_DCEModel2CXM.cxx		dce_models/mdm_DCEModel2CXM.h
   dce_models/mdm_DCEModelDI2CXM.cxx		dce_models/mdm_DCEModelDI2CXM.h
   dce_models/mdm_DCEModelDIBEM.cxx		dce_models/mdm_DCEModelDIBEM.h
   dce_models/mdm_DCEModelDIBEM_Fp.cxx	dce_models/mdm_DCEModelDIBEM_Fp.h
   dce_models/mdm_DCEModelDISCM.cxx		dce_models/mdm_DCEModelDISCM.h
 )
 
+SET(mdm_t1_method_sources
+	t1_methods/mdm_T1MethodGenerator.h
+	t1_methods/mdm_T1FitterBase.cxx			t1_methods/mdm_T1FitterBase.h
+	t1_methods/mdm_T1FitterVFA.cxx			t1_methods/mdm_T1FitterVFA.h
+)
+
 ADD_LIBRARY(mdm 
-	${mdm_sources} ${mdm_run_sources} ${mdm_dce_model_sources})
+	${mdm_sources} ${mdm_run_sources} ${mdm_dce_model_sources} ${mdm_t1_method_sources})
 
 TARGET_LINK_LIBRARIES( mdm LINK_PUBLIC 
   mdm_opt
