@@ -1,3 +1,11 @@
+/**
+*  @file    mdm_RunTools_madym_DCE.cxx
+*  @brief   Implementation of mdm_RunTools_madym_DCE class
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2020
+*/
+
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
@@ -108,7 +116,7 @@ MDM_API int mdm_RunTools_madym_DCE::run()
 }
 
 //
-MDM_API int mdm_RunTools_madym_DCE::parse_inputs(int argc, const char *argv[])
+MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 {
 	po::options_description cmdline_options("madym options_");
 	po::options_description config_options("madym config options_");
@@ -178,7 +186,7 @@ MDM_API int mdm_RunTools_madym_DCE::parse_inputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.auditLogBaseName);
 	options_parser_.add_option(config_options, options_.auditLogDir);
 
-	return options_parser_.parse_inputs(
+	return options_parser_.parseInputs(
 		cmdline_options,
 		config_options,
 		options_.configFile(),

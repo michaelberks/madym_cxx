@@ -1,3 +1,9 @@
+/*!
+*  @file    madym_gui_model_configure.h
+*  @brief   QT UI class for configuring tracer-kinetic model parameters in pop-up window of main GUI
+*  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
+*/
+
 #ifndef MADYM_GUI_MODEL_CONFIGURE
 #define MADYM_GUI_MODEL_CONFIGURE
 
@@ -10,6 +16,7 @@
 #include <madym/mdm_OptionsParser.h>
 #include "ui_madym_model_configure.h"
 
+//! Helper class providing GUI controls to configure each individual model parameter
 struct paramControls {
   paramControls(QLabel *name, QLineEdit *value, 
 		QCheckBox *fixed, QCheckBox *maps, QLineEdit *relativeLimit)
@@ -23,6 +30,7 @@ struct paramControls {
 	QLineEdit *relativeLimit_;
 };
 
+//! QT UI class for configuring tracer-kinetic model parameters in pop-up window of main GUI
 class madym_gui_model_configure : public QDialog
 {
   Q_OBJECT
@@ -30,6 +38,14 @@ class madym_gui_model_configure : public QDialog
 //  INTERFACE
 
 public:
+
+	//!Constructor
+	/*!
+	\param model tracer-kinetic model of specific type (set by main GUI), used to configure what parameter controls are visble and to label them appropriately
+	\param modelName to label pop-up window title bar
+	\madym_options reference to madym_options from main GUI, supplied so configured changes persist when pop-up window is closed and this GUI object destroyed
+	\param parent QT default input
+	*/
 	madym_gui_model_configure(const mdm_DCEModelBase &model, const QString &modelName,
     mdm_InputOptions &madym_options,
     QWidget *parent = 0);

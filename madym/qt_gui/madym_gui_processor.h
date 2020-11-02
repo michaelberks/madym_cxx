@@ -1,17 +1,16 @@
+/*!
+*  @file    madym_gui_processor.h
+*  @brief   Class for GUI processing tasks that runs in separate thread to main GUI
+*  @details Allows processing to proceed without blocking the main GUI. Not currently used.
+*  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
+*/
+
 #ifndef MADYM_GUI_PROCESSOR
 #define MADYM_GUI_PROCESSOR
 
 #include <QObject>
-/*#include <QGraphicsPixmapItem>
-#include <QGraphicsScene>
-#include <QVector>
 
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <sstream>
-#include <iosfwd>*/
-
+//!Class for GUI processing tasks that runs in separate thread to main GUI
 class madym_gui_processor : public QObject
 {
   Q_OBJECT
@@ -21,20 +20,27 @@ class madym_gui_processor : public QObject
 public:
 	madym_gui_processor();
 
-  //: Begin transferring images from the main queue to the save queue.
+  //! Start processing task. Not currently used.
   void start_processing();
   
-  //: Return true if there are still frames to process.
+  //! Check if currently processing
+	/*!
+	\return true if currently processing, false otherwise
+	*/
   bool is_processing() const;
 
 signals:
 
+	//! QT signal sent when processing finished
+	/*!
+	*/
 	void processing_finished();
 
 public slots:
 
-  //: Pop a frame from the main queue, process it, and push it onto the save 
-  //  queue.
+	//! QT slot to do some processing
+	/*!
+	*/
 	void process_series();
 
 
@@ -42,7 +48,7 @@ public slots:
 
 private: // Methods
 
-  //: Emit a signal to indicate that all frames have been processed.
+  //! Emit a signal to stop processing.
   void stop_processing();
 
 private: // Variables

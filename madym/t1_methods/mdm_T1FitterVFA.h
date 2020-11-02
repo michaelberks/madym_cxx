@@ -59,6 +59,7 @@ public:
 	\param nSignals number of signals in sample
 	\param T1value reference to hold computed T1
 	\param M0value reference to hold computed M0
+	\param eof reference to flag, set true if streams EOF flag is reached
 	*/
 	MDM_API mdm_ErrorTracker::ErrorCode fitT1(std::istream& ifs, 
 		const int nSignals, double &T1value, double &M0value, bool &eof);
@@ -94,7 +95,7 @@ public:
 	\param T1  in ms
 	\param M0 magnetisation constant
 	\param FA flip-angle in radians
-	\param repetition time in ms
+	\param TR repetition time in ms
 	\return signal
 	*/
 	MDM_API static double T1toSignal(

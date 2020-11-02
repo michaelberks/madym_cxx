@@ -1,3 +1,9 @@
+/*!
+*  @file    madym_gui_ui.h
+*  @brief   QT UI class for the main madym GUI
+*  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
+*/
+
 #ifndef MADYM_GUI_UI_H
 #define MADYM_GUI_UI_H
 
@@ -31,26 +37,37 @@
 
 #include "ui_madym_gui.h"
 
-
+//! QT UI class for the main madym GUI
 class madym_gui_ui : public QMainWindow
 {
   Q_OBJECT
 
 public: // Methods
   
+	//! Constructor
+	/*!
+	\param parent default QT input
+	*/
   madym_gui_ui(QWidget *parent = 0);
+
+	//! Destructor
   ~madym_gui_ui();
 
 protected:
   
   //void timerEvent( QTimerEvent * );
+
+	//! Event callback method when GUI closed
   void closeEvent(QCloseEvent* ev);
 
 signals:
 
+	//! Signal sent to processor to do some processing. Not currently used.
   void series_to_process(int, bool);
   
 private slots:
+	//Private QT callbacks for all the widgets in the GUI
+
 	// Menu file
 	void on_actionLoadConfigFile_triggered();
 	void on_actionSaveConfigFileDCE_triggered();

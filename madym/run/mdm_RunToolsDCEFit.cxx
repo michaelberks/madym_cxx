@@ -1,3 +1,11 @@
+/**
+*  @file    mdm_RunToolsDCEFite.cxx
+*  @brief   Implementation of mdm_RunToolsDCEFit class
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2020
+*/
+
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
@@ -22,12 +30,7 @@ MDM_API mdm_RunToolsDCEFit::~mdm_RunToolsDCEFit()
 
 }
 
-//*******************************************************************************
-/**
-* @author   Mike Berks modifying GA Buonaccorsi, based on GJM Parker
-* @brief    Fit selected dynamic contrast agent concentration model
-* @version  madym 1.22
-*/
+//
 void mdm_RunToolsDCEFit::setModel(const std::string &modelName, bool auto_aif, bool auto_pif,
 	const std::vector<std::string> &paramNames,
 	const std::vector<double> &initialParams,

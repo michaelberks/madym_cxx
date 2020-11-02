@@ -1,7 +1,10 @@
 /**
- *  @file    mdm_FileManager.cxx
- *  @brief   Implementation of mdm_FileManager class
- */
+*  @file    mdm_FileManager.cxx
+*  @brief   Implementation of mdm_FileManager class
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2020
+*/
 
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
@@ -20,7 +23,7 @@ namespace fs = boost::filesystem;
 
 #include "mdm_ProgramLogger.h"
 
-const int MAX_IMAGES = 1024;
+const int mdm_FileManager::MAX_DYN_IMAGES = 1024;
 
 MDM_API mdm_FileManager::mdm_FileManager(mdm_DCEVolumeAnalysis &volumeAnalysis)
 	: 
@@ -290,7 +293,7 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 	{
 		//If nDyns not set, keep reading images until we hit memory max
 		//warn if we hit max, but don't error when we run out of images
-		nDyns = MAX_IMAGES;
+		nDyns = MAX_DYN_IMAGES;
 		errorIfMissing = false;
 		warnIfMax = true;
 	}
@@ -309,7 +312,7 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 			if (warnIfMax)
 				mdm_ProgramLogger::logProgramMessage(
 					"WARNING: mdm_FileManager::loadStDataMaps: reached maximum number of images "
-					+ std::to_string(MAX_IMAGES));
+					+ std::to_string(MAX_DYN_IMAGES));
 			break;
 		}
 
@@ -377,7 +380,7 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 	{
 		//If nDyns not set, keep reading images until we hit memory max
 		//warn if we hit max, but don't error when we run out of images
-		nDyns = MAX_IMAGES;
+		nDyns = MAX_DYN_IMAGES;
 		errorIfMissing = false;
 		warnIfMax = true;
 	}
@@ -396,7 +399,7 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 			if (warnIfMax)
 				mdm_ProgramLogger::logProgramMessage(
 					"WARNING: mdm_FileManager::loadCtDataMaps: reached maximum number of images " 
-					+ std::to_string(MAX_IMAGES));
+					+ std::to_string(MAX_DYN_IMAGES));
 			break;
 		}
 		nCat++;

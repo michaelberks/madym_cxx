@@ -22,7 +22,7 @@ namespace po = boost::program_options;
 /*!
   # Option parsing in Madym
 	DCE analysis requires a lot of configurable options to run. Different tools require various overlapping 
-	subsets of these options. We have designed an API for confoguring these options with the following 
+	subsets of these options. We have designed an API for configuring these options with the following 
 	objectives:
 
 	1. Tools can specify which subset of options they require, eg the lite version of T1 mapper only requires 
@@ -40,7 +40,7 @@ namespace po = boost::program_options;
 	1. mdm_InputOptions maintains the global pool of options, defining their default values, keys and information
 	text
 
-	2. Each tool then sub-classes mdm_RunTools, implementing the parse_inputs method to register the specific 
+	2. Each tool then sub-classes mdm_RunTools, implementing the parseInputs method to register the specific 
 	subset of options it requires to run
 
 	3. mdm_OptionsParser parses the command-line and/or config file for the specific set of options passed to it 
@@ -68,7 +68,7 @@ public:
 	file doesn't need all the additional options for a DCE analysis).
 
 	\param stream output stream to write to
-	\param set of madym options
+	\param options set of madym options
 	\return true if write successful, false if any errors
 	*/
 	MDM_API bool to_stream(std::ostream &stream, 
@@ -77,7 +77,7 @@ public:
 	//! Write option keys and values to file
 	/*!
 	\param filename
-	\param set of madym options
+	\param options set of madym options
 	\return true if write successful, false if any errors (eg unable to open file)
 	\see to_stream
 	*/
@@ -102,7 +102,7 @@ public:
 		- 3 version flag set, print version and exit
 		- 4 problem reading config file, exit
 	*/
-	MDM_API int parse_inputs(
+	MDM_API int parseInputs(
 		po::options_description &cmdline_options,
 		po::options_description &config_options,
 		const std::string &configFile,
@@ -120,7 +120,7 @@ public:
 		- 3 version flag set, print version and exit
 		- 4 problem reading config file, exit
 	*/
-	MDM_API int parse_inputs(
+	MDM_API int parseInputs(
 		po::options_description &cmdline_options,
 		int argc, const char *argv[]);
 

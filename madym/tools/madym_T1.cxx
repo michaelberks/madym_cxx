@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	mdm_RunTools_madym_T1 madym_exe(options_, options_parser_);
 
 	//Parse inputs
-	int parse_error = madym_exe.parse_inputs(argc, (const char **)argv);
+	int parse_error = madym_exe.parseInputs(argc, (const char **)argv);
 	if (parse_error)
 		return parse_error;
 

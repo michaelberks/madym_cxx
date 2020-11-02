@@ -27,6 +27,7 @@ class mdm_DCEModelBase {
 public:
 	//! Constructor
 	/*!
+	\param AIF arterial input function (includes AIF and PIF)
 	\param paramNames names of each parameter - used to label output maps (default {})
 	\param initialParams initial values for parameters (default {})
 	\param fixedParams  indices of parameters not optimised  (default {})
@@ -108,7 +109,7 @@ public:
 
   //! Set the initial value of parameters
 	/*!
-	\param initial value for each parameter, length must equal num_params()
+	\param params initial value for each parameter, length must equal num_params()
 	*/
 	MDM_API virtual void setInitialParams(const std::vector<double>& params);
 

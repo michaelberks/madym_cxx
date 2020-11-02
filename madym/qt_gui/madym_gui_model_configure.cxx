@@ -1,8 +1,10 @@
-#include "madym_gui_model_configure.h"
+/*!
+*  @file    madym_gui_model_configure.cxx
+*  @brief   Implementation of madym_gui_model_configure class
+*  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
+*/
 
-//  Class that pops an image from the processing queue, performs any
-//  necessary processing on the frame, and places it on the save queue for
-//  the saver to deal with.
+#include "madym_gui_model_configure.h"
  
 //
 // Public methods

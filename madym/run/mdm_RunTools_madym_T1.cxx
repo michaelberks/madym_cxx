@@ -1,3 +1,11 @@
+/**
+*  @file    mdm_RunTools_madym_T1.cxx
+*  @brief   Implementation of mdm_RunTools_madym_T1 class
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2020
+*/
+
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
@@ -60,13 +68,8 @@ MDM_API int mdm_RunTools_madym_T1::run()
 	return mdm_progExit();
 }
 
-/**
-	* @brief
-
-	* @param
-	* @return
-	*/
-MDM_API int mdm_RunTools_madym_T1::parse_inputs(int argc, const char *argv[])
+//
+MDM_API int mdm_RunTools_madym_T1::parseInputs(int argc, const char *argv[])
 {
 	po::options_description cmdline_options("calculate_T1 options_");
 	po::options_description config_options("calculate_T1 config options_");
@@ -97,7 +100,7 @@ MDM_API int mdm_RunTools_madym_T1::parse_inputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.auditLogBaseName);
 	options_parser_.add_option(config_options, options_.auditLogDir);
 
-	return options_parser_.parse_inputs(
+	return options_parser_.parseInputs(
 		cmdline_options,
 		config_options,
 		options_.configFile(),

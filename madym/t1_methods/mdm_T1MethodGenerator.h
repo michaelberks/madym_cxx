@@ -86,15 +86,14 @@ public:
 		}
 	}
 
-  /**
-	* @brief Instantiates pointer to abstract model class into specific model instance
-	* @details Factory-pattern static method to instantiate a DCE model of specific type.
-	*	To add a new model, include the model header above, addthe model name to the implemented
-	* models list and then add an "if (modelName==MY_MODEL)" clause to this method,
-	* instantiating the new model and setting any AIF flags associated with the model.
-	* Dual-input models should set both AIF and PIF flags, single inputs AIF only.
-	*
-	* @param model reference to base model pointer
+  //! Factory method for creating specific T1 mapping object given user specified method
+	/*! 
+	This overload is for use with volume analysis, and in addition to returning an object of
+	the specified T1 method, configures the return object with meta-data (eg VFA values) required
+	to run the method from the input signal images
+	\param methodType enum code of specified T1 method
+	\param inputImages signal input images
+	\return shared pointer to T1 fitter using specified method
 	*/
 	MDM_API static std::unique_ptr<mdm_T1FitterBase> createFitter( 
 		T1Methods methodType, const std::vector<mdm_Image3D> &inputImages)
@@ -123,6 +122,15 @@ public:
 		}
   }
 
+	//! Factory method for creating specific T1 mapping object given user specified method
+	/*!
+	This overload is for use with lite analysis tools, and in addition to returning an object of
+	the specified T1 method, configures the return object with meta-data (eg VFA values) required
+	to run the method from the input options structure
+	\param methodType enum code of specified T1 method
+	\param options set by user to configure mapping tool
+	\return shared pointer to T1 fitter using specified method
+	*/
 	MDM_API static std::unique_ptr<mdm_T1FitterBase> createFitter(T1Methods method,
 		const mdm_InputOptions &options)
 	{

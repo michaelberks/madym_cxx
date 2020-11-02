@@ -62,7 +62,7 @@ public:
 	/*!
 	Input image must be non-empty and of type mdm_Image3D#imageType#TYPE_ERRORMAP, otherwise
 	the error image will not be set, and the function will return false.
-	\param    img   mdm_Image3D object, must have type mdm_Image3D#imageType#TYPE_ERRORMAP
+	\param    imgWithDims   mdm_Image3D object, must have type mdm_Image3D#imageType#TYPE_ERRORMAP
 	\return   bool true on success or false otherwise
 	\see mdm_Image3D#imageType
 	*/

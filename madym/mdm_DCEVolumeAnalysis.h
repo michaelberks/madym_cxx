@@ -26,14 +26,32 @@ class mdm_DCEVolumeAnalysis {
 public:
 
 	// Names of output maps
-	const static std::string   MAP_NAME_IAUC; ///> Base name of IAUC maps, appended with IAUC time
-	const static std::string   MAP_NAME_RESDIUALS; ///> Name of model residuals maps
-	const static std::string   MAP_NAME_ENHANCING; ///> Name of enhancing map
-	const static std::string   MAP_NAME_ROI; ///> Name of ROI mask
-	const static std::string   MAP_NAME_T1; ///> Name of T1 map
-	const static std::string   MAP_NAME_M0; ///> Name of M0 map
-	const static std::string   MAP_NAME_CT_SIG; ///> Name of signal derived concentration - appended with volume number
-	const static std::string   MAP_NAME_CT_MOD; ///> Name of modelled concentration - appended with volume number
+
+	//! Base name of IAUC maps, appended with IAUC time
+	const static std::string   MAP_NAME_IAUC;
+
+	//! Name of model residuals maps
+	const static std::string   MAP_NAME_RESDIUALS;
+
+	//! Name of enhancing map
+	const static std::string   MAP_NAME_ENHANCING;
+
+	//! Name of ROI mask
+	const static std::string   MAP_NAME_ROI;
+
+	//! Name of T1 map
+	const static std::string   MAP_NAME_T1;
+
+	//! Name of M0 map
+	const static std::string   MAP_NAME_M0;
+
+	//! Name of signal derived concentration - appended with volume number
+	const static std::string   MAP_NAME_CT_SIG;
+
+	//! Name of modelled concentration - appended with volume number
+	const static std::string   MAP_NAME_CT_MOD;
+
+	//! Name of error map
 	const static std::string   MAP_NAME_ERROR_CODE;
 
 	//! Default constructor
@@ -245,7 +263,7 @@ public:
 	/*!
 	\param timepoint must be >=0 and < numDynamics()
 	*/
-	MDM_API void setLastImage(int t);
+	MDM_API void setLastImage(int timepoint);
 
   //! Initialise all DCE and tracer-kinetic model maps
 	/*!

@@ -1,3 +1,9 @@
+/*!
+*  @file    madym_gui.cxx
+*  @brief   Main executable for madym GUI
+*  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
+*/
+
 #include "madym_gui_ui.h"
 
 #include <QApplication>

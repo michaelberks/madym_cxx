@@ -19,18 +19,21 @@
 class mdm_test_utils {
 
 public:
-	/**
-	*  @brief   Return string path to system temporary directory
+	//! Return string path to system temporary directory
+	/*!
+	\return path to temporary directory
 	*/
 	static std::string temp_dir()
 	{
 		return boost::filesystem::temp_directory_path().string();
 	};
 
-	/**
-	* @brief   Return string path to directory containing calibration data
-	* @deatils Uses MACRO defined during CMake generation to map to calibration
-	* data copied to binary build dir during project generation
+	//! Return string path to directory containing calibration data
+	/*!
+	Uses MACRO defined during CMake generation to map to calibration
+	data copied to binary build dir during project generation
+
+	\return path to calibration data folder
 	*/
 	static std::string calibration_dir()
 	{
@@ -38,10 +41,9 @@ public:
 		return std::string(MDM_TEST_CALIBRATION_DIR);
 	};
 
-	/**
-	* @brief   Return string path to directory containing madym tools executable
-	* @deatils Uses MACRO defined during CMake generation to map to calibration
-	* data copied to binary build dir during project generation
+	//!   Return string path to directory containing madym tools executable
+	/*! 
+	Uses MACRO defined during CMake generation to map to build location of tools
 	*/
 	static std::string tools_exe_dir()
 	{
@@ -49,8 +51,13 @@ public:
 		return std::string(MDM_EXE_DIR);
 	};
 
-	/**
-	* @brief   Tests if all members of a numeric vector a equal to some tolerance
+	
+	//! Tests if all members of a numeric vector a equal to some tolerance
+	/*!
+	* \param v1 first vector, must match size of v2
+	* \param v2 second vector, must match size of v1
+	* \param tol tolerance
+	* \return true if |v1[i] - v2[i]| < tol for all i
 	*/
 	static bool vectors_near_equal(std::vector<double> v1, std::vector<double> v2, double tol)
 	{
@@ -64,8 +71,12 @@ public:
 		return matched;
 	}
 
-	/**
-	* @brief   Tests if all members of a numeric vector a equal to some relative tolerance
+	//! Tests if all members of a numeric vector a equal to some relative tolerance
+	/*!
+	* \param v1 first vector, must match size of v2
+	* \param v2 second vector (typically ground truth), must match size of v1
+	* \param tol tolerance
+	* \return true if |v1[i] - v2[i]| / |v2[i]| < tol for all i
 	*/
 	static bool vectors_near_equal_rel(std::vector<double> v1, std::vector<double> v2, double tol)
 	{
@@ -85,6 +96,11 @@ public:
 		return matched;
 	}
 
+	//! Add random Gaussian noise to time-series data
+	/*!
+	* \param time_series reference to vector of data to which noise will be added
+	* \param sigma standard deviation of Gaussian noise added (i.i.d, zero-mean)
+	*/
 	static void add_noise(std::vector<double> &time_series, const double sigma)
 	{
 		std::random_device r;

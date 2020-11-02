@@ -1,6 +1,7 @@
+
 /**
 *  @file    mdm_DCEModel2CXM.cxx
-*  @brief
+*  @brief   Implementation of mdm_DCEModel2CXM class
 *
 *  Original author MA Berks 24 Oct 2018
 *  (c) Copyright QBI, University of Manchester 2018

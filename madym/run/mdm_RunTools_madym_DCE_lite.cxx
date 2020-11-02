@@ -1,3 +1,11 @@
+/**
+*  @file    mdm_RunTools_madym_DCE_lite.cxx
+*  @brief   Implementation of mdm_RunTools_madym_DCE_lite class
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2020
+*/
+
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
@@ -257,13 +265,8 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 	return mdm_progExit();
 }
 
-/**
-	* @brief
-
-	* @param
-	* @return
-	*/
-MDM_API int mdm_RunTools_madym_DCE_lite::parse_inputs(int argc, const char *argv[])
+//
+MDM_API int mdm_RunTools_madym_DCE_lite::parseInputs(int argc, const char *argv[])
 {
 	po::options_description config_options("madym-lite config options_");
 	
@@ -314,7 +317,7 @@ MDM_API int mdm_RunTools_madym_DCE_lite::parse_inputs(int argc, const char *argv
 	options_parser_.add_option(config_options, options_.outputName);
 	options_parser_.add_option(config_options, options_.outputDir);
 
-	return options_parser_.parse_inputs(
+	return options_parser_.parseInputs(
 		config_options,
 		argc, argv);
 }

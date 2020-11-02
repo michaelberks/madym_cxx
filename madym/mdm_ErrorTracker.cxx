@@ -1,13 +1,10 @@
 /**
- *  @file    mdm_ErrorTracker.cxx
- *  @brief   Functions for mapping voxel errors
- *
- *  Original author GA Buonaccorsi 20 Nov 2009
- *  (c) Copyright ISBE, University of Manchester 2009
- *
- *  Documentation comments are in *.h, except for static methods
- *  Version info and list of modifications in comment at end of file
- */
+*  @file    mdm_ErrorTracker.cxx
+*  @brief   Implementation of mdm_ErrorTracker class
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2020
+*/
 
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS

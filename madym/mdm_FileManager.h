@@ -20,6 +20,9 @@
 class mdm_FileManager {
 
 public:
+	//! Maximum number of dynamic time-series images permitted
+	static const int MAX_DYN_IMAGES;
+
 	//! Constructor
 	/*!
 	\param volumeAnalysis reference to volume analysis object

@@ -1,3 +1,9 @@
+/*!
+*  @file    madym_gui_ui.cxx
+*  @brief   Implementation of madym_gui_ui class
+*  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
+*/
+
 #include "madym_gui_ui.h"
 
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
@@ -119,7 +125,7 @@ void madym_gui_ui::on_actionLoadConfigFile_triggered()
 	//variable map and then check the config file	
 	madym_options_.configFile.set(config_file.toStdString());
 	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
-	if (madym_exe.parse_inputs(DCE_ARGV))
+	if (madym_exe.parseInputs(DCE_ARGV))
 	{
 		QMessageBox msgBox;
 		msgBox.setIcon(QMessageBox::Warning);
@@ -152,7 +158,7 @@ void madym_gui_ui::on_actionSaveConfigFileDCE_triggered()
 	//we don't want to read a config file
 	madym_options_.configFile.set("");
 	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
-	madym_exe.parse_inputs(DCE_ARGV);
+	madym_exe.parseInputs(DCE_ARGV);
 	options_parser_.to_file(config_file.toStdString(), madym_options_);
 
 }
@@ -169,7 +175,7 @@ void madym_gui_ui::on_actionSaveConfigFileT1_triggered()
 	//we don't want to read a config file
 	madym_options_.configFile.set("");
 	mdm_RunTools_madym_T1 madym_exe(madym_options_, options_parser_);
-	madym_exe.parse_inputs(T1_ARGV);
+	madym_exe.parseInputs(T1_ARGV);
 	options_parser_.to_file(config_file.toStdString(), madym_options_);
 
 }
@@ -186,7 +192,7 @@ void madym_gui_ui::on_actionSaveConfigFileIF_triggered()
 	//we don't want to read a config file
 	madym_options_.configFile.set("");
 	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
-	madym_exe.parse_inputs(AIF_ARGV);
+	madym_exe.parseInputs(AIF_ARGV);
 	options_parser_.to_file(config_file.toStdString(), madym_options_);
 
 }
@@ -215,7 +221,7 @@ void madym_gui_ui::on_computeT1Button_clicked()
 	//we don't want to read a config file
 	madym_options_.configFile.set("");
 	mdm_RunTools_madym_T1 madym_exe(madym_options_, options_parser_);
-	madym_exe.parse_inputs(T1_ARGV);
+	madym_exe.parseInputs(T1_ARGV);
 	int result = madym_exe.run();
 }
 
@@ -247,7 +253,7 @@ void madym_gui_ui::on_computeIFButton_clicked()
 	madym_options_.configFile.set("");
 
 	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
-	madym_exe.parse_inputs(AIF_ARGV);
+	madym_exe.parseInputs(AIF_ARGV);
 	int result = madym_exe.run();
 
 }
@@ -278,7 +284,7 @@ void madym_gui_ui::on_fitModelButton_clicked()
 	//we don't want to read a config file
 	madym_options_.configFile.set("");
 	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
-	madym_exe.parse_inputs(DCE_ARGV);
+	madym_exe.parseInputs(DCE_ARGV);
 	int result = madym_exe.run();
 }
 void madym_gui_ui::on_outputStatsButton_clicked()
@@ -656,16 +662,6 @@ void madym_gui_ui::initialize_processor_thread()
   processor_thread_.setObjectName("processor_thread");
 
 	processor_.moveToThread(&processor_thread_);
-	
-  // Connect signals to slots that will run in the thread
-  /*
-	QObject::connect( this, SIGNAL(frame_tagged(int, bool, bool, bool)),
-                    &processor_, SLOT(process_frame(int, bool, bool, bool)) );
-
-	//Processor tells GUI there's a frame ready to draw
-  QObject::connect( &processor_, SIGNAL(frame_to_draw( int )),
-                    this, SLOT(redraw_scene( int )) );*/
-
 	processor_thread_.start();
 }
 

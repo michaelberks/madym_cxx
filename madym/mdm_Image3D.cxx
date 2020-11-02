@@ -1,9 +1,10 @@
 /**
- *  @file    mdm_Image3D.cxx
- *  @brief   implementation of mdm_Image3D class
- *
- * @author   Mike Berks
- */
+*  @file    mdm_Image3D.cxx
+*  @brief   implementation of mdm_Image3D class
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2020
+*/
 
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS

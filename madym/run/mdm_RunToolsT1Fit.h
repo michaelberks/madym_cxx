@@ -1,6 +1,6 @@
-/**
-*  @file    mdm_RunTools.h
-*  @brief   Defines class mdm_RunTools and associated helper class mdm_ToolsOptions
+/*!
+*  @file    mdm_RunToolsT1Fit.h
+*  @brief   Defines abstract class mdm_RunToolsT1Fit providing methods for analysis pipelines common to different T1 mapping tools
 *  @details More info...
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 */
@@ -11,35 +11,41 @@
 #include <madym/mdm_RunTools.h>
 #include <madym/t1_methods/mdm_T1MethodGenerator.h>
 
-/**
-*  @brief   Called by command line/GUI tools to run DCE-analysis or T1 mapper
-*  @details More info...
+//! Abstract base class providing methods common to T1 mapping tools
+/*!
+ \see mdm_RunTools
 */
 class mdm_RunToolsT1Fit : public virtual mdm_RunTools {
 
 public:
 
 		
-	/**
-	* @brief
-
-	* @param
-	* @return
+	//! Default constructor
+	/*!
 	*/
 	MDM_API mdm_RunToolsT1Fit();
 		
-	/**
-	* @brief
-
-	* @param
-	* @return
+	//! Virtual destructor
+	/*!
 	*/
 	MDM_API virtual ~mdm_RunToolsT1Fit();
 
 protected:
 	//Methods:
+	//! Parse string from user input option for T1 method
+	/*!
+	Currently only VFA implemented
+	\param method name returned from user input option
+	\return method enum type, UNSPECIFIED if method name not recognised
+	*/
 	mdm_T1MethodGenerator::T1Methods parseMethod(const std::string &method);
 
+	//! Check there are a valid number of signal inputs for a given T1 method
+	/*!
+	\param methodType T1 method
+	\param numInputs number of input signals specified by user
+	\return true if valid number of signals given, false otherwise
+	*/
 	bool checkNumInputs(mdm_T1MethodGenerator::T1Methods methodType, const int& numInputs);
 
 	//Variables:

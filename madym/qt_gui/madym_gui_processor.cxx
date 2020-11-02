@@ -1,3 +1,9 @@
+/*!
+*  @file    madym_gui_processor.cxx
+*  @brief   Implementation of madym_gui_processor class
+*  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
+*/
+
 #include "madym_gui_processor.h"
 
 //  Class that pops an image from the processing queue, performs any

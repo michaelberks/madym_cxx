@@ -37,7 +37,7 @@ public:
 	
 	//! Constructor
 	/*!
-	
+	\param model tracer-kinetic model applied to voxel
 	\param dynSignals time-series of dynamic signals (if empty, requires dynConc)
 	\param dynConc time-series of signal-derived concentration (if empty, computed from dynSignals)
 	\param noiseVar temporal-varying noise (if empty, constant noise=1 used)

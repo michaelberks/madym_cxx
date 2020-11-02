@@ -1,7 +1,10 @@
 /**
- *  @file    mdm_InputTypes.cxx
- *  @brief   Implementation of mdm_InputTypes class
- */
+*  @file    mdm_InputTypes.cxx
+*  @brief   Implementation of mdm_InputTypes class
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2020
+*/
 
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS

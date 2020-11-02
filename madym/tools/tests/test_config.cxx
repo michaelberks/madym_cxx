@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(test_config) {
 	options.T1inputNames.set({ "fa1", "fa2" }); //vector<str>
 
 	BOOST_TEST_MESSAGE("Writing params file");
-	BOOST_CHECK(!madym_write.parse_inputs("test_write"));
+	BOOST_CHECK(!madym_write.parseInputs("test_write"));
 	BOOST_CHECK(options_parser_write.to_file(params_name, options));
 
 	mdm_InputOptions options_in;
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(test_config) {
 	mdm_RunTools_madym_DCE madym_read(options_in, options_parser_read);
 
 	BOOST_TEST_MESSAGE("Reading params file");
-	BOOST_CHECK(!madym_read.parse_inputs("test_read"));
+	BOOST_CHECK(!madym_read.parseInputs("test_read"));
 
 	BOOST_TEST_MESSAGE("Reading and writing params file, values match: aifName");
 	BOOST_CHECK_EQUAL(options.aifName(), options_in.aifName());

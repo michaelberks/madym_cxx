@@ -28,6 +28,8 @@ const int mdm_AnalyzeFormat::MAX_IMG_DIMS = 4;
 
 static const int MAX_BYTES = 16;
 
+
+//! Helper function to reverse byte order of big/little endian data
 void swapBytes(char *data, int nBytes)
 {
 	int   i;

@@ -55,7 +55,7 @@ public:
 	@return   bool, true on success, false otherwise
 	*/
 	MDM_API static bool readImage3D(const std::string& fileName, mdm_Image3D &img,
-		bool load_xtr);
+		bool loadXtr);
 
 	//!    Read Analyze format file(s) and return mdm_Image3D object
 	/*!
@@ -166,6 +166,7 @@ private:
 	const static int MAX_IMG_DIMS;
 };
 
+//! Internal structure used for Analyze Format image headers
 struct header_key                /*      hk   */
 {                                /* off + size*/
 	int        sizeof_hdr;         /* 0 + 4     */
@@ -177,6 +178,7 @@ struct header_key                /*      hk   */
 	char       hkey_un0;           /* 39 + 1    */
 };                               /* total=40  */
 
+//! Internal structure used for Analyze Format image headers
 struct image_dimension           /*      dime      */
 {                                /* off + size*/
 	short int  dim[8];             /* 0 + 16    */
@@ -205,6 +207,7 @@ struct image_dimension           /*      dime      */
 	int    glmax, glmin;           /* 100 + 8   */
 };                               /* total=108 */
 
+//! Internal structure used for Analyze Format image headers
 struct data_history              /*      hist     */
 {                                /* off + size*/
 	char  descrip[80];             /* 0 + 80    */
@@ -225,6 +228,7 @@ struct data_history              /*      hist     */
 	int   smax, smin;              /* 192 + 8   */
 };                               /* total=200 */
 
+//! Internal structure used for Analyze Format image headers
 struct dsr                       /*      dsr              */
 {                                /* off + size*/
 	struct header_key       hk;    /* 0 + 40    */

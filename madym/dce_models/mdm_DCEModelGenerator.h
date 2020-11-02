@@ -117,30 +117,31 @@ public:
 			return UNDEFINED;
 	}
 
-  /**
-	* @brief Instantiates pointer to abstract model class into specific model instance
-	* @details Factory-pattern static method to instantiate a DCE model of specific type.
-	*	To add a new model, include the model header above, addthe model name to the implemented
-	* models list and then add an "if (modelName==MY_MODEL)" clause to this method,
-	* instantiating the new model and setting any AIF flags associated with the model.
-	* Dual-input models should set both AIF and PIF flags, single inputs AIF only.
-	*
-	* @param model reference to base model pointer
-	* @param AIF AIF associaed with model
-	* @param modelName model name, must match one of implemented types
-	* @param auto_aif flag if the AIF associated with model is auto-generated
-	* @param auto_pif flag if the PIF associated with model is auto-generated
-	* @param paramNames if non-empty, overrides default parameter names of model
-	* @param initialParams if non-empty, overrides default initial parameter values of model
-	* @param paramNames indices of any parameters to be fixed in the model
-	* @param paramNames values associated with fixed parameters (if non-empty, overrides initial parameters)
-	* @return bool true if model successfully instantiated, false otherwise
+	//!Instantiates pointer to abstract model class into specific model instance
+  /*!
+	Factory-pattern static method to instantiate a DCE model of specific type.
+	To add a new model, include the model header above, addthe model name to the implemented
+	models list and then add an "if (modelName==MY_MODEL)" clause to this method,
+	instantiating the new model and setting any AIF flags associated with the model.
+	Dual-input models should set both AIF and PIF flags, single inputs AIF only.
+	
+	\param AIF AIF associated with model
+	\param modelType specifies model type
+	\param aif_from_file flag if the AIF associated with model is loaded from file
+	\param pif_from_file flag if the PIF associated with model is auto-generated
+	\param paramNames if non-empty, overrides default parameter names of model
+	\param initialParams if non-empty, overrides default initial parameter values of model
+	\param fixedParams indices of any parameters to be fixed in the model
+	\param fixedValues values associated with fixed parameters (if non-empty, overrides initial parameters)
+	\param relativeLimitParams  indices of parameters to which relative limits are applied  (default {})
+	\param relativeLimitValues  values for relative limits (default {})
+	\return shared pointer to new model object of specified type
 	*/
 	MDM_API static std::shared_ptr<mdm_DCEModelBase> createModel( 
 		mdm_AIF &AIF,
 		ModelTypes modelType,
-		bool auto_aif, 
-		bool auto_pif,
+		bool aif_from_file, 
+		bool pif_from_file,
     const std::vector<std::string> &paramNames,
     const std::vector<double> &initialParams,
     const std::vector<int> fixedParams,
@@ -152,7 +153,7 @@ public:
 		{
 		case TOFTS:
 		{
-			if (auto_aif)
+			if (aif_from_file)
 				AIF.setAIFType(mdm_AIF::AIF_FILE);
 			else
 				AIF.setAIFType(mdm_AIF::AIF_POP);
@@ -171,7 +172,7 @@ public:
 
 		case ETM:
 		{
-			if (auto_aif)
+			if (aif_from_file)
 				AIF.setAIFType(mdm_AIF::AIF_FILE);
 			else
 				AIF.setAIFType(mdm_AIF::AIF_POP);
@@ -183,12 +184,12 @@ public:
 
 		case DIETM:
 		{
-			if (auto_aif)
+			if (aif_from_file)
 				AIF.setAIFType(mdm_AIF::AIF_FILE);
 			else
 				AIF.setAIFType(mdm_AIF::AIF_POP);
 
-			if (auto_pif)
+			if (pif_from_file)
 				AIF.setPIFType(mdm_AIF::PIF_FILE);
 			else
 				AIF.setPIFType(mdm_AIF::PIF_POP);
@@ -200,12 +201,12 @@ public:
 
 		case AUEM:
 		{
-			if (auto_aif)
+			if (aif_from_file)
 				AIF.setAIFType(mdm_AIF::AIF_FILE);
 			else
 				AIF.setAIFType(mdm_AIF::AIF_POP);
 
-			if (auto_pif)
+			if (pif_from_file)
 				AIF.setPIFType(mdm_AIF::PIF_FILE);
 			else
 				AIF.setPIFType(mdm_AIF::PIF_POP);
@@ -217,12 +218,12 @@ public:
 
 		case DISCM:
 		{
-			if (auto_aif)
+			if (aif_from_file)
 				AIF.setAIFType(mdm_AIF::AIF_FILE);
 			else
 				AIF.setAIFType(mdm_AIF::AIF_POP);
 
-			if (auto_pif)
+			if (pif_from_file)
 				AIF.setPIFType(mdm_AIF::PIF_FILE);
 			else
 				AIF.setPIFType(mdm_AIF::PIF_POP);
@@ -234,7 +235,7 @@ public:
 
 		case CXM:
 		{
-			if (auto_aif)
+			if (aif_from_file)
 				AIF.setAIFType(mdm_AIF::AIF_FILE);
 			else
 				AIF.setAIFType(mdm_AIF::AIF_POP);
@@ -247,12 +248,12 @@ public:
 
 		case DI2CXM:
 		{
-			if (auto_aif)
+			if (aif_from_file)
 				AIF.setAIFType(mdm_AIF::AIF_FILE);
 			else
 				AIF.setAIFType(mdm_AIF::AIF_POP);
 
-			if (auto_pif)
+			if (pif_from_file)
 				AIF.setPIFType(mdm_AIF::PIF_FILE);
 			else
 				AIF.setPIFType(mdm_AIF::PIF_POP);
@@ -264,12 +265,12 @@ public:
 
 		case DIBEM:
 		{
-			if (auto_aif)
+			if (aif_from_file)
 				AIF.setAIFType(mdm_AIF::AIF_FILE);
 			else
 				AIF.setAIFType(mdm_AIF::AIF_POP);
 
-			if (auto_pif)
+			if (pif_from_file)
 				AIF.setPIFType(mdm_AIF::PIF_FILE);
 			else
 				AIF.setPIFType(mdm_AIF::PIF_POP);
@@ -281,12 +282,12 @@ public:
 
 		case DIBEM_FP:
 		{
-			if (auto_aif)
+			if (aif_from_file)
 				AIF.setAIFType(mdm_AIF::AIF_FILE);
 			else
 				AIF.setAIFType(mdm_AIF::AIF_POP);
 
-			if (auto_pif)
+			if (pif_from_file)
 				AIF.setPIFType(mdm_AIF::PIF_FILE);
 			else
 				AIF.setPIFType(mdm_AIF::PIF_POP);

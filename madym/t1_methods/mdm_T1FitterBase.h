@@ -15,9 +15,9 @@
 #include <vector>
 #include <iostream>
 
-/*!
 //!   Abstract base class for estimating T1 (and M0) in a single voxel
-*  @details Currently only variable flip angle method supported
+/*!
+*  Currently only variable flip angle method supported
 */
 class mdm_T1FitterBase {
 
@@ -55,6 +55,7 @@ public:
 	\param nSignals number of signals in sample
 	\param T1value reference to hold computed T1
 	\param M0value reference to hold computed M0
+	\param eof reference to flag, set true if streams EOF flag is reached
 	*/
 	MDM_API virtual mdm_ErrorTracker::ErrorCode fitT1(std::istream& ifs, 
 		const int nSignals, double &T1value, double &M0value, bool &eof) = 0;

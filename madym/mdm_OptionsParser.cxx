@@ -1,7 +1,10 @@
 /**
- *  @file    mdm_OptionsParser.cxx
- *  @brief   Implementation of mdm_OptionsParser class
- */
+*  @file    mdm_OptionsParser.cxx
+*  @brief   Implementation of mdm_OptionsParser class
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2020
+*/
 
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
@@ -178,7 +181,7 @@ MDM_API bool mdm_OptionsParser::to_file(const std::string &filename,
 
 /*
 */
-MDM_API int mdm_OptionsParser::parse_inputs(
+MDM_API int mdm_OptionsParser::parseInputs(
 	po::options_description &cmdline_options,
 	po::options_description &config_options,
 	const std::string &configFile,
@@ -206,7 +209,7 @@ MDM_API int mdm_OptionsParser::parse_inputs(
 	return 0;
 }
 
-MDM_API int mdm_OptionsParser::parse_inputs(
+MDM_API int mdm_OptionsParser::parseInputs(
 	po::options_description &cmdline_options,
 	int argc, const char *argv[])
 {

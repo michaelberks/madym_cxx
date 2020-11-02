@@ -150,7 +150,7 @@ class mdm_Image3D
 	\param idx index into data array, using C-style ordering. Must be >=0, < numVoxels()
 	\param value to set
 	*/
-	MDM_API void setVoxel(int i, double value);
+	MDM_API void setVoxel(int idx, double value);
 
 	//! Set image type
 	/*!
@@ -177,7 +177,7 @@ class mdm_Image3D
 	//! Set image dimensions from existing image
 	/*!
 	Also sets voxel dimensions
-	\img   image from which to set dimensions
+	\param img   image from which to set dimensions
 	*/
 	MDM_API void setDimensions(const mdm_Image3D &img);
 
@@ -262,8 +262,8 @@ class mdm_Image3D
 
 	//!Return indices and values of voxels with non-zero value
 	/*!
-	\param reference to hold list of voxels indices with non-zero values
-	\param reference to hold list of non-zero values
+	\param idx reference to hold list of voxels indices with non-zero values
+	\param vals reference to hold list of non-zero values
 	*/
 	MDM_API void nonZeroVoxels(std::vector<int> &idx, std::vector<double> &vals) const;
 
@@ -285,6 +285,7 @@ class mdm_Image3D
 	Templated to allow different data formats for the binary stream.
 	\param ifs binary stream containing data
 	\param nonZero if true, assumes stream contains indices and values of non-zero voxels. If false, assumes stream contains all voxel values. 
+	\param swapBytes flag to swap byte order between little/big-endian
 	\see toBinaryStream
 	*/
 	template <class T> MDM_API bool fromBinaryStream(std::istream &ifs,

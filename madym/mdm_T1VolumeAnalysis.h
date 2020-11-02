@@ -25,7 +25,7 @@ public:
 	
 	//! Constructor
 	/*!
-	\param error tracker object shared acorss the volume analysis objects
+	\param errorTracker error tracker shared across the volume analysis objects
 	*/
 	MDM_API mdm_T1VolumeAnalysis(mdm_ErrorTracker &errorTracker);/*!/
 		

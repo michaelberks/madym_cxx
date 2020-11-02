@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 	madym_options.overwrite.set(true);
 
 	mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
-	madym_exe.parse_inputs("test_madym_DCE");
+	madym_exe.parseInputs("test_madym_DCE");
 	int result = madym_exe.run();
 
 	BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");

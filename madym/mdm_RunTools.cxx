@@ -1,3 +1,11 @@
+/**
+*  @file    mdm_RunTools.cxx
+*  @brief   Implementation of mdm_RunTools class
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2020
+*/
+
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
@@ -37,10 +45,10 @@ MDM_API mdm_RunTools::~mdm_RunTools()
 
 }
 
-MDM_API int mdm_RunTools::parse_inputs(const std::string &argv)
+MDM_API int mdm_RunTools::parseInputs(const std::string &argv)
 {
 	const char*argvc[] = { argv.c_str() };
-	return parse_inputs(0, argvc);
+	return parseInputs(0, argvc);
 }
 
 //

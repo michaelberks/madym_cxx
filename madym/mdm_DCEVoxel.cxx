@@ -1,9 +1,10 @@
-/*!
- *  @file    mdm_DCEVoxel.cxx
- *  @brief   Implementation of class that holds DCE time-series data and an asssociated tracer kinetic model
- *  @details More info...
- *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
- */
+/**
+*  @file    mdm_DCEVoxel.cxx
+*  @brief   Implementation of mdm_DCEVoxel class
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2020
+*/
 
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
