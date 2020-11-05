@@ -41,7 +41,7 @@ public:
 	enum T1Methods {
 		UNDEFINED, ///> Method not recognised
 		VFA, ///> Variable flip-angle method
-		IR ///> Inversion recovery method
+		//IR ///> Inversion recovery method
 	};
 
 	/**
@@ -63,27 +63,10 @@ public:
 	MDM_API static T1Methods ParseMethodName(const std::string &method) {
 		if (method == "VFA")
 			return VFA;
-		else if (method == "IR")
-			return IR;
+		//else if (method == "IR")
+		//	return IR;
 		else
 			abort();
-	}
-
-	//! Convert T1 method enum to string
-	/*
-	\param method enum code for T! mapping method
-	\return string name of T1 mapping emthod
-	*/
-	MDM_API static std::string MethodToString(T1Methods method) {
-		switch (method)
-		{
-		case VFA:
-			return "VFA";
-		case IR:
-			return "IR";
-		default:
-			abort();
-		}
 	}
 
   //! Factory method for creating specific T1 mapping object given user specified method

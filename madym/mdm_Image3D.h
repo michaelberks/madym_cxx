@@ -285,12 +285,18 @@ class mdm_Image3D
 	Templated to allow different data formats for the binary stream.
 	\param ifs binary stream containing data
 	\param nonZero if true, assumes stream contains indices and values of non-zero voxels. If false, assumes stream contains all voxel values. 
-	\param swapBytes flag to swap byte order between little/big-endian
+	\param swap flag to swap byte order between little/big-endian
 	\see toBinaryStream
 	*/
 	template <class T> MDM_API bool fromBinaryStream(std::istream &ifs,
-		bool nonZero, bool swapBytes);
+		bool nonZero, bool swap);
 	
+	//! Helper function to reverse byte order of big/little endian data
+	/*!
+	\param data pointer to data to swap
+	\nBytes size of buffer to swap
+	*/
+	template <class T> MDM_API static void swapBytes(T& data);
 
 	//! Image meta data
 	MetaData info_;

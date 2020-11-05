@@ -428,12 +428,8 @@ template MDM_API	bool mdm_Image3D::toBinaryStream<double>(
 	std::ostream &ofs, bool nonZero)  const;
 
 template <class T> MDM_API bool mdm_Image3D::fromBinaryStream(
-	std::istream &ifs, bool nonZero, bool swapBytes)
+	std::istream &ifs, bool nonZero, bool swap)
 {
-	//TODO endian check if swap is true - not currently implemented
-	//so throw error for now
-	if (swapBytes)
-		return false;
 
 	//Get size input type
 	size_t elSize = sizeof(T);
@@ -463,17 +459,26 @@ template <class T> MDM_API bool mdm_Image3D::fromBinaryStream(
 
 		//First read data values, casting from char* to input type
 		for (T &t : data)
+		{
 			ifs.read(reinterpret_cast<char*>(&t), elSize);
+			if (swap)
+				swapBytes(t);
+		}
+			
 
 		//Read indices - directly casting from char* to int
 		for (int &i : idx)
+		{
 			ifs.read(reinterpret_cast<char*>(&i), sizeof(int));
+			if (swap)
+				swapBytes(i);
+		}
+			
 
 		//Finally loop through data and indices saving into main data array
 		for (size_t i = 0; i < nNonZero; i++)
-		{
 			data_[idx[i]] = (double)data[i];
-		}
+		
 	}
 	else
 	{
@@ -488,6 +493,9 @@ template <class T> MDM_API bool mdm_Image3D::fromBinaryStream(
 		for (double &d : data_)
 		{
 			ifs.read(reinterpret_cast<char*>(&t), elSize);
+			if (swap)
+				swapBytes(t);
+
 			d = (double)t;
 		}
 	}
@@ -499,19 +507,37 @@ template <class T> MDM_API bool mdm_Image3D::fromBinaryStream(
 //need or we'll get linker errors
 //! Template specialization declaration of fromBinaryStream for char datatype
 template MDM_API bool mdm_Image3D::fromBinaryStream<char>(
-	std::istream &ifs, bool nonZero, bool swapBytes);
+	std::istream &ifs, bool nonZero, bool swap);
 //! Template specialization declaration of fromBinaryStream for short datatype
 template MDM_API	bool mdm_Image3D::fromBinaryStream<short>(
-	std::istream &ifs, bool nonZero, bool swapBytes);
+	std::istream &ifs, bool nonZero, bool swap);
 //! Template specialization declaration of fromBinaryStream for int datatype
 template MDM_API	bool mdm_Image3D::fromBinaryStream<int>(
-	std::istream &ifs, bool nonZero, bool swapBytes);
+	std::istream &ifs, bool nonZero, bool swap);
 //! Template specialization declaration of fromBinaryStream for float datatype
 template MDM_API	bool mdm_Image3D::fromBinaryStream<float>(
-	std::istream &ifs, bool nonZero, bool swapBytes);
+	std::istream &ifs, bool nonZero, bool swap);
 //! Template specialization declaration of fromBinaryStream for double datatype
 template MDM_API	bool mdm_Image3D::fromBinaryStream<double>(
-	std::istream &ifs, bool nonZero, bool swapBytes);
+	std::istream &ifs, bool nonZero, bool swap);
+
+//
+//MDM_API void mdm_Image3D::swapBytes(char *data, int nBytes)
+template <class T> MDM_API void mdm_Image3D::swapBytes(T& data)
+{
+	const int MAX_BYTES = 32;
+	int nBytes = sizeof(data);
+	assert(nBytes != 0 && nBytes <= MAX_BYTES);
+
+	char  temp[MAX_BYTES];
+	char *data_p = (char *)&data;
+
+	for (int i = 0; i < nBytes; i++)
+		temp[i] = data_p[i];
+
+	for (int i = 0; i < nBytes; i++)
+		data_p[i] = temp[nBytes - i - 1];
+}
 
 //**************************************************************************
 // Private functions

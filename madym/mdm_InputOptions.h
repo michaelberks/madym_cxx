@@ -31,7 +31,7 @@ struct mdm_InputOptions {
 		mdm_input_str(""), "dyn_dir", "",
 		"Folder containing dynamic volumes, can be left empty if already included in option --dyn");
 	mdm_input_string dynFormat = mdm_input_string(
-		mdm_input_str("%01u"), "dyn_name_format_", "",
+		mdm_input_str("%01u"), "dyn_name_format", "",
 		"Number format for suffix specifying temporal index of dynamic volumes");
 	mdm_input_int nDyns = mdm_input_int(
 		0, "n_dyns", "n",
@@ -184,9 +184,9 @@ struct mdm_InputOptions {
 	mdm_input_string inputDataFile = mdm_input_string(
 		mdm_input_str(""), "data", "", "Input data filename, see notes for options");
 	mdm_input_double FA = mdm_input_double(
-		0, "fa", "", "FA of dynamic series");
+		0, "FA", "", "FA of dynamic series");
 	mdm_input_double TR = mdm_input_double(
-		0, "tr", "", "TR of dynamic series");
+		0, "TR", "", "TR of dynamic series");
 	mdm_input_string outputName = mdm_input_string(
 		mdm_input_str("madym_analysis.dat"), "output_name", "O", "Name of output data file");
 

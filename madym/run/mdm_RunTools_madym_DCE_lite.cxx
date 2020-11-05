@@ -317,6 +317,9 @@ MDM_API int mdm_RunTools_madym_DCE_lite::parseInputs(int argc, const char *argv[
 	options_parser_.add_option(config_options, options_.outputName);
 	options_parser_.add_option(config_options, options_.outputDir);
 
+	//Set overwrite default to true for lite version
+	options_.overwrite.set(true);
+
 	return options_parser_.parseInputs(
 		config_options,
 		argc, argv);

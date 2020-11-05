@@ -71,6 +71,8 @@ void mdm_RunTools::mdm_progAbort(const std::string &err_str)
 {
 
   std::string error_msg = options_parser_.exe_cmd() + " ABORTING: " + err_str + "\n";
+	std::cout << error_msg << std::endl;
+	std::cerr << error_msg << std::endl;
 
 	mdm_ProgramLogger::logProgramMessage(error_msg);
 	mdm_ProgramLogger::logAuditMessage(error_msg);
