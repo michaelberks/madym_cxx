@@ -239,10 +239,7 @@ void mdm_RunTools_madym_DCE::setVolumeAnalysisParams()
 		volumeAnalysis_.setFirstImage(options_.firstImage() - 1);
 	if (options_.lastImage() > 0)
 		volumeAnalysis_.setLastImage(options_.lastImage());
-
-	//If these are empty, the defaults 60, 90, 120 will be set in volumeAnalysis
-	if (!options_.IAUCTimes().empty())
-		volumeAnalysis_.setIAUCtimes(options_.IAUCTimes());
+	volumeAnalysis_.setIAUCtimes(options_.IAUCTimes());
 }
 
 //

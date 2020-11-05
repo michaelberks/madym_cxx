@@ -179,65 +179,99 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 	//-------------------------------------------------------------------------------
 	// 2) From the command line
 	//-------------------------------------------------------------------------------
-	std::string Ct_output_dir2 = test_dir + "/mdm_analysis_Ct2/";
-	std::stringstream cmd;
-	cmd << mdm_test_utils::tools_exe_dir() << "madym_DCE"
-		<< " -m ETM"
-		<< " -o " << Ct_output_dir2
-		<< " --dyn " << dyn_dir << "Ct_"
-		<< " -n " << nTimes
-		<< " -i " << injectionImage
-		<< " -D " << dose
-		<< " -H " << hct
-		<< " -I " << IAUC_str
-		<< " --Ct --overwrite "; //<< " -iauc 60"
-
-	BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
-		
-	int error;
-	try
 	{
-		error = std::system(cmd.str().c_str());
-	}
-	catch (...)
-	{
-		BOOST_CHECK_MESSAGE(false, "Running madym_DCE failed");
-		return;
-	}
+		std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct2/";
+		std::stringstream cmd;
+		cmd << mdm_test_utils::tools_exe_dir() << "madym_DCE"
+			<< " -m ETM"
+			<< " -o " << Ct_output_dir
+			<< " --dyn " << dyn_dir << "Ct_"
+			<< " -n " << nTimes
+			<< " -i " << injectionImage
+			<< " -D " << dose
+			<< " -H " << hct
+			<< " -I " << IAUC_str
+			<< " --Ct --overwrite "; //<< " -iauc 60"
 
-	BOOST_CHECK_MESSAGE(!error, "Error returned from madym_DCE tool");
-	check_output(Ct_output_dir2,
-		trueParams,
-		IAUCTimes,
-		IAUCVals);
+		BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
+
+		int error;
+		try
+		{
+			error = std::system(cmd.str().c_str());
+		}
+		catch (...)
+		{
+			BOOST_CHECK_MESSAGE(false, "Running madym_DCE failed");
+			return;
+		}
+
+		BOOST_CHECK_MESSAGE(!error, "Error returned from madym_DCE tool");
+		check_output(Ct_output_dir,
+			trueParams,
+			IAUCTimes,
+			IAUCVals);
+	}
 
 	//-------------------------------------------------------------------------------
 	// 1) Using a run tools object
 	//-------------------------------------------------------------------------------
-	std::string Ct_output_dir1 = test_dir + "/mdm_analysis_Ct1/";
-	mdm_InputOptions madym_options;
-	mdm_OptionsParser options_parser;
-	madym_options.model.set("ETM");
-	madym_options.outputDir.set(Ct_output_dir1);
-	madym_options.dynDir.set(dyn_dir);
-	madym_options.dynName.set("Ct_");
-	madym_options.nDyns.set(nTimes);
-	madym_options.injectionImage.set(injectionImage);
-	madym_options.dose.set(dose);
-	madym_options.hct.set(hct);
-	madym_options.IAUCTimes.set(IAUCTimes);
-	madym_options.inputCt.set(true);
-	madym_options.overwrite.set(true);
+	{
+		std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct1/";
+		mdm_InputOptions madym_options;
+		mdm_OptionsParser options_parser;
+		madym_options.model.set("ETM");
+		madym_options.outputDir.set(Ct_output_dir);
+		madym_options.dynDir.set(dyn_dir);
+		madym_options.dynName.set("Ct_");
+		madym_options.nDyns.set(nTimes);
+		madym_options.injectionImage.set(injectionImage);
+		madym_options.dose.set(dose);
+		madym_options.hct.set(hct);
+		madym_options.IAUCTimes.set(IAUCTimes);
+		madym_options.inputCt.set(true);
+		madym_options.overwrite.set(true);
 
-	mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
-	madym_exe.parseInputs("test_madym_DCE");
-	int result = madym_exe.run();
+		mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
+		madym_exe.parseInputs("test_madym_DCE");
+		int result = madym_exe.run();
 
-	BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
-	check_output(Ct_output_dir1,
-		trueParams,
-		IAUCTimes,
-		IAUCVals);
+		BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
+		check_output(Ct_output_dir,
+			trueParams,
+			IAUCTimes,
+			IAUCVals);
+	}
+
+	//-------------------------------------------------------------------------------
+	// 3) Using a run tools object with empty IAUC values
+	//-------------------------------------------------------------------------------
+	{
+		std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct3/";
+		mdm_InputOptions madym_options;
+		mdm_OptionsParser options_parser;
+		madym_options.model.set("ETM");
+		madym_options.outputDir.set(Ct_output_dir);
+		madym_options.dynDir.set(dyn_dir);
+		madym_options.dynName.set("Ct_");
+		madym_options.nDyns.set(nTimes);
+		madym_options.injectionImage.set(injectionImage);
+		madym_options.dose.set(dose);
+		madym_options.hct.set(hct);
+		madym_options.IAUCTimes.set({});
+		madym_options.inputCt.set(true);
+		madym_options.overwrite.set(true);
+
+		mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
+		madym_exe.parseInputs("test_madym_DCE_noI");
+		int result = madym_exe.run();
+
+		BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
+		check_output(Ct_output_dir,
+			trueParams,
+			{},
+			{});
+	}
 
 	//---------------------------------------------------------------------------
 	//Tidy up

@@ -44,7 +44,7 @@ public:
 	\param T10 baseline T1
 	\param M0 baseline M0 (if not set, requires useM0Ratio true)
 	\param r1Const relaxivity coefficient of contrast-agent
-	\param bolus_time timepoint bolus injected
+	\param injectionImg timepoint bolus injected
 	\param dynamicTimings time in minutes of each series timepoint
 	\param TR repetition time
 	\param FA flip angle
@@ -62,7 +62,7 @@ public:
 		const double T10,
 		const double M0,
 		const double r1Const,
-    const int bolus_time,
+    const int injectionImg,
 		const std::vector<double> &dynamicTimings,
 		const double TR,
 		const double FA,
@@ -224,6 +224,10 @@ private:
   */
   double computeT1DynM0(const double &st, const double & sinfa, const double & cosfa, int &errorCode);
 
+	std::vector<double> computeIAUC(const std::vector<double> &times);
+
+	bool checkEnhancing();
+
 	/*!
 	*/
 	double CtSSD(const std::vector<double> &parameter_array);
@@ -256,7 +260,7 @@ private:
 	double								t10_;						//T1 value for this voxel
 	double								m0_;						//M0 value for this voxel - not used if using ratio method
 	double								r1Const_;				//relaxivity constant of tissue 
-  int                   bolus_time_;    //Time point of injection
+  int                   injectionImg_;    //Time point of injection
 	std::vector<double>		IAUC_times_;		//Vector of times (in secs) at which to caclucate IAUC values (and the resulting values)
 	std::vector<double>		IAUC_vals_; 
 	double								modelFitError_; //SSD error between catData (actual concentrations) and catModel (fitted concentrations)

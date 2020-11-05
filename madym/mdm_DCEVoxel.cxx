@@ -33,7 +33,7 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	const double T10,
 	const double M0,
 	const double r1Const,
-  const int bolus_time,
+  const int injectionImg,
 	const std::vector<double> &dynamicTimings,
 	const double TR,
 	const double FA,
@@ -52,9 +52,9 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	timepoint0_(timepoint0),
 	timepointN_(timepointN),
 	r1Const_(r1Const),
-  bolus_time_(bolus_time),
+  injectionImg_(injectionImg),
 	IAUC_times_(IAUC_times),
-	IAUC_vals_(IAUC_times_.size(), 0),
+	IAUC_vals_(0),
 	modelFitError_(0),
 	enhancing_(0),
 	dynamicTimings_(dynamicTimings),
@@ -95,11 +95,11 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal()
 
   // Calculate dyn_pbm
   // Need to check that we've got the pb time points
-  if (bolus_time_ >= timepoint0())
+  if (injectionImg_ >= timepoint0())
   {
     double   sum_pbm = 0.0;
     int     num_pbm = 0;
-    for (int k = timepoint0(); k < bolus_time_; k++)
+    for (int k = timepoint0(); k < injectionImg_; k++)
     {
       sum_pbm += signalData()[k];
       num_pbm++;
@@ -184,6 +184,74 @@ double mdm_DCEVoxel::computeT1DynM0(const double &st, const double & sinfa, cons
     errorCode = -2;
 
   return R1_t;
+}
+
+//
+std::vector<double> mdm_DCEVoxel::computeIAUC(const std::vector<double> &times)
+{
+	auto nIAUC = times.size();
+	std::vector<double> vals(nIAUC, 0);
+
+	if (!nIAUC)
+		return vals;
+
+	size_t nTimes = dynamicTimings_.size();
+
+	double cumulativeCt = 0;
+	const double bolusTime = dynamicTimings_[injectionImg_];
+
+	//This relies on IAUC times being sorted, which we enforce externally to save
+	//time, but for robustness could do so here?
+	int currIAUCt = 0;
+	for (auto i_t = injectionImg_; i_t < nTimes; i_t++)
+	{
+		double elapsedTime = dynamicTimings_[i_t] - bolusTime;
+		double delta_t = dynamicTimings_[i_t] - dynamicTimings_[i_t - 1];
+		double delta_Ct = CtData_[i_t] + CtData_[i_t - 1];
+		double addedCt = delta_t * delta_Ct / 2.0;
+
+		//If we exceed time for any IAUC time, set the val
+		if (elapsedTime > times[currIAUCt])
+		{
+			//Compute the extra littl ebit of trapezium...
+			double t_frac = 1.0 - (elapsedTime - times[currIAUCt]) / delta_t;
+
+			vals[currIAUCt] = cumulativeCt + t_frac * addedCt;
+
+			//If this was the last time point, we can break
+			if (currIAUCt == nIAUC - 1)
+				break;
+			else
+				currIAUCt++;;
+		}
+
+		//Add to the cumulative Ct
+		cumulativeCt += addedCt;
+	}
+	return vals;
+}
+
+bool mdm_DCEVoxel::checkEnhancing()
+{
+	bool enhancing = true;
+	if (IAUC_vals_.empty())
+	{
+		auto iauc60 = computeIAUC({ 1.0 });
+		enhancing = iauc60[0] > 0;
+	}
+	else
+	{
+		// TODO better test enhancement checks?
+		for (const auto iauc : IAUC_vals_)
+		{
+			if (iauc <= 0.0)
+			{
+				enhancing = false;
+				break;
+			}
+		}
+	}
+	return enhancing;
 }
 
 //
@@ -336,15 +404,7 @@ MDM_API void mdm_DCEVoxel::fitModel()
 	// Use IAUC to check for enhancement (since 1.22 unless user says no)
 	else if (testEnhancement_)
 	{
-		// TODO better test enhancement checks?
-		for (const auto iauc : IAUC_vals_)
-		{
-			if (iauc <= 0.0)
-			{
-				enhancing_ = false;
-				break;
-			}
-		}
+		enhancing_ = checkEnhancing();
 	}
 	if (enhancing_)
 	{	
@@ -363,43 +423,7 @@ MDM_API void mdm_DCEVoxel::fitModel()
 //
 MDM_API void mdm_DCEVoxel::computeIAUC()
 {
-	size_t nTimes = dynamicTimings_.size();
-
-	for (auto & iauc : IAUC_vals_)
-		iauc = 0.0;
-
-	size_t nIAUC = IAUC_times_.size();
-	double cumulativeCt = 0;
-	const double bolusTime = dynamicTimings_[bolus_time_];
-
-	//This relies on IAUC times being sorted, which we enforce externally to save
-	//time, but for robustness could do so here?
-	int currIAUCt = 0;
-  for (size_t i_t = bolus_time_; i_t < nTimes; i_t++)
-	{
-		double elapsedTime = dynamicTimings_[i_t] - bolusTime;
-		double delta_t = dynamicTimings_[i_t] - dynamicTimings_[i_t - 1];
-		double delta_Ct = CtData_[i_t] + CtData_[i_t - 1];
-		double addedCt = delta_t * delta_Ct / 2.0;
-
-		//If we exceed time for any IAUC time, set the val
-		if (elapsedTime > IAUC_times_[currIAUCt])
-		{
-			//Compute the extra littl ebit of trapezium...
-			double t_frac = 1.0 - (elapsedTime - IAUC_times_[currIAUCt])/delta_t; 
-
-			IAUC_vals_[currIAUCt] = cumulativeCt + t_frac*addedCt;
-
-			//If this was the last time point, we can break
-			if (currIAUCt == nIAUC - 1)
-				break;
-			else
-				currIAUCt++;;
-		}
-
-		//Add to the cumulative Ct
-		cumulativeCt += addedCt;
-	}
+	IAUC_vals_ = computeIAUC(IAUC_times_);
 }
 
 MDM_API mdm_DCEVoxel::mdm_DCEVoxelStatus mdm_DCEVoxel::status() const
