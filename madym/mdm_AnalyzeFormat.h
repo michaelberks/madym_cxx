@@ -49,19 +49,19 @@ public:
 
 	//!    Read Analyze format file(s) to given mdm_Image3D object
 	/*!
-	@param    fileName   string name of file from which to read the data
-	@param    img   reference to mdm_Image3D into which image data is loaded
-	@param		loadXtr			bool flag, if true tries to load .xtr file too
-	@return   bool, true on success, false otherwise
+	\param    fileName   string name of file from which to read the data
+	\param    img   reference to mdm_Image3D into which image data is loaded
+	\param		loadXtr			bool flag, if true tries to load .xtr file too
+	\return   bool, true on success, false otherwise
 	*/
 	MDM_API static bool readImage3D(const std::string& fileName, mdm_Image3D &img,
 		bool loadXtr);
 
 	//!    Read Analyze format file(s) and return mdm_Image3D object
 	/*!
-	@param    fileName		name of file from which to read the data
-	@param		loadXtr			flag, if true tries to load .xtr file too
-	@return   mdm_Image3D object containing image read from disk
+	\param    fileName		name of file from which to read the data
+	\param		loadXtr			flag, if true tries to load .xtr file too
+	\return   mdm_Image3D object containing image read from disk
 	*/
 	MDM_API static mdm_Image3D readImage3D(const std::string& fileName,
 		bool loadXtr);
@@ -69,12 +69,12 @@ public:
 	
 	//!    Write mdm_Image3D to QBI extended Analyze hdr/img/xtr file set
 	/*!
-	@param    baseName      base name for file (gets .hdr/.img/.xtr appended)
-	@param    img           mdm_Image3D holding the data to be written to file
-	@param    dataTypeFlag  integer data type flag; see Data_type enum
-	@param    xtrTypeFlag   integer xtr type flag; 0 for old, 1 for new
-	@param		sparse				flag, if true, only non-zero voxels and their indices written in the .img file
-	@return   bool 0 for success or 1 for failure
+	\param    baseName      base name for file (gets .hdr/.img/.xtr appended)
+	\param    img           mdm_Image3D holding the data to be written to file
+	\param    dataTypeFlag  integer data type flag; see Data_type enum
+	\param    xtrTypeFlag   integer xtr type flag; 0 for old, 1 for new
+	\param		sparse				flag, if true, only non-zero voxels and their indices written in the .img file
+	\return   bool 0 for success or 1 for failure
 	*/
 	MDM_API static bool writeImage3D(const std::string & baseName,
 		const mdm_Image3D &img,
@@ -83,17 +83,17 @@ public:
 
 	//!   Strip Analyze extension from a file name and return in a different string
 	 /*!
-	 @param   fileName full filename to be stripped
-	 @return  filename with extension stripped
+	 \param   fileName full filename to be stripped
+	 \return  filename with extension stripped
 	 */
 	MDM_API static std::string stripAnalyzeExtension(const std::string & fileName);
 
 	//!    Test for existence of the file with the specified basename and all Analyze extensions (.img, .hdr)
 	 /*!
-	 @param    baseName base name of files to test
-	 @param    xtrExistsFlag stores if .xtr file also exists (output)
-	 @param    warn  flag, if true triggers warning for program logger if files don't exist
-	 @return   bool true if files exist, false otherwise
+	 \param    baseName base name of files to test
+	 \param    xtrExistsFlag stores if .xtr file also exists (output)
+	 \param    warn  flag, if true triggers warning for program logger if files don't exist
+	 \return   bool true if files exist, false otherwise
 	 */
 	MDM_API static bool filesExist(const std::string & baseName, bool &xtrExistsFlag,
 		bool warn = false);
@@ -101,10 +101,79 @@ public:
 protected:
 
 private:
+	//! Internal structure used for Analyze Format image headers
+	struct header_key                /*      header_key_   */
+	{                                /* off + size*/
+		int        sizeof_hdr;         /* 0 + 4     */
+		char       data_type[10];      /* 4 + 10    */
+		char       db_name[18];        /* 14 + 18   */
+		int        extents;            /* 32 + 4    */
+		short int  session_error;      /* 36 + 2    */
+		char       regular;            /* 38 + 1    */
+		char       hkey_un0;           /* 39 + 1    */
+	};                               /* total=40  */
+
+	//! Internal structure used for Analyze Format image headers
+	struct image_dimension           /*      dimensions_      */
+	{                                /* off + size*/
+		short int  dim[8];             /* 0 + 16    */
+		char       vox_units[4];       /* 16 + 4    */
+		char       cal_units[8];       /* 20 + 4    */
+		short int  unused1;            /* 24 + 2    */
+		short int  datatype;           /* 30 + 2    */
+		short int  bitpix;             /* 32 + 2    */
+		short int  dim_un0;            /* 34 + 2    */
+		float      pixdim[8];          /* 36 + 32   */
+																	 /*
+																		*  pixdim[] specifies the voxel dimensions:
+																		*  pixdim[1] - voxel width
+																		*  pixdim[2] - voxel height
+																		*  pixdim[3] - interslice distance
+																		*  ...etc
+																		*/
+		float  vox_offset;             /* 68 + 4    */
+		float  roi_scale;              /* 72 + 4    */
+		float  funused1;               /* 76 + 4    */
+		float  funused2;               /* 80 + 4    */
+		float  cal_max;                /* 84 + 4    */
+		float  cal_min;                /* 88 + 4    */
+		int    compressed;             /* 92 + 4    */
+		int    verified;               /* 96 + 4    */
+		int    glmax, glmin;           /* 100 + 8   */
+	};                               /* total=108 */
+
+	//! Internal structure used for Analyze Format image headers
+	struct data_history              /*      history_     */
+	{                                /* off + size*/
+		char  descrip[80];             /* 0 + 80    */
+		char  aux_file[24];            /* 80 + 24   */
+		char  orient;                  /* 104 + 1   */
+		char  originator[10];          /* 105 + 10  */
+		char  generated[10];           /* 115 + 10  */
+		char  scannum[10];             /* 125 + 10  */
+		char  patient_id[10];          /* 135 + 10  */
+		char  exp_date[10];            /* 145 + 10  */
+		char  exp_time[10];            /* 155 + 10  */
+		char  hist_un0[3];             /* 165 + 3   */
+		int   views;                   /* 168 + 4   */
+		int   vols_added;              /* 172 + 4   */
+		int   start_field;             /* 176 + 4   */
+		int   field_skip;              /* 180 + 4   */
+		int   omax, omin;              /* 184 + 8   */
+		int   smax, smin;              /* 192 + 8   */
+	};                               /* total=200 */
+
+	//! Internal structure used for Analyze Format image headers
+	struct AnalyzeHdr                /*      AnalyzeHdr    */
+	{                                /* off + size*/
+		struct header_key       header_key_;    /* 0 + 40    */
+		struct image_dimension  dimensions_;  /* 40 + 108  */
+		struct data_history     history_;  /* 148 + 200 */
+	};                               /* total=348 */
 
 	//
 	static bool writeAnalyzeHdr(const std::string &baseName,
-		const struct dsr *const hdr);
+		const AnalyzeHdr &hdr);
 
 	//
 	static bool writeAnalyzeImg(const std::string &baseName,
@@ -128,12 +197,12 @@ private:
 	//
 	static bool readAnalyzeImg(const std::string& imgFileName,
 		mdm_Image3D &img,
-		const struct dsr *const hdr,
+		const AnalyzeHdr &hdr,
 		const bool swapFlag);
 
 	//
 	static bool readAnalyzeHdr(const std::string& hdrFileName,
-		struct dsr *const hdr);
+		AnalyzeHdr &hdr);
 
 	//
 	static bool readOldXtr(std::ifstream *xtrFileStream,
@@ -149,16 +218,16 @@ private:
 
 
 	//
-	static void  hdrToString(std::string& hdrString, const struct dsr *const hdr);
+	static void  hdrToString(std::string& hdrString, const AnalyzeHdr &hdr);
 
 	//
-	static void  setHdrFieldsFromImage3D(struct dsr *const hdr,
-		const mdm_Image3D img,
+	static void  setHdrFieldsFromImage3D(AnalyzeHdr &hdr,
+		const mdm_Image3D &img,
 		const int typeFlag,
 		bool sparse);
 	
 	//
-	static void  hdrBlankInit(struct dsr *const hdr);
+	static void  hdrBlankInit(AnalyzeHdr &hdr);
 
   // Added so we can deal with stuff
 	const static int MAX_ANALYZE_DIMS;
@@ -166,75 +235,7 @@ private:
 	const static int MAX_IMG_DIMS;
 };
 
-//! Internal structure used for Analyze Format image headers
-struct header_key                /*      hk   */
-{                                /* off + size*/
-	int        sizeof_hdr;         /* 0 + 4     */
-	char       data_type[10];      /* 4 + 10    */
-	char       db_name[18];        /* 14 + 18   */
-	int        extents;            /* 32 + 4    */
-	short int  session_error;      /* 36 + 2    */
-	char       regular;            /* 38 + 1    */
-	char       hkey_un0;           /* 39 + 1    */
-};                               /* total=40  */
 
-//! Internal structure used for Analyze Format image headers
-struct image_dimension           /*      dime      */
-{                                /* off + size*/
-	short int  dim[8];             /* 0 + 16    */
-	char       vox_units[4];       /* 16 + 4    */
-	char       cal_units[8];       /* 20 + 4    */
-	short int  unused1;            /* 24 + 2    */
-	short int  datatype;           /* 30 + 2    */
-	short int  bitpix;             /* 32 + 2    */
-	short int  dim_un0;            /* 34 + 2    */
-	float      pixdim[8];          /* 36 + 32   */
-																 /*
-																	*  pixdim[] specifies the voxel dimensions:
-																	*  pixdim[1] - voxel width
-																	*  pixdim[2] - voxel height
-																	*  pixdim[3] - interslice distance
-																	*  ...etc
-																	*/
-	float  vox_offset;             /* 68 + 4    */
-	float  roi_scale;              /* 72 + 4    */
-	float  funused1;               /* 76 + 4    */
-	float  funused2;               /* 80 + 4    */
-	float  cal_max;                /* 84 + 4    */
-	float  cal_min;                /* 88 + 4    */
-	int    compressed;             /* 92 + 4    */
-	int    verified;               /* 96 + 4    */
-	int    glmax, glmin;           /* 100 + 8   */
-};                               /* total=108 */
-
-//! Internal structure used for Analyze Format image headers
-struct data_history              /*      hist     */
-{                                /* off + size*/
-	char  descrip[80];             /* 0 + 80    */
-	char  aux_file[24];            /* 80 + 24   */
-	char  orient;                  /* 104 + 1   */
-	char  originator[10];          /* 105 + 10  */
-	char  generated[10];           /* 115 + 10  */
-	char  scannum[10];             /* 125 + 10  */
-	char  patient_id[10];          /* 135 + 10  */
-	char  exp_date[10];            /* 145 + 10  */
-	char  exp_time[10];            /* 155 + 10  */
-	char  hist_un0[3];             /* 165 + 3   */
-	int   views;                   /* 168 + 4   */
-	int   vols_added;              /* 172 + 4   */
-	int   start_field;             /* 176 + 4   */
-	int   field_skip;              /* 180 + 4   */
-	int   omax, omin;              /* 184 + 8   */
-	int   smax, smin;              /* 192 + 8   */
-};                               /* total=200 */
-
-//! Internal structure used for Analyze Format image headers
-struct dsr                       /*      dsr              */
-{                                /* off + size*/
-	struct header_key       hk;    /* 0 + 40    */
-	struct image_dimension  dime;  /* 40 + 108  */
-	struct data_history     hist;  /* 148 + 200 */
-};                               /* total=348 */
 #endif /* MDM_ANALYZEFORMAT_H */
 
 /*

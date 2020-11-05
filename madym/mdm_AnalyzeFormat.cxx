@@ -26,25 +26,6 @@ const int mdm_AnalyzeFormat::MAX_ANALYZE_DIMS  = 8;
 const int mdm_AnalyzeFormat::ANALYZE_HDR_SIZE  = 348;
 const int mdm_AnalyzeFormat::MAX_IMG_DIMS = 4;
 
-static const int MAX_BYTES = 16;
-
-
-//! Helper function to reverse byte order of big/little endian data
-void swapBytes(char *data, int nBytes)
-{
-	int   i;
-	char  temp[MAX_BYTES];
-
-	assert(data != NULL);
-	assert(nBytes != 0);
-
-	for (i = 0; i < nBytes; i++)
-		temp[i] = data[i];
-
-	for (i = 0; i < nBytes; i++)
-		data[i] = temp[nBytes - i - 1];
-}
-
 //
 MDM_API bool mdm_AnalyzeFormat::readImage3D(const std::string & fileName, mdm_Image3D &img,
 	bool load_xtr)
@@ -55,7 +36,7 @@ MDM_API bool mdm_AnalyzeFormat::readImage3D(const std::string & fileName, mdm_Im
 	int    nX = 1, nY = 1, nZ = 1;
 	double  xmm = 0.0, ymm = 0.0, zmm = 0.0;
 
-	struct dsr  hdr;
+	AnalyzeHdr  hdr;
 
 	bool  swapFlag = false;
 	bool  xtrExistsFlag = true;
@@ -73,7 +54,7 @@ MDM_API bool mdm_AnalyzeFormat::readImage3D(const std::string & fileName, mdm_Im
 	}
 
 	// Files seem to exist, so let's start reading them ...
-	if (!readAnalyzeHdr(hdrFileName, &hdr))
+	if (!readAnalyzeHdr(hdrFileName, hdr))
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: " + me + ":  error reading Analyze file " + baseName + ".hdr/img\n");
@@ -82,10 +63,10 @@ MDM_API bool mdm_AnalyzeFormat::readImage3D(const std::string & fileName, mdm_Im
 
 	// Check endian: sizeof_hdr is currently always 348 and so can be used
 	// for this purpose.
-	if (hdr.hk.sizeof_hdr != ANALYZE_HDR_SIZE)
+	if (hdr.header_key_.sizeof_hdr != ANALYZE_HDR_SIZE)
 	{
 		swapFlag = true;
-		swapBytes((char *)&hdr.hk.sizeof_hdr, sizeof(hdr.hk.sizeof_hdr));
+		mdm_Image3D::swapBytes(hdr.header_key_.sizeof_hdr);
 	}
 
 	// Read and store the voxel matrix dimensions
@@ -93,14 +74,14 @@ MDM_API bool mdm_AnalyzeFormat::readImage3D(const std::string & fileName, mdm_Im
 	{
 		for (iDim = 0; iDim <= MAX_IMG_DIMS; iDim++)
 		{
-			swapBytes((char *)&hdr.dime.dim[iDim], sizeof(hdr.dime.dim[iDim]));
+			mdm_Image3D::swapBytes(hdr.dimensions_.dim[iDim]);
 		}
 	}
-	nX = (int)hdr.dime.dim[1];
-	nY = (int)hdr.dime.dim[2];
-	if (hdr.dime.dim[3] >= 1)
-		nZ = (int)hdr.dime.dim[3];
-	if (hdr.dime.dim[4] > 1)
+	nX = (int)hdr.dimensions_.dim[1];
+	nY = (int)hdr.dimensions_.dim[2];
+	if (hdr.dimensions_.dim[3] >= 1)
+		nZ = (int)hdr.dimensions_.dim[3];
+	if (hdr.dimensions_.dim[4] > 1)
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: " + me + ": " + baseName + " is 4D. We can only use 2D or 3D images\n");
@@ -120,19 +101,20 @@ MDM_API bool mdm_AnalyzeFormat::readImage3D(const std::string & fileName, mdm_Im
 	{
 		for (iDim = 0; iDim <= MAX_IMG_DIMS; iDim++)
 		{
-			swapBytes((char *)&hdr.dime.pixdim[iDim], sizeof(hdr.dime.pixdim[iDim]));
+			mdm_Image3D::swapBytes(hdr.dimensions_.pixdim[iDim]);
 		}
 	}
-	xmm = (double)hdr.dime.pixdim[1];
-	ymm = (double)hdr.dime.pixdim[2];
-	if (hdr.dime.dim[3] >= 1)
-		zmm = (double)hdr.dime.pixdim[3];
+	xmm = (double)hdr.dimensions_.pixdim[1];
+	ymm = (double)hdr.dimensions_.pixdim[2];
+	if (hdr.dimensions_.dim[3] >= 1)
+		zmm = (double)hdr.dimensions_.pixdim[3];
 	img.setVoxelDims(xmm, ymm, zmm);
 
 	// We need to do this because datatype is used in readAnalyzeImg()
 	if (swapFlag)
-		swapBytes((char *)&hdr.dime.datatype, sizeof(hdr.dime.datatype));
-	if (!readAnalyzeImg(imgFileName, img, &hdr, swapFlag))
+		mdm_Image3D::swapBytes(hdr.dimensions_.datatype);
+
+	if (!readAnalyzeImg(imgFileName, img, hdr, swapFlag))
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: " + me + ": Can't read Analyze img file " + imgFileName + "\n");
@@ -179,14 +161,14 @@ MDM_API bool mdm_AnalyzeFormat::writeImage3D(const std::string &baseName,
 {
 	//int   nVoxels = img.numVoxels();
 
-	struct dsr  hdr;
+	AnalyzeHdr  hdr;
 	assert(!baseName.empty());
 
 	// Ensure all hdr fields have been initialised, set the req'd fields from
 	// img and the req'd data type fields and write hdr to file.
-	hdrBlankInit(&hdr);
-	setHdrFieldsFromImage3D(&hdr, img, dataTypeFlag, sparse);
-	if (!writeAnalyzeHdr(baseName, &hdr))
+	hdrBlankInit(hdr);
+	setHdrFieldsFromImage3D(hdr, img, dataTypeFlag, sparse);
+	if (!writeAnalyzeHdr(baseName, hdr))
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: mdm_AnalyzeFormat::writeImage3D: "
@@ -196,7 +178,7 @@ MDM_API bool mdm_AnalyzeFormat::writeImage3D(const std::string &baseName,
 
 	//TODO: we don't bother writing scaling any more. I can't see the point
 	//and just causes hassle
-	hdr.dime.roi_scale = 1.0;
+	hdr.dimensions_.roi_scale = 1.0;
 
 	//Write analyze now takes care of different output types
 	if (!writeAnalyzeImg(baseName, img, dataTypeFlag, sparse))
@@ -363,11 +345,10 @@ bool mdm_AnalyzeFormat::writeAnalyzeXtr(const std::string &baseName,
 
 //
 bool mdm_AnalyzeFormat::writeAnalyzeHdr(const std::string &baseName,
-                       const struct dsr *const hdr)
+                       const AnalyzeHdr &hdr)
 {
   assert(!baseName.empty());
   assert(baseName[0] != '\0');
-  assert(hdr != NULL);
 
 	std::string  hdrFileName = baseName + ".hdr";
 
@@ -382,7 +363,7 @@ bool mdm_AnalyzeFormat::writeAnalyzeHdr(const std::string &baseName,
   }
 
 	//Write the binary stream ***CHECK THIS LINE****
-	hdrFileStream.write((char*)hdr, sizeof(*hdr));
+	hdrFileStream.write((char*)&hdr, sizeof(hdr));
 
   if (!hdrFileStream.good())
   {
@@ -465,7 +446,7 @@ bool mdm_AnalyzeFormat::writeAnalyzeImg(const std::string &baseName,
 //
 bool mdm_AnalyzeFormat::readAnalyzeImg(const std::string &imgFileName,
 	mdm_Image3D &img,
-	const struct dsr *const hdr,
+	const AnalyzeHdr &hdr,
 	const bool swapFlag)
 {
 	// Open Analyze image file stream for reading
@@ -481,7 +462,7 @@ bool mdm_AnalyzeFormat::readAnalyzeImg(const std::string &imgFileName,
 	//Get datatype, if it's odd or equal to 6, it's our sparse
 	//format, with 5 added to the datatype
 	bool sparse = false;
-	int datatype = hdr->dime.datatype;
+	int datatype = hdr.dimensions_.datatype;
 	if (datatype==6 || datatype % 2)
 	{
 		datatype -= 5;
@@ -531,11 +512,10 @@ bool mdm_AnalyzeFormat::readAnalyzeImg(const std::string &imgFileName,
 
 //
 bool mdm_AnalyzeFormat::readAnalyzeHdr(const std::string &hdrFileName,
-	struct dsr *const hdr)
+	AnalyzeHdr &hdr)
 {
 
 	assert(!hdrFileName.empty());
-	assert(hdr != NULL);
 
 	// Open Analyze header file stream for reading
 	std::ifstream hdrFileStream(hdrFileName, std::ios::in | std::ios::binary);
@@ -547,8 +527,8 @@ bool mdm_AnalyzeFormat::readAnalyzeHdr(const std::string &hdrFileName,
 		return false;
 	}
 	// Read values from header file
-	size_t expectedSize = sizeof(*hdr);
-	hdrFileStream.read((char*)hdr, expectedSize);
+	size_t expectedSize = sizeof(hdr);
+	hdrFileStream.read((char*)&hdr, expectedSize);
 	size_t nRead = hdrFileStream.gcount();
 	if (hdrFileStream.fail() || nRead != expectedSize)
 	{
@@ -660,50 +640,49 @@ bool mdm_AnalyzeFormat::readAnalyzeXtr(const std::string &xtrFileName,
 
 //
 //----------------------------------------------------------------------------
-void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(struct dsr *const hdr,
-	const mdm_Image3D img,
+void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(AnalyzeHdr &hdr,
+	const mdm_Image3D &img,
 	const int typeFlag,
 	bool sparse)
 {
 	int   nX, nY, nZ;
 
-	assert(hdr != NULL);
-	assert(hdr->hk.sizeof_hdr == 348);
+	assert(hdr.header_key_.sizeof_hdr == 348);
 
 	img.getDimensions(nX, nY, nZ);
-	hdr->hk.extents = (int)(nX * nY);
+	hdr.header_key_.extents = (int)(nX * nY);
 
-	hdr->dime.dim[0] = (short)4;
-	hdr->dime.dim[1] = (short)nX;
-	hdr->dime.dim[2] = (short)nY;
-	hdr->dime.dim[3] = (short)nZ;
-	hdr->dime.dim[4] = (short)1;
+	hdr.dimensions_.dim[0] = (short)4;
+	hdr.dimensions_.dim[1] = (short)nX;
+	hdr.dimensions_.dim[2] = (short)nY;
+	hdr.dimensions_.dim[3] = (short)nZ;
+	hdr.dimensions_.dim[4] = (short)1;
 
-	hdr->dime.pixdim[0] = (double) 4.0;
-	hdr->dime.pixdim[1] = (double)img.info_.Xmm.value();
-	hdr->dime.pixdim[2] = (double)img.info_.Ymm.value();
-	hdr->dime.pixdim[3] = (double)img.info_.Zmm.value();
+	hdr.dimensions_.pixdim[0] = (double) 4.0;
+	hdr.dimensions_.pixdim[1] = (double)img.info_.Xmm.value();
+	hdr.dimensions_.pixdim[2] = (double)img.info_.Ymm.value();
+	hdr.dimensions_.pixdim[3] = (double)img.info_.Zmm.value();
 	switch (typeFlag)
 	{
 	case DT_UNSIGNED_CHAR:
-		hdr->dime.datatype = (short)DT_UNSIGNED_CHAR;
-		hdr->dime.bitpix = (short) sizeof(char) * 8;
+		hdr.dimensions_.datatype = (short)DT_UNSIGNED_CHAR;
+		hdr.dimensions_.bitpix = (short) sizeof(char) * 8;
 		break;
 	case DT_SIGNED_SHORT:
-		hdr->dime.datatype = (short)DT_SIGNED_SHORT;
-		hdr->dime.bitpix = (short) sizeof(short) * 8;
+		hdr.dimensions_.datatype = (short)DT_SIGNED_SHORT;
+		hdr.dimensions_.bitpix = (short) sizeof(short) * 8;
 		break;
 	case DT_SIGNED_INT:
-		hdr->dime.datatype = (short)DT_SIGNED_INT;
-		hdr->dime.bitpix = (short) sizeof(int) * 8;
+		hdr.dimensions_.datatype = (short)DT_SIGNED_INT;
+		hdr.dimensions_.bitpix = (short) sizeof(int) * 8;
 		break;
 	case DT_FLOAT:
-		hdr->dime.datatype = (short)DT_FLOAT;
-		hdr->dime.bitpix = (short) sizeof(float) * 8;
+		hdr.dimensions_.datatype = (short)DT_FLOAT;
+		hdr.dimensions_.bitpix = (short) sizeof(float) * 8;
 		break;
 	case DT_DOUBLE:
-		hdr->dime.datatype = (short)DT_DOUBLE;
-		hdr->dime.bitpix = (short) sizeof(double) * 8;
+		hdr.dimensions_.datatype = (short)DT_DOUBLE;
+		hdr.dimensions_.bitpix = (short) sizeof(double) * 8;
 		break;
 	default:
 		// TODO SEND MESSAGE "TYPE NOT SUPPORTED FOR O/P" TO ERROR LOG
@@ -712,96 +691,92 @@ void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(struct dsr *const hdr,
 
 	//For sparse writing, add 5 to the data type
 	if (sparse)
-		hdr->dime.datatype += 5;
+		hdr.dimensions_.datatype += 5;
 }
 
 //
-void  mdm_AnalyzeFormat::hdrBlankInit(struct dsr *const hdr)
+void  mdm_AnalyzeFormat::hdrBlankInit(AnalyzeHdr &hdr)
 {
 	int i;
 
-	assert(hdr != NULL);
-
-	hdr->hk.sizeof_hdr = (int) sizeof(struct dsr);       /* Should be 348 */
+	hdr.header_key_.sizeof_hdr = (int) sizeof(struct AnalyzeHdr);       /* Should be 348 */
 
 	for (i = 0; i < 10; i++)
-		hdr->hk.data_type[i] = '\0';
+		hdr.header_key_.data_type[i] = '\0';
 	for (i = 0; i < 18; i++)
-		hdr->hk.db_name[i] = '\0';
-	hdr->hk.extents = (int)0;
-	hdr->hk.session_error = (short)0;
-	hdr->hk.regular = 'r';
-	hdr->hk.hkey_un0 = ' ';
+		hdr.header_key_.db_name[i] = '\0';
+	hdr.header_key_.extents = (int)0;
+	hdr.header_key_.session_error = (short)0;
+	hdr.header_key_.regular = 'r';
+	hdr.header_key_.hkey_un0 = ' ';
 
 	for (i = 0; i < 8; i++)
-		hdr->dime.dim[i] = (short)0;
+		hdr.dimensions_.dim[i] = (short)0;
 	for (i = 0; i < 4; i++)
-		hdr->dime.vox_units[i] = '\0';
-	std::strcpy(hdr->dime.vox_units, "mm");
+		hdr.dimensions_.vox_units[i] = '\0';
+	std::strcpy(hdr.dimensions_.vox_units, "mm");
 	for (i = 0; i < 8; i++)
-		hdr->dime.cal_units[i] = '\0';
-	hdr->dime.unused1 = (short)0;
-	hdr->dime.datatype = (short)DT_UNKNOWN;
-	hdr->dime.bitpix = (short)0;
-	hdr->dime.dim_un0 = (short)0;
+		hdr.dimensions_.cal_units[i] = '\0';
+	hdr.dimensions_.unused1 = (short)0;
+	hdr.dimensions_.datatype = (short)DT_UNKNOWN;
+	hdr.dimensions_.bitpix = (short)0;
+	hdr.dimensions_.dim_un0 = (short)0;
 	for (i = 0; i < 8; i++)
-		hdr->dime.pixdim[i] = (float)0;
-	hdr->dime.vox_offset = (float) 0.0;
+		hdr.dimensions_.pixdim[i] = (float)0;
+	hdr.dimensions_.vox_offset = (float) 0.0;
 	// This is where mricro expects to find a scale factor
-	hdr->dime.roi_scale = (float) 1.0;
-	hdr->dime.funused1 = (float) 0.0;
-	hdr->dime.funused2 = (float) 0.0;
-	hdr->dime.cal_max = (float) 0.0;
-	hdr->dime.cal_min = (float) 0.0;
-	hdr->dime.compressed = (int) 0.0;
-	hdr->dime.verified = (int) 0.0;
-	hdr->dime.glmax = (int)0;
-	hdr->dime.glmin = (int)0;
+	hdr.dimensions_.roi_scale = (float) 1.0;
+	hdr.dimensions_.funused1 = (float) 0.0;
+	hdr.dimensions_.funused2 = (float) 0.0;
+	hdr.dimensions_.cal_max = (float) 0.0;
+	hdr.dimensions_.cal_min = (float) 0.0;
+	hdr.dimensions_.compressed = (int) 0.0;
+	hdr.dimensions_.verified = (int) 0.0;
+	hdr.dimensions_.glmax = (int)0;
+	hdr.dimensions_.glmin = (int)0;
 
 	for (i = 0; i < 80; i++)
-		hdr->hist.descrip[i] = '\0';
+		hdr.history_.descrip[i] = '\0';
 	for (i = 0; i < 24; i++)
-		hdr->hist.aux_file[i] = '\0';
-	hdr->hist.orient = (char)0;
+		hdr.history_.aux_file[i] = '\0';
+	hdr.history_.orient = (char)0;
 	for (i = 0; i < 10; i++)
-		hdr->hist.originator[i] = '\0';
+		hdr.history_.originator[i] = '\0';
 	for (i = 0; i < 10; i++)
-		hdr->hist.generated[i] = '\0';
+		hdr.history_.generated[i] = '\0';
 	for (i = 0; i < 10; i++)
-		hdr->hist.scannum[i] = '\0';
+		hdr.history_.scannum[i] = '\0';
 	for (i = 0; i < 10; i++)
-		hdr->hist.patient_id[i] = '\0';
+		hdr.history_.patient_id[i] = '\0';
 	for (i = 0; i < 10; i++)
-		hdr->hist.exp_date[i] = '\0';
+		hdr.history_.exp_date[i] = '\0';
 	for (i = 0; i < 10; i++)
-		hdr->hist.exp_time[i] = '\0';
+		hdr.history_.exp_time[i] = '\0';
 	for (i = 0; i < 3; i++)
-		hdr->hist.hist_un0[i] = '\0';
-	hdr->hist.views = (int)0;
-	hdr->hist.vols_added = (int)0;
-	hdr->hist.start_field = (int)0;
-	hdr->hist.field_skip = (int)0;
-	hdr->hist.omax = (int)0;
-	hdr->hist.omin = (int)0;
-	hdr->hist.smax = (int)0;
-	hdr->hist.smin = (int)0;
+		hdr.history_.hist_un0[i] = '\0';
+	hdr.history_.views = (int)0;
+	hdr.history_.vols_added = (int)0;
+	hdr.history_.start_field = (int)0;
+	hdr.history_.field_skip = (int)0;
+	hdr.history_.omax = (int)0;
+	hdr.history_.omin = (int)0;
+	hdr.history_.smax = (int)0;
+	hdr.history_.smin = (int)0;
 }
 
 //
-void  mdm_AnalyzeFormat::hdrToString(std::string &hdrString, const struct dsr *const hdr)
+void  mdm_AnalyzeFormat::hdrToString(std::string &hdrString, const AnalyzeHdr &hdr)
 {
-
-	assert(hdr != NULL);
 
 	// Use C++ string stream class for this
 	std::stringstream ss;
 
 	ss <<
-		"qbiAnalyzeHdr:   header struct of size " << hdr->hk.sizeof_hdr << " at location " << hdr << "\n" <<
-		"the voxel matrix is " << hdr->dime.dim[1] << " x " << hdr->dime.dim[2] << " x " << hdr->dime.dim[3] <<
-		", with dimensions " << hdr->dime.pixdim[1] << " x " << hdr->dime.pixdim[2] << " x " << hdr->dime.pixdim[3] << " " << hdr->dime.vox_units << "\n" <<
-		"the offset is " << hdr->dime.vox_offset << ", the image extents " << hdr->hk.extents << ", and the scale factor " << hdr->dime.roi_scale << "\n" <<
-		"the data type is " << hdr->dime.datatype << ", i.e. " << hdr->dime.bitpix << " bits per pixel\n";
+		"qbiAnalyzeHdr:   header struct of size " << hdr.header_key_.sizeof_hdr << " at location " << &hdr << "\n" <<
+		"the voxel matrix is " << hdr.dimensions_.dim[1] << " x " << hdr.dimensions_.dim[2] << " x " << hdr.dimensions_.dim[3] <<
+		", with dimensions " << hdr.dimensions_.pixdim[1] << " x " << hdr.dimensions_.pixdim[2] << " x " << hdr.dimensions_.pixdim[3] << " " << hdr.dimensions_.vox_units << "\n" <<
+		"the offset is " << hdr.dimensions_.vox_offset << ", the image extents " << hdr.header_key_.extents << ", and the scale factor " << hdr.dimensions_.roi_scale << "\n" <<
+		"the data type is " << hdr.dimensions_.datatype << ", i.e. " << hdr.dimensions_.bitpix << " bits per pixel\n";
 	hdrString = ss.str();
 }
 

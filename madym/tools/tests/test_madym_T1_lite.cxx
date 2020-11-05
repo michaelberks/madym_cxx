@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1_lite) {
 		<< " -T VFA "
 		<< " --data " << inputDataFile
 		<< " --n_T1 " << 3
-		<< " --tr " << TR
+		<< " --TR " << TR
 		<< " -o " << T1_output_dir
 		<< " -O " << outputName;
 		;

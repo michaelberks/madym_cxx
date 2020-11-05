@@ -47,18 +47,16 @@ public:
 	*/
 	MDM_API virtual mdm_ErrorTracker::ErrorCode fitT1(double &T1value, double &M0value) = 0;
 
-	//! Fit T1 for a single line of an input data stream buffer
+	//! Set inputs for computing T1 from a single line of an input data stream buffer
 	/*!
 	All sub-classes must implement this method.
 
 	\param ifs input data stream
 	\param nSignals number of signals in sample
-	\param T1value reference to hold computed T1
-	\param M0value reference to hold computed M0
-	\param eof reference to flag, set true if streams EOF flag is reached
+	\return false if streams EOF flag is reached, true otherwise
 	*/
-	MDM_API virtual mdm_ErrorTracker::ErrorCode fitT1(std::istream& ifs, 
-		const int nSignals, double &T1value, double &M0value, bool &eof) = 0;
+	MDM_API virtual bool setInputsFromStream(std::istream& ifs, 
+		const int nSignals) = 0;
 
 	//! Set any fixed scanner settings required to estimate T1
 	/*!

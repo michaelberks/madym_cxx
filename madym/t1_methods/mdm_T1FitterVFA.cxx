@@ -84,7 +84,7 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 	int iterations = rep_.iterationscount;
 
 #if _DEBUG
-	std::cout << "Alglib complete after " << iterations << std::endl;
+	//std::cout << "Alglib complete after " << iterations << std::endl;
 #endif
 	/* Check for non-convergence */
 	if (iterations >= maxIterations_)
@@ -106,28 +106,24 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 }
 
 //
-MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(std::istream& ifs,
-	const int nSignals, double &T1value, double &M0value, bool &eof)
+MDM_API bool mdm_T1FitterVFA::setInputsFromStream(std::istream& ifs,
+	const int nSignals)
 {
-	eof = false;
 	FAs_.resize(nSignals);
 	signals_.resize(nSignals);
 	for (auto &fa : FAs_)
 	{
 		ifs >> fa;
 		if (ifs.eof())
-		{
-			eof = true;
-			return mdm_ErrorTracker::OK;
-		}
+			return false;
+
 		fa *= (PI / 180);
 	}
 	for (auto &si : signals_)
 		ifs >> si;
 
 	initFAs();
-
-	return fitT1(T1value, M0value);
+	return true;
 }
 
 //

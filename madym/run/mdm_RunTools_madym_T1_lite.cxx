@@ -72,14 +72,14 @@ MDM_API int mdm_RunTools_madym_T1_lite::run()
 	//Loop through the file, reading in each line
 	while (!inputData.eof())
 	{
-		bool eof;
-		double T1, M0;
-		int errCode = T1Fitter->fitT1(inputData, nSignals, T1, M0, eof);
-
-		if (eof)
+		//Get fitter to munch line of inputs from datastream, if EOF reached break
+		if (!T1Fitter->setInputsFromStream(inputData, nSignals))
 			break;
 
-		//Now write the output
+		//If valid inputs, fit T1 and write to output stream
+		double T1, M0;
+		int errCode = T1Fitter->fitT1(T1, M0);
+
 		outputData <<
 			T1 << " " <<
 			M0 << " " <<
