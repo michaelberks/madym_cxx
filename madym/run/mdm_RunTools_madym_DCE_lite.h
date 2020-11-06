@@ -72,7 +72,8 @@ private:
 		const std::vector<double> &IAUCTimes,
 		const bool &outputCt_mod,
 		const bool &outputCt_sig,
-		const bool &optimiseModel);
+		const bool &optimiseModel,
+		const int &maxIterations);
 
 	//Variables:
 };

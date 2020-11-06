@@ -19,6 +19,7 @@ BOOST_AUTO_TEST_CASE(test_config) {
 	options.dose.set(0.25); //double
 	options.fixedParams.set({ 1, 2, 3 }); //vector<int>
 	options.T1inputNames.set({ "fa1", "fa2" }); //vector<str>
+	options.maxIterations.set(100);
 
 	BOOST_TEST_MESSAGE("Writing params file");
 	BOOST_CHECK(!madym_write.parseInputs("test_write"));
@@ -42,6 +43,8 @@ BOOST_AUTO_TEST_CASE(test_config) {
 	BOOST_CHECK_VECTORS(options.fixedParams(), options_in.fixedParams());
 	BOOST_TEST_MESSAGE("Reading and writing params file, values match: T1inputNames");
 	BOOST_CHECK_VECTORS(options.T1inputNames(), options_in.T1inputNames());
+	BOOST_TEST_MESSAGE("Reading and writing params file, values match: maxIterations");
+	BOOST_CHECK_EQUAL(options.maxIterations(), options_in.maxIterations());
 }
 
 BOOST_AUTO_TEST_SUITE_END() //

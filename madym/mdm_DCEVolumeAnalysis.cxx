@@ -45,6 +45,7 @@ MDM_API mdm_DCEVolumeAnalysis::mdm_DCEVolumeAnalysis()
   noiseVar_(0),
   firstImage_(0),
   lastImage_(-1),
+	maxIterations_(0),
   model_(NULL)
 {
 	setIAUCtimes({ 60.0, 90.0, 120.0 }, true);
@@ -343,6 +344,10 @@ MDM_API void mdm_DCEVolumeAnalysis::setFirstImage(int t)
 MDM_API void mdm_DCEVolumeAnalysis::setLastImage(int t)
 {
   lastImage_ = t;
+}
+MDM_API void mdm_DCEVolumeAnalysis::setMaxIterations(int maxItr)
+{
+	maxIterations_ = maxItr;
 }
 
 /**  
@@ -665,7 +670,8 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
             lastImage_,//n2
             testEnhancement_,//testEnhancement
             useM0Ratio_,//useM0Ratio
-						IAUCTMinutes_);//IAUC_times
+						IAUCTMinutes_,
+						maxIterations_);//IAUC_times
 
           //Run an initial fit (does not optimise parameters, but ensures
           //concentration has been derived from signal if not already done,
