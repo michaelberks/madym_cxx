@@ -15,27 +15,6 @@
 
 namespace fs = boost::filesystem;
 
-double secs_to_timestamp(double t_in_secs)
-{
-	//Convert time in seconds into the xtr timestamp format
-	//hhmmss.msecs represented as a single decimal number
-	//
-	double hh = std::floor(t_in_secs / (3600));
-	double mm = std::floor((t_in_secs - 3600 * hh) / 60);
-	double ss = t_in_secs - 3600 * hh - 60 * mm;
-	double timestamp = 10000 * hh + 100 * mm + ss;
-	return timestamp;
-}
-	
-
-double mins_to_timestamp(double t_in_mins)
-{
-	// Convert time in minutes(the form used for dynamic time in madym)
-	//into the xtr timestamp format
-	//hhmmss.msecs represented as a single decimal number
-	return secs_to_timestamp(60 * t_in_mins);
-}
-
 void check_output(
 	const std::string& Ct_output_dir,
 	const std::vector<double> &trueParams,
@@ -160,12 +139,11 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 	{
 		//Write out 1x1 concentration maps and xtr files
 		std::string Ct_name = dyn_dir + "Ct_" + (boost::format("%02u") % (i_t + 1)).str();
-		double timestamp = mins_to_timestamp(dynTimes[i_t]);
 
 		mdm_Image3D Ct_img;
 		Ct_img.setDimensions(1, 1, 1);
 		Ct_img.setVoxelDims(1, 1, 1);
-		Ct_img.setTimeStamp(timestamp);
+		Ct_img.setTimeStampFromMins(dynTimes[i_t]);
 		Ct_img.setVoxel(0, Ct[i_t]);
 
 		mdm_AnalyzeFormat::writeImage3D(Ct_name, Ct_img, 
@@ -178,6 +156,37 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 	//Run 2 tests:
 	// 1) Using a run tools object, this runs the complete pipeline but doesn't involve a system call
 	// 2) Calling system to run a command line call
+
+	//-------------------------------------------------------------------------------
+	// 1) Using a run tools object
+	//-------------------------------------------------------------------------------
+	{
+		std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct1/";
+		mdm_InputOptions madym_options;
+		mdm_OptionsParser options_parser;
+		madym_options.model.set("ETM");
+		madym_options.outputDir.set(Ct_output_dir);
+		madym_options.dynDir.set(dyn_dir);
+		madym_options.dynName.set("Ct_");
+		madym_options.dynFormat.set("%02u");
+		madym_options.nDyns.set(nTimes);
+		madym_options.injectionImage.set(injectionImage);
+		madym_options.dose.set(dose);
+		madym_options.hct.set(hct);
+		madym_options.IAUCTimes.set(IAUCTimes);
+		madym_options.inputCt.set(true);
+		madym_options.overwrite.set(true);
+
+		mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
+		madym_exe.parseInputs("test_madym_DCE");
+		int result = madym_exe.run();
+
+		BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
+		check_output(Ct_output_dir,
+			trueParams,
+			IAUCTimes,
+			IAUCVals);
+	}
 
 	//-------------------------------------------------------------------------------
 	// 2) From the command line
@@ -211,37 +220,6 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		}
 
 		BOOST_CHECK_MESSAGE(!error, "Error returned from madym_DCE tool");
-		check_output(Ct_output_dir,
-			trueParams,
-			IAUCTimes,
-			IAUCVals);
-	}
-
-	//-------------------------------------------------------------------------------
-	// 1) Using a run tools object
-	//-------------------------------------------------------------------------------
-	{
-		std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct1/";
-		mdm_InputOptions madym_options;
-		mdm_OptionsParser options_parser;
-		madym_options.model.set("ETM");
-		madym_options.outputDir.set(Ct_output_dir);
-		madym_options.dynDir.set(dyn_dir);
-		madym_options.dynName.set("Ct_");
-		madym_options.dynFormat.set("%02u");
-		madym_options.nDyns.set(nTimes);
-		madym_options.injectionImage.set(injectionImage);
-		madym_options.dose.set(dose);
-		madym_options.hct.set(hct);
-		madym_options.IAUCTimes.set(IAUCTimes);
-		madym_options.inputCt.set(true);
-		madym_options.overwrite.set(true);
-
-		mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
-		madym_exe.parseInputs("test_madym_DCE");
-		int result = madym_exe.run();
-
-		BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
 		check_output(Ct_output_dir,
 			trueParams,
 			IAUCTimes,

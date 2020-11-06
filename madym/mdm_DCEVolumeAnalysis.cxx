@@ -82,9 +82,8 @@ MDM_API void mdm_DCEVolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
 	//Add the image to the list
 	StDataMaps_.push_back(dynImg);
 
-	//Extract the time from the header
-	double t = dynImg.timeStamp();
-	dynamicTimes_.push_back(timeFromTimeStamp(t));
+	//Extract the time from the header, converted to minutes
+	dynamicTimes_.push_back(dynImg.minutesFromTimeStamp());
 
   if (useNoise_)
   {
@@ -97,7 +96,7 @@ MDM_API void mdm_DCEVolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
 	{
 		mdm_Image3D ctMap;
 		ctMap.copy(dynImg);
-		ctMap.setTimeStamp(t);
+		ctMap.setTimeStampFromDoubleStr(dynImg.timeStamp());
 		ctMap.setType(mdm_Image3D::ImageType::TYPE_CAMAP);
 		CtDataMaps_.push_back(ctMap);
 	}
@@ -105,7 +104,7 @@ MDM_API void mdm_DCEVolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
   {
     mdm_Image3D cModMap;
     cModMap.copy(dynImg);
-		cModMap.setTimeStamp(t);
+		cModMap.setTimeStampFromDoubleStr(dynImg.timeStamp());
     cModMap.setType(mdm_Image3D::ImageType::TYPE_CAMAP);
     CtModelMaps_.push_back(cModMap);
   }
@@ -146,9 +145,8 @@ MDM_API void mdm_DCEVolumeAnalysis::addCtDataMap(const mdm_Image3D ctMap)
 	//Add the image to the list
 	CtDataMaps_.push_back(ctMap);
 
-	//Extract the time from the header
-	double t = timeFromTimeStamp(ctMap.timeStamp());
-	dynamicTimes_.push_back(t);
+	//Extract the time from the header, converted to minutes
+	dynamicTimes_.push_back(ctMap.minutesFromTimeStamp());
 
   //Check if there is a noise variance associated with the volume
   if (useNoise_)
@@ -811,19 +809,6 @@ bool mdm_DCEVolumeAnalysis::createMap(mdm_Image3D& img)
 
 	img.setType(mdm_Image3D::ImageType::TYPE_KINETICMAP);
 	return true;
-}
-
-double mdm_DCEVolumeAnalysis::timeFromTimeStamp(double timeStamp)
-{
-	int hours = (int)(timeStamp / 10000);
-	int minutes = (int)(timeStamp - 10000 * hours) / 100;
-	double seconds = (timeStamp
-		- 10000 * hours
-		- 100 * minutes);
-	double timeInSecs = double(hours) * 60 * 60
-		+ double(minutes) * 60
-		+ seconds;
-  return timeInSecs / 60.0; //time in minutes as used as standard throughout DCE analysis
 }
 
 /**

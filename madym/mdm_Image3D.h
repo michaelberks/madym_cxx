@@ -208,7 +208,24 @@ class mdm_Image3D
 	/*!
 	\param   timeStamp - double representing a valid time stamp
 	*/
-	MDM_API void setTimeStamp(const double timeStamp);
+	MDM_API void setTimeStampFromDoubleStr(const double timeStamp);
+
+	//! Set timestamp from the current system clock time
+	/*!
+	*/
+	MDM_API void setTimeStampFromNow();
+
+	//! Set timestamp given a time in minutes
+	/*!
+	\param   timeInMins assumed to be duration since 00:00:00
+	*/
+	MDM_API void setTimeStampFromMins(const double timeInMins);
+
+	//! Set timestamp given a time in seconds
+	/*!
+	\param   timeInSecs assumed to be duration since 00:00:00
+	*/
+	MDM_API void setTimeStampFromSecs(const double timeInSecs);
 
 	//! Return timestamp
 	/*!
@@ -220,6 +237,14 @@ class mdm_Image3D
 	\return image timestamp
 	*/
 	MDM_API double timeStamp() const;
+
+	//! Return time in accumlated decimalized minutes since midnight
+	/*!
+	Converts the xtr HHMMSS.SS string saved as a double into total accumulated minutes, as
+	decimalized minutes are the standard dynamic time measure for DCE analysis
+	\return accumulated minutes since midnight in time stamp
+	*/
+	MDM_API double minutesFromTimeStamp() const;
 
 	//! Return image meta data
 	/*!

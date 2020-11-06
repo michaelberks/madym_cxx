@@ -55,7 +55,7 @@ void test_xtr(mdm_Image3D &img)
 	img.info().flipAngle.setValue(FA);
 	img.info().TR.setValue(TR);
 	img.info().TE.setValue(TE);
-	img.setTimeStamp(time);
+	img.setTimeStampFromDoubleStr(time);
 	img.setType(mdm_Image3D::ImageType::TYPE_DEGR);
 
 	std::string img_name = mdm_test_utils::temp_dir() + "/xtr_test";
