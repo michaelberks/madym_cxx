@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(test_config) {
 	options.dose.set(0.25); //double
 	options.fixedParams.set({ 1, 2, 3 }); //vector<int>
 	options.T1inputNames.set({ "fa1", "fa2" }); //vector<str>
-	options.maxIterations.set(100);
+	options.maxIterations.set(100); //Int
 
 	BOOST_TEST_MESSAGE("Writing params file");
 	BOOST_CHECK(!madym_write.parseInputs("test_write"));
