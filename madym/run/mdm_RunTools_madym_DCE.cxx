@@ -256,7 +256,7 @@ void mdm_RunTools_madym_DCE::loadSt()
 			mdm_progAbort("paths and/or prefix to dynamic images not set");
 
 		//Load the dynamic images
-		if (!fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns()))
+		if (!fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns(), options_.dynFormat()))
 			mdm_progAbort("error loading dynamic images");
 		
 	}
@@ -270,7 +270,7 @@ void mdm_RunTools_madym_DCE::loadCt()
 	std::string catBasePath = CtPath.remove_filename().string();
 	if (!catBasePath.empty() && !catPrefix.empty())
 	{
-		if (!fileManager_.loadCtDataMaps(catBasePath, catPrefix, options_.nDyns()))
+		if (!fileManager_.loadCtDataMaps(catBasePath, catPrefix, options_.nDyns(), options_.dynFormat()))
 			mdm_progAbort("error loading catMaps");
 
 		//Set the times in the AIF from the dynamic times
