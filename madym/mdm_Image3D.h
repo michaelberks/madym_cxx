@@ -337,6 +337,7 @@ private:
 	int nY_;
 	int nZ_;
 
+	//! Array of voxels
 	std::vector<double> data_;
 
 	//! Image meta data
