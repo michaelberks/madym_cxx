@@ -224,7 +224,8 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 				iauc_t,
 				options_.outputCt_mod(),
 				options_.outputCt_sig(),
-				!options_.noOptimise());
+				!options_.noOptimise(),
+				options_.maxIterations());
 
 			col_counter = 0;
 
@@ -342,7 +343,8 @@ void mdm_RunTools_madym_DCE_lite::fit_series(std::ostream &outputData,
 	const std::vector<double> &IAUCTimes,
 	const bool &outputCt_mod,
 	const bool &outputCt_sig,
-	const bool &optimiseModel)
+	const bool &optimiseModel,
+	const int &maxIterations)
 {
 	std::vector<double> signalData;
 	std::vector<double> CtData;
@@ -371,7 +373,8 @@ void mdm_RunTools_madym_DCE_lite::fit_series(std::ostream &outputData,
 		lastImage,
 		testEnhancement,
 		useM0Ratio,
-		IAUCTimes);
+		IAUCTimes,
+		maxIterations);
 	vox.initialiseModelFit();
 
 	vox.computeIAUC();

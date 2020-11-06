@@ -70,7 +70,8 @@ public:
 		const int timepointN,
 		const bool testEnhancement,
 		const bool useM0Ratio,
-		const std::vector<double> &IAUC_times);
+		const std::vector<double> &IAUC_times,
+		const int maxIterations = 0);
 
 	//! Default destructor
 	/*!
@@ -282,6 +283,9 @@ private:
 	//Upper an lower bounds to use with optimiser
 	alglib::real_1d_array lowerBoundsOpt_;
 	alglib::real_1d_array upperBoundsOpt_;
+
+	//Maximum number of iterations applied
+	int maxIterations_;
 
 	/*Some limits and error values when computing dynamic T1 and hence concentrations*/
 	const static double Ca_BAD1;

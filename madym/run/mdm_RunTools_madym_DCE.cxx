@@ -240,6 +240,7 @@ void mdm_RunTools_madym_DCE::setVolumeAnalysisParams()
 	if (options_.lastImage() > 0)
 		volumeAnalysis_.setLastImage(options_.lastImage());
 	volumeAnalysis_.setIAUCtimes(options_.IAUCTimes());
+	volumeAnalysis_.setMaxIterations(options_.maxIterations());
 }
 
 //

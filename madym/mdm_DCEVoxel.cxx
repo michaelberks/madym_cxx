@@ -11,7 +11,8 @@
 #endif // !MDM_API_EXPORTS
 #include "mdm_DCEVoxel.h"
 
-#include <cmath>
+//#include <cmath>
+#include <algorithm>
 
 #include "opt/optimization.h"
 #include "opt/linalg.h"
@@ -41,7 +42,8 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	const int timepointN,
 	const bool testEnhancement,
 	const bool useM0Ratio,
-	const std::vector<double> &IAUC_times)
+	const std::vector<double> &IAUC_times,
+	const int maxIterations)
 	:
 	model_(model),
   signalData_(dynSignals),
@@ -62,6 +64,7 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	FA_(FA),
 	testEnhancement_(testEnhancement),
 	useM0Ratio_(useM0Ratio),
+	maxIterations_(maxIterations),
   status_(mdm_DCEVoxelStatus::OK)
 {
 }
@@ -310,10 +313,12 @@ void mdm_DCEVoxel::optimiseModel()
 	double rho = 0.0;
 
 #if _DEBUG
-	alglib::ae_int_t maxits = 100;
+	alglib::ae_int_t maxits = std::max(maxIterations_, 100);
 #else
-  alglib::ae_int_t maxits = 0;
+  alglib::ae_int_t maxits = maxIterations_;
 #endif
+
+	
 
 	//
 	// This variable contains differentiation step

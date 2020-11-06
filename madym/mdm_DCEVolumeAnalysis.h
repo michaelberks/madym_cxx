@@ -265,6 +265,12 @@ public:
 	*/
 	MDM_API void setLastImage(int timepoint);
 
+	//! Set maximum number of iterations used in computing model fit
+	/*!
+	\param maxItr if 0, no limit set, optimisation runs to convergence
+	*/
+	MDM_API void setMaxIterations(int maxItr);
+
   //! Initialise all DCE and tracer-kinetic model maps
 	/*!
 	Creates maps of appropiate size for each output map, with zero-values in all voxels. 
@@ -381,6 +387,10 @@ private:
   //Start and end points for evaluating model
   int firstImage_;
   int lastImage_;
+
+	//Maximum number of iterations
+	//Maximum number of iterations applied
+	int maxIterations_;
 };
 
 #endif /* mdm_DCEVolumeAnalysis_HDR */
