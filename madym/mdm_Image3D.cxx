@@ -15,11 +15,14 @@
 #include <cassert>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
+
+const std::string mdm_Image3D::MetaData::ImageTypeKey = "ImageType";
+const std::string mdm_Image3D::MetaData::TimeStampKey = "TimeStamp";
 
 //
 mdm_Image3D::MetaData::MetaData()
 	: /* Defaulting to NaN llows test isnan() for unset */
-	TimeStamp("TimeStamp"),
 	flipAngle("FlipAngle"),
 	TR("TR"),
 	TE("TE"),
@@ -84,6 +87,7 @@ MDM_API void mdm_Image3D::setVoxel(int i, double value)
 //
 MDM_API void mdm_Image3D::setType(ImageType newType)
 {
+	
   imgType_ = newType;
 }
 
@@ -142,68 +146,76 @@ MDM_API void mdm_Image3D::setVoxelDims(const double xmm, const double ymm, const
 //
 MDM_API void mdm_Image3D::setTimeStamp(const double timeStamp)
 {
-  info_.TimeStamp.setValue(timeStamp);
+  timeStamp_ = timeStamp;
 }
 
 //
 MDM_API double mdm_Image3D::timeStamp() const
 {
-  return info_.TimeStamp.value();
+  return timeStamp_;
 }
 
 //
-MDM_API void mdm_Image3D::setMetaData(const std::vector<std::string> &keys,
-	const std::vector<double> &values)
+MDM_API mdm_Image3D::MetaData& mdm_Image3D::info()
 {
-	auto nKeys = keys.size();
-  assert(nKeys == values.size());
+	return info_;
+}
 
-	for (auto i = 0; i < nKeys; i++)
+//
+MDM_API const mdm_Image3D::MetaData& mdm_Image3D::info() const
+{
+	return info_;
+}
+
+//
+MDM_API void mdm_Image3D::setMetaData(const std::string &key, const double &value)
+{
+
+	if (key.compare(info_.TimeStampKey) == 0)
+		setTimeStamp(value);
+	else if (key.compare(info_.ImageTypeKey) == 0)
+		setType(static_cast<ImageType>(int(value)));		
+	else if (key.compare(info_.flipAngle.key()) == 0)
+		info_.flipAngle.setValue(value);
+	else if (key.compare(info_.TR.key()) == 0)
+		info_.TR.setValue(value);
+	else if (key.compare(info_.TE.key()) == 0)
+		info_.TE.setValue(value);
+	else if (key.compare(info_.B.key()) == 0)
+		info_.B.setValue(value);
+	else if (key.compare(info_.TI.key()) == 0)
+		info_.TI.setValue(value);
+	else if (key.compare(info_.TA.key()) == 0)
+		info_.TA.setValue(value);
+	else if (key.compare(info_.ETL.key()) == 0)
+		info_.ETL.setValue(value);
+	else if (key.compare(info_.Xmm.key()) == 0)
+		info_.Xmm.setValue(value);
+	else if (key.compare(info_.Ymm.key()) == 0)
+		info_.Ymm.setValue(value);
+	else if (key.compare(info_.Zmm.key()) == 0)
+		info_.Zmm.setValue(value);
+	else if (key.compare(info_.rowDirCosX.key()) == 0)
+		info_.rowDirCosX.setValue(value);
+	else if (key.compare(info_.rowDirCosY.key()) == 0)
+		info_.rowDirCosY.setValue(value);
+	else if (key.compare(info_.rowDirCosZ.key()) == 0)
+		info_.rowDirCosZ.setValue(value);
+	else if (key.compare(info_.colDirCosX.key()) == 0)
+		info_.colDirCosX.setValue(value);
+	else if (key.compare(info_.colDirCosY.key()) == 0)
+		info_.colDirCosY.setValue(value);
+	else if (key.compare(info_.colDirCosZ.key()) == 0)
+		info_.colDirCosZ.setValue(value);
+  else if (key.compare(info_.noiseSigma.key()) == 0)
+    info_.noiseSigma.setValue(value);
+	else
 	{
-		if (keys[i].compare(info_.TimeStamp.key()) == 0)
-			setTimeStamp( values[i]);
-		else if (keys[i].compare(info_.flipAngle.key()) == 0)
-			info_.flipAngle.setValue(values[i]);
-		else if (keys[i].compare(info_.TR.key()) == 0)
-			info_.TR.setValue(values[i]);
-		else if (keys[i].compare(info_.TE.key()) == 0)
-			info_.TE.setValue(values[i]);
-		else if (keys[i].compare(info_.B.key()) == 0)
-			info_.B.setValue(values[i]);
-		else if (keys[i].compare(info_.TI.key()) == 0)
-			info_.TI.setValue(values[i]);
-		else if (keys[i].compare(info_.TA.key()) == 0)
-			info_.TA.setValue(values[i]);
-		else if (keys[i].compare(info_.ETL.key()) == 0)
-			info_.ETL.setValue(values[i]);
-		else if (keys[i].compare(info_.Xmm.key()) == 0)
-			info_.Xmm.setValue(values[i]);
-		else if (keys[i].compare(info_.Ymm.key()) == 0)
-			info_.Ymm.setValue(values[i]);
-		else if (keys[i].compare(info_.Zmm.key()) == 0)
-			info_.Zmm.setValue(values[i]);
-		else if (keys[i].compare(info_.rowDirCosX.key()) == 0)
-			info_.rowDirCosX.setValue(values[i]);
-		else if (keys[i].compare(info_.rowDirCosY.key()) == 0)
-			info_.rowDirCosY.setValue(values[i]);
-		else if (keys[i].compare(info_.rowDirCosZ.key()) == 0)
-			info_.rowDirCosZ.setValue(values[i]);
-		else if (keys[i].compare(info_.colDirCosX.key()) == 0)
-			info_.colDirCosX.setValue(values[i]);
-		else if (keys[i].compare(info_.colDirCosY.key()) == 0)
-			info_.colDirCosY.setValue(values[i]);
-		else if (keys[i].compare(info_.colDirCosZ.key()) == 0)
-			info_.colDirCosZ.setValue(values[i]);
-    else if (keys[i].compare(info_.noiseSigma.key()) == 0)
-      info_.noiseSigma.setValue(values[i]);
-		else
-		{
-			//Throw exception that key not recognised
-			std::cerr << "Error: Key " << keys[i] << " not recognised." << std::endl;
-			std::abort();
-		}
+		//Throw exception that key not recognised
+		std::cerr << "Error: Key " << key << " not recognised." << std::endl;
+		std::abort();
+	}
 
-  }
 }
 
 //
@@ -216,10 +228,6 @@ MDM_API void mdm_Image3D::getSetKeyValuePairs(std::vector<std::string> &keys,
 
 	//Check if each info field is set, if so, append key and value to their
 	//respective containers
-	if (info_.TimeStamp.isSet()){
-		keys.push_back(info_.TimeStamp.key()); 
-		values.push_back(info_.TimeStamp.value());
-	}
 	if (info_.flipAngle.isSet()){
 		keys.push_back(info_.flipAngle.key()); 
 		values.push_back(info_.flipAngle.value());
@@ -323,7 +331,7 @@ MDM_API void mdm_Image3D::copy(const mdm_Image3D &imgToCopy)
 {
 	//Copy image data, but do not copy timestamp
 	auto t = timeStamp();
-	info_ = imgToCopy.info_;
+	info_ = imgToCopy.info();
 	setTimeStamp(t);
 
 	//Set dimension from the copy, this will reset and resize the data array
@@ -344,12 +352,56 @@ MDM_API void mdm_Image3D::toString(std::string &imgString) const
 		info_.Xmm.value() << " mm x " << 
 		info_.Ymm.value() << " mm x " << 
 		info_.Zmm.value() << " mm\n" <<
-		"time stamp is " << info_.TimeStamp.value() << "\n" <<
+		"time stamp is " << timeStamp_ << "\n" <<
 		"info fields: flip angle is " << info_.flipAngle.value() << ", TR is " << info_.TR.value() << ",\n" <<
     "TE is " << info_.TE.value() << " and B is " << info_.B.value() << " (value < 0.0 => not set)\n" <<
     "and the image data is held at " << &data_ << "\n",
   
   imgString = ss.str();
+}
+
+//
+MDM_API void mdm_Image3D::metaDataToStream(std::ostream &ofs) const
+{
+	//Write the time stamp
+	ofs << info_.TimeStampKey << "\t"
+		<< std::fixed << std::setw(11) << std::setprecision(6) << timeStamp() << std::endl;
+
+	//Write the image type
+	ofs << info_.ImageTypeKey << "\t" << type() << std::endl;
+
+	std::vector<std::string> keys;
+	std::vector<double> values;
+	getSetKeyValuePairs(keys, values);
+
+	for (int i = 0; i < keys.size(); i++)
+		ofs << keys[i] << "\t" << values[i] << std::endl;
+}
+
+//
+MDM_API void mdm_Image3D::setMetaDataFromStream(std::istream &ifs)
+{
+	std::string key;
+	double value;
+	while (!ifs.eof())
+	{
+		ifs >> key >> value;
+		setMetaData(key, value);
+	}
+}
+
+//
+MDM_API void mdm_Image3D::setMetaDataFromStreamOld(std::istream &ifs)
+{
+	std::string str;
+	double f;
+	ifs >> str >> str >> f >> f >> f;
+	ifs >> str >> str >> f;
+	info_.flipAngle.setValue(f);
+	ifs >> str >> f;
+	info_.TR.setValue(f);
+	ifs >> str >> f >> f >> f >> f;
+	setTimeStamp(f);
 }
 
 //

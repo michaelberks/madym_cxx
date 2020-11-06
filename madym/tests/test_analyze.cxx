@@ -52,10 +52,11 @@ void test_xtr(mdm_Image3D &img)
 	double TR = 3;
 	double TE = 1;
 	double time = 123456.789;
-	img.info_.flipAngle.setValue(FA);
-	img.info_.TR.setValue(TR);
-	img.info_.TE.setValue(TE);
+	img.info().flipAngle.setValue(FA);
+	img.info().TR.setValue(TR);
+	img.info().TE.setValue(TE);
 	img.setTimeStamp(time);
+	img.setType(mdm_Image3D::ImageType::TYPE_DEGR);
 
 	std::string img_name = mdm_test_utils::temp_dir() + "/xtr_test";
 	bool success = mdm_AnalyzeFormat::writeImage3D(
@@ -65,13 +66,15 @@ void test_xtr(mdm_Image3D &img)
 
 	mdm_Image3D img_r = mdm_AnalyzeFormat::readImage3D(img_name, true);
 	BOOST_TEST_MESSAGE("Tesing xtr read: FA");
-	BOOST_CHECK_CLOSE(FA, img_r.info_.flipAngle.value(), 1e-3);//
+	BOOST_CHECK_CLOSE(FA, img_r.info().flipAngle.value(), 1e-3);//
 	BOOST_TEST_MESSAGE("Tesing xtr read: TR");
-	BOOST_CHECK_CLOSE(TR, img_r.info_.TR.value(), 1e-3);
+	BOOST_CHECK_CLOSE(TR, img_r.info().TR.value(), 1e-3);
 	BOOST_TEST_MESSAGE("Tesing xtr read: TE");
-	BOOST_CHECK_CLOSE(TE, img_r.info_.TE.value(), 1e-3);
+	BOOST_CHECK_CLOSE(TE, img_r.info().TE.value(), 1e-3);
 	BOOST_TEST_MESSAGE("Tesing xtr read: timestamp");
 	BOOST_CHECK_CLOSE(time, img_r.timeStamp(), 1e-3);
+	BOOST_TEST_MESSAGE("Tesing xtr read: image type");
+	BOOST_CHECK_EQUAL(mdm_Image3D::ImageType::TYPE_DEGR, img_r.type());
 }
 
 

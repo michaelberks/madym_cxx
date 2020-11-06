@@ -12,7 +12,6 @@
 #include <vector>
 #include <string>
 #include <fstream>
-#include <cmath>
  /*!
 	*  @brief   Storing 3D image data and associated meta-information
 	*/
@@ -80,7 +79,6 @@ class mdm_Image3D
 				std::string key_;
 				double value_;
 			};
-			KeyPair TimeStamp; ///> Time-stamp
 			KeyPair flipAngle; ///> Flip-angle
 			KeyPair TR; ///> Repetition time in ms
 			KeyPair TE; ///> Echo time in ms
@@ -98,6 +96,9 @@ class mdm_Image3D
 			KeyPair colDirCosY; ///> colDirCosY
 			KeyPair colDirCosZ; ///> colDirCosZ
 			KeyPair noiseSigma; ///> Estimate of noise standard deviation
+
+			static const std::string ImageTypeKey;
+			static const std::string TimeStampKey;
 		};
 
 		//! Enum of defined image types
@@ -220,15 +221,17 @@ class mdm_Image3D
 	*/
 	MDM_API double timeStamp() const;
 
-	//!   Set meta data using key-value pair arrays
+	//! Return image meta data
 	/*!
-	\param   keys   list of keys (matching values)
-	\param   values list of values (matching keys)
-	\see MetaData
-	\see KeyPair
+	\return reference to images meta data
 	*/
-	MDM_API void setMetaData(const std::vector<std::string> &keys,
-												const std::vector<double> &values);
+	MDM_API MetaData& info();
+
+	//! Return image meta data
+	/*!
+	\return const reference to images meta data
+	*/
+	MDM_API const MetaData& info() const;
 
 	//!   Get list of keys and values that have been set
 	/*!
@@ -259,6 +262,24 @@ class mdm_Image3D
 	\param   imgString reference to the string array to hold the description
 	*/
 	MDM_API void toString(std::string &imgString) const;
+
+	//!   Write meta data to output file stream
+	/*!
+	\param   ofs output filestream
+	*/
+	MDM_API void metaDataToStream(std::ostream &ofs) const;
+
+	//!   Set meta data from input file stream
+	/*!
+	\param   ifs input filestream
+	*/
+	MDM_API void setMetaDataFromStream(std::istream &ifs);
+
+	//!   Legacy function to set meta data from old xtr file format
+	/*!
+	\param   ifs input filestream
+	*/
+	MDM_API void setMetaDataFromStreamOld(std::istream &ifs);
 
 	//!Return indices and values of voxels with non-zero value
 	/*!
@@ -298,20 +319,27 @@ class mdm_Image3D
 	*/
 	template <class T> MDM_API static void swapBytes(T& data);
 
-	//! Image meta data
-	MetaData info_;
+	
 
 private:
 	/*!
 	*/
 	bool initDataArray();
 
+	//!   Set meta data using key-value pair 
+	void setMetaData(const std::string &key, const double &value);
+
 	ImageType imgType_;
+
+	double timeStamp_;
 
 	int nX_;
 	int nY_;
 	int nZ_;
 
 	std::vector<double> data_;
+
+	//! Image meta data
+	MetaData info_;
 };
 #endif /* MDM_IMAGE3D_H */

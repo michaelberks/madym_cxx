@@ -182,11 +182,11 @@ private:
 		bool sparse);
 
 	//
-	static bool writeNewXtr(std::ofstream *xtrFileStream,
+	static bool writeNewXtr(std::ofstream &xtrFileStream,
 		const mdm_Image3D &img);
 
 	//
-	static bool writeOldXtr(std::ofstream *xtrFileStream,
+	static bool writeOldXtr(std::ofstream &xtrFileStream,
 		const mdm_Image3D &img);
 
 	//
@@ -205,11 +205,11 @@ private:
 		AnalyzeHdr &hdr);
 
 	//
-	static bool readOldXtr(std::ifstream *xtrFileStream,
+	static bool readOldXtr(std::ifstream &xtrFileStream,
 		mdm_Image3D &img);
 
 	//
-	static bool readNewXtr(std::ifstream *xtrFileStream,
+	static bool readNewXtr(std::ifstream &xtrFileStream,
 		mdm_Image3D &img);
 
 	//

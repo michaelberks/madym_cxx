@@ -91,10 +91,10 @@ public:
 			std::vector<double> FAs;
 			const auto PI = acos(-1.0);
 			for (auto img : inputImages)
-				FAs.push_back(img.info_.flipAngle.value()  * PI / 180);
+				FAs.push_back(img.info().flipAngle.value()  * PI / 180);
 
 			//Get tr value from first FA image - assume same for all images?
-			double TR = inputImages[0].info_.TR.value();
+			double TR = inputImages[0].info().TR.value();
 			T1Fitter->setFixedScannerSettings({ TR });
 			T1Fitter->setVariableScannerSettings(FAs);
 			return T1Fitter;
