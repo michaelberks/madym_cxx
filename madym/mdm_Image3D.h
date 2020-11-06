@@ -333,9 +333,10 @@ private:
 
 	double timeStamp_;
 
-	int nX_;
-	int nY_;
-	int nZ_;
+	
+	int nX_; //!< Number of voxels in x-axis
+	int nY_; //!< Number of voxels in y-axis
+	int nZ_; //!< Number of voxels in z-axis (ie slices)
 
 	//! Array of voxels
 	std::vector<double> data_;
