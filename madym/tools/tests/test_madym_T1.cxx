@@ -33,8 +33,8 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1) {
 		mdm_Image3D FA_img;
 		FA_img.setDimensions(1, 1, 1);
 		FA_img.setVoxelDims(1, 1, 1);
-		FA_img.info_.flipAngle.setValue(FAs[i_fa]);
-		FA_img.info_.TR.setValue(TR);
+		FA_img.info().flipAngle.setValue(FAs[i_fa]);
+		FA_img.info().TR.setValue(TR);
 		FA_img.setVoxel(0, mdm_T1FitterVFA::T1toSignal(T1, M0, PI*FAs[i_fa]/180, TR));
 
 		FA_names[i_fa] = FA_dir + "FA_" + std::to_string((int)FAs[i_fa]);

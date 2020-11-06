@@ -739,8 +739,8 @@ void mdm_AIF::getConcTimeCourse(const std::vector<mdm_Image3D> &dynImages, const
       signalData[it] = dynImages[it].voxel(voxelIndex);
 
     conc.resize(nTimes);
-    double TR = dynImages[0].info_.TR.value();
-    double FA = dynImages[0].info_.flipAngle.value();
+    double TR = dynImages[0].info().TR.value();
+    double FA = dynImages[0].info().flipAngle.value();
     double T10 = T1.voxel(voxelIndex);
 
     //Use a DCE voxel object to convert to concentration

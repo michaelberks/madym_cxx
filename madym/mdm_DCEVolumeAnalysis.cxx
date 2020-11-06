@@ -88,7 +88,7 @@ MDM_API void mdm_DCEVolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
 
   if (useNoise_)
   {
-    double noise = dynImg.info_.noiseSigma.value();
+    double noise = dynImg.info().noiseSigma.value();
     if (noise != NAN)
       noiseVar_.push_back(noise);
   }
@@ -153,7 +153,7 @@ MDM_API void mdm_DCEVolumeAnalysis::addCtDataMap(const mdm_Image3D ctMap)
   //Check if there is a noise variance associated with the volume
   if (useNoise_)
   {
-    double noise = ctMap.info_.noiseSigma.value();
+    double noise = ctMap.info().noiseSigma.value();
     if (!isnan(noise))
       noiseVar_.push_back(noise);
   }
@@ -586,14 +586,14 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, bool optimiseMo
 
   if (!StDataMaps_.empty())
   {
-    tr = StDataMaps_[0].info_.TR.value();
-    fa = StDataMaps_[0].info_.flipAngle.value();
+    tr = StDataMaps_[0].info().TR.value();
+    fa = StDataMaps_[0].info().flipAngle.value();
     StDataMaps_[0].getDimensions(nX, nY, nZ);
   }
   else
   {
-    tr = CtDataMaps_[0].info_.TR.value();
-    fa = CtDataMaps_[0].info_.flipAngle.value();
+    tr = CtDataMaps_[0].info().TR.value();
+    fa = CtDataMaps_[0].info().flipAngle.value();
     CtDataMaps_[0].getDimensions(nX, nY, nZ);
   }
   

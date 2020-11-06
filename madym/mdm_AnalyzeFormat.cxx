@@ -256,29 +256,17 @@ MDM_API bool mdm_AnalyzeFormat::filesExist(const std::string & baseName, bool &x
 //Private 
 //**********************************************************************
 //
-bool mdm_AnalyzeFormat::writeNewXtr(std::ofstream *xtrFileStream,
+bool mdm_AnalyzeFormat::writeNewXtr(std::ofstream &xtrFileStream,
 	const mdm_Image3D &img)
 {
   assert(xtrFileStream);
   assert(img.numVoxels());
-
-	std::vector<std::string> keys;
-	std::vector<double> values;
-	img.getSetKeyValuePairs(keys, values);
-
-	for (int i = 0; i < keys.size(); i++)
-	{
-		if (keys[i] == img.info_.TimeStamp.key())
-			*xtrFileStream << keys[i] << "\t"
-			<< std::fixed << std::setw(11) << std::setprecision(6) << img.timeStamp() << std::endl;
-		else
-			*xtrFileStream << keys[i] << "\t" << values[i] << std::endl;
-	}
+	img.metaDataToStream(xtrFileStream);
   return true;
 }
 
 //
-bool mdm_AnalyzeFormat::writeOldXtr(std::ofstream *xtrFileStream,
+bool mdm_AnalyzeFormat::writeOldXtr(std::ofstream &xtrFileStream,
 	const mdm_Image3D &img)
 {
   int   hrs, mins;
@@ -294,13 +282,13 @@ bool mdm_AnalyzeFormat::writeOldXtr(std::ofstream *xtrFileStream,
   secs = timeStamp - ((double) hrs * 10000.0) - ((double) mins * 100.0);
 
   /* TEST FOR WRITE ERRORS */
-	*xtrFileStream << "voxel dimensions" << ":\t" 
-		<< img.info_.Xmm.value() << " " 
-		<< img.info_.Ymm.value() << " "
-		<< img.info_.Zmm.value() << std::endl;
-	*xtrFileStream << "flip angle" << ":\t" << img.info_.flipAngle.value() << std::endl;
-	*xtrFileStream << "TR" << ":\t" << img.info_.TR.value() << std::endl;
-	*xtrFileStream << "timestamp" << ":\t" << hrs << " " << mins << " " << secs << " " << timeStamp << std::endl;
+	xtrFileStream << "voxel dimensions" << ":\t" 
+		<< img.info().Xmm.value() << " " 
+		<< img.info().Ymm.value() << " "
+		<< img.info().Zmm.value() << std::endl;
+	xtrFileStream << "flip angle" << ":\t" << img.info().flipAngle.value() << std::endl;
+	xtrFileStream << "TR" << ":\t" << img.info().TR.value() << std::endl;
+	xtrFileStream << "timestamp" << ":\t" << hrs << " " << mins << " " << secs << " " << timeStamp << std::endl;
 
   return true;
 }
@@ -327,9 +315,9 @@ bool mdm_AnalyzeFormat::writeAnalyzeXtr(const std::string &baseName,
 
   // Write values to extra info file
   if (typeFlag == OLD_XTR)
-		mdm_AnalyzeFormat::writeOldXtr(&xtrFileStream, img);
+		mdm_AnalyzeFormat::writeOldXtr(xtrFileStream, img);
   else
-		mdm_AnalyzeFormat::writeNewXtr(&xtrFileStream, img);
+		mdm_AnalyzeFormat::writeNewXtr(xtrFileStream, img);
 
 	xtrFileStream.close();
   if (xtrFileStream.is_open())
@@ -550,28 +538,19 @@ bool mdm_AnalyzeFormat::readAnalyzeHdr(const std::string &hdrFileName,
 }
 
 //
-bool mdm_AnalyzeFormat::readOldXtr(std::ifstream *xtrFileStream,
+bool mdm_AnalyzeFormat::readOldXtr(std::ifstream &xtrFileStream,
 	mdm_Image3D &img)
 {
 	assert(xtrFileStream->is_open());
 
 	/* Read values from extra info file */
-	/* TEST FOR READ ERRORS */
-	std::string str;
-	double f;
-	*xtrFileStream >> str >> str >> f >> f >> f;
-	*xtrFileStream >> str >> str >> f;
-	img.info_.flipAngle.setValue(f);
-	*xtrFileStream >> str >> f;
-	img.info_.TR.setValue(f);
-	*xtrFileStream >> str >> f >> f >> f >> f;
-	img.setTimeStamp(f);
+	img.setMetaDataFromStreamOld(xtrFileStream);
 
 	return true;
 }
 
 //
-bool mdm_AnalyzeFormat::readNewXtr(std::ifstream *xtrFileStream,
+bool mdm_AnalyzeFormat::readNewXtr(std::ifstream &xtrFileStream,
 	mdm_Image3D &img)
 {
 	std::vector<std::string> keys;
@@ -581,15 +560,7 @@ bool mdm_AnalyzeFormat::readNewXtr(std::ifstream *xtrFileStream,
 
 	/* Read values from extra info file */
 	/* TEST FOR READ ERRORS */
-	std::string str;
-	double f;
-	while (!xtrFileStream->eof())
-	{
-		*xtrFileStream >> str >> f;
-		keys.push_back(str);
-		values.push_back(f);
-	}
-	img.setMetaData(keys, values);
+	img.setMetaDataFromStream(xtrFileStream);
 
 	return true;
 }
@@ -619,11 +590,11 @@ bool mdm_AnalyzeFormat::readAnalyzeXtr(const std::string &xtrFileName,
 	xtrFileStream.seekg(0);
 	if ((firstString == "voxel") || (firstString == "Voxel"))
 	{
-		readOldXtr(&xtrFileStream, img);
+		readOldXtr(xtrFileStream, img);
 	}
 	else
 	{
-		readNewXtr(&xtrFileStream, img);
+		readNewXtr(xtrFileStream, img);
 	}
 
 	xtrFileStream.close();
@@ -659,9 +630,9 @@ void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(AnalyzeHdr &hdr,
 	hdr.dimensions_.dim[4] = (short)1;
 
 	hdr.dimensions_.pixdim[0] = (double) 4.0;
-	hdr.dimensions_.pixdim[1] = (double)img.info_.Xmm.value();
-	hdr.dimensions_.pixdim[2] = (double)img.info_.Ymm.value();
-	hdr.dimensions_.pixdim[3] = (double)img.info_.Zmm.value();
+	hdr.dimensions_.pixdim[1] = (double)img.info().Xmm.value();
+	hdr.dimensions_.pixdim[2] = (double)img.info().Ymm.value();
+	hdr.dimensions_.pixdim[3] = (double)img.info().Zmm.value();
 	switch (typeFlag)
 	{
 	case DT_UNSIGNED_CHAR:
