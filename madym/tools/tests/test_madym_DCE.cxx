@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 	for (int i_t = 0; i_t < nTimes; i_t++)
 	{
 		//Write out 1x1 concentration maps and xtr files
-		std::string Ct_name = dyn_dir + "Ct_" + std::to_string(i_t + 1);
+		std::string Ct_name = dyn_dir + "Ct_" + (boost::format("%02u") % (i_t + 1)).str();
 		double timestamp = mins_to_timestamp(dynTimes[i_t]);
 
 		mdm_Image3D Ct_img;
@@ -170,6 +170,9 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 
 		mdm_AnalyzeFormat::writeImage3D(Ct_name, Ct_img, 
 			mdm_AnalyzeFormat::DT_FLOAT, mdm_AnalyzeFormat::NEW_XTR, false);
+
+		if (!i_t)
+			BOOST_TEST_MESSAGE("Saved 1st dynamic image " << Ct_name);
 	}
 
 	//Run 2 tests:
@@ -186,6 +189,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 			<< " -m ETM"
 			<< " -o " << Ct_output_dir
 			<< " --dyn " << dyn_dir << "Ct_"
+			<< " --dyn_name_format " << "%02u"
 			<< " -n " << nTimes
 			<< " -i " << injectionImage
 			<< " -D " << dose
@@ -224,6 +228,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		madym_options.outputDir.set(Ct_output_dir);
 		madym_options.dynDir.set(dyn_dir);
 		madym_options.dynName.set("Ct_");
+		madym_options.dynFormat.set("%02u");
 		madym_options.nDyns.set(nTimes);
 		madym_options.injectionImage.set(injectionImage);
 		madym_options.dose.set(dose);
@@ -253,6 +258,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		madym_options.model.set("ETM");
 		madym_options.outputDir.set(Ct_output_dir);
 		madym_options.dynDir.set(dyn_dir);
+		madym_options.dynFormat.set("%02u");
 		madym_options.dynName.set("Ct_");
 		madym_options.nDyns.set(nTimes);
 		madym_options.injectionImage.set(injectionImage);
