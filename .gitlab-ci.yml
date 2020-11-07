@@ -3,10 +3,11 @@ image: gcc
 
 before_script:
   # Install build dependencies
-  - apt-get update
-  - apt-get install --yes
-      wget cmake build-essential
-      libboost-all-dev
+  - echo "Installing dependencies"
+  #- apt-get update
+  #- apt-get install --yes
+  #    wget cmake build-essential
+  #    libboost-all-dev
 
 build_madym:
   # Build the application
