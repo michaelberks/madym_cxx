@@ -12,7 +12,8 @@ build_madym:
     - make
     - cd ..
     - ls
-    - build/madym_DCE -v
+    - ls build
+    #- build/madym_DCE -v
 
 test_madym:
   stage: test
