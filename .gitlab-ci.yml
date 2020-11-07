@@ -11,7 +11,8 @@ build_madym:
     - cmake ..
     - make
     - bin/madym_DCE -v
-    - ctest
+    - bin/test_mdm
+    - bin/test_mdm_tools
 
 test_madym:
   stage: test
