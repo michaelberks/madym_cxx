@@ -9,13 +9,14 @@ build_madym:
     # Build the application
     stage: build
     script:
-        - mkdir build
-        - cd build
-        - cmake ..
-        - make
+        #- mkdir build
+        #- cd build
+        #- cmake ..
+        #- make
+        - echo "This job builds madym"
 
 test_madym:
   stage: test
   script:
-    - echo "This job tests something. It will only run when all jobs in the"
+    - echo "This job tests madym"
     - echo "build stage are complete."
