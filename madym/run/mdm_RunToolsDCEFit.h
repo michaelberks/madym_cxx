@@ -24,7 +24,7 @@ public:
 	//! Constructor
 	/*!	
 	*/
-	MDM_API mdm_RunToolsDCEFit();
+	MDM_API mdm_RunToolsDCEFit(mdm_InputOptions &options, mdm_OptionsParser &options_parser);
 		
 	//! Virtual destructor
 	/*!

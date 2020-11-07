@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <cmath>
  /*!
 	*  @brief   Storing 3D image data and associated meta-information
 	*/
