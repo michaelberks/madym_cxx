@@ -10,10 +10,8 @@ build_madym:
     - cd build
     - cmake ..
     - make
-    - cd ..
-    - ls
-    - ls build
-    #- build/madym_DCE -v
+    - bin/madym_DCE -v
+    - ctest
 
 test_madym:
   stage: test
