@@ -1,5 +1,5 @@
-# Use the official gcc image
-image: gcc
+# Use our docker with boost built
+image: registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx
 
 before_script:
   # Install build dependencies
