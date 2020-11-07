@@ -13,10 +13,7 @@
 #include "mdm_ProgramLogger.h"
 
 #include <cassert>
-#include <chrono>  // chrono::system_clock
-#include <ctime>   // localtime
 #include <sstream> // stringstream
-#include <iomanip> // put_time
 #include <string>
 #include <iostream>
 #include <cstdlib>     //getenv()
@@ -25,6 +22,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/asio/ip/host_name.hpp>
+#include <boost/date_time.hpp>
 
 
 std::ofstream mdm_ProgramLogger::program_log_stream_;
@@ -167,10 +165,8 @@ MDM_API bool mdm_ProgramLogger::logAuditMessage(const std::string &message)
 //
 std::string mdm_ProgramLogger::logTime()
 {
-	auto now = std::chrono::system_clock::now();
-	auto in_time_t = std::chrono::system_clock::to_time_t(now);
+	boost::posix_time::ptime timeLocal =
+		boost::posix_time::second_clock::local_time();
 
-	std::stringstream ss;
-	ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
-	return ss.str();
+	return boost::posix_time::to_simple_string(timeLocal);
 }

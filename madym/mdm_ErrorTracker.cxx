@@ -114,7 +114,7 @@ MDM_API mdm_Image3D mdm_ErrorTracker::maskSingleErrorCode(const int errCodesInt)
 
 	maskOut.copy(errorImage_);
 	maskOut.setType(mdm_Image3D::ImageType::TYPE_ERRORMAP);
-	maskOut.setTimeStamp(errorImage_.timeStamp());
+	maskOut.setTimeStampFromDoubleStr(errorImage_.timeStamp());
 
 	/* And finally the fun bit */
 	for (int iVoxel = 0; iVoxel < nVoxels; iVoxel++)

@@ -16,6 +16,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <boost/date_time.hpp>
 
 const std::string mdm_Image3D::MetaData::ImageTypeKey = "ImageType";
 const std::string mdm_Image3D::MetaData::TimeStampKey = "TimeStamp";
@@ -52,6 +53,9 @@ MDM_API mdm_Image3D::mdm_Image3D()
 	info_(),
 	data_(0)
 {   
+	//Set time stamp this can be overridden later using setTimeStamp or read during
+	//setMetaDataFromString
+	setTimeStampFromNow();
 }
 
 //Destructor
@@ -144,15 +148,60 @@ MDM_API void mdm_Image3D::setVoxelDims(const double xmm, const double ymm, const
 }
 
 //
-MDM_API void mdm_Image3D::setTimeStamp(const double timeStamp)
+MDM_API void mdm_Image3D::setTimeStampFromDoubleStr(const double timeStamp)
 {
   timeStamp_ = timeStamp;
+}
+
+//
+MDM_API void mdm_Image3D::setTimeStampFromNow()
+{
+	boost::posix_time::ptime timeLocal =
+		boost::posix_time::second_clock::local_time();
+
+	double hh = timeLocal.time_of_day().hours();
+	double mm = timeLocal.time_of_day().minutes();
+	double ss = timeLocal.time_of_day().seconds();
+	double ms = timeLocal.time_of_day().total_milliseconds();
+	timeStamp_ = 10000 * hh + 100 * mm + ss + (ms/1000);
+}
+
+//
+MDM_API void mdm_Image3D::setTimeStampFromMins(const double timeInMins)
+{
+	setTimeStampFromSecs(60 * timeInMins);
+}
+
+//
+MDM_API void mdm_Image3D::setTimeStampFromSecs(const double timeInSecs)
+{
+	// Convert time in seconds into the xtr timestamp format
+	//hhmmss.msecs represented as a single decimal number
+
+	double hh = std::floor(timeInSecs / (3600));
+	double mm = std::floor((timeInSecs - 3600 * hh) / 60);
+	double ss = timeInSecs - 3600 * hh - 60 * mm;
+	timeStamp_ = 10000 * hh + 100 * mm + ss;
 }
 
 //
 MDM_API double mdm_Image3D::timeStamp() const
 {
   return timeStamp_;
+}
+
+//
+MDM_API double mdm_Image3D::minutesFromTimeStamp() const
+{
+	int hours = (int)(timeStamp_ / 10000);
+	int minutes = (int)(timeStamp_ - 10000 * hours) / 100;
+	double seconds = (timeStamp_
+		- 10000 * hours
+		- 100 * minutes);
+	double timeInSecs = double(hours) * 60 * 60
+		+ double(minutes) * 60
+		+ seconds;
+	return timeInSecs / 60.0; //time in minutes as used as standard throughout DCE analysis
 }
 
 //
@@ -172,7 +221,7 @@ MDM_API void mdm_Image3D::setMetaData(const std::string &key, const double &valu
 {
 
 	if (key.compare(info_.TimeStampKey) == 0)
-		setTimeStamp(value);
+		setTimeStampFromDoubleStr(value);
 	else if (key.compare(info_.ImageTypeKey) == 0)
 		setType(static_cast<ImageType>(int(value)));		
 	else if (key.compare(info_.flipAngle.key()) == 0)
@@ -329,10 +378,13 @@ MDM_API bool mdm_Image3D::dimensionsMatch(const mdm_Image3D &img)
 //
 MDM_API void mdm_Image3D::copy(const mdm_Image3D &imgToCopy)
 {
-	//Copy image data, but do not copy timestamp
-	auto t = timeStamp();
+	//This does NOT copy:
+	//1) Data values
+	//2) Timestamp
+	//3) Image type
+
+	//Copy image data
 	info_ = imgToCopy.info();
-	setTimeStamp(t);
 
 	//Set dimension from the copy, this will reset and resize the data array
 	setDimensions(imgToCopy);
@@ -401,7 +453,7 @@ MDM_API void mdm_Image3D::setMetaDataFromStreamOld(std::istream &ifs)
 	ifs >> str >> f;
 	info_.TR.setValue(f);
 	ifs >> str >> f >> f >> f >> f;
-	setTimeStamp(f);
+	setTimeStampFromDoubleStr(f);
 }
 
 //

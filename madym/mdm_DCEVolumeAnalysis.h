@@ -336,8 +336,6 @@ private:
 	/* See comments for initialiseParameterMaps() */
 	bool createMap(mdm_Image3D& img);
 
-	double timeFromTimeStamp(double timeStamp);
-
 	int   numCtSignal() const;
 	
 	int   numCtModel() const;

@@ -541,7 +541,7 @@ bool mdm_AnalyzeFormat::readAnalyzeHdr(const std::string &hdrFileName,
 bool mdm_AnalyzeFormat::readOldXtr(std::ifstream &xtrFileStream,
 	mdm_Image3D &img)
 {
-	assert(xtrFileStream->is_open());
+	assert(xtrFileStream.is_open());
 
 	/* Read values from extra info file */
 	img.setMetaDataFromStreamOld(xtrFileStream);
@@ -556,7 +556,7 @@ bool mdm_AnalyzeFormat::readNewXtr(std::ifstream &xtrFileStream,
 	std::vector<std::string> keys;
 	std::vector<double> values;
 
-	assert(xtrFileStream->is_open());
+	assert(xtrFileStream.is_open());
 
 	/* Read values from extra info file */
 	/* TEST FOR READ ERRORS */
