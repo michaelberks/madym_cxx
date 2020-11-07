@@ -2,22 +2,40 @@
 image: registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx
 
 build_madym:
-  # Build the application
   stage: build
   script:
-    - echo "This job builds madym"
-    - mkdir build
-    - cd build
-    - cmake ..
-    - make
-    - bin/madym_DCE -v
-    - bin/test_mdm
-    - bin/test_mdm_tools
+    - echo "building..." >> ./result.txt
+  artifacts:
+    paths:
+    - result.txt
+    expire_in: 1 day
 
 test_madym:
   stage: test
   script:
-    - echo "This job tests madym"
     - ls
-    - ctest
-    - echo "build stage are complete."
+    - cat result.txt
+    - echo "unit testing..." >> ./result.txt
+  artifacts:
+    paths:
+    - result.txt
+    expire_in: 1 day
+
+deploy:
+  stage: deploy
+  script:
+    - ls
+    - cat result.txt
+
+#build_madym:
+  # Build the application
+  #stage: build
+  #script:
+  #  - echo "This job builds madym"
+  #  - mkdir build
+  #  - cd build
+  #  - cmake ..
+  #  - make
+  #  - bin/madym_DCE -v
+  #  - bin/test_mdm
+  #  - bin/test_mdm_tools
