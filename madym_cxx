@@ -1,0 +1,21 @@
+# Use the official gcc image
+image: gcc
+
+before_script:
+    # Install build dependencies
+    - apt-get update && apt-get -y install cmake
+
+build_madym:
+    # Build the application
+    stage: build
+    script:
+        - mkdir build
+        - cd build
+        - cmake ..
+        - make
+
+test_madym:
+  stage: test
+  script:
+    - echo "This job tests something. It will only run when all jobs in the"
+    - echo "build stage are complete."
