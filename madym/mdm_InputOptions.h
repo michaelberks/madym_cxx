@@ -48,7 +48,7 @@ struct mdm_InputOptions {
 		mdm_input_str("VFA"), "T1_method", "T",
 		"Method used for baseline T1 mapping");
 	mdm_input_strings T1inputNames = mdm_input_strings(
-		mdm_input_string_list({}), "T1_vols", "",
+		mdm_input_string_list(std::vector<std::string>{}), "T1_vols", "",
 		"Filepaths to input signal volumes (eg from variable flip angles)");
 	mdm_input_double T1noiseThresh = mdm_input_double(
 		0.0, "T1_noise", "",
@@ -89,28 +89,28 @@ struct mdm_InputOptions {
 		mdm_input_str(""), "model", "m",
 		"Tracer-kinetic model");
 	mdm_input_doubles initialParams = mdm_input_doubles(
-		mdm_input_double_list({}), "init_params", "",
+		mdm_input_double_list(std::vector<double>{}), "init_params", "",
 		"Initial values for model parameters to be optimised");
 	mdm_input_string initMapsDir = mdm_input_string(
 		mdm_input_str(""), "init_maps", "",
 		"Path to folder containing parameter maps for per-voxel initialisation");
 	mdm_input_ints initMapParams = mdm_input_ints(
-		mdm_input_int_list({}), "init_map_params", "",
+		mdm_input_int_list(std::vector<int>{}), "init_map_params", "",
 		"Index of parameters sampled from maps");
 	mdm_input_strings paramNames = mdm_input_strings(
-		mdm_input_string_list({}), "param_names", "",
+		mdm_input_string_list(std::vector<std::string>{}), "param_names", "",
 		"Names of model parameters, used to override default output map names");
 	mdm_input_ints fixedParams = mdm_input_ints(
-		mdm_input_int_list({}), "fixed_params", "",
+		mdm_input_int_list(std::vector<int>{}), "fixed_params", "",
 		"Index of parameters fixed to their initial values");
 	mdm_input_doubles fixedValues = mdm_input_doubles(
-		mdm_input_double_list({}), "fixed_values", "",
+		mdm_input_double_list(std::vector<double>{}), "fixed_values", "",
 		"Values for fixed parameters");
 	mdm_input_ints relativeLimitParams = mdm_input_ints(
-		mdm_input_int_list({}), "relative_limit_params", "",
+		mdm_input_int_list(std::vector<int>{}), "relative_limit_params", "",
 		"Index of parameters to which relative limits are applied");
 	mdm_input_doubles relativeLimitValues = mdm_input_doubles(
-		mdm_input_double_list({}), "relative_limit_values", "",
+		mdm_input_double_list(std::vector<double>{}), "relative_limit_values", "",
 		"Values for relative limits - optimiser bounded to range initParam +/- relLimit");
 	mdm_input_int firstImage = mdm_input_int(
 		0, "first", "",
