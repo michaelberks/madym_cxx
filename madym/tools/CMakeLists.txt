@@ -9,7 +9,7 @@ project(madym_tools)
 #-------------------------------------------------------------------
 # Main madym analysis tool applied to whole image volumes
 ADD_EXECUTABLE(madym_DCE 
-	madym_dce.cxx)
+	madym_DCE.cxx)
 
 TARGET_LINK_LIBRARIES( madym_DCE mdm
   )
@@ -17,7 +17,7 @@ TARGET_LINK_LIBRARIES( madym_DCE mdm
 #-------------------------------------------------------------------
 # Lightweight tool for performing analysis on individual voxels
 ADD_EXECUTABLE(madym_DCE_lite 
-	madym_dce_lite.cxx)
+	madym_DCE_lite.cxx)
 
 TARGET_LINK_LIBRARIES( madym_DCE_lite mdm)
 
