@@ -23,7 +23,7 @@ public:
 	//! Default constructor
 	/*!
 	*/
-	MDM_API mdm_RunToolsT1Fit();
+	MDM_API mdm_RunToolsT1Fit(mdm_InputOptions &options, mdm_OptionsParser &options_parser);
 		
 	//! Virtual destructor
 	/*!

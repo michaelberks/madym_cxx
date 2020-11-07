@@ -18,9 +18,8 @@
 namespace fs = boost::filesystem;
 
 //
-MDM_API mdm_RunToolsDCEFit::mdm_RunToolsDCEFit()
-	:
-	model_(NULL)
+MDM_API mdm_RunToolsDCEFit::mdm_RunToolsDCEFit(mdm_InputOptions &options, mdm_OptionsParser &options_parser)
+	: mdm_RunTools(options, options_parser)
 {
 }
 

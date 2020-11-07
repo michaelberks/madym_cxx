@@ -25,7 +25,7 @@ public:
 	//! Constructor
 	/*!
 	*/
-	MDM_API mdm_RunToolsVolumeAnalysis();
+	MDM_API mdm_RunToolsVolumeAnalysis(mdm_InputOptions &options, mdm_OptionsParser &options_parser);
 		
 	//! Virtual destructor
 	/*!
