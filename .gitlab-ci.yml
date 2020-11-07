@@ -1,26 +1,20 @@
 # Use our docker with boost built
 image: registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx
 
-before_script:
-  # Install build dependencies
-  - echo "Installing dependencies"
-  #- apt-get update
-  #- apt-get install --yes
-  #    wget cmake build-essential
-  #    libboost-all-dev
-
 build_madym:
   # Build the application
   stage: build
   script:
     - echo "This job builds madym"
-    #- mkdir build
-    #- cd build
-    #- cmake ..
-    #- make
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make
 
 test_madym:
   stage: test
   script:
     - echo "This job tests madym"
+    - cd build
+    - ctest
     - echo "build stage are complete."
