@@ -2,17 +2,18 @@
 image: gcc
 
 before_script:
-    # Install build dependencies
-    - apt-get update && apt-get -y install cmake libboost-all-dev
+  # Install build dependencies
+  - apt-get update && apt-get -y install cmake libboost-all-dev
 
 build_madym:
-    # Build the application
-    stage: build
-    script:
-        - mkdir build
-        - cd build
-        - cmake ..
-        - make
+  # Build the application
+  stage: build
+  script:
+    - echo "This job builds madym"
+    #- mkdir build
+    #- cd build
+    #- cmake ..
+    #- make
 
 test_madym:
   stage: test
