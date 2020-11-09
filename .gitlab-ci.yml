@@ -1,6 +1,9 @@
 # Use our docker with boost built
 image: registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx
 
+before_script:
+  - git fetch --tags
+
 build_madym:
   stage: build
   script:
