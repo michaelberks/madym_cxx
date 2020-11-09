@@ -11,8 +11,8 @@ build_madym:
     - cmake ..
     - make
     - bin/madym_DCE -h
-    - bin/test_mdm --log_level=message
-    - bin/test_mdm_tools
+    #- bin/test_mdm --log_level=message
+    #- bin/test_mdm_tools
   artifacts:
     paths:
     - result.txt
