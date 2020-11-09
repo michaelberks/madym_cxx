@@ -15,8 +15,8 @@ build_madym:
     - cd build
     - cmake ..
     - make
-    #- bin/test_mdm --log_level=message
-    #- bin/test_mdm_tools --log_level=message
+    - bin/test_mdm --log_level=message
+    - bin/test_mdm_tools --log_level=message
   variables:
     GIT_FETCH_EXTRA_FLAGS: --tags
 
