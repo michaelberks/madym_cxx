@@ -31,6 +31,8 @@ test:
   stage: test
   script:
     - ls
+    - build/bin/test_mdm --log_level=message
+    - build/bin/test_mdm_tools --log_level=message
   only:
     - master
     - merge_requests
