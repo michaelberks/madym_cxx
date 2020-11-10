@@ -12,12 +12,16 @@ build:
     - cd build
     - cmake ..
     - make
+  cache:
+    key: ${CI_BUILD_REF_NAME}
+    paths:
+      - build/
   artifacts:
     paths:
     - build/
     expire_in: 1 week
   only:
-    #- master
+    - master
     - merge_requests
     - /^release-.*$/
   variables:
@@ -35,10 +39,23 @@ test:
     - merge_requests
     - /^release-.*$/
 
+build_dist:
+  stage: build_dist
+  script:
+    - echo "This job builds madym for distribution"
+    - mkdir dist
+    - echo "madym release" >> dist/release.txt
+  artifacts:
+    paths:
+      - dist/
+    only:
+    - /^release-.*$/
+
 deploy:
   stage: deploy
   script: 
     - echo "Deploying code"
+    - echo "Do something with the stuff in /dist"
   only:
     - /^release-.*$/
   
