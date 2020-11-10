@@ -31,9 +31,6 @@ test:
   stage: test
   script:
     - ls
-  artifacts:
-    paths:
-    - build/
   only:
     - master
     - merge_requests
@@ -48,8 +45,8 @@ build_dist:
   artifacts:
     paths:
       - dist/
-    only:
-    - /^release-.*$/
+  only:
+  - /^release-.*$/
 
 deploy:
   stage: deploy
