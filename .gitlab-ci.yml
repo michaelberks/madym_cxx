@@ -37,7 +37,7 @@ test:
     - /^release-.*$/
 
 build_dist:
-  stage: build_dist
+  stage: deploy
   script:
     - echo "This job builds madym for distribution"
     - mkdir dist
