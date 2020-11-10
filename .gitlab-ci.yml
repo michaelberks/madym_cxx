@@ -9,8 +9,6 @@ build_madym:
   script:
     - echo "building..." >> ./result.txt
     - echo "This job builds madym"
-    - git fetch --tags
-    - git describe --tags --abbrev=0
     - mkdir build
     - cd build
     - cmake ..
