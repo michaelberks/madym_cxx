@@ -8,7 +8,7 @@ build:
   stage: build
   script:
     - echo "This job builds madym"
-    - mkdir build
+    - mkdir -p build
     - cd build
     - cmake ..
     - make
