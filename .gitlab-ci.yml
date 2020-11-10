@@ -17,7 +17,7 @@ build:
     - build/
     expire_in: 1 week
   only:
-    - master
+    #- master
     - merge_requests
     - /^release-.*$/
   variables:
@@ -28,6 +28,7 @@ test:
   script:
     - ls
   only:
+    - master
     - merge_requests
     - /^release-.*$/
 
