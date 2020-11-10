@@ -27,6 +27,9 @@ test:
   stage: test
   script:
     - ls
+  artifacts:
+    paths:
+    - build/
   only:
     - master
     - merge_requests
