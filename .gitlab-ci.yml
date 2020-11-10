@@ -4,39 +4,37 @@ image: registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx
 before_script:
   - git fetch --tags
 
-build_madym:
+build:
   stage: build
   script:
-    - echo "building..." >> ./result.txt
     - echo "This job builds madym"
     - mkdir build
     - cd build
     - cmake ..
     - make
-    - bin/test_mdm --log_level=message
-    - bin/test_mdm_tools --log_level=message
+  artifacts:
+    paths:
+    - build/
+    expire_in: 1 week
+  only:
+    - master
+    - merge_requests
+    - /^release-.*$/
   variables:
     GIT_FETCH_EXTRA_FLAGS: --tags
 
-  artifacts:
-    paths:
-    - result.txt
-    expire_in: 1 day
-
-test_madym:
+test:
   stage: test
   script:
     - ls
-    - cat result.txt
-    - echo "unit testing..." >> ./result.txt
-  artifacts:
-    paths:
-    - result.txt
-    expire_in: 1 day
+  only:
+    - merge_requests
+    - /^release-.*$/
 
 deploy:
   stage: deploy
-  script:
-    - ls
-    - cat result.txt
+  script: 
+    - echo "Deploying code"
+  only:
+    - /^release-.*$/
   
