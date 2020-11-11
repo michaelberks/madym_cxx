@@ -45,7 +45,7 @@ build:
     - echo "This job builds madym"
     - mkdir -p build
     - cd build
-    - cmake ..
+    - cmake -DCMAKE_BUILD_TYPE=Debug ..
     - make
     - echo "Semantic version is $(cat VERSION.txt)"
     - echo "Madym version is $(bin/madym_DCE -v)"
@@ -76,35 +76,40 @@ build_dist:
   script:
     - echo "This job builds madym for distribution"
     - mkdir dist
-    - echo "madym release" >> dist/release.txt
+    - cd dist
+    - cmake -DCMAKE_BUILD_TYPE=Debug ..
+    - make
   artifacts:
     paths:
       - dist/
   only:
   - /^[0-9]+-[0-9]+-release$/
 
-deploy:
-  stage: deploy
-  script: 
-    - echo "Deploying code"
-    - echo "Do something with the stuff in /dist"
-  only:
-    - /^[0-9]+-[0-9]+-release$/
+#deploy:
+#  stage: deploy
+#  script: 
+#    - echo "Deploying code"
+#    - echo "Do something with the stuff in /dist"
+#  environment:
+#    name: staging
+#    url: https://staging.example.com
+#  only:
+#    - /^[0-9]+-[0-9]+-release$/
 
-release:
-  image: node:13
-  stage: release
-  only:
-    refs:
-    - master
-    - alpha
-    # This matches maintenance branches
-    - /^[0-9]+-[0-9]+-release$/
-  script:
-    - touch CHANGELOG.md
-    - npm install @semantic-release/gitlab @semantic-release/exec @semantic-release/changelog
-    - npx semantic-release
-  artifacts:
-    paths:
-    - CHANGELOG.md
+#release:
+#  image: node:13
+#  stage: release
+#  only:
+#    refs:
+#    - master
+#    - alpha
+#    # This matches maintenance branches
+#    - /^[0-9]+-[0-9]+-release$/
+#  script:
+#    - touch CHANGELOG.md
+#    - npm install @semantic-release/gitlab @semantic-release/exec @semantic-release/changelog
+#    - npx semantic-release
+#  artifacts:
+#    paths:
+#    - CHANGELOG.md
   
