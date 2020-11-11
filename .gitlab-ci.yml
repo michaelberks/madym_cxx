@@ -21,7 +21,7 @@ fetch-semantic-version:
     - master
     - /^release-.*$/
   script:
-    - npm install @semantic-release/gitlab @semantic-release/exec
+    - npm install @semantic-release/gitlab @semantic-release/exec @semantic-release/changelog
     - npx semantic-release --generate-notes false --dry-run
   artifacts:
     paths:
