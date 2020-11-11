@@ -1,8 +1,43 @@
 # Use our docker with boost built
 image: registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx
 
+stages:
+  - fetch-version
+  - build
+  - test
+  - build_dist
+  - deploy
+  - release
+
 before_script:
   - git fetch --tags
+
+fetch-semantic-version:
+  # Requires Node >= 10.13 version
+  image: node:13
+  stage: fetch-version
+  only:
+    refs:
+    - master
+    - /^release-.*$/
+  script:
+    - npm install @semantic-release/gitlab @semantic-release/exec
+    - npx semantic-release --generate-notes false --dry-run
+  artifacts:
+    paths:
+    - VERSION.txt
+
+generate-non-semantic-version:
+  stage: fetch-version
+  except:
+    refs:
+    - master
+    - /^release-.*$/
+  script:
+    - echo build-$CI_PIPELINE_ID > VERSION.txt
+  artifacts:
+    paths:
+    - VERSION.txt
 
 build:
   stage: build
@@ -12,6 +47,8 @@ build:
     - cd build
     - cmake ..
     - make
+    - echo "Semantic version is $(cat VERSION.txt)"
+    - echo "Madym version is $(bin/madym_DCE -v)"
   cache:
     key: ${CI_BUILD_REF_NAME}
     paths:
@@ -21,11 +58,8 @@ build:
     - build/
     expire_in: 1 week
   only:
-    - master
     - merge_requests
     - /^release-.*$/
-  variables:
-    GIT_FETCH_EXTRA_FLAGS: --tags
 
 test:
   stage: test
@@ -34,12 +68,11 @@ test:
     - cd build
     - ctest --verbose
   only:
-    - master
     - merge_requests
-    - /^release-.*$/
+    - /^[0-9]+-[0-9]+-release$/
 
 build_dist:
-  stage: deploy
+  stage: build_dist
   script:
     - echo "This job builds madym for distribution"
     - mkdir dist
@@ -48,7 +81,7 @@ build_dist:
     paths:
       - dist/
   only:
-  - /^release-.*$/
+  - /^[0-9]+-[0-9]+-release$/
 
 deploy:
   stage: deploy
@@ -56,5 +89,22 @@ deploy:
     - echo "Deploying code"
     - echo "Do something with the stuff in /dist"
   only:
-    - /^release-.*$/
+    - /^[0-9]+-[0-9]+-release$/
+
+release:
+  image: node:13
+  stage: release
+  only:
+    refs:
+    - master
+    - alpha
+    # This matches maintenance branches
+    - /^[0-9]+-[0-9]+-release$/
+  script:
+    - touch CHANGELOG.md
+    - npm install @semantic-release/gitlab @semantic-release/changelog
+    - npx semantic-release
+  artifacts:
+    paths:
+    - CHANGELOG.md
   
