@@ -14,12 +14,15 @@ BOOST_AUTO_TEST_CASE(test_config) {
 	mdm_OptionsParser options_parser_write;
 	mdm_RunTools_madym_DCE madym_write(options, options_parser_write);
 
+	options.outputRoot.set("root/"); //str
+	options.outputCt_sig.set(true); //bool
 	options.aifName.set("Aif.txt"); //Str
 	options.IAUCTimes.set({ 20.0, 40.0 }); //vector<double>
 	options.dose.set(0.25); //double
 	options.fixedParams.set({ 1, 2, 3 }); //vector<int>
 	options.T1inputNames.set({ "fa1", "fa2" }); //vector<str>
 	options.maxIterations.set(100); //Int
+	options.testEnhancement.set(false);
 
 	BOOST_TEST_MESSAGE("Writing params file");
 	BOOST_CHECK(!madym_write.parseInputs("test_write"));
@@ -33,6 +36,10 @@ BOOST_AUTO_TEST_CASE(test_config) {
 	BOOST_TEST_MESSAGE("Reading params file");
 	BOOST_CHECK(!madym_read.parseInputs("test_read"));
 
+	BOOST_TEST_MESSAGE("Reading and writing params file, values match: outputRoot");
+	BOOST_CHECK_EQUAL(options.outputRoot(), options_in.outputRoot());
+	BOOST_TEST_MESSAGE("Reading and writing params file, values match: outputCt_sig");
+	BOOST_CHECK_EQUAL(options.outputCt_sig(), options_in.outputCt_sig());
 	BOOST_TEST_MESSAGE("Reading and writing params file, values match: aifName");
 	BOOST_CHECK_EQUAL(options.aifName(), options_in.aifName());
 	BOOST_TEST_MESSAGE("Reading and writing params file, values match: IAUCTimes");
@@ -45,6 +52,8 @@ BOOST_AUTO_TEST_CASE(test_config) {
 	BOOST_CHECK_VECTORS(options.T1inputNames(), options_in.T1inputNames());
 	BOOST_TEST_MESSAGE("Reading and writing params file, values match: maxIterations");
 	BOOST_CHECK_EQUAL(options.maxIterations(), options_in.maxIterations());
+	BOOST_TEST_MESSAGE("Reading and writing params file, values match: testEnhancemnet");
+	BOOST_CHECK_EQUAL(options.testEnhancement(), options_in.testEnhancement());
 }
 
 BOOST_AUTO_TEST_SUITE_END() //
