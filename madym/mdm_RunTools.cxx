@@ -98,7 +98,7 @@ void mdm_RunTools::set_up_output_folder()
 {
 	//Using boost filesyetm, can call one line to make absolute path from input
 	//regardless of whether relative or absolute path has been given
-	outputPath_ = fs::absolute(options_.outputDir());
+	outputPath_ = fs::absolute(options_.outputRoot()+options_.outputDir());
 
 	//We probably don't need to check if directory exists, just call create... regardless
 	//but we do so anyway

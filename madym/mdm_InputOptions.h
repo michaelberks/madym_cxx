@@ -144,6 +144,8 @@ struct mdm_InputOptions {
 		"Times (in s, post-bolus injection) at which to compute IAUC");
 
 	//General output options
+	mdm_input_string outputRoot = mdm_input_string(
+		mdm_input_str(""), "output_root", "", "Optional base for output folder");
 	mdm_input_string outputDir = mdm_input_string(
 		mdm_input_str(""), "output", "o", "Output folder");
 	mdm_input_bool overwrite = mdm_input_bool(

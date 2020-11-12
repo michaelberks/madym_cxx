@@ -176,6 +176,7 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.IAUCTimes);
 
 		//General output options_
+	options_parser_.add_option(config_options, options_.outputRoot);
 	options_parser_.add_option(config_options, options_.outputDir);
 	options_parser_.add_option(config_options, options_.overwrite);
 	options_parser_.add_option(config_options, options_.sparseWrite);
