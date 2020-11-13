@@ -12,6 +12,7 @@
 #include "mdm_AIF.h"
 #include "mdm_T1VolumeAnalysis.h"
 #include "mdm_DCEVolumeAnalysis.h"
+#include "mdm_ParamSummaryStats.h"
 #include "mdm_ErrorTracker.h"
 
 //!   Manager class for reading input and writing ouput of volume-wise model analysis
@@ -120,6 +121,13 @@ public:
 	*/
 	MDM_API bool writeModelResiduals(const std::string &outputDir);
 
+	//! Write parameter stats file
+	/*!
+	\param outputDir directory in which to write output maps.
+	\return true if stats saved successfully. False if save error.
+	*/
+	MDM_API bool writeSummaryStats(const std::string &outputDir);
+
 	//! Write error codes map to disk
 	/*!
 	\param outputDir directory in which to write output map.
@@ -162,6 +170,11 @@ private:
 
 	bool writeOutputMap(const std::string &mapName, const mdm_Image3D &img, 
 		const std::string &outputDir, bool writeXtr = false);
+
+	bool writeMapsSummaryStats(const std::string &roiName, mdm_ParamSummaryStats &stats);
+
+	bool writeMapSummaryStats(const std::string &mapName, const mdm_Image3D &img, 
+		mdm_ParamSummaryStats &stats);
 
 	/*VARIABLES*/
 

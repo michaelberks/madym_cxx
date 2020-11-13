@@ -10,6 +10,7 @@
 #include <madym/run/mdm_RunTools_madym_DCE.h>
 #include <madym/mdm_AnalyzeFormat.h>
 #include <madym/mdm_Image3D.h>
+#include <madym/mdm_ParamSummaryStats.h>
 #include <cmath>
 #include <mdm_version.h>
 
@@ -61,6 +62,19 @@ void check_output(
 		BOOST_TEST_MESSAGE("Fitted IAUC" + std::to_string((int)IAUCTimes[i]));
 		BOOST_CHECK_CLOSE(iauc.voxel(0), IAUCVals[i], tol);
 	}
+
+	//Read stats file
+	mdm_ParamSummaryStats stats;
+	stats.openStatsFile(Ct_output_dir + "ROI_summary_stats.csv");
+	for (int param = 0; param < 4; param++)
+	{
+		stats.readStats();
+		BOOST_CHECK_CLOSE(stats.stats().mean_, trueParams[param], tol);
+		BOOST_CHECK_EQUAL(stats.stats().stddev_, 0);
+		BOOST_CHECK_EQUAL(stats.stats().validVoxels_, 1);
+	}
+	
+	stats.closeStatsFile();
 
 	//Tidy up
 	fs::remove_all(Ct_output_dir);

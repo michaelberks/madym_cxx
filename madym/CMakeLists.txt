@@ -33,6 +33,7 @@ SET(mdm_sources
 		mdm_FileManager.cxx				mdm_FileManager.h
 		mdm_Image3D.cxx					mdm_Image3D.h
 		mdm_ProgramLogger.cxx			mdm_ProgramLogger.h
+		mdm_ParamSummaryStats.cxx		mdm_ParamSummaryStats.h
 
 		mdm_T1VolumeAnalysis.cxx		mdm_T1VolumeAnalysis.h	
 
