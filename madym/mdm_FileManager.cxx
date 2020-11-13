@@ -20,7 +20,6 @@ namespace fs = boost::filesystem;
 
 #include "mdm_version.h"
 #include "mdm_AnalyzeFormat.h"
-
 #include "mdm_ProgramLogger.h"
 
 const int mdm_FileManager::MAX_DYN_IMAGES = 1024;
@@ -123,6 +122,10 @@ MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
   if (!writeModelResiduals(outputDir))
 		return false;
 
+	//Write output stats
+	if (!writeSummaryStats(outputDir))
+		return false;
+
 	//If used, write ROI
 	if (volumeAnalysis_.ROIimage().numVoxels() && 
     !writeOutputMap(volumeAnalysis_.MAP_NAME_ROI, volumeAnalysis_.ROIimage(), outputDir, false))
@@ -151,11 +154,42 @@ MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
 	return true;
 }
 
+//
 MDM_API bool mdm_FileManager::writeModelResiduals(const std::string &outputDir)
 {
   return writeOutputMap(volumeAnalysis_.MAP_NAME_RESDIUALS, outputDir, false);
 }
 
+//
+MDM_API bool mdm_FileManager::writeSummaryStats(const std::string &outputDir)
+{
+	//Create a new stats object
+	mdm_ParamSummaryStats stats;
+
+	//Do stats for whole ROI
+	const auto &roi = volumeAnalysis_.ROIimage();
+	if (roi.numVoxels())
+		stats.setROI(roi);
+
+	if (!writeMapsSummaryStats(outputDir + "/" + volumeAnalysis_.MAP_NAME_ROI, stats))
+		return false;
+	
+
+	//Repeat for the enhancing map
+	const auto &enh = volumeAnalysis_.DCEMap(volumeAnalysis_.MAP_NAME_ENHANCING);
+	if (enh.numVoxels())
+	{
+		stats.setROI(enh);
+		if (!writeMapsSummaryStats(outputDir + "/" + volumeAnalysis_.MAP_NAME_ENHANCING, stats))
+			return false;
+	}
+	
+
+	return true;
+
+}
+
+//
 MDM_API bool mdm_FileManager::writeErrorMap(const std::string &outputPath)
 {
 	const mdm_Image3D &img = errorTracker_.errorImage();
@@ -504,6 +538,54 @@ bool mdm_FileManager::writeOutputMap(const std::string &mapName, const mdm_Image
 	return true;
 }
 
+bool mdm_FileManager::writeMapsSummaryStats(const std::string &roiName, mdm_ParamSummaryStats &stats)
+{
+	if (!stats.writeROISummary(roiName + "_summary.txt"))
+		return false;
+	if (!stats.openNewStatsFile(roiName + "_summary_stats.csv"))
+		return false;
+
+	//Write out T1 and M0 maps (if M0 map used)
+	if (T1Mapper_.T1Map().numVoxels() &&
+		!writeMapSummaryStats(volumeAnalysis_.MAP_NAME_T1, T1Mapper_.T1Map(), stats))
+		return false;
+
+	if (T1Mapper_.M0Map().numVoxels() &&
+		!writeMapSummaryStats(volumeAnalysis_.MAP_NAME_M0, T1Mapper_.M0Map(), stats))
+		return false;
+
+	//Write model parameters maps
+	if (!volumeAnalysis_.modelType().empty())
+	{
+		const auto &paramNames = volumeAnalysis_.paramNames();
+		for (const auto mapName : paramNames)
+			if (!writeMapSummaryStats(mapName, volumeAnalysis_.DCEMap(mapName), stats))
+				return false;
+
+		//Write IAUC maps
+		const auto &IAUCtimes = volumeAnalysis_.IAUCtimes();
+		for (const auto time : IAUCtimes)
+		{
+			const std::string iaucName = volumeAnalysis_.MAP_NAME_IAUC + std::to_string(int(time));
+			if (!writeMapSummaryStats(iaucName, volumeAnalysis_.DCEMap(iaucName), stats))
+				return false;
+		}
+		if (!writeMapSummaryStats(volumeAnalysis_.MAP_NAME_ENHANCING,
+			volumeAnalysis_.DCEMap(volumeAnalysis_.MAP_NAME_ENHANCING), stats))
+			return false;
+	}
+
+	return stats.closeNewStatsFile();
+}
+
+//
+bool mdm_FileManager::writeMapSummaryStats(const std::string &mapName, const mdm_Image3D &img, mdm_ParamSummaryStats &stats)
+{
+	stats.makeStats(img, mapName);
+	return stats.writeStats();
+}
+
+//
 void mdm_FileManager::makeSequenceFilename(const std::string &path, const std::string &prefix,
 	const int fileNumber, std::string &filePath, const std::string &fileNumberFormat)
 {
