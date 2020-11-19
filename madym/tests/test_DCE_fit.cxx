@@ -88,8 +88,6 @@ void test_model_time_fit(
 		0,
 		0,
 		nTimes,
-		false,
-		true,
 		IAUCTimes);
 	vox.initialiseModelFit();
 	vox.fitModel();

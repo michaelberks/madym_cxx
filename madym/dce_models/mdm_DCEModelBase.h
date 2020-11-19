@@ -76,7 +76,7 @@ public:
 	Includes all parameters in the model definition, even those fixed by default
 	\return number of model parameters
 	*/
-	MDM_API virtual int num_params() const;
+	MDM_API virtual int numParams() const;
 
   //! Return the number of model parameters free to be optimised
 	/*!
@@ -85,7 +85,7 @@ public:
 	\see num_params
 	\see num_fixed
 	*/
-	MDM_API virtual int num_optimised() const;
+	MDM_API virtual int numOptimised() const;
 
   //! Return the number of fixed model parameters
 	/*!
@@ -93,7 +93,7 @@ public:
 	\see num_params
 	\see num_optimised
 	*/
-	MDM_API virtual int num_fixed() const;
+	MDM_API virtual int numFixed() const;
 
   //! Return the modelled concentration time-series Cm(t)
 	/*!
@@ -109,13 +109,13 @@ public:
 
   //! Set the initial value of parameters
 	/*!
-	\param params initial value for each parameter, length must equal num_params()
+	\param params initial value for each parameter, length must equal numParams()
 	*/
 	MDM_API virtual void setInitialParams(const std::vector<double>& params);
 
 	//! Set the value of all optimised parameters
 	/*!
-	\param params value of each optimised parameter, length must equal num_optimised()
+	\param params value of each optimised parameter, length must equal numOptimised()
 	*/
 	MDM_API virtual void setOptimisedParams(const std::vector<double>& params);
 
@@ -126,25 +126,25 @@ public:
 
   //! Return the lower bounds for parameters being optimised
 	/*!
-	\return lower bounds for parameters being optimised, length will be num_optimised()
+	\return lower bounds for parameters being optimised, length will be numOptimised()
 	*/
 	MDM_API virtual const std::vector<double>& optimisedLowerBounds();
 
 	//! Return the upper bounds for parameters being optimised
 	/*!
-	\return upper bounds for parameters being optimised, length will be num_optimised()
+	\return upper bounds for parameters being optimised, length will be numOptimised()
 	*/
 	MDM_API virtual const std::vector<double>& optimisedUpperBounds();
 
 	//! Return the value of all model parameters
 	/*!
-	\return value of all model parameters, length will be num_params()
+	\return value of all model parameters, length will be numParams()
 	*/
 	MDM_API const std::vector<double>&     params() const;
   	
 	//! Return the value of specific model parameter by index
 	/*!
-	\param paramIdx index (starting from 0), of parameter to return. Must be <= 0 and < num_params().
+	\param paramIdx index (starting from 0), of parameter to return. Must be <= 0 and < numParams().
 	\return value of parameter at index paramIdx
 	*/
 	MDM_API double     params(int paramIdx) const;
@@ -158,13 +158,13 @@ public:
 
 	//! Return the initial value of all model parameters
 	/*!
-	\return initial value of all model parameters, length will be num_params()
+	\return initial value of all model parameters, length will be numParams()
 	*/
 	MDM_API const std::vector<double>&     initialParams() const;
   
 	//! Return the initial value of specific model parameter by index
 	/*!
-	\param paramIdx index (starting from 0), of parameter to return. Must be <= 0 and < num_params().
+	\param paramIdx index (starting from 0), of parameter to return. Must be <= 0 and < numParams().
 	\return initial value of parameter at index paramIdx
 	*/
 	MDM_API double     initialParams(int paramIdx) const;
@@ -178,7 +178,7 @@ public:
 
 	//! Return the name of model parameter by index
 	/*!
-	\param paramIdx index (starting from 0), of parameter to return. Must be <= 0 and < num_params().
+	\param paramIdx index (starting from 0), of parameter to return. Must be <= 0 and < numParams().
 	\return initial name of parameter at index paramIdx
 	*/
 	MDM_API const std::string&     paramName(int paramIdx) const;
@@ -192,7 +192,7 @@ public:
 	//! Return flags specifying which parameters free to be are optimised
 	/*!
 	\return flags specifying which parameters free to be are optimised (true) vs fixed (false). 
-	Will be length num_params().
+	Will be length numParams().
 	*/
 	MDM_API const std::vector<bool>&     optimisedParamFlags() const;
 

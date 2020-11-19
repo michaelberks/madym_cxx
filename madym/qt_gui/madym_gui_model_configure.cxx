@@ -53,7 +53,7 @@ madym_gui_model_configure::madym_gui_model_configure(const mdm_DCEModelBase &mod
 			ui.mapsCheckBox_10, ui.relLimitLineEdit_10));
 
   ui.modelName->setText(modelName);
-  int nParams = model_.num_params();
+  int nParams = model_.numParams();
   const std::vector<std::string> &params = model_.paramNames();
   const std::vector<bool> &paramFlags = model_.optimisedParamFlags();
 	const std::vector<double> &relativeLimits = model_.relativeBounds();
@@ -127,7 +127,7 @@ madym_gui_model_configure::madym_gui_model_configure(const mdm_DCEModelBase &mod
 void madym_gui_model_configure::on_okButton_clicked()
 {
   //Set init params and fixed params in madym options
-  int nParams = model_.num_params();
+  int nParams = model_.numParams();
   
 	std::vector<double> initialParams(nParams);
 	std::vector<int> fixedParams(0);

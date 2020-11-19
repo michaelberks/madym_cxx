@@ -50,7 +50,6 @@ public:
 	\param FA flip angle
 	\param timepoint0 first timepoint used in model fit 
 	\param timepointN last timepoint used in model fit 
-	\param testEnhancement flag to test enhancement
 	\param useM0Ratio flag to use M0 ratio method
 	\param IAUC_times times at which compute IAUC
 	*/
@@ -68,8 +67,6 @@ public:
 		const double FA,
 		const int timepoint0,
 		const int timepointN,
-		const bool testEnhancement,
-		const bool useM0Ratio,
 		const std::vector<double> &IAUC_times,
 		const int maxIterations = 0);
 
@@ -80,8 +77,9 @@ public:
 
   //! Convert signal time-series to contrast agent concentration
 	/*!
+  \param useM0Ratio flag to use ratio method for scaling baseline signal, if false requires M0 to be set
 	*/
-	MDM_API void computeCtFromSignal();
+	MDM_API void computeCtFromSignal(bool useM0Ratio);
 
   //! Compute modelled C(t) at initial model parameters
   /*!
@@ -175,21 +173,15 @@ public:
 	//! Return enhancing status
 	/*!
 	\return enhancing status, true if voxel is enhancing OR testEnhancement is set false
-	\see testEnhancement()
+	\see testEnhancing()
 	*/
 	MDM_API bool      enhancing() const;
-	
-	//! Return test enhancement flag
-	/*!
-	\return test enhancement flag, if true, only enhancing voxels are fitted
-	*/
-	MDM_API bool			testEnhancement() const;
-	
-	//! Return flag for using M0 ratio
-	/*!
-	\return test enhancement flag, if true, only enhancing voxels are fitted
-	*/
-	MDM_API bool			useM0Ratio() const;
+
+  //! Test to see if voxel is enhancing, sets internal enhancing flag
+  /*!
+  */
+  MDM_API void testEnhancing();
+
 
 protected:
 
@@ -226,8 +218,6 @@ private:
   double computeT1DynM0(const double &st, const double & sinfa, const double & cosfa, int &errorCode);
 
 	std::vector<double> computeIAUC(const std::vector<double> &times);
-
-	bool checkEnhancing();
 
 	/*!
 	*/
@@ -273,12 +263,6 @@ private:
 	//TR and FA values, constant and set at init
 	const double TR_;
 	const double FA_;
-
-	//Flag to check if we're testing for enhancment
-	bool testEnhancement_;
-
-	//Flag to check if we use the ratio method for scaling signal or M0 computed alongside T1
-	bool useM0Ratio_;
 
 	//Upper an lower bounds to use with optimiser
 	alglib::real_1d_array lowerBoundsOpt_;
