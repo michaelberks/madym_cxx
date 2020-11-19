@@ -64,11 +64,11 @@ MDM_API void mdm_DCEModelBase::init(
   }
 
 	//Set relative limits for any specified parameters
-	relativeBounds_.resize(num_params(), 0);
+	relativeBounds_.resize(numParams(), 0);
 	for (int i = 0; i < relativeLimitParams.size(); i++)
 	{
 		int rp = relativeLimitParams[i] - 1;
-		if (rp < num_params())
+		if (rp < numParams())
 		{
 			//If fixed values are supplied, use these to overwrite default
 			//initial parameters
@@ -78,7 +78,7 @@ MDM_API void mdm_DCEModelBase::init(
 	}
     
   //Set upper and lower bounds for parameters to be optimised
-  for (int i = 0; i < num_params(); i++)
+  for (int i = 0; i < numParams(); i++)
   {
     if (optParamFlags_[i])
     {
@@ -93,32 +93,34 @@ MDM_API void mdm_DCEModelBase::init(
 
 MDM_API void mdm_DCEModelBase::reset(int nTimes)
 {
+  CtModel_.resize(nTimes);
+
+  if (!numParams())
+    return;
+
   pkParams_ = pkInitParams_;
   pkParamsOpt_.clear();
-  for (int i = 0, j = 0; i < num_params(); i++)
+  for (int i = 0, j = 0; i < numParams(); i++)
   {
     if (optParamFlags_[i])
-    {
       pkParamsOpt_.push_back(pkParams_[i]);
-      //simplexLambdaOpt_.push_back(simplexLambda_[i]);
-    }
   }
-  CtModel_.resize(nTimes);
+  
 }
 
-MDM_API int mdm_DCEModelBase::num_params() const
+MDM_API int mdm_DCEModelBase::numParams() const
 {
   return pkInitParams_.size();
 }
 
-MDM_API int mdm_DCEModelBase::num_optimised() const
+MDM_API int mdm_DCEModelBase::numOptimised() const
 {
   return pkParamsOpt_.size();  
 }
 
-MDM_API int mdm_DCEModelBase::num_fixed() const
+MDM_API int mdm_DCEModelBase::numFixed() const
 {
-  return num_params() - num_optimised();
+  return numParams() - numOptimised();
 }
 
 MDM_API const std::vector<double>& mdm_DCEModelBase::CtModel()
@@ -133,7 +135,7 @@ MDM_API std::vector<double>& mdm_DCEModelBase::optimisedParams()
 
 MDM_API void mdm_DCEModelBase::setOptimisedParams(const std::vector<double>& optimisedParams)
 {
-  for (int i = 0, j = 0, n = num_params(); i < n; i++)
+  for (int i = 0, j = 0, n = numParams(); i < n; i++)
   {
     if (optParamFlags_[i])
     {
@@ -149,7 +151,7 @@ MDM_API void mdm_DCEModelBase::setInitialParams(const std::vector<double>& param
   pkInitParams_ = params;
 	
 	//See if we have any relative bounds to update
-	for (int i = 0, n = num_params(), j = 0; i < n; i++)
+	for (int i = 0, n = numParams(), j = 0; i < n; i++)
 	{
 		if (optParamFlags_[i])
 		{
@@ -167,7 +169,7 @@ MDM_API void mdm_DCEModelBase::setInitialParams(const std::vector<double>& param
 
 MDM_API void mdm_DCEModelBase::zeroParams()
 {
-  for (int i = 0, n = num_params(); i < n; i++)
+  for (int i = 0, n = numParams(); i < n; i++)
     pkParams_[i] = 0;
 }
 

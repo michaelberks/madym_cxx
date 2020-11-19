@@ -199,7 +199,7 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 			//Check if input parameters to read
 			if (load_params)
 			{
-				int n = model_->num_params();
+				int n = model_->numParams();
 				std::vector<double> initialParams(n, 0);
 				double vox;
 				for (int i = 0; i < n; i++)
@@ -371,16 +371,25 @@ void mdm_RunTools_madym_DCE_lite::fit_series(std::ostream &outputData,
 		FA,
 		firstImage,
 		lastImage,
-		testEnhancement,
-		useM0Ratio,
 		IAUCTimes,
 		maxIterations);
-	vox.initialiseModelFit();
 
-	vox.computeIAUC();
+  //Convert signal (if already C(t) does nothing so can call regardless)
+  vox.computeCtFromSignal(useM0Ratio);
 
-	if (optimiseModel)
-		vox.fitModel();
+  //Compute IAUC
+  vox.computeIAUC();
+
+  //Run initial model fit
+  vox.initialiseModelFit();
+
+  //Test enhancing
+  if (testEnhancement)
+    vox.testEnhancing();
+
+  //Fit the model
+  if (optimiseModel)
+    vox.fitModel();
 
 	//Now write the output
 	outputData <<
@@ -391,7 +400,7 @@ void mdm_RunTools_madym_DCE_lite::fit_series(std::ostream &outputData,
 	for (int i = 0; i < IAUCTimes.size(); i++)
 		outputData << " " << vox.IAUC_val(i);
 
-	for (int i = 0; i < model_->num_params(); i++)
+	for (int i = 0; i < model_->numParams(); i++)
 		outputData << " " << model_->params(i);
 
 

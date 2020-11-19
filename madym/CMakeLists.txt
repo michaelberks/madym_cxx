@@ -53,6 +53,7 @@ set(mdm_dce_model_sources
   #Models
   dce_models/mdm_DCEModelGenerator.h
   dce_models/mdm_DCEModelBase.cxx		dce_models/mdm_DCEModelBase.h
+  dce_models/mdm_DCEModelNONE.cxx		dce_models/mdm_DCEModelNONE.h
   dce_models/mdm_DCEModelETM.cxx		dce_models/mdm_DCEModelETM.h
   dce_models/mdm_DCEModelDIETM.cxx		dce_models/mdm_DCEModelDIETM.h
   dce_models/mdm_DCEModelAUEM.cxx		dce_models/mdm_DCEModelAUEM.h

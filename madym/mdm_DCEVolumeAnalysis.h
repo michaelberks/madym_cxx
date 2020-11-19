@@ -377,7 +377,7 @@ private:
 	bool outputCt_sig_;
 
   //Flag to see if we need to output modelled concentration
-  bool outputCt_modod_;
+  bool outputCt_mod_;
 
   //Flag if we're using temporal varying noise if it's econded in the dynamic series xtr headers
   bool useNoise_;

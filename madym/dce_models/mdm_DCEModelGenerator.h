@@ -15,6 +15,7 @@
 #include <mdm_AIF.h>
 
 #include <madym/dce_models/mdm_DCEModelBase.h>
+#include <madym/dce_models/mdm_DCEModelNONE.h>
 #include <madym/dce_models/mdm_DCEModelETM.h>
 #include <madym/dce_models/mdm_DCEModelDIETM.h>
 #include <madym/dce_models/mdm_DCEModelAUEM.h>
@@ -45,6 +46,7 @@ public:
 	*/
 	enum ModelTypes {
 		UNDEFINED,
+    NONE,
 		TOFTS,
 		VPSTD,
 		ETM,
@@ -72,7 +74,8 @@ public:
 	"AUEM",
 	"DIBEM",
 	"TOFTS",
-	"VPSTD"
+	"VPSTD",
+  "NONE"
 		};
 	}
 
@@ -83,6 +86,9 @@ public:
 	*/
 	MDM_API static  ModelTypes ParseModelName(const std::string modelName)
 	{
+    if (modelName == "NONE")
+      return NONE;
+
 		if (modelName == "TOFTS")
 			return TOFTS;
 
@@ -151,6 +157,17 @@ public:
   {
     switch (modelType)
 		{
+    case NONE:
+    {
+      return std::make_shared<mdm_DCEModelNONE>(AIF, 
+        std::vector<std::string>(),
+        std::vector<double>(),
+        std::vector<int>(),
+        std::vector<double>(),
+        std::vector<int>(),
+        std::vector<double>());
+    }
+
 		case TOFTS:
 		{
 			if (aif_from_file)

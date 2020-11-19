@@ -40,8 +40,6 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	const double FA,
 	const int timepoint0,
 	const int timepointN,
-	const bool testEnhancement,
-	const bool useM0Ratio,
 	const std::vector<double> &IAUC_times,
 	const int maxIterations)
 	:
@@ -58,12 +56,10 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	IAUC_times_(IAUC_times),
 	IAUC_vals_(0),
 	modelFitError_(0),
-	enhancing_(0),
+	enhancing_(true),
 	dynamicTimings_(dynamicTimings),
 	TR_(TR),
 	FA_(FA),
-	testEnhancement_(testEnhancement),
-	useM0Ratio_(useM0Ratio),
 	maxIterations_(maxIterations),
   status_(mdm_DCEVoxelStatus::OK)
 {
@@ -75,13 +71,15 @@ MDM_API mdm_DCEVoxel::~mdm_DCEVoxel()
 }
 
 //
-MDM_API void mdm_DCEVoxel::computeCtFromSignal()
+MDM_API void mdm_DCEVoxel::computeCtFromSignal(bool useM0Ratio)
 {
-  double  R1gd = r1Const() * 0.001;  // Use millisec instead of sec (as in user interface)
+  //Only apply if we have signal data to convert
+  const size_t &nTimes = signalData().size();
+  if (!nTimes)
+    return;
 
-  //
-  const size_t &n_times = signalData().size();
-  CtData_.resize(n_times);
+  double  R1gd = r1Const() * 0.001;  // Use millisec instead of sec (as in user interface)
+  CtData_.resize(nTimes);
 
   // Only calculate if T1(0) > 0.0
   if (T1() <= 0.0)
@@ -100,21 +98,21 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal()
   // Need to check that we've got the pb time points
   if (injectionImg_ >= timepoint0())
   {
-    double   sum_pbm = 0.0;
-    int     num_pbm = 0;
+    double prebolusSum = 0.0;
+    int nPrebolus = 0;
     for (int k = timepoint0(); k < injectionImg_; k++)
     {
-      sum_pbm += signalData()[k];
-      num_pbm++;
+      prebolusSum += signalData()[k];
+      nPrebolus++;
     }
-    double s_pbm = sum_pbm / num_pbm;
+    double meanPrebolusSignal = prebolusSum / nPrebolus;
 
-    for (size_t k = 0; k < n_times; k++)
+    for (size_t k = 0; k < nTimes; k++)
     {
       double R1value;
       int errorCode;
-      if (useM0Ratio())
-        R1value = computeT1DynPBM(signalData()[k], s_pbm, cosfa, errorCode);
+      if (useM0Ratio)
+        R1value = computeT1DynPBM(signalData()[k], meanPrebolusSignal, cosfa, errorCode);
       else
         R1value = computeT1DynM0(signalData()[k], sinfa, cosfa, errorCode);    
       
@@ -129,7 +127,7 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal()
   }
   else
   {
-    for (size_t k = 0; k < n_times; k++)
+    for (size_t k = 0; k < nTimes; k++)
     {
       CtData_[k] = Ca_BAD1;
       status_ = mdm_DCEVoxelStatus::M0_BAD;
@@ -138,16 +136,16 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal()
 }
 
 //
-double mdm_DCEVoxel::computeT1DynPBM(const double &st, const double &s_pbm, const double &cosfa, int &errorCode)
+double mdm_DCEVoxel::computeT1DynPBM(const double &st, const double &meanPrebolusSignal, const double &cosfa, int &errorCode)
 {
   //  Yes, it looks horrible and over-complicated.  I don't care.
   //  Too many div by zeros to account for, and a log zero to boot
   errorCode = 0;
-  if (s_pbm < T1_TOLERANCE)
+  if (meanPrebolusSignal < T1_TOLERANCE)
     errorCode = -1;
 
   double expTR_T10 = exp(-TR_ / T1());
-  double S1_M0 = st / s_pbm;
+  double S1_M0 = st / meanPrebolusSignal;
 
   double denominator = 1.0 - cosfa * expTR_T10;
   if (std::abs(denominator) < T1_TOLERANCE)
@@ -232,29 +230,6 @@ std::vector<double> mdm_DCEVoxel::computeIAUC(const std::vector<double> &times)
 		cumulativeCt += addedCt;
 	}
 	return vals;
-}
-
-bool mdm_DCEVoxel::checkEnhancing()
-{
-	bool enhancing = true;
-	if (IAUC_vals_.empty())
-	{
-		auto iauc60 = computeIAUC({ 1.0 });
-		enhancing = iauc60[0] > 0;
-	}
-	else
-	{
-		// TODO better test enhancement checks?
-		for (const auto iauc : IAUC_vals_)
-		{
-			if (iauc <= 0.0)
-			{
-				enhancing = false;
-				break;
-			}
-		}
-	}
-	return enhancing;
 }
 
 //
@@ -366,19 +341,19 @@ void mdm_DCEVoxel::optimiseModel()
 //Run an initial model fit using the current model parameters (does not optimise new parameters)
 MDM_API void mdm_DCEVoxel::initialiseModelFit()
 {
-
-  // Calculate [CA](t) from the signal intensity time-series array
-  if (CtData_.empty())
-    computeCtFromSignal(); //If any problems, this will change permStatus setting
-
-  if (noiseVar_.empty())
-    noiseVar_.resize(timepointN_, 1.0);
-
   //Reset the model
   model_.reset(timepointN_);
 
+  //If NULL model, just return
+  if (!model_.numParams())
+    return;
+
+  //Set default uniform noise is temporally varying noise not set
+  if (noiseVar_.empty())
+    noiseVar_.resize(timepointN_, 1.0);
+
   //Copy the lower bounds into the container required by the optimiser
-  int nopt = model_.num_optimised();
+  int nopt = model_.numOptimised();
   lowerBoundsOpt_.setlength(nopt);
   upperBoundsOpt_.setlength(nopt);
   for (int i = 0; i < nopt; i++)
@@ -394,7 +369,9 @@ MDM_API void mdm_DCEVoxel::initialiseModelFit()
 //
 MDM_API void mdm_DCEVoxel::fitModel()
 {
-  enhancing_ = true;
+  //If NULL model, just return
+  if (!model_.numParams())
+    return;
 
   //Check if any issues with voxel
   if (status_ != mdm_DCEVoxelStatus::OK && status_ != mdm_DCEVoxelStatus::DYN_T1_BAD)
@@ -406,11 +383,8 @@ MDM_API void mdm_DCEVoxel::fitModel()
     enhancing_ = false;
   }
 
-	// Use IAUC to check for enhancement (since 1.22 unless user says no)
-	else if (testEnhancement_)
-	{
-		enhancing_ = checkEnhancing();
-	}
+	// Note enhancing is true by default and requires prior check to fit
+  //only voxels that have been *tested* as enhancing
 	if (enhancing_)
 	{	
 		//Fit pharmacokinetic model
@@ -487,11 +461,24 @@ MDM_API bool       mdm_DCEVoxel::enhancing() const
 	return enhancing_;
 }
 
-MDM_API bool			mdm_DCEVoxel::testEnhancement() const
+MDM_API void mdm_DCEVoxel::testEnhancing()
 {
-	return testEnhancement_;
-}
-MDM_API bool			mdm_DCEVoxel::useM0Ratio() const
-{
-	return useM0Ratio_;
+  bool enhancing_ = true;
+  if (IAUC_vals_.empty())
+  {
+    auto iauc60 = computeIAUC({ 1.0 });
+    enhancing_ = iauc60[0] > 0;
+  }
+  else
+  {
+    // TODO better test enhancement checks?
+    for (const auto iauc : IAUC_vals_)
+    {
+      if (iauc <= 0.0)
+      {
+        enhancing_ = false;
+        break;
+      }
+    }
+  }
 }

@@ -22,37 +22,58 @@ void check_output(
 	const std::vector<double> IAUCTimes,
 	const std::vector<double> IAUCVals)
 {
-	//Load in the parameter img vols and extract the single voxel from each
-	mdm_Image3D ktrans_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "Ktrans.hdr", false);
-	mdm_Image3D ve_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "v_e.hdr", false);
-	mdm_Image3D vp_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "v_p.hdr", false);
-	mdm_Image3D tau_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "tau_a.hdr", false);
-	mdm_Image3D model_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "residuals.hdr", false);
-	mdm_Image3D error_codes = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "error_codes.hdr", false);
-	mdm_Image3D enhancing = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "enhVox.hdr", false);
+  double tol = 0.1;
 
-	//Check the model parameters have fitted correctly
-	double tol = 0.1;
-	BOOST_TEST_MESSAGE(boost::format("Fitted ktrans (%1.2f, %2.2f)")
-		% ktrans_fit.voxel(0) % trueParams[0]);
-	BOOST_CHECK_CLOSE(ktrans_fit.voxel(0), trueParams[0], tol);
-	BOOST_TEST_MESSAGE(boost::format("Fitted Ve (%1.2f, %2.2f)")
-		% ve_fit.voxel(0) % trueParams[1]);
-	BOOST_CHECK_CLOSE(ve_fit.voxel(0), trueParams[1], tol);
-	BOOST_TEST_MESSAGE(boost::format("Fitted Vp (%1.2f, %2.2f)")
-		% vp_fit.voxel(0) % trueParams[2]);
-	BOOST_CHECK_CLOSE(vp_fit.voxel(0), trueParams[2], tol);
-	BOOST_TEST_MESSAGE(boost::format("Fitted tau (%1.2f, %2.2f)")
-		% tau_fit.voxel(0) % trueParams[3]);
-	BOOST_CHECK_CLOSE(tau_fit.voxel(0), trueParams[3], tol);
+  //Even with empty model, these should be created
+  mdm_Image3D model_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "residuals.hdr", false);
+  mdm_Image3D error_codes = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "error_codes.hdr", false);
+  mdm_Image3D enhancing = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "enhVox.hdr", false);
 
-	//Check model fit, error codes and enhancing
-	BOOST_TEST_MESSAGE(boost::format("Model residuals = %1%")
-		% model_fit.voxel(0));
-	BOOST_TEST_MESSAGE("No error code");
-	BOOST_CHECK(!error_codes.voxel(0));
-	BOOST_TEST_MESSAGE("Enhancing");
-	BOOST_CHECK(enhancing.voxel(0));
+  //Check error codes and enhancing
+  BOOST_TEST_MESSAGE("No error code");
+  BOOST_CHECK(!error_codes.voxel(0));
+  BOOST_TEST_MESSAGE("Enhancing");
+  BOOST_CHECK(enhancing.voxel(0));
+
+  if (!trueParams.empty())
+  {
+    //Load in the parameter img vols and extract the single voxel from each
+    mdm_Image3D ktrans_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "Ktrans.hdr", false);
+    mdm_Image3D ve_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "v_e.hdr", false);
+    mdm_Image3D vp_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "v_p.hdr", false);
+    mdm_Image3D tau_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "tau_a.hdr", false);
+
+    //Check the model parameters have fitted correctly
+    BOOST_TEST_MESSAGE(boost::format("Fitted ktrans (%1.2f, %2.2f)")
+      % ktrans_fit.voxel(0) % trueParams[0]);
+    BOOST_CHECK_CLOSE(ktrans_fit.voxel(0), trueParams[0], tol);
+    BOOST_TEST_MESSAGE(boost::format("Fitted Ve (%1.2f, %2.2f)")
+      % ve_fit.voxel(0) % trueParams[1]);
+    BOOST_CHECK_CLOSE(ve_fit.voxel(0), trueParams[1], tol);
+    BOOST_TEST_MESSAGE(boost::format("Fitted Vp (%1.2f, %2.2f)")
+      % vp_fit.voxel(0) % trueParams[2]);
+    BOOST_CHECK_CLOSE(vp_fit.voxel(0), trueParams[2], tol);
+    BOOST_TEST_MESSAGE(boost::format("Fitted tau (%1.2f, %2.2f)")
+      % tau_fit.voxel(0) % trueParams[3]);
+    BOOST_CHECK_CLOSE(tau_fit.voxel(0), trueParams[3], tol);
+
+    //Check model fit, error codes and enhancing
+    BOOST_TEST_MESSAGE(boost::format("Model residuals = %1%")
+      % model_fit.voxel(0));
+
+    //Read stats file
+    mdm_ParamSummaryStats stats;
+    stats.openStatsFile(Ct_output_dir + "ROI_summary_stats.csv");
+    for (int param = 0; param < 4; param++)
+    {
+      stats.readStats();
+      BOOST_CHECK_CLOSE(stats.stats().mean_, trueParams[param], tol);
+      BOOST_CHECK_EQUAL(stats.stats().stddev_, 0);
+      BOOST_CHECK_EQUAL(stats.stats().validVoxels_, 1);
+    }
+
+    stats.closeStatsFile();
+  }
 
 	//Check IAUC
 	for (auto i = 0; i < IAUCTimes.size(); i++)
@@ -63,18 +84,7 @@ void check_output(
 		BOOST_CHECK_CLOSE(iauc.voxel(0), IAUCVals[i], tol);
 	}
 
-	//Read stats file
-	mdm_ParamSummaryStats stats;
-	stats.openStatsFile(Ct_output_dir + "ROI_summary_stats.csv");
-	for (int param = 0; param < 4; param++)
-	{
-		stats.readStats();
-		BOOST_CHECK_CLOSE(stats.stats().mean_, trueParams[param], tol);
-		BOOST_CHECK_EQUAL(stats.stats().stddev_, 0);
-		BOOST_CHECK_EQUAL(stats.stats().validVoxels_, 1);
-	}
 	
-	stats.closeStatsFile();
 
 	//Tidy up
 	fs::remove_all(Ct_output_dir);
@@ -167,7 +177,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 			BOOST_TEST_MESSAGE("Saved 1st dynamic image " << Ct_name);
 	}
 
-	//Run 2 tests:
+	//Run 2 types of tests:
 	// 1) Using a run tools object, this runs the complete pipeline but doesn't involve a system call
 	// 2) Calling system to run a command line call
 
@@ -270,6 +280,37 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 			{},
 			{});
 	}
+
+  //-------------------------------------------------------------------------------
+  // 3) Using a run tools object with empty model
+  //-------------------------------------------------------------------------------
+  {
+    std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct4/";
+    mdm_InputOptions madym_options;
+    mdm_OptionsParser options_parser;
+    madym_options.model.set("NONE");
+    madym_options.outputDir.set(Ct_output_dir);
+    madym_options.dynDir.set(dyn_dir);
+    madym_options.dynFormat.set("%02u");
+    madym_options.dynName.set("Ct_");
+    madym_options.nDyns.set(nTimes);
+    madym_options.injectionImage.set(injectionImage);
+    madym_options.dose.set(dose);
+    madym_options.hct.set(hct);
+    madym_options.IAUCTimes.set(IAUCTimes);
+    madym_options.inputCt.set(true);
+    madym_options.overwrite.set(true);
+
+    mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
+    madym_exe.parseInputs("test_madym_DCE_noI");
+    int result = madym_exe.run();
+
+    BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
+    check_output(Ct_output_dir,
+      {},
+      IAUCTimes,
+      IAUCVals);
+  }
 
 	//---------------------------------------------------------------------------
 	//Tidy up
