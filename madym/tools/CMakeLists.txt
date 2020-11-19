@@ -8,55 +8,122 @@ project(madym_tools)
 
 #-------------------------------------------------------------------
 # Main madym analysis tool applied to whole image volumes
-ADD_EXECUTABLE(madym_DCE 
+add_executable(madym_DCE 
 	madym_DCE.cxx)
 
-TARGET_LINK_LIBRARIES( madym_DCE mdm
+target_link_libraries( madym_DCE mdm
   )
 
 #-------------------------------------------------------------------
 # Lightweight tool for performing analysis on individual voxels
-ADD_EXECUTABLE(madym_DCE_lite 
+add_executable(madym_DCE_lite 
 	madym_DCE_lite.cxx)
 
-TARGET_LINK_LIBRARIES( madym_DCE_lite mdm)
+target_link_libraries( madym_DCE_lite mdm)
 
 #-------------------------------------------------------------------
 # Standalone tool for computing T1 maps
-ADD_EXECUTABLE(madym_T1 
+add_executable(madym_T1 
 	madym_T1.cxx)
 
-TARGET_LINK_LIBRARIES( madym_T1 mdm)
+target_link_libraries( madym_T1 mdm)
 
 #-------------------------------------------------------------------
 # Standalone tool for computing T1 values
-ADD_EXECUTABLE(madym_T1_lite 
+add_executable(madym_T1_lite 
 	madym_T1_lite.cxx)
 
-TARGET_LINK_LIBRARIES( madym_T1_lite mdm)
+target_link_libraries( madym_T1_lite mdm)
 
 #-------------------------------------------------------------------
 # Standalone tool for computing an auto AIF
-#ADD_EXECUTABLE(fit_auto_AIF 
+#add_executable(fit_auto_AIF 
 #	fit_auto_AIF.cxx)
 #
-#TARGET_LINK_LIBRARIES( fit_auto_AIF mdm)
+#target_link_libraries( fit_auto_AIF mdm)
 
 #-------------------------------------------------------------------
 # Standalone tool for converting raw dicom images to analyze format volumes
-#ADD_EXECUTABLE(dicom2analyze 
+#add_executable(dicom2analyze 
 #	dicom2analyze.cxx)
 #
-#TARGET_LINK_LIBRARIES( dicom2analyze mdm)
+#target_link_libraries( dicom2analyze mdm)
 
 #-------------------------------------------------------------------
 # Standalone tool for computing summary statistics from Madym output
-#ADD_EXECUTABLE(trials_datastreams_calc_stats 
+#add_executable(trials_datastreams_calc_stats 
 #	trials_datastreams_calc_stats.cxx)
 #
-#TARGET_LINK_LIBRARIES( trials_datastreams_calc_stats mdm)
+#target_link_libraries( trials_datastreams_calc_stats mdm)
 
 #-------------------------------------------------------------------
 if ( BUILD_TESTING )
-	SUBDIRS(tests)
+	subdirs(tests)
 endif ( BUILD_TESTING )
+
+#--------------------------------------------------------------------------------
+# Now the installation stuff below
+#--------------------------------------------------------------------------------
+
+#set(CPACK_ARCHIVE_FILE_NAME "madym_${MADYM_VERSION}-${CMAKE_GENERATOR}") this should work but docs are wrong: cmake bug
+
+install(TARGETS madym_DCE 
+  RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Tools
+    CONFIGURATIONS Release)
+install(TARGETS madym_DCE_lite 
+  RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Tools
+    CONFIGURATIONS Release)
+install(TARGETS madym_T1 
+  RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Tools
+    CONFIGURATIONS Release)
+install(TARGETS madym_T1_lite 
+  RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Tools
+    CONFIGURATIONS Release)
+
+#Only build the archive when we're not build the main GUI. If we build
+#the GUI, we make a proper installer package
+
+if (NOT BUILD_QT_GUI)
+  set(CPACK_PACKAGE_FILE_NAME "madym_${MADYM_VERSION}-${CMAKE_GENERATOR}")
+  set(CPACK_ARCHIVE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
+    
+  #Windows
+  if (WIN32)
+    message(STATUS "Set generator to zip for ${CPACK_ARCHIVE_FILE_NAME}")
+    set(CPACK_GENERATOR "ZIP")
+
+    #We need to include boost dlls for windows
+    set(APPS "\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/madym_DCE.exe")
+    set(DIRS 
+      "${Boost_LIBRARY_DIR_RELEASE}")
+
+    install(CODE "
+        include(BundleUtilities)
+        fixup_bundle(\"${APPS}\" \"\" \"${DIRS}\")
+        " 
+        COMPONENT Tools
+        CONFIGURATIONS Release)
+
+  #Apple
+  elseif(APPLE)
+    message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")
+    set(CPACK_GENERATOR "TGZ")
+
+  #Unix
+  elseif(UNIX)
+    message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")
+    set(CPACK_GENERATOR "TGZ")
+
+  endif ()
+
+  set(CPACK_SOURCE_IGNORE_FILES
+    \\.git/
+    build/
+    ".*~$"
+  )
+
+  set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+  set(CPACK_VERBATIM_VARIABLES YES)
+  include(CPack)
+
+endif()

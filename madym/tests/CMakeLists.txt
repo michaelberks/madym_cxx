@@ -7,11 +7,11 @@ project(test_mdm)
 # external libraries
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
-ADD_EXECUTABLE( make_calibration_files
+add_executable( make_calibration_files
     make_calibration_files.cxx)
 target_link_libraries(make_calibration_files mdm)
 
-ADD_EXECUTABLE( test_mdm
+add_executable( test_mdm
 
   mdm_test_utils.h
   test_mdm.cxx

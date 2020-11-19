@@ -643,6 +643,19 @@ template <class T> MDM_API void mdm_Image3D::swapBytes(T& data)
 		data_p[i] = temp[nBytes - i - 1];
 }
 
+//Now force instantiation of the templated functions for the datatype we
+//need or we'll get linker errors
+//! Template specialization declaration of swapBytes for char datatype
+template  MDM_API void mdm_Image3D::swapBytes<char>(char& data);
+//! Template specialization declaration of swapBytes for short datatype
+template  MDM_API void mdm_Image3D::swapBytes<short>(short& data);
+//! Template specialization declaration of swapBytes for int datatype
+template  MDM_API void mdm_Image3D::swapBytes<int>(int& data);
+//! Template specialization declaration of swapBytes for float datatype
+template  MDM_API void mdm_Image3D::swapBytes<float>(float& data);
+//! Template specialization declaration of swapBytes for double datatype
+template  MDM_API void mdm_Image3D::swapBytes<double>(double& data);
+
 //**************************************************************************
 // Private functions
 //**************************************************************************

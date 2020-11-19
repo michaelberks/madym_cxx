@@ -672,11 +672,13 @@ void madym_gui_ui::connect_signals_to_slots()
   // Signals that trigger slots in the main thread
 }
 
+#ifdef _WIN32
 bool madym_gui_ui::winEvent(MSG * message, long * result)
 {
 	//Placeholder in case we want to intercept keyboard entries etc.
 	return false;
 }
+#endif
 
 void madym_gui_ui::initialize_widget_values()
 {

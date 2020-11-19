@@ -5,6 +5,7 @@
 */
 
 #include "madym_gui_model_configure.h"
+#include <QDoubleValidator>
  
 //
 // Public methods

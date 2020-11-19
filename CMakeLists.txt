@@ -1,9 +1,18 @@
 PROJECT( manchester_qbi_madym )
 
 cmake_minimum_required(VERSION 3.10)
-if(COMMAND cmake_policy)
-  cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
+cmake_policy(SET CMP0003 NEW)
+
+#Some annoying warnings/bugs here on Apple to fix via policy settings
+if (APPLE)
+  cmake_policy(SET CMP0025 NEW)
+  cmake_policy(SET CMP0042 NEW)
+  set(CMAKE_MACOSX_RPATH 1)
+endif()
+
+####################################################
+# Require C++11
+set(CMAKE_CXX_STANDARD 14 CACHE STRING "Defines standard required for C++ compiler")
 
 ####################################################
 #Get version of the git repository
@@ -37,6 +46,14 @@ execute_process(
 )
 
 #-----------------------------------------------------------------------------
+# Check if user supplied install prefix
+if( CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT OR DEFAULT_INSTALL_PREFIX)
+  set(DEFAULT_INSTALL_PREFIX TRUE CACHE BOOL "..." FORCE)
+else()
+  set(DEFAULT_INSTALL_PREFIX FALSE CACHE BOOL "..." FORCE)
+endif()
+
+#-----------------------------------------------------------------------------
 if(NOT COMMAND SETIFEMPTY)
 	macro(SETIFEMPTY)
 		set(KEY ${ARGV0})
@@ -47,21 +64,36 @@ if(NOT COMMAND SETIFEMPTY)
 	endmacro()
 endif()
 #-----------------------------------------------------------------------------
+
+#Set output locations in build dir
 SETIFEMPTY(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 SETIFEMPTY(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 SETIFEMPTY(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-SETIFEMPTY(CMAKE_INSTALL_LIBRARY_DESTINATION lib)
-SETIFEMPTY(CMAKE_INSTALL_ARCHIVE_DESTINATION lib)
-SETIFEMPTY(CMAKE_INSTALL_RUNTIME_DESTINATION bin)
-
-string(REPLACE "." ";" VERSION_LIST ${GIT_TAG})
-list(GET VERSION_LIST 0 MADYM_VERSION_MAJOR)
-list(GET VERSION_LIST 1 MADYM_VERSION_MINOR)
-list(GET VERSION_LIST 2 MADYM_VERSION_PATCH)
+set(MADYM_VERSION ${GIT_TAG})
+string(REPLACE "." ";" VERSION_TEMP ${MADYM_VERSION})
+list(GET VERSION_TEMP 0 MADYM_VERSION_MAJOR)
+list(GET VERSION_TEMP 1 MADYM_VERSION_MINOR)
+list(GET VERSION_TEMP 2 MADYM_VERSION_PATCH)
+string(REPLACE "v" "" MADYM_VERSION_MAJOR ${MADYM_VERSION_MAJOR})
 
 MESSAGE(STATUS "Madym version ${MADYM_VERSION_MAJOR}.${MADYM_VERSION_MINOR}.${MADYM_VERSION_PATCH}")
 
+#---------------------------------------------------------------------------
+if ( DEFAULT_INSTALL_PREFIX)
+  set (CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/deploy" CACHE PATH "default install path" FORCE )
+  message(STATUS "Overriding default install prefix ${CMAKE_INSTALL_PREFIX}")
+endif()
+set(MADYM_DEPLOY_DIR "madym-${MADYM_VERSION}")
+
+#---------------------------------------------------------------------------
+# Configure RPATH settings, see https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+#---------------------------------------------------------------------------
 configure_file(
   ${CMAKE_SOURCE_DIR}/mdm_version.h.in
   ${CMAKE_BINARY_DIR}/generated/mdm_version.h
@@ -73,17 +105,17 @@ file(COPY
   DESTINATION ${CMAKE_BINARY_DIR}/calibration_data/)
 
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} )
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} )
 
-OPTION( BUILD_TESTING "Should the tests be built?" YES )
-
-# Best to use shared libraries
-OPTION(BUILD_SHARED_LIBS "Build with shared libraries." YES)
+option( BUILD_TESTING "Should the tests be built?" YES )
 
 # Best to use shared libraries
-OPTION(BUILD_DOCUMENTATION "Build documentation using doxygen." NO)
+option(BUILD_SHARED_LIBS "Build with shared libraries." YES)
 
-IF (BUILD_DOCUMENTATION)
+# Best to use shared libraries
+option(BUILD_DOCUMENTATION "Build documentation using doxygen." NO)
+
+if (BUILD_DOCUMENTATION)
   # Require dot, treat the other components as optional
   find_package(Doxygen)
   
@@ -107,10 +139,10 @@ IF (BUILD_DOCUMENTATION)
 
 endif(BUILD_DOCUMENTATION)
 
-IF( BUILD_TESTING )
+if( BUILD_TESTING )
 	ENABLE_TESTING()
-ENDIF( BUILD_TESTING )
+endif( BUILD_TESTING )
 
-OPTION( BUILD_TESTING "Should the tests be built?" YES )
+option( BUILD_TESTING "Should the tests be built?" YES )
 
-SUBDIRS(madym)
+subdirs(madym)
