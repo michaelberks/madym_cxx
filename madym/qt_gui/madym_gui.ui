@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MadymMainWindow</string>
+   <string>Madym</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="madym_gui.qrc">
+    <normaloff>:/images/madym.ico</normaloff>:/images/madym.ico</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout">

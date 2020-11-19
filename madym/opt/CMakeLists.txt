@@ -4,9 +4,9 @@
 # Phone : +44 (0)161 275 5153 
 # Copyright: (C) University of Manchester 
 
-SET( CMAKE_VERBOSE_MAKEFILE ON)
+set( CMAKE_VERBOSE_MAKEFILE ON)
 
-SET(mdm_opt_sources
+set(mdm_opt_sources
 	#mdm_opt_api.h
 	alglibinternal.cpp		alglibinternal.h
 	alglibmisc.cpp			alglibmisc.h
@@ -25,7 +25,8 @@ SET(mdm_opt_sources
 )
 
 add_library(mdm_opt ${mdm_opt_sources})
-#add_executable(alglib_demo demo.cxx ${mdm_opt_sources})
-#target_compile_definitions(alglib_demo PRIVATE /Ox PRIVATE /DAE_CPU=AE_INTEL)
-
-#TARGET_LINK_LIBRARIES( alglib_demo mdm_opt)
+install(TARGETS mdm_opt 
+	ARCHIVE DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
+  LIBRARY DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
+	RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
+			CONFIGURATIONS Release)

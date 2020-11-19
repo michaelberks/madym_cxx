@@ -6,8 +6,8 @@ stages:
   - build
   - test
   - build_dist
+  - test_dist
   - deploy
-  - release
 
 before_script:
   - git fetch --tags
@@ -23,31 +23,15 @@ fetch-semantic-version:
   script:
     - npm install @semantic-release/gitlab @semantic-release/exec @semantic-release/changelog
     - npx semantic-release
-  artifacts:
-    paths:
-    - VERSION.txt
-
-generate-non-semantic-version:
-  stage: fetch-version
-  except:
-    refs:
-    - master
-    - /^release-.*$/
-  script:
-    - echo build-$CI_PIPELINE_ID > VERSION.txt
-  artifacts:
-    paths:
-    - VERSION.txt
 
 build:
   stage: build
   script:
-    - echo "This job builds madym"
+    - echo "This job builds madym in debug configuration for testing"
     - mkdir -p build
     - cd build
-    - cmake -DCMAKE_BUILD_TYPE=Debug ..
+    - cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_QT_GUI=ON ..
     - make
-    - echo "Semantic version is $(cat VERSION.txt)"
     - echo "Madym version is $(bin/madym_DCE -v)"
   cache:
     key: ${CI_BUILD_REF_NAME}
@@ -65,7 +49,7 @@ build:
 test:
   stage: test
   script:
-    - ls
+    - echo "This job tests madym in debug configuration"
     - cd build
     - ctest --verbose
   only:
@@ -76,10 +60,10 @@ test:
 build_dist:
   stage: build_dist
   script:
-    - echo "This job builds madym for distribution"
+    - echo "This job builds madym in release configuration for distribution"
     - mkdir dist
     - cd dist
-    - cmake -DCMAKE_BUILD_TYPE=Debug ..
+    - cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_QT_GUI=ON ..
     - make
   artifacts:
     paths:
@@ -87,31 +71,31 @@ build_dist:
   only:
   - /^[0-9]+-[0-9]+-release$/
 
-#deploy:
-#  stage: deploy
-#  script: 
-#    - echo "Deploying code"
-#    - echo "Do something with the stuff in /dist"
-#  environment:
-#    name: staging
-#    url: https://staging.example.com
-#  only:
-#    - /^[0-9]+-[0-9]+-release$/
+test_dist:
+  stage: test_dist
+  script:
+    - echo "This job tests madym in release configuration for distribution"
+    - cd dist
+    - ctest --verbose
+  only:
+    - /^[0-9]+-[0-9]+-release$/
 
-#release:
-#  image: node:13
-#  stage: release
-#  only:
-#    refs:
-#    - master
-#    - alpha
-#    # This matches maintenance branches
-#    - /^[0-9]+-[0-9]+-release$/
-#  script:
-#    - touch CHANGELOG.md
-#    - npm install @semantic-release/gitlab @semantic-release/exec @semantic-release/changelog
-#    - npx semantic-release
-#  artifacts:
-#    paths:
-#    - CHANGELOG.md
+deploy:
+  stage: deploy
+  script: 
+    - echo "Make intall and package"
+    - cd dist
+    - make install
+    - make package
+  artifacts:
+    paths:
+      - deploy/
+      - madym_v*.deb
+      - madym_v*.tar.gz
+      - madym_v*.exe
+  #environment:
+  #  name: staging
+  #  url: https://staging.example.com
+  only:
+    - /^[0-9]+-[0-9]+-release$/
   

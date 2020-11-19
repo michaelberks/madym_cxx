@@ -7,7 +7,7 @@ project(test_mdm)
 # external libraries
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 
-ADD_EXECUTABLE( test_mdm_tools
+add_executable( test_mdm_tools
   test_mdm_tools.cxx
 
   test_config.cxx

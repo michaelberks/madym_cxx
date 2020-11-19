@@ -6,22 +6,19 @@
 
 project(madym)
 
-cmake_minimum_required(VERSION 2.8)
-SET (BUILD_PYTHON OFF CACHE BOOL "build python wrappers")
+if ( BUILD_SHARED_LIBS )
+	add_definitions(-DMDM_BUILD_SHARED )
+endif ( BUILD_SHARED_LIBS )
 
-IF ( BUILD_SHARED_LIBS )
-	ADD_DEFINITIONS(-DMDM_BUILD_SHARED )
-ENDIF ( BUILD_SHARED_LIBS )
+add_definitions(-DBOOST_ALL_DYN_LINK )
+find_package(Boost COMPONENTS system filesystem program_options date_time REQUIRED)
 
-ADD_DEFINITIONS(-DBOOST_ALL_DYN_LINK )
-FIND_PACKAGE(Boost COMPONENTS system filesystem program_options date_time REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+add_subdirectory(opt)
 
-ADD_SUBDIRECTORY(opt)
-
-SET(mdm_sources
+set(mdm_sources
 		mdm_RunTools.cxx				mdm_RunTools.h
 		mdm_AIF.cxx						mdm_AIF.h
 		mdm_AnalyzeFormat.cxx			mdm_AnalyzeFormat.h
@@ -43,7 +40,7 @@ SET(mdm_sources
 										mdm_platform_defs.h
 										mdm_api.h
 )
-SET(mdm_run_sources
+set(mdm_run_sources
   run/mdm_RunToolsDCEFit.cxx			run/mdm_RunToolsDCEFit.h
   run/mdm_RunToolsT1Fit.cxx				run/mdm_RunToolsT1Fit.h
   run/mdm_RunToolsVolumeAnalysis.cxx	run/mdm_RunToolsVolumeAnalysis.h
@@ -52,7 +49,7 @@ SET(mdm_run_sources
   run/mdm_RunTools_madym_T1.cxx			run/mdm_RunTools_madym_T1.h
   run/mdm_RunTools_madym_T1_lite.cxx	run/mdm_RunTools_madym_T1_lite.h
 )
-SET(mdm_dce_model_sources
+set(mdm_dce_model_sources
   #Models
   dce_models/mdm_DCEModelGenerator.h
   dce_models/mdm_DCEModelBase.cxx		dce_models/mdm_DCEModelBase.h
@@ -66,16 +63,16 @@ SET(mdm_dce_model_sources
   dce_models/mdm_DCEModelDISCM.cxx		dce_models/mdm_DCEModelDISCM.h
 )
 
-SET(mdm_t1_method_sources
+set(mdm_t1_method_sources
 	t1_methods/mdm_T1MethodGenerator.h
 	t1_methods/mdm_T1FitterBase.cxx			t1_methods/mdm_T1FitterBase.h
 	t1_methods/mdm_T1FitterVFA.cxx			t1_methods/mdm_T1FitterVFA.h
 )
 
-ADD_LIBRARY(mdm 
+add_library(mdm 
 	${mdm_sources} ${mdm_run_sources} ${mdm_dce_model_sources} ${mdm_t1_method_sources})
 
-TARGET_LINK_LIBRARIES( mdm LINK_PUBLIC 
+target_link_libraries( mdm
   mdm_opt
   ${Boost_FILESYSTEM_LIBRARY}
   ${Boost_SYSTEM_LIBRARY}
@@ -83,28 +80,34 @@ TARGET_LINK_LIBRARIES( mdm LINK_PUBLIC
   ${Boost_DATE_TIME_LIBRARY}
 )
 
-IF ( MSVC )
-	TARGET_LINK_LIBRARIES( mdm ws2_32 )
-ELSE ( MSVC )
-	TARGET_LINK_LIBRARIES( mdm m)
-ENDIF ( MSVC )
+if ( MSVC )
+	target_link_libraries( mdm ws2_32 )
+else ( MSVC )
+	target_link_libraries( mdm m)
+endif ( MSVC )
 
-OPTION( BUILD_TOOLS "Should the main madym executable tools be built?" YES )
-OPTION( BUILD_QT_GUI "Should the madym GUI be built?" NO )
+install(TARGETS mdm
+  ARCHIVE DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
+  LIBRARY DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
+  RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
+  CONFIGURATIONS Release)
+
+option( BUILD_TOOLS "Should the main madym executable tools be built?" YES )
+option( BUILD_QT_GUI "Should the madym GUI be built?" NO )
 
 if ( BUILD_TOOLS )
-	SUBDIRS(tools)
+	subdirs(tools)
 endif ()
 
 if ( BUILD_QT_GUI )
-	SUBDIRS(qt_gui)
+	subdirs(qt_gui)
 endif ()
 
 if ( BUILD_TESTING )
-  SUBDIRS(tests)
+  subdirs(tests)
 endif ( BUILD_TESTING )
 
 #if ( BUILD_PYTHON )
-#	SUBDIRS(python)
+#	subdirs(python)
 #endif ( BUILD_PYTHON )
 

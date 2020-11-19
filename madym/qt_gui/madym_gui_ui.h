@@ -153,7 +153,9 @@ private: // Methods
   void connect_signals_to_slots();
   void initialize_widget_values();
 
+#ifdef _WIN32
 	bool winEvent(MSG * message, long * result);
+#endif
 
 private: // Variables
 
