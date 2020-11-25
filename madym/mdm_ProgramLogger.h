@@ -27,10 +27,16 @@ public:
 
 	\param    fileName base name of log file
 	\param    caller name of calling program
-	\return   true on success or false otherwise
+  \return   true on success or false otherwise
 	*/
 	MDM_API  static bool openProgramLog(const std::string &fileName,
 	const std::string &caller);
+
+  //!    Set whether program log messages are also piped to cout
+  /*!
+  \quiet  if true, messages not displayed in cout
+  */
+  MDM_API  static void setQuiet(bool quiet);
 
 	//!    Close the program log file stream
 	/*!
@@ -41,9 +47,20 @@ public:
 	//!    Write a message to the program log
 	/*!
 	\param    message to write to log file
-	\return true on success or false otherwise
 	*/
-	MDM_API  static bool logProgramMessage(const std::string & message);
+	MDM_API  static void logProgramMessage(const std::string & message);
+
+  //!    Write an error message to the program log
+  /*!
+  \param    message to write to log file
+  */
+  MDM_API  static void logProgramError(const std::string & message);
+
+  //!    Write a warning message to the program log
+  /*!
+  \param    message to write to log file
+  */
+  MDM_API  static void logProgramWarning(const std::string & message);
 
 	//!    Open a audit log at given filename, recording the calling program and location of the program log
 	/*!
@@ -76,5 +93,6 @@ private:
 	static std::string logTime();
 	static std::ofstream program_log_stream_;
 	static std::ofstream audit_log_stream_;
+  static bool quiet_;
 };
 #endif /* MDM_PROGRAMLOGGER_HDR */

@@ -83,17 +83,15 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 	}
 	int iterations = rep_.iterationscount;
 
-#if _DEBUG
-	//std::cout << "Alglib complete after " << iterations << std::endl;
-#endif
-	/* Check for non-convergence */
+
+	// Check for non-convergence
 	if (iterations >= maxIterations_)
 	{
 		setErrorValuesAndTidyUp("Error 3 - alglib:CG() hit max iterations", T1value, M0value);
 		return mdm_ErrorTracker::T1_MAX_ITER;
 	}
 
-	/* Check for crap fit or bonkers result*/
+	// Check for crap fit or bonkers result
 	if (x[0] < 0.0 || x[0] > 6000.0)
 	{
 		setErrorValuesAndTidyUp("Error 4 - Mad values", T1value, M0value);

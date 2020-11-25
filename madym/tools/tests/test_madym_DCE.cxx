@@ -200,6 +200,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		madym_options.IAUCTimes.set(IAUCTimes);
 		madym_options.inputCt.set(true);
 		madym_options.overwrite.set(true);
+    madym_options.noAudit.set(true);
 
 		mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
 		madym_exe.parseInputs("test_madym_DCE");
@@ -228,7 +229,8 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 			<< " -D " << dose
 			<< " -H " << hct
 			<< " -I " << IAUC_str
-			<< " --Ct --overwrite "; //<< " -iauc 60"
+			<< " --Ct --overwrite "
+      << " --no_audit";
 
 		BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
 
@@ -269,6 +271,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		madym_options.IAUCTimes.set({});
 		madym_options.inputCt.set(true);
 		madym_options.overwrite.set(true);
+    madym_options.noAudit.set(true);
 
 		mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
 		madym_exe.parseInputs("test_madym_DCE_noI");
@@ -300,6 +303,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
     madym_options.IAUCTimes.set(IAUCTimes);
     madym_options.inputCt.set(true);
     madym_options.overwrite.set(true);
+    madym_options.noAudit.set(true);
 
     mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
     madym_exe.parseInputs("test_madym_DCE_noI");

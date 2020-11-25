@@ -16,6 +16,7 @@
 #include <cmath>
 #include <fstream>
 #include <algorithm>
+#include <boost/format.hpp>
 
 const std::vector<std::string> mdm_ParamSummaryStats::headers_ = {
 	"param",
@@ -186,7 +187,7 @@ MDM_API bool mdm_ParamSummaryStats::writeROISummary(const std::string &roiFile)
 	std::ofstream roiStream(roiFile);
 	if (!roiStream)
 	{
-		std::cerr << "Failed to open stats file " << roiFile << std::endl;
+		throw boost::format("Failed to open stats file %1%") % roiFile;
 		return false;
 	}
 
@@ -203,10 +204,7 @@ MDM_API bool mdm_ParamSummaryStats::openNewStatsFile(const std::string &statsFil
 {
 	statsOStream_.open(statsFile, std::ios::out);
 	if (!statsOStream_)
-	{
-		std::cerr << "Failed to open stats file " << statsFile << std::endl;
-		return false;
-	}
+    throw boost::format("Failed to open stats file %1%") % statsFile;
 
 	//Write stats headers
 	for (const auto hdr : headers_)
@@ -252,10 +250,7 @@ MDM_API bool mdm_ParamSummaryStats::openStatsFile(const std::string &statsFile)
 {
 	statsIStream_.open(statsFile, std::ios::in);
 	if (!statsIStream_)
-	{
-		std::cerr << "Failed to open stats file " << statsFile << std::endl;
-		return false;
-	}
+    throw boost::format("Failed to open stats file %1%") % statsFile;
 
 	//Write stats headers
 	std::string hdr_in;

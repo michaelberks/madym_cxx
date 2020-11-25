@@ -90,7 +90,7 @@ MDM_API int mdm_RunTools_madym_T1_lite::run()
 			errCode << std::endl;
 
 		row_counter++;
-		if (!fmod(row_counter, 1000))
+		if (!options_.quiet() && !fmod(row_counter, 1000))
 			std::cout << "Processed sample " << row_counter << std::endl;
 
 	}
@@ -99,8 +99,11 @@ MDM_API int mdm_RunTools_madym_T1_lite::run()
 	inputData.close();
 	outputData.close();
 
-	std::cout << "Finished processing! " << std::endl;
-	std::cout << "Processed " << row_counter << " samples in total." << std::endl;
+  if (!options_.quiet())
+  {
+    std::cout << "Finished processing! " << std::endl;
+    std::cout << "Processed " << row_counter << " samples in total." << std::endl;
+  }
 	
 	return mdm_progExit();
 }
@@ -119,6 +122,7 @@ MDM_API int mdm_RunTools_madym_T1_lite::parseInputs(int argc, const char *argv[]
 	options_parser_.add_option(config_options, options_.nT1Inputs);
 	options_parser_.add_option(config_options, options_.outputDir);
 	options_parser_.add_option(config_options, options_.outputName);
+  options_parser_.add_option(config_options, options_.quiet);
 
 	//Always set overwrite true for lite methods
 	options_.overwrite.set(true);

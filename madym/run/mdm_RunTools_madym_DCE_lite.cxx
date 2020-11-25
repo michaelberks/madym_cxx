@@ -12,8 +12,6 @@
 
 #include "mdm_RunTools_madym_DCE_lite.h"
 
-#include <madym/mdm_ProgramLogger.h>
-
 namespace fs = boost::filesystem;
 
 //
@@ -241,7 +239,7 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 			col_counter = 0;
 
 			row_counter++;
-			if (!fmod(row_counter, 1000))
+			if (!options_.quiet() && !fmod(row_counter, 1000))
 				std::cout << "Processed time-series " << row_counter << std::endl;
 		}
 		else
@@ -270,9 +268,12 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 	if (load_params)
 		inputParams.close();
 
-	std::cout << "Finished processing! " << std::endl;
-	std::cout << "Processed " << row_counter << " time-series in total." << std::endl;
-
+  if (!options_.quiet())
+  {
+    std::cout << "Finished processing! " << std::endl;
+    std::cout << "Processed " << row_counter << " time-series in total." << std::endl;
+  }
+	
 	//Tidy up the logging objects
 	return mdm_progExit();
 }
@@ -328,6 +329,7 @@ MDM_API int mdm_RunTools_madym_DCE_lite::parseInputs(int argc, const char *argv[
 		//General output options_
 	options_parser_.add_option(config_options, options_.outputName);
 	options_parser_.add_option(config_options, options_.outputDir);
+  options_parser_.add_option(config_options, options_.quiet);
 
 	//Set overwrite default to true for lite version
 	options_.overwrite.set(true);

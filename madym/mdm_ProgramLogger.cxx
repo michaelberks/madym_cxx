@@ -27,6 +27,7 @@
 
 std::ofstream mdm_ProgramLogger::program_log_stream_;
 std::ofstream mdm_ProgramLogger::audit_log_stream_;
+bool mdm_ProgramLogger::quiet_ = false;
 
 //
 MDM_API bool mdm_ProgramLogger::openProgramLog(const std::string &fileName,
@@ -53,9 +54,19 @@ MDM_API bool mdm_ProgramLogger::openProgramLog(const std::string &fileName,
 
 	msg += "User: " + user + ";   Host: " + hostName + "\n";
 	msg += "Ran in: " + cwd.string() + "\n";
+  logProgramMessage(msg);
+	
+  return true;
 
-	return logProgramMessage(msg);
+}
 
+//!    Set whether program log messages are also piped to cout
+  /*!
+  \quiet  if true, messages not displayed in cout
+  */
+MDM_API  void mdm_ProgramLogger::setQuiet(bool quiet)
+{
+  quiet_ = quiet;
 }
 
 //
@@ -81,16 +92,32 @@ MDM_API bool mdm_ProgramLogger::closeProgramLog()
 }
 
 //
-MDM_API bool mdm_ProgramLogger::logProgramMessage(const std::string &message)
+MDM_API void mdm_ProgramLogger::logProgramMessage(const std::string &message)
 {
-	if (!program_log_stream_)
-	{
+	if (!quiet_)
 		std::cout << message << std::endl;
-		return false;
-	}
+	
+  if (program_log_stream_)
+	  program_log_stream_ << message;
 
-	program_log_stream_ << message;
-	return true;
+}
+
+//
+MDM_API  void mdm_ProgramLogger::logProgramError(const std::string & message)
+{
+  std::cerr << "ERROR: " << message << std::endl;
+
+  if (program_log_stream_)
+    program_log_stream_ << "ERROR: " << message;
+}
+
+//
+MDM_API  void mdm_ProgramLogger::logProgramWarning(const std::string & message)
+{
+  std::cerr << "WARNING: " << message << std::endl;
+
+  if (program_log_stream_)
+    program_log_stream_ << "WARNING: " << message;
 }
 
 MDM_API bool  mdm_ProgramLogger::openAuditLog(const std::string &fileName,
@@ -104,6 +131,7 @@ MDM_API bool  mdm_ProgramLogger::openAuditLog(const std::string &fileName,
 		std::cerr << "Failed to open audit log " << fileName << std::endl;
 		return false;
 	}
+  std::cout << "Opened audit log at " << fileName << std::endl;
 
 	std::string msg = "Log opened at " + logTime() + "\n";
 
@@ -117,6 +145,7 @@ MDM_API bool  mdm_ProgramLogger::openAuditLog(const std::string &fileName,
 
 	msg += "User: " + user + ";   Host: " + hostName + "\n";
 	msg += "Ran in: " + cwd.string() + "\n";
+
 
 	return logAuditMessage(msg);
 }
