@@ -65,13 +65,13 @@ void mdm_RunTools::mdm_progAbort(const std::string &err_str)
 {
 
   std::string error_msg = options_parser_.exe_cmd() + " ABORTING: " + err_str + "\n";
-	std::cout << error_msg << std::endl;
-	std::cerr << error_msg << std::endl;
+  
+  mdm_ProgramLogger::logProgramMessage(error_msg);
+  mdm_ProgramLogger::logAuditMessage(error_msg);
+  mdm_ProgramLogger::closeAuditLog();
+  mdm_ProgramLogger::closeProgramLog();
 
-	mdm_ProgramLogger::logProgramMessage(error_msg);
-	mdm_ProgramLogger::logAuditMessage(error_msg);
-	mdm_ProgramLogger::closeAuditLog();
-	mdm_ProgramLogger::closeProgramLog();
+	std::cerr << error_msg << std::endl;
   exit(1);
 }
 
@@ -120,33 +120,43 @@ void mdm_RunTools::set_up_logging()
 {
 	//Set up paths to error image and audit logs, using default names if not user supplied
 	// and using boost::filesystem to make absolute paths
-	const std::string exe_cmd = fs::path(options_parser_.exe_cmd()).stem().string();
-	std::string auditName = exe_cmd + timeNow() + options_.auditLogBaseName();
-	std::string programName = exe_cmd + timeNow() + options_.programLogName();
-	std::string configName = exe_cmd + timeNow() + options_.outputConfigFileName();
 
-	fs::path programLogPath = outputPath_ / programName;
-	fs::path configFilePath = outputPath_ / configName;
+  const std::string exe_cmd = fs::path(options_parser_.exe_cmd()).stem().string();
+  std::string caller = options_parser_.exe_cmd() + " " + MDM_VERSION;
 
-	//Note the default audit path doesn't use the output directory (unless user specifically set so)
-	fs::path auditDir = fs::absolute(options_.auditLogDir());
-	if (!is_directory(auditDir))
-		create_directories(auditDir);
-	fs::path auditPath = auditDir / auditName;
+  if (!options_.noAudit())
+  {
+    //Note the default audit path doesn't use the output directory (unless user specifically set so)
+    std::string auditName = exe_cmd + timeNow() + options_.auditLogBaseName();
+    fs::path auditDir = fs::absolute(options_.auditLogDir());
+    if (!is_directory(auditDir))
+      create_directories(auditDir);
+    fs::path auditPath = auditDir / auditName;
 
-	std::string caller = options_parser_.exe_cmd() + " " + MDM_VERSION;
-	mdm_ProgramLogger::openAuditLog(auditPath.string(), caller);
-	mdm_ProgramLogger::logAuditMessage("Command args: " + options_parser_.exe_args());
-	mdm_ProgramLogger::openProgramLog(programLogPath.string(), caller);
+    mdm_ProgramLogger::openAuditLog(auditPath.string(), caller);
+    mdm_ProgramLogger::logAuditMessage("Command args: " + options_parser_.exe_args());
+  }
+
+  mdm_ProgramLogger::setQuiet(options_.quiet());
+  if (!options_.noLog())
+  {
+    std::string programName = exe_cmd + timeNow() + options_.programLogName();
+    fs::path programLogPath = outputPath_ / programName;
+    mdm_ProgramLogger::openProgramLog(programLogPath.string(), caller);
+
+    //Log location of program log and config file in audit log
+    if (!options_.noAudit())
+      mdm_ProgramLogger::logAuditMessage(
+        "Program log saved to " + programLogPath.string() + "\n");
+  }
+
+  //Log the command arguments
 	mdm_ProgramLogger::logProgramMessage("Command args: " + options_parser_.exe_args());
-	std::cout << "Opened audit log at " << auditPath.string() << std::endl;
-
+	
 	//Save the config file of input options
+  std::string configName = exe_cmd + timeNow() + options_.outputConfigFileName();
+  fs::path configFilePath = outputPath_ / configName;
 	options_parser_.to_file(configFilePath.string(), options_);
-
-	//Log location of program log and config file in audit log
-	mdm_ProgramLogger::logAuditMessage(
-		"Program log saved to " + programLogPath.string() + "\n");
-	mdm_ProgramLogger::logAuditMessage(
+	mdm_ProgramLogger::logProgramMessage(
 		"Config file saved to " + configFilePath.string() + "\n");
 }

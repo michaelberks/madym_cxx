@@ -188,6 +188,10 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.sparseWrite);
 
 		//Logging options_
+  options_parser_.add_option(config_options, options_.noLog);
+  options_parser_.add_option(config_options, options_.noAudit);
+  options_parser_.add_option(config_options, options_.quiet);
+
 	options_parser_.add_option(config_options, options_.errorCodesName);
 	options_parser_.add_option(config_options, options_.programLogName);
 	options_parser_.add_option(config_options, options_.outputConfigFileName);

@@ -180,6 +180,15 @@ struct mdm_InputOptions {
 		"Flag to write output in sparse Analyze format");
 
 	//Logging options
+  mdm_input_bool noLog = mdm_input_bool(
+    false, "no_log", "",
+    "Switch off program logging");
+  mdm_input_bool noAudit = mdm_input_bool(
+    false, "no_audit", "",
+    "Switch off audit logging");
+  mdm_input_bool quiet = mdm_input_bool(
+    false, "quiet", "q",
+    "Do not display logging messages in cout");
 	mdm_input_string errorCodesName = mdm_input_string(
 		mdm_input_str("error_codes"), "err", "E",
 		"Filename of error codes map");

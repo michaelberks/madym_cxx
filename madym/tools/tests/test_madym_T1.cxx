@@ -50,7 +50,8 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1) {
 		<< " -T VFA "
 		<< " --T1_vols " << FA_names[0] << "," << FA_names[1] << "," << FA_names[2]
 		<< " -o " << T1_output_dir
-		<< " --overwrite";
+		<< " --overwrite"
+    << " --no_audit";
 
 	BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
 

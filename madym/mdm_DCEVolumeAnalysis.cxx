@@ -18,6 +18,7 @@
 #include <chrono>  // chrono::system_clock
 #include <sstream> // stringstream
 #include <algorithm>
+#include <boost/format.hpp>
 
 #include "mdm_version.h"
 #include "mdm_ProgramLogger.h"
@@ -301,8 +302,8 @@ MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::DCEMap(const std::string &mapName) co
 		return enhVoxMap_;
 	
 	//Error map name not recognised
-	std::cerr << "Map name " << mapName << " not recognised" << std::endl;
-	std::abort();
+	throw boost::format("Map name %1% not recognised") % mapName;
+
 }
 
 //
@@ -341,8 +342,7 @@ MDM_API void mdm_DCEVolumeAnalysis::setDCEMap(const std::string &mapName, const 
   }
 
   //Error map name not recognised
-  std::cerr << "Map name " << mapName << " not recognised" << std::endl;
-  std::abort();
+  throw boost::format("Map name %1% not recognised") % mapName;
 }
 
 //

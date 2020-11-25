@@ -46,7 +46,6 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1_lite) {
 		<< " --TR " << TR
 		<< " -o " << T1_output_dir
 		<< " -O " << outputName;
-		;
 
 	BOOST_TEST_MESSAGE("Command to run: " + cmd.str() );
 

@@ -142,7 +142,8 @@ MDM_API void mdm_RunToolsVolumeAnalysis::writeOutput()
 {
 	if (!fileManager_.saveOutputMaps(outputPath_.string()))
 	{
-		std::cerr << options_parser_.exe_cmd() << ": error saving maps" << std::endl;
+		mdm_ProgramLogger::logProgramError(
+      options_parser_.exe_cmd() + ": error saving maps");
 		//Don't quit here, we may as well try and save the error image anyway
 		//nothing else depends on the success of the save
 	}

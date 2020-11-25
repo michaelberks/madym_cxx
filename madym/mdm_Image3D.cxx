@@ -17,6 +17,7 @@
 #include <iostream>
 #include <iomanip>
 #include <boost/date_time.hpp>
+#include <boost/format.hpp>
 
 const std::string mdm_Image3D::MetaData::ImageTypeKey = "ImageType";
 const std::string mdm_Image3D::MetaData::TimeStampKey = "TimeStamp";
@@ -273,8 +274,7 @@ MDM_API void mdm_Image3D::setMetaData(const std::string &key, const double &valu
 	else
 	{
 		//Throw exception that key not recognised
-		std::cerr << "Error: Key " << key << " not recognised." << std::endl;
-		std::abort();
+    throw boost::format("Error: Key %1% not recognised") % key;
 	}
 
 }
