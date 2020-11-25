@@ -30,7 +30,7 @@ MDM_API mdm_RunToolsDCEFit::~mdm_RunToolsDCEFit()
 }
 
 //
-void mdm_RunToolsDCEFit::setModel(const std::string &modelName, bool auto_aif, bool auto_pif,
+void mdm_RunToolsDCEFit::setModel(const std::string &modelName,
 	const std::vector<std::string> &paramNames,
 	const std::vector<double> &initialParams,
 	const std::vector<int> fixedParams,
@@ -42,10 +42,55 @@ void mdm_RunToolsDCEFit::setModel(const std::string &modelName, bool auto_aif, b
 	if (modelType == mdm_DCEModelGenerator::UNDEFINED)
 		mdm_progAbort("Invalid or unsupported model (from command-line)");
 
+  if (AIF_.AIFType() == mdm_AIF::AIF_TYPE::AIF_UNDEFINED)
+    mdm_progAbort("Tried to create model before AIF set");
+
 	model_ = mdm_DCEModelGenerator::createModel(AIF_,
-		modelType, auto_aif, auto_pif, paramNames,
+		modelType, paramNames,
 		initialParams, fixedParams, fixedValues,
 		relativeLimitParams, relativeLimitValues);
-
-	
 }
+
+void mdm_RunToolsDCEFit::setAIF()
+{
+  //Parse input AIF options
+  // - aifName overrides all
+  // - aifMap overrides aifType
+  // - warn if aifType not default but doesn't match aifName/Map if specified
+  // - error if aifType set to aifFile/Map but aifName/Map not specified
+
+  mdm_AIF::AIF_TYPE aifType = mdm_AIF::AIF_TYPE(options_.aifType());
+
+  if (!options_.aifName().empty())
+  {
+    if (aifType != mdm_AIF::AIF_TYPE::AIF_FILE && aifType != mdm_AIF::AIF_TYPE::AIF_POP)
+      mdm_ProgramLogger::logProgramMessage(
+        "Warning: AIF name supplied but AIF type set to non-default mis-matched type. Using AIF from file"
+      );
+    aifType = mdm_AIF::AIF_TYPE::AIF_FILE;
+  }
+  else if (!options_.aifMap().empty())
+  {
+    if (aifType != mdm_AIF::AIF_TYPE::AIF_MAP && aifType != mdm_AIF::AIF_TYPE::AIF_POP)
+      mdm_ProgramLogger::logProgramMessage(
+        "Warning: AIF map supplied but AIF type set to non-default mis-matched type. Using AIF from map"
+      );
+    aifType = mdm_AIF::AIF_TYPE::AIF_MAP;
+  }
+  else if (aifType == mdm_AIF::AIF_TYPE::AIF_FILE && options_.aifName().empty())
+    throw "Error: AIF type set to read from file but AIF name empty";
+
+  else if (aifType == mdm_AIF::AIF_TYPE::AIF_MAP && options_.aifName().empty())
+    throw "Error: AIF type set to read from map but AIF map empty";
+
+  //Set AIF type, if user has given incorrect input this should trigger an exception
+  AIF_.setAIFType(aifType);
+
+  //PIF for now is simpler, if pifName is given, set to from file, otherwise population
+  //We may look to change this behaviour to bring inline with AIF setting
+  if (options_.pifName().empty())
+    AIF_.setPIFType(mdm_AIF::PIF_POP);
+  else
+    AIF_.setPIFType(mdm_AIF::PIF_FILE);
+}
+

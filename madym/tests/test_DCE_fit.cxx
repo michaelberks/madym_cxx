@@ -10,6 +10,7 @@
 #include <madym/mdm_AIF.h>
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
 #include <madym/mdm_DCEVoxel.h>
+#include <madym/mdm_DCEModelFitter.h>
 
 
 void test_model_time_fit(
@@ -70,27 +71,28 @@ void test_model_time_fit(
 	BOOST_REQUIRE_MESSAGE(modelType != mdm_DCEModelGenerator::UNDEFINED,
 		"Model name " << modelName << " is undefined");
 
+  AIF.setAIFType(mdm_AIF::AIF_TYPE::AIF_POP);
+  AIF.setPIFType(mdm_AIF::PIF_TYPE::PIF_POP);
 	auto model = mdm_DCEModelGenerator::createModel(AIF,
-		modelType, false, false, {},
+		modelType, {},
 		{}, fixedParams, {}, {}, {});
 
+  mdm_DCEModelFitter fitter(
+    *model,
+    0,
+    nTimes,
+    {}
+  );
+
 	mdm_DCEVoxel vox(
-		*model,
 		{},
 		CtCalibration,
-		{},
-		0,
-		0,
-		0,
 		AIF.prebolus(),
-		AIF.AIFTimes(),
-		0,
-		0,
-		0,
-		nTimes,
-		IAUCTimes);
-	vox.initialiseModelFit();
-	vox.fitModel();
+    AIF.AIFTimes(),
+    IAUCTimes);
+
+	fitter.initialiseModelFit(vox.CtData());
+  fitter.fitModel(vox.status(), vox.enhancing());
 
 	//Check params match (should be within 0.01)
 	BOOST_TEST_MESSAGE("Actual vs fitted params: ");
@@ -101,13 +103,13 @@ void test_model_time_fit(
 			% trueParams[i] % model->params()[i]);
 	}
 
-	BOOST_TEST_MESSAGE(boost::format("Model SSE = %1$.4f") % vox.modelFitError());
+	BOOST_TEST_MESSAGE(boost::format("Model SSE = %1$.4f") % fitter.modelFitError());
 	BOOST_TEST_MESSAGE("Test DCE models, values match: " + modelName);
 	BOOST_CHECK(mdm_test_utils::vectors_near_equal_rel(
 		model->params(), trueParams, paramTol));
 
 	BOOST_TEST_MESSAGE("Test DCE models, SSE < tol: " + modelName);
-	BOOST_CHECK_SMALL(vox.modelFitError(), sseTol);
+	BOOST_CHECK_SMALL(fitter.modelFitError(), sseTol);
 
 	if (test_IAUC)
 	{

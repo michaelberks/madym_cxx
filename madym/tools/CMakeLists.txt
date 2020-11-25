@@ -37,10 +37,10 @@ target_link_libraries( madym_T1_lite mdm)
 
 #-------------------------------------------------------------------
 # Standalone tool for computing an auto AIF
-#add_executable(fit_auto_AIF 
-#	fit_auto_AIF.cxx)
-#
-#target_link_libraries( fit_auto_AIF mdm)
+add_executable(madym_AIF 
+	madym_AIF.cxx)
+
+target_link_libraries( madym_AIF mdm)
 
 #-------------------------------------------------------------------
 # Standalone tool for converting raw dicom images to analyze format volumes

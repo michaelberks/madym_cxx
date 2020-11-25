@@ -9,7 +9,7 @@
 #ifndef MDM_RUNTOOLS_VOLUMEANALYSIS_HDR
 #define MDM_RUNTOOLS_VOLUMEANALYSIS_HDR
 #include "mdm_api.h"
-#include <madym/mdm_RunTools.h>
+#include <madym/run/mdm_RunToolsT1Fit.h>
 
 namespace fs = boost::filesystem;
 
@@ -17,7 +17,7 @@ namespace fs = boost::filesystem;
 /*!
  \see mdm_RunTools
 */
-class mdm_RunToolsVolumeAnalysis : public virtual mdm_RunTools {
+class mdm_RunToolsVolumeAnalysis : public virtual mdm_RunToolsT1Fit {
 
 public:
 
@@ -47,11 +47,23 @@ protected:
 	//! Check if user has specified an ROI mask, and if so, load it
 	MDM_API void loadROI();
 
+  //! Load set of dynamic signal images
+  MDM_API void loadSt();
+
+  //! Load set of dynamic contrast agent concentration maps
+  MDM_API void loadCt();
+
+  //! Load precomputed T1 map
+  MDM_API void loadT1();
+
 	//! Check if there are T1 signal inputs to load, and if so, load them
 	MDM_API void loadT1Inputs();
 
+  //
+  MDM_API void mapT1();
+
 	//! Write all output maps
-	MDM_API void writeOuput();
+	MDM_API void writeOutput();
 
 	//Variables:
 

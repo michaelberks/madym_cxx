@@ -14,7 +14,7 @@
 //! Class to run the T1 mapping tool
 /*!
 */
-class mdm_RunTools_madym_T1 : public mdm_RunToolsT1Fit, mdm_RunToolsVolumeAnalysis {
+class mdm_RunTools_madym_T1 : public mdm_RunToolsVolumeAnalysis {
 
 public:
 

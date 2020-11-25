@@ -46,15 +46,21 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 		mdm_progAbort("number of dynamics (option -n) must be provided");
 	}
 
+  //Set curent working dir
+  set_up_cwd();
+
 	//Set-up output folder and output file
 	set_up_output_folder();
 	std::string outputDataFile = outputPath_.string() + "/" +
 		options_.model() + "_" + options_.outputName();
 
+  //Set up AIF, option from map is not allowed in lite analysis
+  setAIF();
+  if (AIF_.AIFType() == mdm_AIF::AIF_TYPE::AIF_MAP)
+    mdm_progAbort("AIF can not be read from a map in DCE-lite analysis");
 	
- //Set which type of model we're using
+  //Set which type of model we're using
 	setModel(options_.model(),
-		!options_.aifName().empty(), !options_.pifName().empty(),
 		options_.paramNames(), options_.initialParams(),
 		options_.fixedParams(), options_.fixedValues(),
 		options_.relativeLimitParams(), options_.relativeLimitValues());
@@ -165,21 +171,17 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 		}
 	}
 
-	//Set valid first image
-	if (options_.lastImage() <= 0)
-		options_.lastImage.set(options_.nDyns());
-
 	//Convert IAUC times to minutes
 	auto iauc_t = options_.IAUCTimes();
 	std::sort(iauc_t.begin(), iauc_t.end());
 	for (auto &t : iauc_t)
 		t /= 60;
 
-	std::vector<double> ts(options_.nDyns(), 0);
+	std::vector<double> timeSeries(options_.nDyns(), 0);
 
 	double d;
-	double t10 = 0.0;
-	double s0 = 0.0;
+	double T1 = 0.0;
+	double M0 = 0.0;
 	int col_counter = 0;
 	int row_counter = 0;
 
@@ -190,6 +192,15 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 		if (!options_.M0Ratio())
 			col_length++;
 	}
+
+  //Create a fitter
+  mdm_DCEModelFitter modelFitter(
+    *model_,
+    options_.firstImage(),
+    options_.lastImage() ? options_.lastImage() : options_.nDyns(),
+    noiseVar,
+    options_.maxIterations()
+  );
 
 	//Loop through the file, reading in each line
 	while (true)
@@ -210,22 +221,22 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 				model_->setInitialParams(initialParams);
 			}
 
-			//Fit the series
-			fit_series(outputData, ts, options_.inputCt(),
-				noiseVar,
-				t10, s0,
+      //Fit the series
+			fit_series(outputData, 
+        modelFitter,
+        timeSeries, 
+        options_.inputCt(),
+				T1, 
+        M0,
 				options_.r1Const(),
 				options_.TR(),
 				options_.FA(),
-				options_.firstImage(),
-				options_.lastImage(),
 				options_.testEnhancement(),
 				options_.M0Ratio(),
 				iauc_t,
 				options_.outputCt_mod(),
 				options_.outputCt_sig(),
-				!options_.noOptimise(),
-				options_.maxIterations());
+				!options_.noOptimise());
 
 			col_counter = 0;
 
@@ -238,13 +249,13 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 			inputData >> d;
 
 			if (col_counter == options_.nDyns())
-				t10 = d;
+				T1 = d;
 
 			else if (col_counter == options_.nDyns() + 1)
-				s0 = d;
+				M0 = d;
 
 			else //col_counter < nDyns()
-				ts[col_counter] = d;
+				timeSeries[col_counter] = d;
 
 			col_counter++;
 
@@ -329,59 +340,50 @@ MDM_API int mdm_RunTools_madym_DCE_lite::parseInputs(int argc, const char *argv[
 //*******************************************************************************
 // Private:
 //*******************************************************************************
-void mdm_RunTools_madym_DCE_lite::fit_series(std::ostream &outputData,
-	const std::vector<double> &ts, const bool &inputCt,
-	const std::vector<double> &noiseVar,
-	const double &t10, const double &s0,
-	const double &r1,
-	const double &TR,
-	const double & FA,
-	const int &firstImage,
-	const int &lastImage,
-	const bool&testEnhancement,
-	const bool&useM0Ratio,
-	const std::vector<double> &IAUCTimes,
-	const bool &outputCt_mod,
-	const bool &outputCt_sig,
-	const bool &optimiseModel,
-	const int &maxIterations)
+void mdm_RunTools_madym_DCE_lite::fit_series(
+  std::ostream &outputData,
+  mdm_DCEModelFitter &fitter,
+  const std::vector<double> &timeSeries,
+  const bool &inputCt,
+  const double &T1,
+  const double &M0,
+  const double &r1,
+  const double &TR,
+  const double & FA,
+  const bool&testEnhancement,
+  const bool&useM0Ratio,
+  const std::vector<double> &IAUCTimes,
+  const bool &outputCt_mod,
+  const bool &outputCt_sig,
+  const bool &optimiseModel)
 {
 	std::vector<double> signalData;
 	std::vector<double> CtData;
 
 	if (inputCt)
-		CtData = ts;
+		CtData = timeSeries;
 	else
-		signalData = ts;
+		signalData = timeSeries;
 
-	const int nDyns = ts.size();
+	const int nDyns = timeSeries.size();
 
 	//Create a perm object
 	mdm_DCEVoxel vox(
-		*model_,
 		signalData,
 		CtData,
-		noiseVar,
-		t10,
-		s0,
-		r1,
 		model_->AIF().prebolus(),
 		AIF_.AIFTimes(),
-		TR,
-		FA,
-		firstImage,
-		lastImage,
-		IAUCTimes,
-		maxIterations);
+		IAUCTimes);
 
-  //Convert signal (if already C(t) does nothing so can call regardless)
-  vox.computeCtFromSignal(useM0Ratio);
+  //Convert signal
+  if (!inputCt)
+    vox.computeCtFromSignal(T1, FA, TR, r1, M0, fitter.timepoint0());
 
   //Compute IAUC
   vox.computeIAUC();
 
   //Run initial model fit
-  vox.initialiseModelFit();
+  fitter.initialiseModelFit(vox.CtData());
 
   //Test enhancing
   if (testEnhancement)
@@ -389,13 +391,13 @@ void mdm_RunTools_madym_DCE_lite::fit_series(std::ostream &outputData,
 
   //Fit the model
   if (optimiseModel)
-    vox.fitModel();
+    fitter.fitModel(vox.status(), vox.enhancing());
 
 	//Now write the output
 	outputData <<
 		vox.status() << " " <<
 		vox.enhancing() << " " <<
-		vox.modelFitError() << " ";
+		fitter.modelFitError() << " ";
 
 	for (int i = 0; i < IAUCTimes.size(); i++)
 		outputData << " " << vox.IAUC_val(i);
@@ -406,7 +408,7 @@ void mdm_RunTools_madym_DCE_lite::fit_series(std::ostream &outputData,
 
 	if (outputCt_mod)
 	{
-		const std::vector<double> &Cm_t = vox.CtModel();
+		const std::vector<double> &Cm_t = fitter.CtModel();
 		for (int i = 0; i < nDyns; i++)
 			outputData << " " << Cm_t[i];
 	}

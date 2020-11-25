@@ -43,6 +43,9 @@ MDM_API int mdm_RunTools_madym_T1_lite::run()
 	if (!options_.TR())
 		mdm_progAbort("TR (option --TR) must be provided");
 
+  //Set curent working dir
+  set_up_cwd();
+
 	//Parse T1 method from string, will abort if method type not recognised
 	auto methodType = parseMethod(options_.T1method());
 

@@ -15,6 +15,7 @@
 #include <madym/mdm_DCEVoxel.h>
 #include <madym/dce_models/mdm_DCEModelBase.h>
 #include <madym/mdm_T1VolumeAnalysis.h>
+#include <madym/mdm_DCEModelFitter.h>
 
 #include <memory>
 
@@ -38,6 +39,9 @@ public:
 
 	//! Name of ROI mask
 	const static std::string   MAP_NAME_ROI;
+
+  //! Name of AIF map
+  const static std::string   MAP_NAME_AIF;
 
 	//! Name of T1 map
 	const static std::string   MAP_NAME_T1;
@@ -76,18 +80,43 @@ public:
 	*/
 	MDM_API mdm_T1VolumeAnalysis &T1Mapper();
 
-	//! Set ROI mask image
+  //! Return read-only reference to T1 mapper
+  /*!
+  \return const reference to T1 mapper
+  */
+  MDM_API const mdm_T1VolumeAnalysis &T1Mapper() const;
+
+	//! Set ROI mask
 	/*!
-	\param ROI mask image, dimensions must match those of dynamic series
+	\param ROI mask, dimensions must match those of dynamic series
 	\return
 	*/
-	MDM_API void setROIimage(const mdm_Image3D ROI);
+	MDM_API void setROI(const mdm_Image3D ROI);
 
-	//! Return ROI mask image
+	//! Return ROI mask
 	/*!
-	\return ROI mask image, if not set, empty image returned
+	\return ROI mask, if not set, empty image returned
 	*/
-	MDM_API mdm_Image3D ROIimage() const;
+	MDM_API mdm_Image3D ROI() const;
+
+  //! Set AIF map
+  /*!
+  \param map, dimensions must match those of dynamic series
+  */
+  MDM_API void setAIFmap(const mdm_Image3D map);
+
+  //! Compute AIF from dynamic images using current AIF map
+  /*!
+  \return AIF average C(t) for all voxels i, where AIFmap.voxel(i) == mdm_AIF::SELECTED
+  */
+  MDM_API std::vector<double> AIFfromMap();
+
+
+  //! Return AIF map
+  /*!
+  \return AIF map, if not set, empty image returned
+  */
+  MDM_API mdm_Image3D AIFmap() const;
 
 	//! Add a signal map to the end of the dynamic time-series S(t)
 	/*!
@@ -198,7 +227,13 @@ public:
 	/*!
 	\param rc relaxivity coefficient of contrast-agent
 	*/
-	MDM_API void setRelaxCoeff(double rc);
+	MDM_API void setR1Const(double rc);
+
+  //! Set prebolus image
+  /*!
+  \param prebolus timepoint of bolus injection
+  */
+  MDM_API void setPrebolusImage(int prebolus);
 
 	//! Set the tracer-kineti cmodel
 	/*!
@@ -296,20 +331,33 @@ public:
 	/*!
 	\return length of dynamic time-series
 	*/
-	MDM_API int   numDynamics() const;	
+	MDM_API int   numDynamics() const;
+
+  //! Return average concentration time-series for voxels in a map
+  /*!
+  \param map defining voxels to include in average
+  \param map_val value of voxels in map to average
+  \param meanCt (output) average of C(t) for all voxels i, where map.voxel(i) == map_val
+  \param badVoxels (output) list of voxel indices not included eg due to error in conversion to Ct
+  */
+  MDM_API void computeMeanCt(
+    const mdm_Image3D &map, double map_val, 
+    std::vector<double> &meanCt, std::vector<int> &badVoxels) const;
 
 protected:
 
 private:
 
+  mdm_DCEVoxel setUpVoxel(int voxelIndex) const;
+
 
 	/*!
 	*/
-	void  getSignalsFromVoxel(int voxelIndex, std::vector<double> &data);
+	void  voxelStData(int voxelIndex, std::vector<double> &data) const;
 
-	void  getCs_tFromVoxel(int voxelIndex, std::vector<double> &data);
+	void  voxelCtData(int voxelIndex, std::vector<double> &data) const;
 
-  void  getCm_tFromVoxel(int voxelIndex, std::vector<double> &data);
+  void  voxelCtModel(int voxelIndex, std::vector<double> &data) const;
 
 	/*!
 	*/
@@ -317,17 +365,14 @@ private:
 
 	/*!
 	*/
-	void setVoxelInAllMaps(int voxelIndex, const mdm_DCEVoxel  &v);
+	void setVoxelInAllMaps(int voxelIndex, 
+    const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter);
 
-  void setVoxelModelError(int voxelIndex, const mdm_DCEVoxel  &v);
+  /*!
+  */
+  void setVoxelInAllMaps(int voxelIndex, double value);
 
-	/*!
-	*/
-	void nanVoxelInAllMaps(int voxelIndex);
-
-	/*!
-	*/
-	void zeroVoxelInAllMaps(int voxelIndex);
+  void setVoxelModelError(int voxelIndex, const mdm_DCEModelFitter &fitter);
 
 	/*!
 	*/
@@ -336,18 +381,23 @@ private:
 	/* See comments for initialiseParameterMaps() */
 	bool createMap(mdm_Image3D& img);
 
+  int   numSt() const;
+
 	int   numCtSignal() const;
 	
 	int   numCtModel() const;
 
 	/*VARIABLES:*/
-	mdm_Image3D ROI_image_;
+	mdm_Image3D ROI_;
+  mdm_Image3D AIFmap_;
 	std::vector<mdm_Image3D> StDataMaps_;
 	std::vector<mdm_Image3D> CtDataMaps_;
   std::vector<mdm_Image3D> CtModelMaps_;
   std::vector<double> dynamicTimes_;
   std::vector<double> noiseVar_;
 	std::shared_ptr < mdm_DCEModelBase > model_;
+  mdm_Image3D referenceDynamicImg_;
+  int prebolusImage_;
 
 	mdm_T1VolumeAnalysis T1_mapper_;
 	mdm_ErrorTracker errorTracker_;

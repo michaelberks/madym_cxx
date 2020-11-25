@@ -29,12 +29,6 @@ MDM_API mdm_FileManager::mdm_FileManager(mdm_DCEVolumeAnalysis &volumeAnalysis)
 	volumeAnalysis_(volumeAnalysis),
 	T1Mapper_(volumeAnalysis.T1Mapper()),
 	errorTracker_(volumeAnalysis.errorTracker()),
-	T1InputPaths_(0),
-	StPaths_(0),
-	CtPaths_(0),
-	T1Path_(""),
-	M0Path_(""),
-	ROIPath_(""),
 	writeCtDataMaps_(false),
   writeCtModelMaps_(false),
 	sparseWrite_(false)
@@ -44,27 +38,64 @@ MDM_API mdm_FileManager::mdm_FileManager(mdm_DCEVolumeAnalysis &volumeAnalysis)
 MDM_API mdm_FileManager::~mdm_FileManager()
 {}
 
-MDM_API bool mdm_FileManager::loadROI(const std::string &ROIpath)
+//
+MDM_API bool mdm_FileManager::loadROI(const std::string &path)
 {
 	// Read in ROI image volume
-	mdm_Image3D ROI_image = mdm_AnalyzeFormat::readImage3D(ROIpath, false);
+	mdm_Image3D ROI = mdm_AnalyzeFormat::readImage3D(path, false);
+  ROI.setType(mdm_Image3D::ImageType::TYPE_ROI);
 
-	if (!ROI_image.numVoxels())
+	if (!ROI.numVoxels())
 	{
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_FileManager::loadROI: Failed to read ROI " + ROIpath + "\n");
+			"ERROR: mdm_FileManager::loadROI: Failed to read ROI " + path + "\n");
 		return false;
 	}
-	volumeAnalysis_.setROIimage(ROI_image);
-	T1Mapper_.addROI(ROI_image);
+	volumeAnalysis_.setROI(ROI);
+	T1Mapper_.addROI(ROI);
 
 	mdm_ProgramLogger::logProgramMessage(
-		"ROI loaded from " + ROIpath + "\n");
-	ROIPath_ = ROIpath;
+		"ROI loaded from " + path + "\n");
 
 	return true;
 }
 
+//
+MDM_API bool mdm_FileManager::saveROI(const std::string &outputDir, const std::string &name)
+{
+  return (!volumeAnalysis_.ROI().numVoxels() ||
+    saveOutputMap(name, volumeAnalysis_.ROI(), outputDir, false));
+}
+
+//
+MDM_API bool mdm_FileManager::loadAIFmap(const std::string &path)
+{
+  // Read in AIF map image volume
+  mdm_Image3D AIFmap = mdm_AnalyzeFormat::readImage3D(path, false);
+  AIFmap.setType(mdm_Image3D::ImageType::TYPE_ROI);
+
+  if (!AIFmap.numVoxels())
+  {
+    mdm_ProgramLogger::logProgramMessage(
+      "ERROR: mdm_FileManager::loadROI: Failed to read ROI " + path + "\n");
+    return false;
+  }
+  volumeAnalysis_.setAIFmap(AIFmap);
+
+  mdm_ProgramLogger::logProgramMessage(
+    "AIF map loaded loaded from " + path + "\n");
+
+  return true;
+}
+
+//
+MDM_API bool mdm_FileManager::saveAIFmap(const std::string &outputDir, const std::string &name)
+{
+  return (!volumeAnalysis_.AIFmap().numVoxels() ||
+    saveOutputMap(name, volumeAnalysis_.AIFmap(), outputDir, false));
+}
+
+//
 MDM_API bool mdm_FileManager::loadParameterMaps(const std::string &paramDir)
 {
   //Write model parameters maps
@@ -74,6 +105,7 @@ MDM_API bool mdm_FileManager::loadParameterMaps(const std::string &paramDir)
     std::string paramName = paramDir + "/" + paramNames[i];
 
     mdm_Image3D paramMap = mdm_AnalyzeFormat::readImage3D(paramName, false);
+    paramMap.setType(mdm_Image3D::ImageType::TYPE_KINETICMAP);
 
     if (!paramMap.numVoxels())
     {
@@ -88,14 +120,18 @@ MDM_API bool mdm_FileManager::loadParameterMaps(const std::string &paramDir)
   return true;
 }
 
-MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
+MDM_API bool mdm_FileManager::saveOutputMaps(const std::string &outputDir)
 {
+  //Write out ROI (if used)
+  if (!saveROI(outputDir, volumeAnalysis_.MAP_NAME_ROI))
+    return true;
+
 	//Write out T1 and M0 maps (if M0 map used)
-	if (T1Mapper_.T1Map().numVoxels() && 
-    !writeOutputMap(volumeAnalysis_.MAP_NAME_T1, T1Mapper_.T1Map(), outputDir, true))
+	if (T1Mapper_.T1().numVoxels() && 
+    !saveOutputMap(volumeAnalysis_.MAP_NAME_T1, T1Mapper_.T1(), outputDir, true))
 		return false;
-	if (T1Mapper_.M0Map().numVoxels() && 
-		!writeOutputMap(volumeAnalysis_.MAP_NAME_M0, T1Mapper_.M0Map(), outputDir, true))
+	if (T1Mapper_.M0().numVoxels() && 
+		!saveOutputMap(volumeAnalysis_.MAP_NAME_M0, T1Mapper_.M0(), outputDir, true))
 		return false;
 
   //Write model parameters maps
@@ -103,7 +139,7 @@ MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
   {
     std::vector<std::string> paramNames = volumeAnalysis_.paramNames();
     for (int i = 0; i < paramNames.size(); i++)
-      if (!writeOutputMap(paramNames[i], outputDir, false))
+      if (!saveOutputMap(paramNames[i], outputDir, false))
         return false;
 
     //Write IAUC maps
@@ -111,24 +147,24 @@ MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
     for (int i = 0; i < IAUCtimes.size(); i++)
     {
       const std::string iaucName = volumeAnalysis_.MAP_NAME_IAUC + std::to_string(int(IAUCtimes[i]));
-      if (!writeOutputMap(iaucName, outputDir, false))
+      if (!saveOutputMap(iaucName, outputDir, false))
         return false;
     }
-    if (!writeOutputMap(volumeAnalysis_.MAP_NAME_ENHANCING, outputDir, false))
+    if (!saveOutputMap(volumeAnalysis_.MAP_NAME_ENHANCING, outputDir, false))
       return false;
   }
 	
 	//Write error and enhancing voxels map
-  if (!writeModelResiduals(outputDir))
+  if (!saveModelResiduals(outputDir))
 		return false;
 
 	//Write output stats
-	if (!writeSummaryStats(outputDir))
+	if (!saveSummaryStats(outputDir))
 		return false;
 
 	//If used, write ROI
-	if (volumeAnalysis_.ROIimage().numVoxels() && 
-    !writeOutputMap(volumeAnalysis_.MAP_NAME_ROI, volumeAnalysis_.ROIimage(), outputDir, false))
+	if (volumeAnalysis_.ROI().numVoxels() && 
+    !saveOutputMap(volumeAnalysis_.MAP_NAME_ROI, volumeAnalysis_.ROI(), outputDir, false))
 		return false;
 
 	if (writeCtDataMaps_)
@@ -137,7 +173,7 @@ MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
 		for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
 		{
 			std::string catName = ctSigPrefix + std::to_string(i + 1);
-			if (!writeOutputMap(catName, volumeAnalysis_.CtDataMap(i), outputDir, true))
+			if (!saveOutputMap(catName, volumeAnalysis_.CtDataMap(i), outputDir, true))
 				return false;
 		}
 	}
@@ -147,7 +183,7 @@ MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
     for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
     {
       std::string cmodName = ctModPrefix + std::to_string(i + 1);
-      if (!writeOutputMap(cmodName, volumeAnalysis_.CtModelMap(i), outputDir, false))
+      if (!saveOutputMap(cmodName, volumeAnalysis_.CtModelMap(i), outputDir, false))
         return false;
     }
   }
@@ -155,23 +191,23 @@ MDM_API bool mdm_FileManager::writeOutputMaps(const std::string &outputDir)
 }
 
 //
-MDM_API bool mdm_FileManager::writeModelResiduals(const std::string &outputDir)
+MDM_API bool mdm_FileManager::saveModelResiduals(const std::string &outputDir)
 {
-  return writeOutputMap(volumeAnalysis_.MAP_NAME_RESDIUALS, outputDir, false);
+  return saveOutputMap(volumeAnalysis_.MAP_NAME_RESDIUALS, outputDir, false);
 }
 
 //
-MDM_API bool mdm_FileManager::writeSummaryStats(const std::string &outputDir)
+MDM_API bool mdm_FileManager::saveSummaryStats(const std::string &outputDir)
 {
 	//Create a new stats object
 	mdm_ParamSummaryStats stats;
 
 	//Do stats for whole ROI
-	const auto &roi = volumeAnalysis_.ROIimage();
+	const auto &roi = volumeAnalysis_.ROI();
 	if (roi.numVoxels())
 		stats.setROI(roi);
 
-	if (!writeMapsSummaryStats(outputDir + "/" + volumeAnalysis_.MAP_NAME_ROI, stats))
+	if (!saveMapsSummaryStats(outputDir + "/" + volumeAnalysis_.MAP_NAME_ROI, stats))
 		return false;
 	
 
@@ -180,7 +216,7 @@ MDM_API bool mdm_FileManager::writeSummaryStats(const std::string &outputDir)
 	if (enh.numVoxels())
 	{
 		stats.setROI(enh);
-		if (!writeMapsSummaryStats(outputDir + "/" + volumeAnalysis_.MAP_NAME_ENHANCING, stats))
+		if (!saveMapsSummaryStats(outputDir + "/" + volumeAnalysis_.MAP_NAME_ENHANCING, stats))
 			return false;
 	}
 	
@@ -190,13 +226,13 @@ MDM_API bool mdm_FileManager::writeSummaryStats(const std::string &outputDir)
 }
 
 //
-MDM_API bool mdm_FileManager::writeErrorMap(const std::string &outputPath)
+MDM_API bool mdm_FileManager::saveErrorMap(const std::string &outputPath)
 {
 	const mdm_Image3D &img = errorTracker_.errorImage();
 	if (!img.numVoxels())
 	{
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_FileManager::writeErrorMap: Error codes map is empty\n");
+			"ERROR: mdm_FileManager::saveErrorMap: Error codes map is empty\n");
 		return false;
 	}
 		
@@ -205,18 +241,18 @@ MDM_API bool mdm_FileManager::writeErrorMap(const std::string &outputPath)
 	{
 		// write msg to errLog (failed to write image to file)
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_FileManager::writeErrorMap: Failed to write " + outputPath + "\n");
+			"ERROR: mdm_FileManager::saveErrorMap: Failed to write " + outputPath + "\n");
 		return false;
 	}
 	return true;
 }
 
-MDM_API void mdm_FileManager::setWriteCtDataMaps(bool b)
+MDM_API void mdm_FileManager::setSaveCtDataMaps(bool b)
 {
 	writeCtDataMaps_ = b;
 }
 
-MDM_API void mdm_FileManager::setWriteCtModelMaps(bool b)
+MDM_API void mdm_FileManager::setSaveCtModelMaps(bool b)
 {
   writeCtModelMaps_ = b;
 }
@@ -268,13 +304,13 @@ MDM_API bool mdm_FileManager::loadT1MappingInputImages(const std::vector<std::st
 			return false;
 
 	}
-	T1InputPaths_ = T1InputPaths;
 	return true;
 }
 
 MDM_API bool mdm_FileManager::loadT1Map(const std::string &T1path)
 {
 	mdm_Image3D T1_map = mdm_AnalyzeFormat::readImage3D(T1path, false);
+  T1_map.setType(mdm_Image3D::ImageType::TYPE_T1BASELINE);
 
 	if (!T1_map.numVoxels())
 	{
@@ -288,13 +324,13 @@ MDM_API bool mdm_FileManager::loadT1Map(const std::string &T1path)
 
 	//If image successfully read, add it to the T1 mapper object
 	T1Mapper_.addT1Map(T1_map);
-	T1Path_ = T1path;
 	return true;
 }
 
 MDM_API bool mdm_FileManager::loadM0Map(const std::string &M0path)
 {
 	mdm_Image3D M0_map = mdm_AnalyzeFormat::readImage3D(M0path, false);
+  M0_map.setType(mdm_Image3D::ImageType::TYPE_M0MAP);
 
 	if (!M0_map.numVoxels())
 	{
@@ -308,7 +344,6 @@ MDM_API bool mdm_FileManager::loadM0Map(const std::string &M0path)
 
 	//If image successfully read, add it to the T1 mapper object
 	T1Mapper_.addM0Map(M0_map);
-	M0Path_ = M0path;
 	return true;
 }
 
@@ -317,7 +352,6 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 {
 	bool dynFilesExist = true;
 	int nDyn = 0;
-	StPaths_.clear();
 
 	//Set flags for missing data and reaching max images based on whether
 	//nDyns was set or not
@@ -374,6 +408,8 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 		else
 		{
 			mdm_Image3D img = mdm_AnalyzeFormat::readImage3D(dynPath, true);
+      img.setType(mdm_Image3D::ImageType::TYPE_T1DYNAMIC);
+
 			if (!img.numVoxels())
 			{
 				mdm_ProgramLogger::logProgramMessage(
@@ -387,7 +423,6 @@ MDM_API bool mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 			mdm_ProgramLogger::logProgramMessage(
 				"Successfully read dynamic image " +
 				std::to_string(nDyn) + " from " + dynPath + "\n");
-			StPaths_.push_back(dynPath);
 
 			//For first image, try initialising errorImage, if that's already been
 			//set it will just return true
@@ -404,7 +439,6 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 {
 	bool catFilesExist = true;
 	int nCat = 0;
-	CtPaths_.clear();
 
 	//Set flags for missing data and reaching max images based on whether
 	//nDyns was set or not
@@ -460,6 +494,8 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 		else
 		{
 			mdm_Image3D img = mdm_AnalyzeFormat::readImage3D(catPath, true);
+      img.setType(mdm_Image3D::ImageType::TYPE_CAMAP);
+
 			if (!img.numVoxels())
 			{
 				mdm_ProgramLogger::logProgramMessage(
@@ -474,8 +510,6 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 				"Successfully read concentration image  " +
 				std::to_string(nCat) + " from " + catPath + "\n");
 
-			CtPaths_.push_back(catPath);
-
 			//For first image, try initialising errorImage, if that's already been
 			//set it will just return true
 			if (nCat == 1)
@@ -489,6 +523,7 @@ MDM_API bool mdm_FileManager::loadCtDataMaps(const std::string &catBasePath,
 bool mdm_FileManager::loadT1InputImage(const std::string& filePath, int nVFA)
 {
 	mdm_Image3D img = mdm_AnalyzeFormat::readImage3D(filePath, true);
+  img.setType(mdm_Image3D::ImageType::TYPE_T1WTSPGR);
 
 	if (!img.numVoxels())
 	{
@@ -512,16 +547,16 @@ bool mdm_FileManager::loadT1InputImage(const std::string& filePath, int nVFA)
 	return true;
 }
 
-bool mdm_FileManager::writeOutputMap(const std::string &mapName, const std::string &outputDir, bool writeXtr/* = true*/)
+bool mdm_FileManager::saveOutputMap(const std::string &mapName, const std::string &outputDir, bool writeXtr/* = true*/)
 {
 	const mdm_Image3D &img = volumeAnalysis_.DCEMap(mapName);
   if (img.numVoxels())
-    return writeOutputMap(mapName, img, outputDir, writeXtr);
+    return saveOutputMap(mapName, img, outputDir, writeXtr);
   else
     return true;
 }
 
-bool mdm_FileManager::writeOutputMap(const std::string &mapName, const mdm_Image3D &img, const std::string &outputDir, bool writeXtr/* = true*/)
+bool mdm_FileManager::saveOutputMap(const std::string &mapName, const mdm_Image3D &img, const std::string &outputDir, bool writeXtr/* = true*/)
 {
 	std::string saveName = outputDir + "/" + mapName;
 
@@ -532,13 +567,13 @@ bool mdm_FileManager::writeOutputMap(const std::string &mapName, const mdm_Image
 	{
 		// write msg to errLog (failed to write image to file)
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_FileManager::writeOutputMap: Failed to write " + mapName + "\n");
+			"ERROR: mdm_FileManager::saveOutputMap: Failed to write " + mapName + "\n");
 		return false;
 	}
 	return true;
 }
 
-bool mdm_FileManager::writeMapsSummaryStats(const std::string &roiName, mdm_ParamSummaryStats &stats)
+bool mdm_FileManager::saveMapsSummaryStats(const std::string &roiName, mdm_ParamSummaryStats &stats)
 {
 	if (!stats.writeROISummary(roiName + "_summary.txt"))
 		return false;
@@ -546,12 +581,12 @@ bool mdm_FileManager::writeMapsSummaryStats(const std::string &roiName, mdm_Para
 		return false;
 
 	//Write out T1 and M0 maps (if M0 map used)
-	if (T1Mapper_.T1Map().numVoxels() &&
-		!writeMapSummaryStats(volumeAnalysis_.MAP_NAME_T1, T1Mapper_.T1Map(), stats))
+	if (T1Mapper_.T1().numVoxels() &&
+		!saveMapSummaryStats(volumeAnalysis_.MAP_NAME_T1, T1Mapper_.T1(), stats))
 		return false;
 
-	if (T1Mapper_.M0Map().numVoxels() &&
-		!writeMapSummaryStats(volumeAnalysis_.MAP_NAME_M0, T1Mapper_.M0Map(), stats))
+	if (T1Mapper_.M0().numVoxels() &&
+		!saveMapSummaryStats(volumeAnalysis_.MAP_NAME_M0, T1Mapper_.M0(), stats))
 		return false;
 
 	//Write model parameters maps
@@ -559,7 +594,7 @@ bool mdm_FileManager::writeMapsSummaryStats(const std::string &roiName, mdm_Para
 	{
 		const auto &paramNames = volumeAnalysis_.paramNames();
 		for (const auto mapName : paramNames)
-			if (!writeMapSummaryStats(mapName, volumeAnalysis_.DCEMap(mapName), stats))
+			if (!saveMapSummaryStats(mapName, volumeAnalysis_.DCEMap(mapName), stats))
 				return false;
 
 		//Write IAUC maps
@@ -567,10 +602,10 @@ bool mdm_FileManager::writeMapsSummaryStats(const std::string &roiName, mdm_Para
 		for (const auto time : IAUCtimes)
 		{
 			const std::string iaucName = volumeAnalysis_.MAP_NAME_IAUC + std::to_string(int(time));
-			if (!writeMapSummaryStats(iaucName, volumeAnalysis_.DCEMap(iaucName), stats))
+			if (!saveMapSummaryStats(iaucName, volumeAnalysis_.DCEMap(iaucName), stats))
 				return false;
 		}
-		if (!writeMapSummaryStats(volumeAnalysis_.MAP_NAME_ENHANCING,
+		if (!saveMapSummaryStats(volumeAnalysis_.MAP_NAME_ENHANCING,
 			volumeAnalysis_.DCEMap(volumeAnalysis_.MAP_NAME_ENHANCING), stats))
 			return false;
 	}
@@ -579,7 +614,7 @@ bool mdm_FileManager::writeMapsSummaryStats(const std::string &roiName, mdm_Para
 }
 
 //
-bool mdm_FileManager::writeMapSummaryStats(const std::string &mapName, const mdm_Image3D &img, mdm_ParamSummaryStats &stats)
+bool mdm_FileManager::saveMapSummaryStats(const std::string &mapName, const mdm_Image3D &img, mdm_ParamSummaryStats &stats)
 {
 	stats.makeStats(img, mapName);
 	return stats.writeStats();

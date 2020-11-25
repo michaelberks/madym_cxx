@@ -19,26 +19,27 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_subdirectory(opt)
 
 set(mdm_sources
-		mdm_RunTools.cxx				mdm_RunTools.h
-		mdm_AIF.cxx						mdm_AIF.h
-		mdm_AnalyzeFormat.cxx			mdm_AnalyzeFormat.h
-		mdm_ErrorTracker.cxx			mdm_ErrorTracker.h			
+	mdm_RunTools.cxx				  mdm_RunTools.h
+	mdm_AIF.cxx						    mdm_AIF.h
+	mdm_AnalyzeFormat.cxx			mdm_AnalyzeFormat.h
+	mdm_ErrorTracker.cxx			mdm_ErrorTracker.h			
 		
-		mdm_DCEVolumeAnalysis.cxx		mdm_DCEVolumeAnalysis.h
-		mdm_DCEVoxel.cxx				mdm_DCEVoxel.h
+	mdm_DCEVolumeAnalysis.cxx	mdm_DCEVolumeAnalysis.h
+	mdm_DCEVoxel.cxx				  mdm_DCEVoxel.h
+	mdm_DCEModelFitter.cxx		mdm_DCEModelFitter.h
 		
-		mdm_FileManager.cxx				mdm_FileManager.h
-		mdm_Image3D.cxx					mdm_Image3D.h
-		mdm_ProgramLogger.cxx			mdm_ProgramLogger.h
-		mdm_ParamSummaryStats.cxx		mdm_ParamSummaryStats.h
+	mdm_FileManager.cxx				mdm_FileManager.h
+	mdm_Image3D.cxx					  mdm_Image3D.h
+	mdm_ProgramLogger.cxx			mdm_ProgramLogger.h
+	mdm_ParamSummaryStats.cxx	mdm_ParamSummaryStats.h
 
-		mdm_T1VolumeAnalysis.cxx		mdm_T1VolumeAnalysis.h	
+	mdm_T1VolumeAnalysis.cxx	mdm_T1VolumeAnalysis.h	
 
-		mdm_OptionsParser.cxx			mdm_OptionsParser.h
-		mdm_InputTypes.cxx				mdm_InputTypes.h
-										mdm_InputOptions.h
-										mdm_platform_defs.h
-										mdm_api.h
+	mdm_OptionsParser.cxx			mdm_OptionsParser.h
+	mdm_InputTypes.cxx				mdm_InputTypes.h
+	mdm_InputOptions.h
+	mdm_platform_defs.h
+	mdm_api.h
 )
 set(mdm_run_sources
   run/mdm_RunToolsDCEFit.cxx			run/mdm_RunToolsDCEFit.h
@@ -48,6 +49,7 @@ set(mdm_run_sources
   run/mdm_RunTools_madym_DCE_lite.cxx	run/mdm_RunTools_madym_DCE_lite.h
   run/mdm_RunTools_madym_T1.cxx			run/mdm_RunTools_madym_T1.h
   run/mdm_RunTools_madym_T1_lite.cxx	run/mdm_RunTools_madym_T1_lite.h
+  run/mdm_RunTools_madym_AIF.cxx		run/mdm_RunTools_madym_AIF.h
 )
 set(mdm_dce_model_sources
   #Models

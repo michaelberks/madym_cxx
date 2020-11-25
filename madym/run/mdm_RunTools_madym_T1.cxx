@@ -20,8 +20,8 @@ namespace fs = boost::filesystem;
 //
 MDM_API mdm_RunTools_madym_T1::mdm_RunTools_madym_T1(mdm_InputOptions &options_, mdm_OptionsParser &options_parser)
 	: 
-	mdm_RunToolsT1Fit(options_, options_parser),
 	mdm_RunToolsVolumeAnalysis(options_, options_parser),
+	mdm_RunToolsT1Fit(options_, options_parser),
 	mdm_RunTools(options_, options_parser)	
 {}
 
@@ -34,6 +34,9 @@ MDM_API int mdm_RunTools_madym_T1::run()
 	//Check inputs set by user
 	if (options_.T1inputNames().empty())
 		mdm_progAbort("input map names (option --T1_vols) must be provided");
+
+  //Set curent working dir
+  set_up_cwd();
 
 	//Parse T1 method from string, will abort if method type not recognised
 	auto methodType = parseMethod(options_.T1method());
@@ -62,7 +65,7 @@ MDM_API int mdm_RunTools_madym_T1::run()
 	volumeAnalysis_.T1Mapper().mapT1();
 
 	//Write output
-	writeOuput();
+	writeOutput();
 
 	//Tidy up the logging objects
 	return mdm_progExit();

@@ -119,7 +119,8 @@ class mdm_Image3D
 			TYPE_ADCMAP, ///> Apparent diffusion coefficient (ADC) map
 			TYPE_ERRORMAP, ///> Error map
 			TYPE_AIFVOXELMAP, ///> Mask for selecting AIF
-			TYPE_KINETICMAP ///> Tracer-kinetic model parameter map
+			TYPE_KINETICMAP, ///> Tracer-kinetic model parameter map
+      TYPE_ROI ///> Region of interest mask
 		};
 	
 		
@@ -153,6 +154,24 @@ class mdm_Image3D
 	\param value to set
 	*/
 	MDM_API void setVoxel(int idx, double value);
+
+  //! Return value at specified voxel subscripts
+  /*!
+  \param x, x-axis subscript. Must be >=0, < nX
+  \param y, y-axis subscript. Must be >=0, < nY
+  \param z, z-axis subscript. Must be >=0, < nZ
+  \return value at voxel subscript
+  */
+  MDM_API double voxel(int x, int y, int z) const;
+
+  //! Set value at specified voxel subscripts
+  /*!
+  \param x, x-axis subscript. Must be >=0, < nX
+  \param y, y-axis subscript. Must be >=0, < nY
+  \param z, z-axis subscript. Must be >=0, < nZ
+  \param value to set
+  */
+  MDM_API void setVoxel(int x, int y, int z, double value);
 
 	//! Set image type
 	/*!
@@ -272,7 +291,7 @@ class mdm_Image3D
 	\param    img image to compare to
 	\return   true if dimensions are the same and all voxel dimensions are within +/- 0.01mm 
 	*/
-	MDM_API bool dimensionsMatch(const mdm_Image3D &img);
+	MDM_API bool dimensionsMatch(const mdm_Image3D &img) const;
 
 	//!   Copy meta data (except type and timestamp) and data dimensions from existing image
 	/*!
@@ -345,12 +364,20 @@ class mdm_Image3D
 	*/
 	template <class T> MDM_API static void swapBytes(T& data);
 
-	
+  //!Helper function to convert subscripts x, y, z to voxel index
+  /*!
+  \param x subscript co-ordinate in x-axis
+  \param y subscript co-ordinate in y-axis
+  \param z subscript co-ordinate in z-axis
+  \return voxel index
+  */
+	MDM_API int sub2ind(int x, int y, int z) const;
 
 private:
 	/*!
 	*/
 	bool initDataArray();
+
 
 	//!   Set meta data using key-value pair 
 	void setMetaData(const std::string &key, const double &value);

@@ -1,0 +1,245 @@
+/**
+*  @file    mdm_DCEModelFitter.cxx
+*  @brief   Implementation of mdm_DCEModelFitter class
+*
+*  Original author MA Berks 24 Oct 2018
+*  (c) Copyright QBI, University of Manchester 2020
+*/
+
+#ifndef MDM_API_EXPORTS
+#define MDM_API_EXPORTS
+#endif // !MDM_API_EXPORTS
+#include "mdm_DCEModelFitter.h"
+
+//#include <cmath>
+#include <algorithm>
+
+#include "opt/optimization.h"
+#include "opt/linalg.h"
+
+#include "mdm_version.h"
+#include "mdm_ProgramLogger.h"
+
+
+MDM_API mdm_DCEModelFitter::mdm_DCEModelFitter(
+	mdm_DCEModelBase &model,
+	const int timepoint0,
+	const int timepointN,
+  const std::vector<double> &noiseVar,
+	const int maxIterations)
+	:
+	model_(model),
+  timepoint0_(timepoint0),
+	timepointN_(timepointN),
+  noiseVar_(noiseVar),
+  modelFitError_(0),
+	maxIterations_(maxIterations)
+{
+}
+
+MDM_API mdm_DCEModelFitter::~mdm_DCEModelFitter()
+{
+
+}
+
+//Run an initial model fit using the current model parameters (does not optimise new parameters)
+MDM_API void mdm_DCEModelFitter::initialiseModelFit(const std::vector<double> &CtData)
+{
+  //Set CtData (this will destory old object)
+  CtData_ = &CtData;
+
+  //Check timepointN_ valid
+  if (timepointN_ <= 0 || timepointN_ > CtData.size())
+    timepointN_ = CtData.size();
+
+  //Check timepoint0_ valid
+  if (timepointN_ <= 0 || timepoint0_ >= timepointN_)
+    timepoint0_ = 0;
+
+  //Reset the model
+  model_.reset(timepointN_);
+
+  //If NULL model, just return
+  if (!model_.numParams())
+    return;
+
+  //Set default uniform noise is temporally varying noise not set
+  if (noiseVar_.empty())
+    noiseVar_.resize(timepointN_, 1.0);
+
+  //Copy the lower bounds into the container required by the optimiser
+  int nopt = model_.numOptimised();
+  lowerBoundsOpt_.setlength(nopt);
+  upperBoundsOpt_.setlength(nopt);
+  for (int i = 0; i < nopt; i++)
+  {
+    lowerBoundsOpt_[i] = model_.optimisedLowerBounds()[i];
+    upperBoundsOpt_[i] = model_.optimisedUpperBounds()[i];
+  }
+
+  //Get an initial SSD
+  modelFitError_ = CtSSD(model_.optimisedParams());
+}
+
+//
+MDM_API void mdm_DCEModelFitter::fitModel(
+  const mdm_DCEVoxel::mdm_DCEVoxelStatus status, bool enhancing)
+{
+  //If NULL model, just return
+  if (!model_.numParams())
+    return;
+
+  //Check CtData has been set
+  if (!CtData_)
+    throw "CtData not set";
+
+  //Check if any issues with voxel. Note enhancing is true by default and 
+  //requires prior check to fit only voxels that have been *tested* as enhancing
+  if (
+    !enhancing ||
+    (status != mdm_DCEVoxel::mdm_DCEVoxelStatus::OK &&
+    status != mdm_DCEVoxel::mdm_DCEVoxelStatus::DYN_T1_BAD)
+    )
+  {
+    model_.zeroParams();
+    modelFitError_ = 0.0;
+    return;
+  }
+
+  //Fit pharmacokinetic model
+  optimiseModel();
+
+}
+
+MDM_API int mdm_DCEModelFitter::timepoint0() const
+{
+  return timepoint0_;
+}
+MDM_API int mdm_DCEModelFitter::timepointN() const
+{
+  return timepointN_;
+}
+
+MDM_API const std::vector<double>&	mdm_DCEModelFitter::CtModel() const
+{
+  return model_.CtModel();
+}
+
+MDM_API double     mdm_DCEModelFitter::modelFitError() const
+{
+  return modelFitError_;
+}
+
+//-----------------------------------------------------------------------
+// Private
+//-------------------------------------------------------------------------
+
+//
+double mdm_DCEModelFitter::CtSSD(
+  const std::vector<double> &parameter_array)
+{
+  //Set the full parameter array in the model from the optimised subset
+  model_.setOptimisedParams(parameter_array);
+
+	//Get model to check params are ok - returns non-zero for bad value
+  double model_check = model_.checkParams();
+  if (model_check)
+    return model_check;
+
+	//If we got this far the parameter values look OK, so ...
+	// Calculate model [CA](t) for current parameter set
+	model_.computeCtModel(timepointN_);
+
+	//Compute SSD
+  return computeSSD(model_.CtModel());
+}
+
+//
+double mdm_DCEModelFitter::computeSSD(
+  const std::vector<double> &CtModel) const
+{
+  double  ssd = 0.0;
+  for (int i = timepoint0_; i < timepointN_; i++)
+  {
+    double diff = ((*CtData_)[i] - CtModel[i]);
+    ssd += (diff * diff) / noiseVar_[i];
+  }
+
+  return ssd;
+}
+
+//
+void mdm_DCEModelFitter::optimiseModel()
+{
+
+  std::vector<double> optimisedParams = model_.optimisedParams();
+	alglib::real_1d_array x;
+	x.attach_to_ptr(optimisedParams.size(), optimisedParams.data());
+	//alglib::minbleicstate state;
+	//alglib::minbleicreport rep;
+	alglib::minnsstate state;
+	alglib::minnsreport rep;
+
+	//
+	// These variables define stopping conditions for the optimizer.
+	//
+	// We use very simple condition - |g|<=epsg
+	//
+	//double epsg = 0.000001;
+	//double epsf = 0;
+	double epsx = 0;
+
+	double radius = 0.1;
+	double rho = 0.0;
+
+#if _DEBUG
+	alglib::ae_int_t maxits = std::max(maxIterations_, 100);
+#else
+  alglib::ae_int_t maxits = maxIterations_;
+#endif
+
+	
+
+	//
+	// This variable contains differentiation step
+	//
+	double diffstep = 1.0e-4;
+
+	//
+	// Now we are ready to actually optimize something:
+	// * first we create optimizer
+	// * we add boundary constraints
+	// * we tune stopping conditions
+	// * and, finally, optimize and obtain results...
+	//
+  try
+  {
+    //alglib::minbleiccreatef(x, diffstep, state);
+    //alglib::minbleicsetbc(state, lowerBoundsOpt_, upperBoundsOpt_);
+    //alglib::minbleicsetcond(state, epsg, epsf, epsx, maxits);
+    //alglib::minbleicoptimize(state, &CtSSDalglib, NULL, this);
+    //alglib::minbleicresults(state, x, rep);
+
+		alglib::minnscreatef(x, diffstep, state);
+		alglib::minnssetalgoags(state, radius, rho);
+		alglib::minnssetcond(state, epsx, maxits);
+		//alglib::minnssetscale(state, s);
+
+		alglib::minnssetbc(state, lowerBoundsOpt_, upperBoundsOpt_);
+		alglib::minnsoptimize(state, &CtSSDalglib, NULL, this);
+		alglib::minnsresults(state, x, rep);
+  }
+  catch (alglib::ap_error e)
+  {
+    printf("ALGLIB error msg: %s\n", e.msg.c_str());
+  }
+	
+
+  //Copy the parameters we've optimised into optimisedParams array
+  for (size_t i = 0, n = optimisedParams.size(); i < n; i++)
+    optimisedParams[i] = x[i];
+
+	//Get the final model fit error - this also sets the parameters back to the model structure
+  modelFitError_ = CtSSD(optimisedParams);
+}
+

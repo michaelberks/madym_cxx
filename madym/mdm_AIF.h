@@ -22,19 +22,35 @@ public:
 	/*!
 	 Specifies the type of AIF that will be stored and returned
 	*/
-	enum AIFtype {
-		AIF_INVALID = -1, ///< Invalid AIF supplied, not expected to be used
-		AIF_STD = 0, ///< Legacy STD format AIF, not expected to be used
-		AIF_FILE = 1, ///< AIF loaded from file
-		AIF_POP = 2 ///< Population AIF generated from fucntional form developed by Parker et al.
+	enum AIF_TYPE {
+		AIF_UNDEFINED = -1, ///< AIF not recognised or not yet set
+    AIF_POP = 0, ///< Population AIF generated from fucntional form developed by Parker et al.
+    AIF_FILE = 1, ///< AIF loaded from file
+    AIF_MAP = 2, ///< AIF computed voxels specified in map (requires dynamic volumes to be loaded)
+		AIF_STD = 3 ///< Legacy STD format AIF, not expected to be used	
 	};
+
+  //! Values for AIF_map
+  /*!
+   Specifies the type of AIF that will be stored and returned
+  */
+  enum AIFmapVoxel {
+    BELOW_T1_THRESH = 0, ///< T1 below threshold to be considered
+    PEAK_TOO_EARLY = -6, ///< Peak arrives before bolus injection
+    PEAK_TOO_LATE = -5, ///< Peak arrives too late after bolus injection
+    DOUBLE_DIP = -4, ///< Not monotonic increase from arrival to peak
+    BELOW_NOISE_THRESH = -3, ///< Peak not significantly different from pre-bolus signal
+    CANDIDATE = -2, ///< Considered as candidate but not included in final selection
+    INVALID_CT = -1, ///< Rejected because of invalid conversion to Ct
+    SELECTED = 1 ///< Selected voxel for computing AIF   
+  };
 
 	//! Values for PIFType
 	/*!
 	 Specifies the type of AIF that will be stored and returned
 	*/
-	enum PIFtype {
-		PIF_INVALID = -1, ///< Invalid PIF supplied, not expected to be used 
+	enum PIF_TYPE {
+    PIF_UNDEFINED = -1, ///< Invalid PIF supplied, not expected to be used 
 		PIF_FILE = 1, ///< PIF loaded from file
 		PIF_POP = 2 ///< PIF auto-generated from AIF using an empirically derived delay and dispersion IRF
 	};
@@ -81,18 +97,11 @@ public:
 	*/
   MDM_API bool writePIF(const std::string &filename);
 
-	//! Compute AIF automatically from sequence of dynamic images (NOT YET IMPLEMETED)
-	/*!
-	 To be tested fully before release...
-	\param dynamicImages time-series of image volumes in which to detect and measure an AIF
-	\param T1 image volume of baseline T1 (required if inputCt is False)
-	\param slice  (ie index into 3rd axis) in which to detect AIF
-	\param r1 relaxivity constant of CA is blood (required if inputCt is False)
-	\param inputCt flag if dynamic series is CA concentraction (inputCt is True) or signal 
-	that needs converting to CA (inputCt is False) 
-	*/
-  MDM_API bool computeAutoAIF(const std::vector<mdm_Image3D> &dynamicImages, 
-    const mdm_Image3D &T1, const int slice, const double &r1, bool inputCt);
+  //! Set AIF from vector of C(t) values
+  /*!
+  \param aifVals contrast-agent concentration associated with each time point
+  */
+  MDM_API bool setBaseAIF(const std::vector<double> &aifVals);
 
 	//! Return the current AIF
 	/*!
@@ -121,27 +130,27 @@ public:
 
 	//! Set the AIF type
 	/*!
-	\see AIFtype
+	\see AIF_TYPE
 	*/
-	MDM_API bool  setAIFType(AIFtype value);
+	MDM_API bool  setAIFType(AIF_TYPE value);
 
 	//! Get the current AIF type
 	/*!
-	\see AIFtype
+	\see AIF_TYPE
 	*/
-	MDM_API AIFtype  AIFType() const;
+	MDM_API AIF_TYPE  AIFType() const;
 
 	//! Set the PIF type
 	/*!
-	\see PIFtype
+	\see PIF_TYPE
 	*/
-	MDM_API bool  setPIFType(PIFtype value);
+	MDM_API bool  setPIFType(PIF_TYPE value);
 
 	//! Get the PIF type
 	/*!
-	\see PIFtype
+	\see PIF_TYPE
 	*/
-	MDM_API PIFtype  PIFType() const;
+	MDM_API PIF_TYPE  PIFType() const;
 
 	//! Get time (in minutes) of each AIF time-point
 	/*!
@@ -211,42 +220,35 @@ private:
 	*/
 	void aifWeinman(int nData, double tOffset);
 
-		/*!
-		*/
-		void aifFromFile(int nData, double tOffset);
+	/*!
+	*/
+	void aifFromBase(int nData, double tOffset);
 
-		//Resample hepatic portal vein input funtion previously loaded from file
-		void pifFromFile(int nData, double tOffset);
+	//Resample hepatic portal vein input funtion previously loaded from file
+	void pifFromBase(int nData, double tOffset);
 
-		//Load input funtion previously loaded from file
-		void resampleLoaded(std::vector<double> &resampled_if, const std::vector<double> &loaded_if,
-			int nData, double tOffset);
+	//Load input funtion previously loaded from file
+	void resampleBase(std::vector<double> &resampled_if, const std::vector<double> &loaded_if,
+		int nData, double tOffset);
 
-		//Load/save an AIF from/to file
-		bool readIFFromFile(std::vector<double> &loaded_if, const std::string &filename, const int nDynamics);
-    bool writeIFToFile(const std::vector<double> &if_to_save, const std::string &filename);
+	//Load/save an AIF from/to file
+	bool readIFFromFile(std::vector<double> &loaded_if, const std::string &filename, const int nDynamics);
+  bool writeIFToFile(const std::vector<double> &if_to_save, const std::string &filename);
 
-    //Helper functions for computing auto AIF
-    void getMaxSignal(const std::vector<mdm_Image3D> &dynImages, const mdm_Image3D &T1, int voxelIndex, double noiseEstimate,
-      bool &valid, double &maxSignal, int &maxTime, int &time10);
+  //----------------------------------------------------------
+  //Variables
 
-    void getConcTimeCourse(const std::vector<mdm_Image3D> &dynImages, const mdm_Image3D &T1, 
-      int voxelIndex, const double &r1, const int &time10, std::vector<double> &conc, bool inputCt);
-
-    //----------------------------------------------------------
-    //Variables
-
-	  AIFtype    AIFtype_;
-	  PIFtype    PIFtype_;
-	  std::vector<double> resampled_AIF_;
-	  std::vector<double> base_AIF_;
-	  std::vector<double> resampled_PIF_;
-	  std::vector<double> base_PIF_;
-	  std::vector<double> PIF_IRF_;
-	  std::vector<double> AIFTimes_;
-	  int prebolus_;
-	  double  Hct_;
-	  double  dose_;
+	AIF_TYPE    AIFtype_;
+	PIF_TYPE    PIFtype_;
+	std::vector<double> resampled_AIF_;
+	std::vector<double> base_AIF_;
+	std::vector<double> resampled_PIF_;
+	std::vector<double> base_PIF_;
+	std::vector<double> PIF_IRF_;
+	std::vector<double> AIFTimes_;
+	int prebolus_;
+	double  Hct_;
+	double  dose_;
 
 };
 

@@ -48,7 +48,6 @@ public:
 		UNDEFINED,
     NONE,
 		TOFTS,
-		VPSTD,
 		ETM,
 		DIETM,
 		AUEM,
@@ -74,7 +73,6 @@ public:
 	"AUEM",
 	"DIBEM",
 	"TOFTS",
-	"VPSTD",
   "NONE"
 		};
 	}
@@ -89,11 +87,8 @@ public:
     if (modelName == "NONE")
       return NONE;
 
-		if (modelName == "TOFTS")
+		if (modelName == "TOFTS" || modelName == "TM")
 			return TOFTS;
-
-		else if (modelName == "VPSTD")
-			return VPSTD;
 
 		else if (modelName == "ETM")
 			return ETM;
@@ -146,9 +141,7 @@ public:
 	MDM_API static std::shared_ptr<mdm_DCEModelBase> createModel( 
 		mdm_AIF &AIF,
 		ModelTypes modelType,
-		bool aif_from_file, 
-		bool pif_from_file,
-    const std::vector<std::string> &paramNames,
+		const std::vector<std::string> &paramNames,
     const std::vector<double> &initialParams,
     const std::vector<int> fixedParams,
     const std::vector<double> fixedValues,
@@ -170,30 +163,13 @@ public:
 
 		case TOFTS:
 		{
-			if (aif_from_file)
-				AIF.setAIFType(mdm_AIF::AIF_FILE);
-			else
-				AIF.setAIFType(mdm_AIF::AIF_POP);
 			return std::make_shared<mdm_DCEModelETM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);;
 		}
 
-		case VPSTD:
-		{
-			AIF.setAIFType(mdm_AIF::AIF_STD);
-			return std::make_shared < mdm_DCEModelETM>(AIF, paramNames, initialParams,
-				fixedParams, fixedValues,
-				relativeLimitParams, relativeLimitValues);
-		}
-
 		case ETM:
 		{
-			if (aif_from_file)
-				AIF.setAIFType(mdm_AIF::AIF_FILE);
-			else
-				AIF.setAIFType(mdm_AIF::AIF_POP);
-
 			return std::make_shared < mdm_DCEModelETM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
@@ -201,16 +177,6 @@ public:
 
 		case DIETM:
 		{
-			if (aif_from_file)
-				AIF.setAIFType(mdm_AIF::AIF_FILE);
-			else
-				AIF.setAIFType(mdm_AIF::AIF_POP);
-
-			if (pif_from_file)
-				AIF.setPIFType(mdm_AIF::PIF_FILE);
-			else
-				AIF.setPIFType(mdm_AIF::PIF_POP);
-
 			return std::make_shared < mdm_DCEModelDIETM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
@@ -218,16 +184,6 @@ public:
 
 		case AUEM:
 		{
-			if (aif_from_file)
-				AIF.setAIFType(mdm_AIF::AIF_FILE);
-			else
-				AIF.setAIFType(mdm_AIF::AIF_POP);
-
-			if (pif_from_file)
-				AIF.setPIFType(mdm_AIF::PIF_FILE);
-			else
-				AIF.setPIFType(mdm_AIF::PIF_POP);
-
 			return std::make_shared < mdm_DCEModelAUEM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
@@ -235,16 +191,6 @@ public:
 
 		case DISCM:
 		{
-			if (aif_from_file)
-				AIF.setAIFType(mdm_AIF::AIF_FILE);
-			else
-				AIF.setAIFType(mdm_AIF::AIF_POP);
-
-			if (pif_from_file)
-				AIF.setPIFType(mdm_AIF::PIF_FILE);
-			else
-				AIF.setPIFType(mdm_AIF::PIF_POP);
-
 			return std::make_shared < mdm_DCEModelDISCM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
@@ -252,11 +198,6 @@ public:
 
 		case CXM:
 		{
-			if (aif_from_file)
-				AIF.setAIFType(mdm_AIF::AIF_FILE);
-			else
-				AIF.setAIFType(mdm_AIF::AIF_POP);
-
 			return std::make_shared < mdm_DCEModel2CXM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
@@ -265,16 +206,6 @@ public:
 
 		case DI2CXM:
 		{
-			if (aif_from_file)
-				AIF.setAIFType(mdm_AIF::AIF_FILE);
-			else
-				AIF.setAIFType(mdm_AIF::AIF_POP);
-
-			if (pif_from_file)
-				AIF.setPIFType(mdm_AIF::PIF_FILE);
-			else
-				AIF.setPIFType(mdm_AIF::PIF_POP);
-
 			return std::make_shared < mdm_DCEModelDI2CXM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
@@ -282,16 +213,6 @@ public:
 
 		case DIBEM:
 		{
-			if (aif_from_file)
-				AIF.setAIFType(mdm_AIF::AIF_FILE);
-			else
-				AIF.setAIFType(mdm_AIF::AIF_POP);
-
-			if (pif_from_file)
-				AIF.setPIFType(mdm_AIF::PIF_FILE);
-			else
-				AIF.setPIFType(mdm_AIF::PIF_POP);
-
 			return std::make_shared < mdm_DCEModelDIBEM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
@@ -299,16 +220,6 @@ public:
 
 		case DIBEM_FP:
 		{
-			if (aif_from_file)
-				AIF.setAIFType(mdm_AIF::AIF_FILE);
-			else
-				AIF.setAIFType(mdm_AIF::AIF_POP);
-
-			if (pif_from_file)
-				AIF.setPIFType(mdm_AIF::PIF_FILE);
-			else
-				AIF.setPIFType(mdm_AIF::PIF_POP);
-
 			return std::make_shared < mdm_DCEModelDIBEM_Fp>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);

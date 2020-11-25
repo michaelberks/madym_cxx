@@ -89,6 +89,18 @@ MDM_API void mdm_Image3D::setVoxel(int i, double value)
 }
 
 //
+MDM_API double mdm_Image3D::voxel(int x, int y, int z) const
+{
+  return voxel(sub2ind(x, y, z));
+}
+
+//
+MDM_API void mdm_Image3D::setVoxel(int x, int y, int z, double value)
+{
+  setVoxel(sub2ind(x, y, z), value);
+}
+
+//
 MDM_API void mdm_Image3D::setType(ImageType newType)
 {
 	
@@ -348,7 +360,7 @@ MDM_API void mdm_Image3D::getSetKeyValuePairs(std::vector<std::string> &keys,
 }
 
 //
-MDM_API bool mdm_Image3D::dimensionsMatch(const mdm_Image3D &img)
+MDM_API bool mdm_Image3D::dimensionsMatch(const mdm_Image3D &img) const
 {
   bool incompatible = false;
   bool compatible   = true;
@@ -656,6 +668,12 @@ template  MDM_API void mdm_Image3D::swapBytes<float>(float& data);
 //! Template specialization declaration of swapBytes for double datatype
 template  MDM_API void mdm_Image3D::swapBytes<double>(double& data);
 
+//
+MDM_API int mdm_Image3D::sub2ind(int x, int y, int z) const
+{
+  return x + (y * nX_) + (z * nX_ * nY_);
+}
+
 //**************************************************************************
 // Private functions
 //**************************************************************************
@@ -671,30 +689,3 @@ bool mdm_Image3D::initDataArray()
 
 	return true;
 }
-
-/*
- *  Modifications:
- *  9-24 February 2006 (GAB)
- *  - Created & ran basic tests
- *  23 March 2006 (GAB)
- *  - Moved documentation comments here
- *  27-29 March 2006 (GAB)
- *  - Removed offsets & default values & added some more DbC functionality
- *  - Added the copy function
- *  ============================    Version 0.2    ============================
- *  4 April 2006 (GAB)
- *  - Changed mdm_Image3DCopyFields() so it no longer copies type data
- *  ============================    Version 0.3    ============================
- *  28 Nov 2007 (GAB)
- *  - Added mdm_Image3DgetNvoxels() for convenience
- *  ============================    Version 0.4    ============================
- *  24 March 2009 (GAB)
- *  - Added new xtr file capability
- *  ============================    Version 0.5    ============================
- *  18 Nov 2009 (GAB)
- *  - Added deleteQbiImage3DdataArray() for when we declare struct on stack rather than heap
- *  - Added mdm_Image3DCopyMatrix() for when we don't want the info fields
- *  ============================    Version 0.6    ============================
- *  10 May 2017 (GAB)
- *  - Updated xtr info indices and string keys to match dicom-to-analyze-converter versions 0.7.x
- */

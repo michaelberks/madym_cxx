@@ -14,8 +14,6 @@
 #include <iostream>
 #include <cmath>
 #include <istream>
-#include <algorithm>
-#include <numeric>
 
 #include "mdm_version.h"
 
@@ -25,7 +23,10 @@
 
 //
 MDM_API mdm_AIF::mdm_AIF()
-	:AIFTimes_(0),
+	:
+  AIFtype_(mdm_AIF::AIF_TYPE::AIF_UNDEFINED),
+  PIFtype_(mdm_AIF::PIF_TYPE::PIF_UNDEFINED),
+  AIFTimes_(0),
 	base_AIF_(0),
 	resampled_AIF_(0),
   base_PIF_(0),
@@ -53,7 +54,8 @@ MDM_API bool mdm_AIF::readAIF(const std::string &full_AIF_filename, const int nD
 	}
 	else
 	{
-		setAIFType(AIF_POP);
+		setAIFType(AIF_UNDEFINED);
+    throw "Unable to read AIF from...";
 		return false;
 	}
 }
@@ -68,7 +70,8 @@ MDM_API bool mdm_AIF::readPIF(const std::string &full_PIF_filename, const int nD
 	}
 	else
 	{
-		setPIFType(PIF_POP);
+		setPIFType(PIF_UNDEFINED);
+    throw "Unable to read PIF from...";
 		return false;
 	}
 }
@@ -89,120 +92,16 @@ MDM_API bool mdm_AIF::writePIF(const std::string &filename)
 	return writeIFToFile(base_PIF_, filename);
 }
 
-
 //
-MDM_API bool mdm_AIF::computeAutoAIF(
-	const std::vector<mdm_Image3D> &dynImages, const mdm_Image3D &T1,
-	const int slice, const double &r1, bool inputCt)
+MDM_API bool mdm_AIF::setBaseAIF(const std::vector<double> &aifVals)
 {
-	//slice = *slice_number_get(); TODO - where/what is slice_get_number?
-	double AIF_peak_window = 10.0;
-
-	//We'll want to know which voxels were identified as suitable for AIF estimation
-	mdm_Image3D AIF_map;
-	AIF_map.copy(dynImages[0]);
-	AIF_map.setType(mdm_Image3D::ImageType::TYPE_AIFVOXELMAP);
-
-	//Scan T1 map for pixels that might be blood
-	int nX, nY, nZ;
-	AIF_map.getDimensions(nX, nY, nZ);
-
-	std::vector<double> maxSigInts;
-	std::vector<int> maxIdx;
-	std::vector<int> time10s;
-	for (int ix = 0; ix < nX; ix++)
-	{
-		for (int iy = 0; iy < nY; iy++)
-		{
-			int voxelIndex = ix + (iy * nX) + (slice * nX * nY);
-
-			// assume pre-contrast T1 of blood is around 1500 ms
-			if (/*TODO what is this? getConcentrationMapFlag() == 1 ||*/ T1.voxel(voxelIndex) > 1000.0)
-			{
-				// Estimate all [CA] time courses and populate auto_AIF member data
-				bool valid;
-				double maxSigInt;
-				int maxTime;
-				int time10;
-				double noiseEstimate = 100; //TODO
-				getMaxSignal(dynImages, T1, voxelIndex, noiseEstimate,
-					valid, maxSigInt, maxTime, time10);
-
-				if (valid)
-				{
-					//Flag this voxel in map as valid and above threshold
-					AIF_map.setVoxel(voxelIndex, 1);
-					maxSigInts.push_back(maxSigInt);
-					maxIdx.push_back(voxelIndex);
-					time10s.push_back(time10);
-				}
-			}
-		}
-	}
-
-	if (maxSigInts.empty())
-	{
-		std::cout << "determine_AIF:  no suitable voxels found to define an AIF" << std::endl;
-		return false;
-	}
-
-	// sort max conc array and return sorted indices
-	int nMax = maxSigInts.size();
-	std::vector<size_t> indices(nMax);
-	std::iota(indices.begin(), indices.end(), 0); //returns 0, 1, 2,... etc
-	std::sort(indices.begin(), indices.end(),
-		[&maxSigInts](size_t i1, size_t i2) {return maxSigInts[i1] > maxSigInts[i2]; });
-
-	// Keep the indices of the top 5%
-	int threshIdx = (int)(0.05 * (double)(nMax));
-
-	//Get all voxel indexes with concentration above threshold
-	std::vector<std::vector<int> > keepIdx;
-	for (size_t i = 0; i < threshIdx; i++)
-	{
-		size_t idx = indices[i];
-		keepIdx.push_back({ maxIdx[idx],time10s[idx] });
-	}
-
-	//Resize container for auto AIF
-	int nTimes = AIFTimes_.size();
-	base_AIF_.resize(nTimes);
-
-	// Loop through top 5 % voxels and average to produce mean AIF
-	for (std::vector<int> voxelData : keepIdx)
-	{
-		//Flag this voxel as used
-		AIF_map.setVoxel(voxelData[0], 2);
-
-		//No need to perform any checks, we know these voxels are valid
-		std::vector<double> conc;
-		getConcTimeCourse(dynImages, T1,
-			voxelData[0], r1, voxelData[1], conc, inputCt);
-
-		for (int it = 0; it < AIFTimes_.size(); it++)
-		{
-			base_AIF_[it] += conc[it] / (1.0 - Hct_);
-		}
-	}
-
-	//Final pass through AIF, dividing by number of voxels, and zero-checking
-	double nKeep = keepIdx.size();
-	int AIF_zero = -1;
-	for (int it = 0; it < nTimes; it++)
-	{
-		base_AIF_[it] /= nKeep;
-		if (base_AIF_[it] < 0.0)
-			base_AIF_[it] = 0.0;
-
-		//Find first positive voxel
-		if (base_AIF_[it] > 0.0 && AIF_zero < 0)
-			AIF_zero = it - 1;
-	}
-
-	//MB - I've removed automatically writing the AIF map here
-	// it is up to the calling function to decide if it wants to do that
-
-	return true;
+  if (aifVals.size() == AIFTimes_.size())
+  {
+    base_AIF_ = aifVals;
+    return true;
+  }
+  else
+    return false;
 }
 
 //
@@ -229,15 +128,17 @@ MDM_API void mdm_AIF::resample_AIF(double tOffset)
 		aifWeinman(nTimes, tOffset);
 		break;
 	case AIF_FILE:
-		aifFromFile(nTimes, tOffset);
+  case AIF_MAP:
+		aifFromBase(nTimes, tOffset);
 		break;
 	case AIF_POP:
 		aifPopGJMP(nTimes, tOffset);
 		break;
 
-	case AIF_INVALID:
+	case AIF_UNDEFINED:
 	default:
 		// Add warning, quit here
+    throw "Tried to resample undefined AIF";
 		break;
 	}
 }
@@ -252,21 +153,22 @@ MDM_API void mdm_AIF::resample_PIF(double tOffset, bool offsetAIF/* = true*/, bo
 	{
 
 	case PIF_FILE:
-		pifFromFile(nTimes, tOffset);
+		pifFromBase(nTimes, tOffset);
 		break;
 
 	case PIF_POP:
 		aifPopHepaticAB(nTimes, tOffset, offsetAIF, resampleIRF);
 		break;
-	case PIF_INVALID:
+	case PIF_UNDEFINED:
 	default:
 		// Add warning, quit here
+    throw "Tried to resample undefined AIF";
 		break;
 	}
 }
 
 //
-MDM_API bool mdm_AIF::setAIFType(AIFtype value)
+MDM_API bool mdm_AIF::setAIFType(AIF_TYPE value)
 {
   bool setOK;
 
@@ -275,12 +177,14 @@ MDM_API bool mdm_AIF::setAIFType(AIFtype value)
     case AIF_STD:
     case AIF_FILE:
     case AIF_POP:
+    case AIF_MAP:
       AIFtype_ = value;
       setOK = true;
       break;
     default:
-      AIFtype_ = AIF_INVALID;
+      AIFtype_ = AIF_UNDEFINED;
       setOK = false;
+      throw "AIF type not recognised";
       break;
   }
 
@@ -288,7 +192,7 @@ MDM_API bool mdm_AIF::setAIFType(AIFtype value)
 }
 
 //
-MDM_API bool mdm_AIF::setPIFType(PIFtype value)
+MDM_API bool mdm_AIF::setPIFType(PIF_TYPE value)
 {
 	bool setOK;
 
@@ -300,8 +204,9 @@ MDM_API bool mdm_AIF::setPIFType(PIFtype value)
 		setOK = true;
 		break;
 	default:
-		PIFtype_ = PIF_INVALID;
+		PIFtype_ = PIF_UNDEFINED;
 		setOK = false;
+    throw "AIF type not recognised";
 		break;
 	}
 
@@ -309,13 +214,13 @@ MDM_API bool mdm_AIF::setPIFType(PIFtype value)
 }
 
 //
-MDM_API mdm_AIF::AIFtype mdm_AIF::AIFType() const
+MDM_API mdm_AIF::AIF_TYPE mdm_AIF::AIFType() const
 {
   return AIFtype_;
 }
 
 //
-MDM_API mdm_AIF::PIFtype mdm_AIF::PIFType() const
+MDM_API mdm_AIF::PIF_TYPE mdm_AIF::PIFType() const
 {
 	return PIFtype_;
 }
@@ -510,22 +415,22 @@ void mdm_AIF::aifWeinman(int nTimes, double tOffset)
 }
 
 //
-void mdm_AIF::aifFromFile(int nTimes, double tOffset)
+void mdm_AIF::aifFromBase(int nTimes, double tOffset)
 {
-	resampleLoaded(resampled_AIF_, base_AIF_,
+	resampleBase(resampled_AIF_, base_AIF_,
 		nTimes, tOffset);
 }
 
 //
 //Load an hepatic portal vein from file
-void mdm_AIF::pifFromFile(int nTimes, double tOffset)
+void mdm_AIF::pifFromBase(int nTimes, double tOffset)
 {
-	resampleLoaded(resampled_PIF_, base_PIF_,
+	resampleBase(resampled_PIF_, base_PIF_,
 		nTimes, tOffset);
 }
 
 //Load input funtion previously loaded from file
-void mdm_AIF::resampleLoaded(std::vector<double> &resampled_if, const std::vector<double> &loaded_if,
+void mdm_AIF::resampleBase(std::vector<double> &resampled_if, const std::vector<double> &loaded_if,
 	int nTimes, double tOffset)
 {
 	std::vector<double> offsetTimes(nTimes);
@@ -627,147 +532,4 @@ bool mdm_AIF::writeIFToFile(const std::vector<double> &if_to_save, const std::st
 }
 
 //
-void mdm_AIF::getMaxSignal(const std::vector<mdm_Image3D> &dynImages, const mdm_Image3D &T1, int voxelIndex, double noiseEstimate,
-  bool &valid, double &maxSigInt, int &maxTime, int &time10)
-{
-  //Aim of this function is to:
-  // Check if voxel valid:
-  // - Has max signal at time t, where prebolus < t < prebolus + 10;
-  // - Has no negative values after t
-  // - Has max signal distinguishable from noise
-  int nTimes = dynImages.size();
 
-  assert(nTimes == AIFTimes_.size());
-  std::vector<double> signalData(nTimes);
-  for (int it = 0; it < nTimes; it++)
-    signalData[it] = dynImages[it].voxel(voxelIndex);
-
-  // Find image that defines onset - Algorithm for following from 'MRIW'
-  // - see Parker et al, JMRI 7, 564, 1997 and Parker et al, Radiographics 18, 497, 1998.
-  //
-  // Get max and min sig ints in time series
-  maxSigInt = signalData[0];
-  double minSigInt = maxSigInt;
-  for (int it = 1; it < nTimes; it++)
-  {
-    if (signalData[it] > maxSigInt)
-    {
-      maxSigInt = signalData[it];
-      maxTime = it;
-    }
-    if (signalData[it] < minSigInt)
-    {
-      minSigInt = signalData[it];
-    }
-  }
-
-  //First check if the max signal arrives in peak window post injection
-  //If it doesn't return
-  int AIF_peak_window = 10;
-  if (maxTime <= prebolus_ || maxTime > prebolus_ + AIF_peak_window)
-  {
-    time10 = -1;
-    maxSigInt = -1.0;
-    maxTime = 0;
-    valid = false;
-    return;
-  }
-
-  // Find 10% point of up-slope
-  // Actually 10% from min to max signal after bolus arrival
-  // - not always necessarily the same thing
-  time10 = 0;
-  double lowerThreshold = minSigInt + 0.1 * (maxSigInt - minSigInt);
-  for (int it = prebolus_; it < maxTime; it++)
-  {
-    if (!time10 && signalData[it] > lowerThreshold)
-      time10 = it;
-
-    // if it dips down again it must be noise...
-    if (signalData[it] < lowerThreshold && time10)
-      time10 = 0;
-  }
- 
-  //If arrival is later than one minute post injection, assume that you are seeing
-  //slow uptake, and set arrival time to injection image
-  if (AIFTimes_[time10] - AIFTimes_[prebolus_] > 60.0)
-    time10 = prebolus_ - 1;
-
-  /*//work out SD in pre-arrival period
-  double sum = 0.0;
-  double sumsq = 0.0;
-  for (int it = 0; it <= time10; it++)
-  {
-    sum += signalData[it];
-    sumsq += signalData[it] * signalData[it];
-  }
-
-  double nT = time10 + 1;
-  double mean = sum / nT;
-  double std = nT >= 5 ? sqrt((sumsq - sum * sum / nT) / (nT - 1)) : noiseEstimate;// user input sd when can't be estimated
-
-  //Do some checking. If max signal is indistinguishable from noise,
-  //assume it is not significant
-  if (maxSigInt < mean + 3 * std)
-  {
-    time10 = -1;
-    maxSigInt = -1.0;
-    maxTime = 0;
-    valid = false;
-  }
-  else*/
-    valid = true;
-}
-
-//
-void mdm_AIF::getConcTimeCourse(const std::vector<mdm_Image3D> &dynImages, const mdm_Image3D &T1,
-  int voxelIndex, const double &r1, const int &time10, std::vector<double> &conc, bool inputCt)
-{
-
-  int nTimes = dynImages.size();
-
-  if (inputCt)
-  {
-    conc.resize(nTimes);
-    for (int it = 0; it < nTimes; it++)
-      conc[it] = dynImages[it].voxel(voxelIndex);
-  }
-  else
-  {
-    std::vector<double> signalData(nTimes);
-    for (int it = 0; it < nTimes; it++)
-      signalData[it] = dynImages[it].voxel(voxelIndex);
-
-    conc.resize(nTimes);
-    double TR = dynImages[0].info().TR.value();
-    double FA = dynImages[0].info().flipAngle.value();
-    double T10 = T1.voxel(voxelIndex);
-
-    //Use a DCE voxel object to convert to concentration
-		/*
-    mdm_DCEVoxel vox(
-      signalData,
-      {},
-      {},
-      T10,
-      0,
-      r1,
-      prebolus_,
-      AIFTimes_,
-      TR,
-      FA,
-      0,
-      nTimes,
-      false,
-      true,
-      {});
-    vox.computeCtFromSignal();
-    conc = vox.CtData();*/
-  }
-  
-
-  // set pre-arrival to zero
-  for (int it = 0; it < time10; it++)
-    conc[it] = 0.0;
-  
-}

@@ -116,6 +116,11 @@ protected:
 	\return current time, in standardised string format
 	*/
 	std::string timeNow();
+
+  //! Changes current working directory if dataDir specified in inputs 
+  /*!
+  */
+  void set_up_cwd();
 	
 	//! Sets up output folder for program analysis
 	/*!
