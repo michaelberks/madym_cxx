@@ -30,17 +30,6 @@ public:
 	/*!
 	*/
 	MDM_API ~mdm_RunTools_madym_T1_lite();
-  	
-	//! Runs the lite version of T1 mapping
-	/*!
-	1. Parses and validates input options
-	2. Sets specified T1 method
-	3. Opens input data file
-	4. Processes each line in input data file, mapping T1 from input signals, writing T1 and M0 values to output file
-	5. Closes input/output file and reports the number of samples processed.
-	\return 0 on success, non-zero otherwise
-	*/
-	MDM_API int run();
 
 	//! parse user inputs specific to T1 mapping
 	/*!
@@ -53,7 +42,16 @@ public:
 	MDM_API int parseInputs(int argc, const char *argv[]);
 
 protected:
-  
+  //! Runs the lite version of T1 mapping
+  /*!
+  1. Parses and validates input options
+  2. Sets specified T1 method
+  3. Opens input data file
+  4. Processes each line in input data file, mapping T1 from input signals, writing T1 and M0 values to output file
+  5. Closes input/output file and reports the number of samples processed.
+  \return 0 on success, non-zero otherwise
+  */
+  MDM_API int run();
 
 private:
 

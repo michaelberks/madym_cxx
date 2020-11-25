@@ -97,10 +97,7 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 		{
 			mdm_progAbort(options_.model() + " chosen as model but no AIF filename set");
 		}
-		if (!AIF_.readAIF(aifPath, options_.nDyns()))
-		{
-			mdm_progAbort("error loading AIF for model " + options_.model());
-		}
+    AIF_.readAIF(aifPath, options_.nDyns());
 	}
 
 	//If we're using an auto-generated PIF, read it from file now
@@ -111,10 +108,7 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 		{
 			mdm_progAbort(options_.model() + " chosen as model but no AIF filename set");
 		}
-		if (!AIF_.readPIF(pifPath, options_.nDyns()))
-		{
-			mdm_progAbort("error loading AIF for model " + options_.model());
-		}
+    AIF_.readPIF(pifPath, options_.nDyns());
 	}
 
 	//If we're converting from signal to concentration, make sure we've been supplied TR and FA values

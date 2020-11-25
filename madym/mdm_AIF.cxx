@@ -15,11 +15,12 @@
 #include <cmath>
 #include <istream>
 
-#include "mdm_version.h"
+#include <mdm_version.h>
+#include <madym/mdm_exception.h>
 
-
-#include "mdm_DCEVoxel.h"
-#include "mdm_ProgramLogger.h"
+#include <madym/mdm_DCEVoxel.h>
+#include <madym/mdm_ProgramLogger.h>
+#include <boost/format.hpp>
 
 //
 MDM_API mdm_AIF::mdm_AIF()
@@ -45,51 +46,60 @@ MDM_API mdm_AIF::~mdm_AIF()
 }
 
 //
-MDM_API bool mdm_AIF::readAIF(const std::string &full_AIF_filename, const int nDynamics)
+MDM_API void mdm_AIF::readAIF(const std::string &full_AIF_filename, const int nDynamics)
 {
-	if (readIFFromFile(base_AIF_, full_AIF_filename, nDynamics))
-	{
-		setAIFType(AIF_FILE);
-		return true;
-	}
-	else
-	{
-		setAIFType(AIF_UNDEFINED);
-    throw "Unable to read AIF from...";
-		return false;
-	}
+  try {
+    readIFFromFile(base_AIF_, full_AIF_filename, nDynamics);
+  }
+	catch (mdm_exception &e)
+  {
+    e.append("Unable to read AIF");
+    throw;
+  }
+  setAIFType(AIF_FILE);
 }
 
 //
-MDM_API bool mdm_AIF::readPIF(const std::string &full_PIF_filename, const int nDynamics)
+MDM_API void mdm_AIF::readPIF(const std::string &full_PIF_filename, const int nDynamics)
 {
-	if (readIFFromFile(base_PIF_, full_PIF_filename, nDynamics))
-	{
-		setPIFType(PIF_FILE);
-		return true;
-	}
-	else
-	{
-		setPIFType(PIF_UNDEFINED);
-    throw "Unable to read PIF from...";
-		return false;
-	}
+  try {
+    readIFFromFile(base_PIF_, full_PIF_filename, nDynamics);
+  }
+  catch (mdm_exception &e)
+  {
+    e.append("Unable to read PIF");
+    throw;
+  }
+  setPIFType(PIF_FILE);
+
 }
 
 //
-MDM_API bool mdm_AIF::writeAIF(const std::string &filename)
+MDM_API void mdm_AIF::writeAIF(const std::string &filename)
 {
 	if (base_AIF_.empty())
 		base_AIF_ = resampled_AIF_;
-	return writeIFToFile(base_AIF_, filename);
+
+  try { writeIFToFile(base_AIF_, filename); }
+  catch (mdm_exception &e)
+  {
+    e.append("Unable to write AIF");
+    throw;
+  }
 }
 
 //
-MDM_API bool mdm_AIF::writePIF(const std::string &filename)
+MDM_API void mdm_AIF::writePIF(const std::string &filename)
 {
 	if (base_PIF_.empty())
 		base_PIF_ = resampled_PIF_;
-	return writeIFToFile(base_PIF_, filename);
+
+  try { writeIFToFile(base_PIF_, filename); }
+  catch (mdm_exception &e)
+  {
+    e.append("Unable to write PIF");
+    throw;
+  }
 }
 
 //
@@ -463,7 +473,7 @@ void mdm_AIF::resampleBase(std::vector<double> &resampled_if, const std::vector<
 }
 
 //Load an AIF from file
-bool mdm_AIF::readIFFromFile(std::vector<double> &loaded_if, const std::string &filename, const int nDynamics)
+void mdm_AIF::readIFFromFile(std::vector<double> &loaded_if, const std::string &filename, const int nDynamics)
 {
 	std::vector<double>  timesFromFile(nDynamics, 0);
 	loaded_if.resize(nDynamics);
@@ -471,12 +481,8 @@ bool mdm_AIF::readIFFromFile(std::vector<double> &loaded_if, const std::string &
 	std::ifstream aifStream(filename, std::ios::in);
 
 	if (!aifStream.is_open())
-	{
-		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_AIF::readIFFromFile: "
-			"IF file " + filename + " not found\n");
-		return false;
-	}
+    throw mdm_exception(__func__,
+      boost::format( "IF file %2% not found") % filename);
 
 	//Load times and values from file - MB added check we don't reach EOF
 	//If we do this suggests the AIF file does not have sufficient time points -
@@ -485,12 +491,11 @@ bool mdm_AIF::readIFFromFile(std::vector<double> &loaded_if, const std::string &
 	{
 		if (aifStream.eof())
 		{
-			mdm_ProgramLogger::logProgramMessage(
-				"ERROR: mdm_AIF::readIFFromFile: "
-				"IF does not contain sufficient time points. EOF reached after " +
-				std::to_string(i) + "points. Expected " + std::to_string(nDynamics) + "\n");
-			aifStream.close();
-			return false;
+      aifStream.close();
+
+      throw mdm_exception(__func__, boost::format(
+        "IF does not contain sufficient time points. EOF reached after %1% points. "
+        "Expected %2% ") %  i % nDynamics);
 		};
 		aifStream >> timesFromFile[i] >> loaded_if[i];
 	}
@@ -501,34 +506,32 @@ bool mdm_AIF::readIFFromFile(std::vector<double> &loaded_if, const std::string &
 		AIFTimes_ = timesFromFile;
 
 	mdm_ProgramLogger::logProgramMessage(
-		"IF successfully read from " + filename + "\n");
+		"IF successfully read from " + filename);
 
-	return true;
 }
 
 //
-bool mdm_AIF::writeIFToFile(const std::vector<double> &if_to_save, const std::string &filename)
+void mdm_AIF::writeIFToFile(const std::vector<double> &if_to_save, const std::string &filename)
 {
   std::ofstream aifStream(filename, std::ios::out);
 
-  if (!aifStream.is_open())
-  {
-		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_AIF::writeIFToFile: "
-			"Unable to open IF file " + filename + " for writing.\n");
-    return false;
-  }
+  if (if_to_save.size() != AIFTimes_.size())
+    throw mdm_exception(__func__, boost::format( 
+      "Size of IF values (%1%) does not match number of times (%2%)")
+      % if_to_save.size() % AIFTimes_.size());
 
-  assert(if_to_save.size() == AIFTimes_.size());
+  if (!aifStream.is_open())
+    throw mdm_exception(__func__,
+      boost::format("Unable to open IF file %1% for writing") % filename);
 
   //
   for (int i = 0; i < if_to_save.size(); i++)
     aifStream << AIFTimes_[i] << " " << if_to_save[i] << std::endl;
 
 	mdm_ProgramLogger::logProgramMessage(
-		"IF successfully written to " + filename + "\n");
+		"IF successfully written to " + filename);
 
-  return true;
+  return;
 }
 
 //

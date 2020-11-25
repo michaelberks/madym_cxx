@@ -15,22 +15,24 @@
 #include <chrono>  // chrono::system_clock
 #include <sstream> // stringstream
 
-#include "mdm_ErrorTracker.h"
-#include "mdm_ProgramLogger.h"
+#include <madym/mdm_ErrorTracker.h>
+#include <madym/mdm_ProgramLogger.h>
+#include <madym/mdm_exception.h>
+#include <boost/format.hpp>
 
+//
 MDM_API mdm_T1VolumeAnalysis::mdm_T1VolumeAnalysis(mdm_ErrorTracker &errorTracker)
 	:inputImages_(0),
 	errorTracker_(errorTracker),
 	noiseThreshold_(0),
 	method_(mdm_T1MethodGenerator::T1Methods::VFA)
-{
+{}
 
-}
-
+//
 MDM_API mdm_T1VolumeAnalysis::~mdm_T1VolumeAnalysis()
-{
-}
+{}
 
+//
 MDM_API void mdm_T1VolumeAnalysis::addInputImage(mdm_Image3D FA_img)
 {
 	/* MB - Copied this Gio comment from elsewhere - here would be an obvious place to enforce this check!
@@ -41,16 +43,19 @@ MDM_API void mdm_T1VolumeAnalysis::addInputImage(mdm_Image3D FA_img)
 	inputImages_.push_back(FA_img);
 }
 
+//
 MDM_API void mdm_T1VolumeAnalysis::addT1Map(mdm_Image3D T1_img)
 {
 	T1_ = T1_img;
 }
 
+//
 MDM_API void mdm_T1VolumeAnalysis::addM0Map(mdm_Image3D M0_img)
 {
 	M0_ = M0_img;
 }
 
+//
 MDM_API void mdm_T1VolumeAnalysis::addROI(mdm_Image3D ROI)
 {
 	ROI_ = ROI;
@@ -134,35 +139,51 @@ MDM_API void mdm_T1VolumeAnalysis::mapT1()
 	mapT1(method_);
 }
 
+//
 MDM_API const std::vector<mdm_Image3D>& mdm_T1VolumeAnalysis::inputImages() const
 {
 	return inputImages_;
 }
 
+//
 MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::inputImage(int i) const
 {
-	assert(i >= 0 && i < inputImages_.size());
-	return inputImages_[i];
+  try { return inputImages_[i]; }
+  catch (std::out_of_range &e)
+  {
+    mdm_exception em(__func__, e.what());
+    em.append(boost::format(
+      "Attempting to access input image %1% when there are %2% input images")
+      % i % inputImages_.size());
+    throw em;
+  }
 }
+
+//
 MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::T1() const
 {
 	return T1_;
 }
+
+//
 MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::M0() const
 {
 	return M0_;
 }
 
+//
 MDM_API double mdm_T1VolumeAnalysis::T1(int voxel) const
 {
 	return T1_.voxel(voxel);
 }
 
+//
 MDM_API double mdm_T1VolumeAnalysis::M0(int voxel) const
 {
 	return M0_.voxel(voxel);
 }
 
+//
 MDM_API void mdm_T1VolumeAnalysis::zeroVoxel(int voxel)
 {
 	T1_.setVoxel(voxel, 0);

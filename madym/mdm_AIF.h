@@ -73,7 +73,7 @@ public:
 	\param filename (can absolute or relative to current working directory)
 	\param nDynamics the number of time-points to read.
 	*/
-	MDM_API bool readAIF(const std::string &filename, const int nDynamics);
+	MDM_API void readAIF(const std::string &filename, const int nDynamics);
 
 	//! Read PIF from given filename
 	/*!
@@ -83,19 +83,19 @@ public:
 	\param filename (can absolute or relative to current working directory)
 	\param nDynamics the number of time-points to read.
 	*/
-	MDM_API bool readPIF(const std::string &filename, const int nDynamics);
+	MDM_API void readPIF(const std::string &filename, const int nDynamics);
 
 	//! Write AIF to given filename
 	/*!
 	\param filename (can absolute or relative to current working directory)
 	*/
-  MDM_API bool writeAIF(const std::string &filename);
+  MDM_API void writeAIF(const std::string &filename);
 
 	//! Write PIF to given fileame
 	/*!
 	\param filename (can absolute or relative to current working directory)
 	*/
-  MDM_API bool writePIF(const std::string &filename);
+  MDM_API void writePIF(const std::string &filename);
 
   //! Set AIF from vector of C(t) values
   /*!
@@ -232,8 +232,8 @@ private:
 		int nData, double tOffset);
 
 	//Load/save an AIF from/to file
-	bool readIFFromFile(std::vector<double> &loaded_if, const std::string &filename, const int nDynamics);
-  bool writeIFToFile(const std::vector<double> &if_to_save, const std::string &filename);
+	void readIFFromFile(std::vector<double> &loaded_if, const std::string &filename, const int nDynamics);
+  void writeIFToFile(const std::vector<double> &if_to_save, const std::string &filename);
 
   //----------------------------------------------------------
   //Variables

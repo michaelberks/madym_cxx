@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 
 		mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
 		madym_exe.parseInputs("test_madym_DCE");
-		int result = madym_exe.run();
+		int result = madym_exe.run_catch();
 
 		BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
 		check_output(Ct_output_dir,
@@ -275,7 +275,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 
 		mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
 		madym_exe.parseInputs("test_madym_DCE_noI");
-		int result = madym_exe.run();
+		int result = madym_exe.run_catch();
 
 		BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
 		check_output(Ct_output_dir,
@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 
     mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
     madym_exe.parseInputs("test_madym_DCE_noI");
-    int result = madym_exe.run();
+    int result = madym_exe.run_catch();
 
     BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
     check_output(Ct_output_dir,

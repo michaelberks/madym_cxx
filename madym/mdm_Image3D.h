@@ -193,7 +193,7 @@ class mdm_Image3D
 	\param   nY  number of voxels in y-axis
 	\param   nZ  number of voxels in z-axis (image slices)
 	*/
-	MDM_API void setDimensions(const int nX, const int nY, const int nZ);
+	MDM_API void setDimensions(const size_t nX, const size_t nY, const size_t nZ);
 
 	//! Set image dimensions from existing image
 	/*!
@@ -344,7 +344,7 @@ class mdm_Image3D
 	\param nonZero if true, write indices and values of non-zero voxels. If false, all voxel values written.
 	\return  true if write successful
 	*/
-	template <class T> MDM_API bool toBinaryStream(std::ostream &ofs, bool nonZero) const;
+	template <class T> MDM_API void toBinaryStream(std::ostream &ofs, bool nonZero) const;
 
 	//! Read data array from binary stream
 	/*!
@@ -354,7 +354,7 @@ class mdm_Image3D
 	\param swap flag to swap byte order between little/big-endian
 	\see toBinaryStream
 	*/
-	template <class T> MDM_API bool fromBinaryStream(std::istream &ifs,
+	template <class T> MDM_API void fromBinaryStream(std::istream &ifs,
 		bool nonZero, bool swap);
 	
 	//! Helper function to reverse byte order of big/little endian data
@@ -376,7 +376,7 @@ class mdm_Image3D
 private:
 	/*!
 	*/
-	bool initDataArray();
+	void initDataArray();
 
 
 	//!   Set meta data using key-value pair 
@@ -387,9 +387,9 @@ private:
 	double timeStamp_;
 
 	
-	int nX_; //!< Number of voxels in x-axis
-	int nY_; //!< Number of voxels in y-axis
-	int nZ_; //!< Number of voxels in z-axis (ie slices)
+	size_t nX_; //!< Number of voxels in x-axis
+  size_t nY_; //!< Number of voxels in y-axis
+  size_t nZ_; //!< Number of voxels in z-axis (ie slices)
 
 	//! Array of voxels
 	std::vector<double> data_;

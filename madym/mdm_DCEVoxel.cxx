@@ -62,8 +62,7 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal(
   // Only calculate if T1(0) > 0.0
   if (T1 <= 0.0)
   {
-		mdm_ProgramLogger::logProgramMessage(
-			"Warning: mdm_DCEVoxel::computeCtFromSignal: Baseline T1 <= 0.0\n");
+		mdm_ProgramLogger::logProgramWarning(__func__, " Baseline T1 <= 0.0");
     status_ = mdm_DCEVoxelStatus::T10_BAD;
     return;
   }

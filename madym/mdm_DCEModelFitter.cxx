@@ -17,8 +17,8 @@
 #include "opt/optimization.h"
 #include "opt/linalg.h"
 
-#include "mdm_version.h"
-#include "mdm_ProgramLogger.h"
+#include <mdm_version.h>
+#include <madym/mdm_exception.h>
 
 
 MDM_API mdm_DCEModelFitter::mdm_DCEModelFitter(
@@ -91,7 +91,7 @@ MDM_API void mdm_DCEModelFitter::fitModel(
 
   //Check CtData has been set
   if (!CtData_)
-    throw "CtData not set";
+    throw mdm_exception(__func__, "CtData not set");
 
   //Check if any issues with voxel. Note enhancing is true by default and 
   //requires prior check to fit only voxels that have been *tested* as enhancing
@@ -241,5 +241,10 @@ void mdm_DCEModelFitter::optimiseModel()
 
 	//Get the final model fit error - this also sets the parameters back to the model structure
   modelFitError_ = CtSSD(optimisedParams);
+
+  //Reset CtData_ to NULL, this forces the user to call initialiseModelFit before fitModel
+  //and avoids potential dangling pointer. No danger of memory leak because CtData_ is never 
+  //created from new.
+  CtData_ = NULL;
 }
 

@@ -43,14 +43,14 @@ MDM_API bool mdm_ErrorTracker::setErrorImage(const mdm_Image3D &img)
   if (img.numVoxels() <= 0)
   {
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_ErrorTracker::setErrorImage : Input image is empty\n");
+			"ERROR: mdm_ErrorTracker::setErrorImage : Input image is empty");
     return false;
   }
 	else if (img.type() != mdm_Image3D::ImageType::TYPE_ERRORMAP)
 	{
 		mdm_ProgramLogger::logProgramMessage(
 			"ERROR: mdm_ErrorTracker::setErrorImage: "
-			"Type of input image does not match TYPE_ERRORMAP\n");
+			"Type of input image does not match TYPE_ERRORMAP");
 		return false;
 	}
 	errorImage_ = img;
@@ -71,7 +71,7 @@ MDM_API bool mdm_ErrorTracker::initErrorImage(const mdm_Image3D &imgWithDims)
 	if (errorImage_.numVoxels() <= 0)
 	{
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_ErrorTracker::setErrorImage Failed to set up error image\n");
+			"ERROR: mdm_ErrorTracker::setErrorImage Failed to set up error image");
 		return false;
 	}
 
@@ -108,7 +108,7 @@ MDM_API mdm_Image3D mdm_ErrorTracker::maskSingleErrorCode(const int errCodesInt)
 	if (nVoxels <= 0)
 	{
 		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_ErrorTracker::maskSingleErrorCode: Input image has a zero voxel dimension\n");
+			"ERROR: mdm_ErrorTracker::maskSingleErrorCode: Input image has a zero voxel dimension");
 		return maskOut;
 	}
 

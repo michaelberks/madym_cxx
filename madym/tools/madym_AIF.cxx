@@ -32,6 +32,6 @@ int main(int argc, char *argv[])
     return parse_error;
 
   //If inputs ok, then run
-  return madym_exe.run();
+  return madym_exe.run_catch();
 
 }

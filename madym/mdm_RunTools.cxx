@@ -19,6 +19,7 @@
 #include <iomanip> // put_time
 
 #include <mdm_version.h>
+#include <madym/mdm_exception.h>
 
 #include <madym/mdm_ProgramLogger.h>
 
@@ -33,16 +34,42 @@ MDM_API mdm_RunTools::mdm_RunTools(mdm_InputOptions &options, mdm_OptionsParser 
 {
 }
 
-
+//
 MDM_API mdm_RunTools::~mdm_RunTools()
 {
 
 }
 
+//
 MDM_API int mdm_RunTools::parseInputs(const std::string &argv)
 {
 	const char*argvc[] = { argv.c_str() };
 	return parseInputs(0, argvc);
+}
+
+//
+MDM_API int mdm_RunTools::run_catch()
+{
+  try {
+    run();
+  }
+  catch (mdm_exception &e)
+  {
+    mdm_ProgramLogger::logProgramError(__func__, e.what());
+    mdm_progAbort("mdm_Exception caught");
+  }
+  catch (std::exception &e)
+  {
+    mdm_ProgramLogger::logProgramError(__func__, e.what());
+    mdm_progAbort("std::exception caught");
+  }
+  catch (...)
+  {
+    mdm_progAbort("Unhandled exception caught, aborting");
+  }
+
+  //Tidy up the logging objects
+  return mdm_progExit();
 }
 
 //
@@ -147,7 +174,7 @@ void mdm_RunTools::set_up_logging()
     //Log location of program log and config file in audit log
     if (!options_.noAudit())
       mdm_ProgramLogger::logAuditMessage(
-        "Program log saved to " + programLogPath.string() + "\n");
+        "Program log saved to " + programLogPath.string());
   }
 
   //Log the command arguments
@@ -158,5 +185,5 @@ void mdm_RunTools::set_up_logging()
   fs::path configFilePath = outputPath_ / configName;
 	options_parser_.to_file(configFilePath.string(), options_);
 	mdm_ProgramLogger::logProgramMessage(
-		"Config file saved to " + configFilePath.string() + "\n");
+		"Config file saved to " + configFilePath.string());
 }

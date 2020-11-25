@@ -32,17 +32,6 @@ public:
 	/*!
 	*/
 	MDM_API ~mdm_RunTools_madym_DCE();
-  	
-	//! Runs the T1 mapping pipeline
-	/*!
-	1. Parses and validates input options
-	2. Sets specified tracer-kinetic model
-	3. Loads in signal/concentration input volumes (and ROI if given)
-	4. Processes all voxels (in ROI mask if given), fitting tracer-kinetic model to input signals, saving fitted paremeters and IAUC measures to output maps
-	5. Saves output maps.
-	\return 0 on success, non-zero otherwise
-	*/
-	MDM_API int run();
 
 	//! parse user inputs specific to DCE analysis
 	/*!
@@ -55,7 +44,16 @@ public:
 	MDM_API int parseInputs(int argc, const char *argv[]);
 
 protected:
-  
+  //! Runs the T1 mapping pipeline
+  /*!
+  1. Parses and validates input options
+  2. Sets specified tracer-kinetic model
+  3. Loads in signal/concentration input volumes (and ROI if given)
+  4. Processes all voxels (in ROI mask if given), fitting tracer-kinetic model to input signals, saving fitted paremeters and IAUC measures to output maps
+  5. Saves output maps.
+  \return 0 on success, non-zero otherwise
+  */
+  MDM_API int run();
 
 private:
   //Methods:

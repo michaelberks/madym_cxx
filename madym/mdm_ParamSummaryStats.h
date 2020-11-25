@@ -74,45 +74,45 @@ public:
 	\param roiFile filename to write ROI summary to
 	\return true if file successfully written, false otherwise
 	*/
-	MDM_API bool writeROISummary(const std::string &roiFile);
+	MDM_API void writeROISummary(const std::string &roiFile);
 
 	//!Open file stream and write stats headers
 	/*!
 	\param statsFile filename to write summary stats to
 	\return true if file successfully opened, false otherwise
 	*/
-	MDM_API bool openNewStatsFile(const std::string &statsFile);
+	MDM_API void openNewStatsFile(const std::string &statsFile);
 
 	//!Close file stream
 	/*!
 	\return true if file successfully closed, false otherwise
 	*/
-	MDM_API bool closeNewStatsFile();
+	MDM_API void closeNewStatsFile();
 
 	//!Write out current stats to new line in output stream
 	/*!
 	\return true if stats successfully written, false otherwise
 	*/
-	MDM_API bool writeStats();
+	MDM_API void writeStats();
 
 	//!Open file stream and write stats headers
 	/*!
 	\param statsFile filename to write summary stats to
 	\return true if file successfully opened, false otherwise
 	*/
-	MDM_API bool openStatsFile(const std::string &statsFile);
+	MDM_API void openStatsFile(const std::string &statsFile);
 
 	//!Close file stream
 	/*!
 	\return true if file successfully closed, false otherwise
 	*/
-	MDM_API bool closeStatsFile();
+	MDM_API void closeStatsFile();
 
 	//!Write out current stats to new line in output stream
 	/*!
 	\return true if stats successfully written, false otherwise
 	*/
-	MDM_API bool readStats();
+	MDM_API void readStats();
 
 private:
 	//! Check if roiIdx set, if not, use all voxels

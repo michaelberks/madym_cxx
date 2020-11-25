@@ -16,7 +16,8 @@
 #include <cmath>            /* For cos(), sin() and exp() */
 #include <cassert>          /* For assert macro */
 
-#include "mdm_ProgramLogger.h"
+#include <madym/mdm_ProgramLogger.h>
+#include <madym/mdm_exception.h>
 
 const double mdm_T1FitterVFA::PI = acos(-1.0);
 
@@ -61,7 +62,10 @@ MDM_API void mdm_T1FitterVFA::setTR(const double TR)
 MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 	double &T1value, double &M0value)
 {
-	assert(signals_.size() == nFAs_);
+	if (signals_.size() != nFAs_)
+    throw mdm_exception(__func__, "NUmber of signals (" + std::to_string(signals_.size()) +
+      ") does not match number of FAs (" + std::to_string(nFAs_) + ")");
+
 	//
 	// First, we create optimizer object and tune its properties
 	//
@@ -127,7 +131,9 @@ MDM_API bool mdm_T1FitterVFA::setInputsFromStream(std::istream& ifs,
 //
 MDM_API void mdm_T1FitterVFA::setFixedScannerSettings(const std::vector<double> &settings)
 {
-	assert(settings.size() == 1);
+  if (settings.size() != 1)
+    throw mdm_exception(__func__, "Input settings has incorrect size (" + std::to_string(settings.size()) +
+      "), exactly 1 fixed setting (TR) should be supplied for VFA mapping");
 	setTR(settings[0]);
 }
 
@@ -208,7 +214,14 @@ void mdm_T1FitterVFA::computeSSEGradient(
 void mdm_T1FitterVFA::initFAs()
 {
 	nFAs_ = FAs_.size();
-	assert(nFAs_ >= minimumInputs() && nFAs_ <= maximumInputs());
+  if (nFAs_ < minimumInputs())
+    throw mdm_exception(__func__, "Fewer FAs (" + std::to_string(nFAs_) +
+      ") than minimum required (" + std::to_string(minimumInputs()) + ")");
+
+  if (nFAs_ > maximumInputs())
+    throw mdm_exception(__func__, "More FAs (" + std::to_string(nFAs_) +
+      ") than maximum allowed (" + std::to_string(maximumInputs()) + ")");
+
 
 	cosFAs_.resize(nFAs_);
 	sinFAs_.resize(nFAs_);

@@ -39,69 +39,53 @@ MDM_API mdm_RunTools_madym_AIF::~mdm_RunTools_madym_AIF()
 //
 MDM_API int mdm_RunTools_madym_AIF::run()
 {
-  try 
+  //Check required inputs
+  checkRequiredInputs();
+
+  //Set curent working dir
+  set_up_cwd();
+
+  //Set parameters from user inputs
+  setFileManagerParams();
+
+  setVolumeAnalysisParams();
+
+  //Create output folder/check overwrite
+  set_up_output_folder();
+
+  //Set up logging trail
+  set_up_logging();
+
+  //Load dynamic volumes
+  if (options_.inputCt())
+    loadCt();
+  else
+    loadSt();
+
+  //set dyn times in AIF
+  AIF_.setAIFTimes(volumeAnalysis_.dynamicTimes());
+
+  if (!options_.T1Name().empty())
+    //supplied an existing T1 map
+    loadT1();
+
+  else
+    //mapping T1 from input signal volumes
+    mapT1();
+
+  //Load AIF roi
+  if (!options_.aifMap().empty())
   {
-    //Check required inputs
-    checkRequiredInputs();
+    //Load AIF map
+    fileManager_.loadAIFmap(fs::absolute(options_.aifMap()).string());
 
-    //Set curent working dir
-    set_up_cwd();
-
-    //Set parameters from user inputs
-    setFileManagerParams();
-
-    setVolumeAnalysisParams();
-
-    //Create output folder/check overwrite
-    set_up_output_folder();
-
-    //Set up logging trail
-    set_up_logging();
-
-    //Load dynamic volumes
-    if (options_.inputCt())
-      loadCt();
-    else
-      loadSt();
-
-    //set dyn times in AIF
-    AIF_.setAIFTimes(volumeAnalysis_.dynamicTimes());
-
-    if (!options_.T1Name().empty())
-      //supplied an existing T1 map
-      loadT1();
-
-    else
-      //mapping T1 from input signal volumes
-      mapT1();
-
-    //Load AIF roi
-    if (!options_.aifMap().empty())
-    {
-      //Load AIF map
-      fileManager_.loadAIFmap(fs::absolute(options_.aifMap()).string());
-
-      //Try and set these base values in the AIF
-      saveAIF("AIFmap");
-
-    }
-    else
-      //Otherwise, try and auto-fit the AIF
-      computeAutoAIF();
+    //Try and set these base values in the AIF
+    saveAIF("AIFmap");
 
   }
-  catch (std::exception &e)
-  {
-    mdm_ProgramLogger::logProgramMessage("Exception caught, aborting");
-    mdm_progAbort(e.what());
-  }
-  catch (...)
-  {
-   mdm_progAbort("Unhandled exception caught, aborting");
-  }
-
-  //Tidy up the logging objects
-  return mdm_progExit();
+  else
+    //Otherwise, try and auto-fit the AIF
+    computeAutoAIF();
 }
 
 //
@@ -219,12 +203,12 @@ void mdm_RunTools_madym_AIF::computeAutoAIF()
 
   if (allCandidateVoxels.empty())
   {
-    mdm_ProgramLogger::logProgramMessage(
-      "warning:  no suitable voxels found to define AIF across all slices\n");
+    mdm_ProgramLogger::logProgramWarning(__func__,
+      "No suitable voxels found to define AIF across all slices");
     return;
   }
   mdm_ProgramLogger::logProgramMessage(
-    (boost::format("Found %1% candidate voxels across all slices\n")
+    (boost::format("Found %1% candidate voxels across all slices")
       % allCandidateVoxels.size()).str());
 
   //Select from candidates
@@ -264,13 +248,13 @@ void mdm_RunTools_madym_AIF::computeAutoAIFSlice(
 
   if (candidateVoxels.empty())
   {
-    mdm_ProgramLogger::logProgramMessage(
-      (boost::format("warning: no suitable voxels found to define AIF for slice %1%\n") 
+    mdm_ProgramLogger::logProgramWarning(__func__,
+      (boost::format("warning: no suitable voxels found to define AIF for slice %1%") 
         % slice).str() );
     return;
   }
   mdm_ProgramLogger::logProgramMessage(
-    (boost::format("Found %1% candidate voxels in slice %2%\n")
+    (boost::format("Found %1% candidate voxels in slice %2%")
       % candidateVoxels.size() % slice).str());
 
   //Select from candidates
@@ -394,7 +378,7 @@ void mdm_RunTools_madym_AIF::selectVoxelsFromCandidates(
     AIFmap.setVoxel(candidateVoxels[indices[idx]], mdm_AIF::AIFmapVoxel::SELECTED);
 
   mdm_ProgramLogger::logProgramMessage(
-    (boost::format("Selected %1% voxels to use in AIF\n")
+    (boost::format("Selected %1% voxels to use in AIF")
       % threshIdx).str());
     
   volumeAnalysis_.setAIFmap(AIFmap);
@@ -409,15 +393,13 @@ void mdm_RunTools_madym_AIF::saveAIF(const std::string &sliceName)
     mdm_progAbort("Failed to compute AIF values from AIF map");
 
   //Write the AIF and save the AIF map
-  if (!AIF_.writeAIF(outputPath_.string() + "/" + sliceName + ".txt"))
-    mdm_progAbort("Failed to write AIF");
+  AIF_.writeAIF(outputPath_.string() + "/" + sliceName + ".txt");
 
   //Write out AIF map
-  if (!fileManager_.saveAIFmap(outputPath_.string(), sliceName))
-    mdm_progAbort("Failed to write AIF map");
+  fileManager_.saveAIFmap(outputPath_.string(), sliceName);
 
   mdm_ProgramLogger::logProgramMessage(
-    (boost::format("Saved AIF and voxel map to %1%.hdr/txt\n")
+    (boost::format("Saved AIF and voxel map to %1%.hdr/txt")
       % sliceName).str());
 }
 

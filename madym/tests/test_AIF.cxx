@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(test_AIF) {
 	//Now test writing this AIF out...
 	std::string aif_name = mdm_test_utils::temp_dir() + "/auto_AIF.txt";
 	BOOST_TEST_MESSAGE("Testing writing AIF to file");
-	BOOST_CHECK(AIF_pop.writeAIF(aif_name));
+	BOOST_CHECK_NO_THROW(AIF_pop.writeAIF(aif_name));
 
 	//Then reading it back in...
 	mdm_AIF AIF_auto;
@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(test_AIF) {
 
 	BOOST_TEST_MESSAGE("Testing writing PIF to file");
 	std::string pif_name = mdm_test_utils::temp_dir() + "/auto_PIF.txt";
-	BOOST_CHECK(AIF_pop.writePIF(pif_name));//"Writing PIF"
+  BOOST_CHECK_NO_THROW(AIF_pop.writePIF(pif_name));//"Writing PIF"
 
 	AIF_auto.readPIF(pif_name, nTimes);
 	AIF_auto.resample_PIF( 0);
