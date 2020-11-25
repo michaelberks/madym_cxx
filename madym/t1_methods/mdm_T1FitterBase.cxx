@@ -14,7 +14,8 @@
 
 #include <cassert>
 
-#include "mdm_ProgramLogger.h"
+#include <madym/mdm_ProgramLogger.h>
+#include <madym/mdm_exception.h>
 
 //
 MDM_API mdm_T1FitterBase::mdm_T1FitterBase()
@@ -46,8 +47,14 @@ MDM_API mdm_T1FitterBase::~mdm_T1FitterBase()
 //
 MDM_API void mdm_T1FitterBase::setInputSignals(const std::vector<double> &sigs)
 {
-	assert(sigs.size() >= minimumInputs());
-	assert(sigs.size() <= maximumInputs());  /* Input arg */
+  if (sigs.size() < minimumInputs())
+    throw mdm_exception(__func__, "Fewer input signals (" + std::to_string(sigs.size()) +
+      ") than minimum required (" + std::to_string(minimumInputs()) +")");
+
+  if (sigs.size() > maximumInputs())
+    throw mdm_exception(__func__, "More input signals (" + std::to_string(sigs.size()) +
+      ") than maximum allowed (" + std::to_string(maximumInputs()) + ")");
+
 	signals_ = sigs;
 }
 
@@ -58,8 +65,7 @@ MDM_API void mdm_T1FitterBase::setInputSignals(const std::vector<double> &sigs)
 //
 void mdm_T1FitterBase::setErrorValuesAndTidyUp(const std::string msg, double &T1, double &M0)
 {
-	mdm_ProgramLogger::logProgramMessage(
-		"WARNING: mdm_T1FitterBase::TfitT1:   " + msg + "\n");
+	mdm_ProgramLogger::logProgramWarning(__func__, msg);
 
 	//Set default values for M0 and T1
 	T1 = 0.0;

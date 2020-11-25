@@ -98,26 +98,26 @@ MDM_API void mdm_ProgramLogger::logProgramMessage(const std::string &message)
 		std::cout << message << std::endl;
 	
   if (program_log_stream_)
-	  program_log_stream_ << message;
+	  program_log_stream_ << message << std::endl;
 
 }
 
 //
-MDM_API  void mdm_ProgramLogger::logProgramError(const std::string & message)
+MDM_API  void mdm_ProgramLogger::logProgramError(const char *func, const std::string & message)
 {
-  std::cerr << "ERROR: " << message << std::endl;
+  std::cerr << "ERROR in " << func << ": " << message << std::endl;
 
   if (program_log_stream_)
-    program_log_stream_ << "ERROR: " << message;
+    program_log_stream_ << "ERROR in " << func << ": " << message << std::endl;
 }
 
 //
-MDM_API  void mdm_ProgramLogger::logProgramWarning(const std::string & message)
+MDM_API  void mdm_ProgramLogger::logProgramWarning(const char *func, const std::string & message)
 {
-  std::cerr << "WARNING: " << message << std::endl;
+  std::cerr << "WARNING in " << func << ": " << message << std::endl;
 
   if (program_log_stream_)
-    program_log_stream_ << "WARNING: " << message;
+    program_log_stream_ << "WARNING in " << func << ": " << message << std::endl;
 }
 
 MDM_API bool  mdm_ProgramLogger::openAuditLog(const std::string &fileName,
@@ -175,8 +175,6 @@ MDM_API bool mdm_ProgramLogger::closeAuditLog()
 //
 MDM_API bool mdm_ProgramLogger::logAuditMessage(const std::string &message)
 {
-	assert(!message.empty());
-
 	if (!audit_log_stream_)
 	{
 		std::cerr << "logProgramMessage: audit log not open." << std::endl;
@@ -184,7 +182,7 @@ MDM_API bool mdm_ProgramLogger::logAuditMessage(const std::string &message)
 	}
 
 	/* First write to ASCII log */
-	audit_log_stream_ << message;
+	audit_log_stream_ << message << std::endl;
 	return true;
 }
 

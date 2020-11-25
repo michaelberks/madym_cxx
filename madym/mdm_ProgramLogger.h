@@ -54,13 +54,13 @@ public:
   /*!
   \param    message to write to log file
   */
-  MDM_API  static void logProgramError(const std::string & message);
+  MDM_API  static void logProgramError(const char *func, const std::string & message);
 
   //!    Write a warning message to the program log
   /*!
   \param    message to write to log file
   */
-  MDM_API  static void logProgramWarning(const std::string & message);
+  MDM_API  static void logProgramWarning(const char *func, const std::string & message);
 
 	//!    Open a audit log at given filename, recording the calling program and location of the program log
 	/*!

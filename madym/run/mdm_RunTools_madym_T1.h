@@ -31,17 +31,6 @@ public:
 	/*!
 	*/
 	MDM_API ~mdm_RunTools_madym_T1();
-  	
-	//! Runs the T1 mapping pipeline
-	/*!
-	1. Parses and validates input options
-	2. Sets specified T1 method
-	3. Loads in signal input volumes (and ROI if given)
-	4. Processes all voxels (in ROI mask if given), mapping T1 from input signals, saving T1 and M0 values to output maps
-	5. Saves output maps.
-	\return 0 on success, non-zero otherwise
-	*/
-	MDM_API int run();
 
 	//! parse user inputs specific to T1 mapping
 	/*!
@@ -54,7 +43,16 @@ public:
 	MDM_API int parseInputs(int argc, const char *argv[]);
 
 protected:
-  
+  //! Runs the T1 mapping pipeline
+  /*!
+  1. Parses and validates input options
+  2. Sets specified T1 method
+  3. Loads in signal input volumes (and ROI if given)
+  4. Processes all voxels (in ROI mask if given), mapping T1 from input signals, saving T1 and M0 values to output maps
+  5. Saves output maps.
+  \return 0 on success, non-zero otherwise
+  */
+  MDM_API int run();
 
 private:
   //Methods:

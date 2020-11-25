@@ -39,6 +39,7 @@ set(mdm_sources
 	mdm_InputTypes.cxx				mdm_InputTypes.h
 	mdm_InputOptions.h
 	mdm_platform_defs.h
+  mdm_exception.h
 	mdm_api.h
 )
 set(mdm_run_sources

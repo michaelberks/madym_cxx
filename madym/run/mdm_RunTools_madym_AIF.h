@@ -33,18 +33,6 @@ public:
 	/*!
 	*/
 	MDM_API ~mdm_RunTools_madym_AIF();
-  	
-	//! Runs the AIF auto fit tool
-	/*!
-	1. Parses and validates input options
-	2. Sets specified tracer-kinetic model
-	3. Opens input data file
-	4. Processes each line in input data file, fitting tracer-kineti model to input signals/concentrations, 
-	writing fited parameters and IAUC measurements to output file
-	5. Closes input/output file and reports the number of samples processed.
-	\return 0 on success, non-zero otherwise
-	*/
-	MDM_API int run();
 
 	//! parse user inputs specific to DCE analysis
 	/*!
@@ -57,7 +45,17 @@ public:
 	MDM_API int parseInputs(int argc, const char *argv[]);
 
 protected:
-  
+  //! Runs the AIF auto fit tool
+  /*!
+  1. Parses and validates input options
+  2. Sets specified tracer-kinetic model
+  3. Opens input data file
+  4. Processes each line in input data file, fitting tracer-kineti model to input signals/concentrations,
+  writing fited parameters and IAUC measurements to output file
+  5. Closes input/output file and reports the number of samples processed.
+  \return 0 on success, non-zero otherwise
+  */
+  MDM_API int run();
 
 private:
   //Methods:

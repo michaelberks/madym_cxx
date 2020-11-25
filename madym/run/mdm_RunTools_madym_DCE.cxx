@@ -266,10 +266,7 @@ void mdm_RunTools_madym_DCE::loadAIF()
 	if (AIF_.AIFType() == mdm_AIF::AIF_TYPE::AIF_FILE)
 	{
 		auto aifPath = fs::absolute(options_.aifName()).string();
-		if (!AIF_.readAIF(aifPath, volumeAnalysis_.numDynamics()))
-		{
-			mdm_progAbort("error loading AIF for model " + options_.model());
-		}
+    AIF_.readAIF(aifPath, volumeAnalysis_.numDynamics());
 	}
 
   //Load AIF from voxel map
@@ -287,10 +284,7 @@ void mdm_RunTools_madym_DCE::loadAIF()
 	if (AIF_.PIFType() == mdm_AIF::PIF_TYPE::PIF_FILE)
 	{
 		std::string pifPath = fs::absolute(options_.pifName()).string();
-		if (!AIF_.readPIF(pifPath, volumeAnalysis_.numDynamics()))
-		{
-			mdm_progAbort("error loading PIF for model " + options_.model());
-		}
+		AIF_.readPIF(pifPath, volumeAnalysis_.numDynamics());
 	}
 }
 
@@ -301,10 +295,7 @@ void mdm_RunTools_madym_DCE::loadInitParamMaps()
 	if (!options_.initMapsDir().empty())
 	{
 		fs::path initMapsPath = fs::absolute(options_.initMapsDir());
-		if (!fileManager_.loadParameterMaps(initMapsPath.string()))
-		{
-			mdm_progAbort("error loading parameter maps");
-		}
+    fileManager_.loadParameterMaps(initMapsPath.string());
 		paramMapsInitialised_ = true;
 	}
 }

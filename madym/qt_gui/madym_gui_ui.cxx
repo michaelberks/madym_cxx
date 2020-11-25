@@ -223,7 +223,7 @@ void madym_gui_ui::on_computeT1Button_clicked()
 	madym_options_.configFile.set("");
 	mdm_RunTools_madym_T1 madym_exe(madym_options_, options_parser_);
 	madym_exe.parseInputs(T1_ARGV);
-	int result = madym_exe.run();
+	int result = madym_exe.run_catch();
 }
 
 void madym_gui_ui::on_computeIFButton_clicked()
@@ -255,7 +255,7 @@ void madym_gui_ui::on_computeIFButton_clicked()
 
 	mdm_RunTools_madym_AIF madym_exe(madym_options_, options_parser_);
 	madym_exe.parseInputs(AIF_ARGV);
-	int result = madym_exe.run();
+	int result = madym_exe.run_catch();
 
 }
 void madym_gui_ui::on_fitModelButton_clicked()
@@ -286,7 +286,7 @@ void madym_gui_ui::on_fitModelButton_clicked()
 	madym_options_.configFile.set("");
 	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
 	madym_exe.parseInputs(DCE_ARGV);
-	int result = madym_exe.run();
+	int result = madym_exe.run_catch();
 }
 void madym_gui_ui::on_outputStatsButton_clicked()
 {

@@ -43,10 +43,7 @@ MDM_API void mdm_RunToolsVolumeAnalysis::loadROI()
 	if (!options_.roiName().empty())
 	{
 		std::string roiPath = fs::absolute(options_.roiName()).string();
-		if (!fileManager_.loadROI(roiPath))
-		{
-			mdm_progAbort("error loading ROI");
-		}
+		fileManager_.loadROI(roiPath);
 	}
 }
 
@@ -62,8 +59,7 @@ void mdm_RunToolsVolumeAnalysis::loadSt()
     mdm_progAbort("paths and/or prefix to dynamic images not set");
 
   //Load the dynamic images
-  if (!fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns(), options_.dynFormat()))
-    mdm_progAbort("error loading dynamic images");
+  fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns(), options_.dynFormat());
 
 }
 
@@ -76,16 +72,14 @@ void mdm_RunToolsVolumeAnalysis::loadCt()
   if (catBasePath.empty() && catPrefix.empty())
     mdm_progAbort("Ct flag set to true, but paths and/or prefix to Ct maps not set");
 
-  if (!fileManager_.loadCtDataMaps(catBasePath, catPrefix, options_.nDyns(), options_.dynFormat()))
-    mdm_progAbort("error loading catMaps");
+  fileManager_.loadCtDataMaps(catBasePath, catPrefix, options_.nDyns(), options_.dynFormat());
 }
 
 //
 void mdm_RunToolsVolumeAnalysis::loadT1()
 {
   fs::path T1Path = fs::absolute(options_.T1Name());
-  if (!fileManager_.loadT1Map(T1Path.string()))
-    mdm_progAbort("error loading T1 map");
+  fileManager_.loadT1Map(T1Path.string());
 
   //Now check for cases 2 and 3, if useBaselineM0 is true
   //we need both M0 and T1, otherwise we can just use T1
@@ -93,12 +87,11 @@ void mdm_RunToolsVolumeAnalysis::loadT1()
   {
 
     if (options_.M0Name().empty())
-      mdm_progAbort("M0MapFlag set to true, but path to M0 not set");
+      mdm_progAbort("If M0_ratio is false, path to M0 map must be set");
 
     //Otherwise load M0 and return
     fs::path M0Path = fs::absolute(options_.M0Name());
-    if (!fileManager_.loadM0Map(M0Path.string()))
-      mdm_progAbort("error loading M0 map");
+    fileManager_.loadM0Map(M0Path.string());
 
   }
 }
@@ -110,10 +103,7 @@ MDM_API void mdm_RunToolsVolumeAnalysis::loadT1Inputs()
 	for (std::string mapName : options_.T1inputNames())
 		T1inputPaths.push_back(fs::absolute(mapName).string());
 
-	if (!fileManager_.loadT1MappingInputImages(T1inputPaths))
-	{
-		mdm_progAbort("error loading FA images");
-	}
+	fileManager_.loadT1MappingInputImages(T1inputPaths);
 }
 
 //
@@ -140,15 +130,7 @@ void mdm_RunToolsVolumeAnalysis::mapT1()
 
 MDM_API void mdm_RunToolsVolumeAnalysis::writeOutput()
 {
-	if (!fileManager_.saveOutputMaps(outputPath_.string()))
-	{
-		mdm_ProgramLogger::logProgramError(
-      options_parser_.exe_cmd() + ": error saving maps");
-		//Don't quit here, we may as well try and save the error image anyway
-		//nothing else depends on the success of the save
-	}
-
-	//Write out the error image
+  fileManager_.saveOutputMaps(outputPath_.string());
 	fileManager_.saveErrorMap(errorMapPath_.string());
 }
 

@@ -14,6 +14,7 @@
 
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
+#include <madym/mdm_exception.h>
 
 namespace fs = boost::filesystem;
 
@@ -64,24 +65,24 @@ void mdm_RunToolsDCEFit::setAIF()
   if (!options_.aifName().empty())
   {
     if (aifType != mdm_AIF::AIF_TYPE::AIF_FILE && aifType != mdm_AIF::AIF_TYPE::AIF_POP)
-      mdm_ProgramLogger::logProgramMessage(
-        "Warning: AIF name supplied but AIF type set to non-default mis-matched type. Using AIF from file"
+      mdm_ProgramLogger::logProgramWarning(__func__,
+        "AIF name supplied but AIF type set to non-default mis-matched type. Using AIF from file\n"
       );
     aifType = mdm_AIF::AIF_TYPE::AIF_FILE;
   }
   else if (!options_.aifMap().empty())
   {
     if (aifType != mdm_AIF::AIF_TYPE::AIF_MAP && aifType != mdm_AIF::AIF_TYPE::AIF_POP)
-      mdm_ProgramLogger::logProgramMessage(
-        "Warning: AIF map supplied but AIF type set to non-default mis-matched type. Using AIF from map"
+      mdm_ProgramLogger::logProgramWarning(__func__,
+        "AIF map supplied but AIF type set to non-default mis-matched type. Using AIF from map\n"
       );
     aifType = mdm_AIF::AIF_TYPE::AIF_MAP;
   }
   else if (aifType == mdm_AIF::AIF_TYPE::AIF_FILE && options_.aifName().empty())
-    throw "Error: AIF type set to read from file but AIF name empty";
+    throw mdm_exception(__func__, "AIF type set to read from file but AIF name empty");
 
   else if (aifType == mdm_AIF::AIF_TYPE::AIF_MAP && options_.aifName().empty())
-    throw "Error: AIF type set to read from map but AIF map empty";
+    throw mdm_exception(__func__, "AIF type set to read from map but AIF map empty");
 
   //Set AIF type, if user has given incorrect input this should trigger an exception
   AIF_.setAIFType(aifType);

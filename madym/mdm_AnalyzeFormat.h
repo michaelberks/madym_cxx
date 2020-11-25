@@ -47,16 +47,6 @@ public:
 		NEW_XTR = 1, ///< Current format
 	};
 
-	//!    Read Analyze format file(s) to given mdm_Image3D object
-	/*!
-	\param    fileName   string name of file from which to read the data
-	\param    img   reference to mdm_Image3D into which image data is loaded
-	\param		loadXtr			bool flag, if true tries to load .xtr file too
-	\return   bool, true on success, false otherwise
-	*/
-	MDM_API static bool readImage3D(const std::string& fileName, mdm_Image3D &img,
-		bool loadXtr);
-
 	//!    Read Analyze format file(s) and return mdm_Image3D object
 	/*!
 	\param    fileName		name of file from which to read the data
@@ -76,7 +66,7 @@ public:
 	\param		sparse				flag, if true, only non-zero voxels and their indices written in the .img file
 	\return   bool 0 for success or 1 for failure
 	*/
-	MDM_API static bool writeImage3D(const std::string & baseName,
+	MDM_API static void writeImage3D(const std::string & baseName,
 		const mdm_Image3D &img,
 		const Data_type dataTypeFlag, const XTR_type xtrTypeFlag,
 		bool sparse = false);
@@ -172,48 +162,48 @@ private:
 	};                               /* total=348 */
 
 	//
-	static bool writeAnalyzeHdr(const std::string &baseName,
+	static void writeAnalyzeHdr(const std::string &baseName,
 		const AnalyzeHdr &hdr);
 
 	//
-	static bool writeAnalyzeImg(const std::string &baseName,
+	static void writeAnalyzeImg(const std::string &baseName,
 		const mdm_Image3D& img,
 		const Data_type typeFlag,
 		bool sparse);
 
 	//
-	static bool writeNewXtr(std::ofstream &xtrFileStream,
+	static void writeNewXtr(std::ofstream &xtrFileStream,
 		const mdm_Image3D &img);
 
 	//
-	static bool writeOldXtr(std::ofstream &xtrFileStream,
+	static void writeOldXtr(std::ofstream &xtrFileStream,
 		const mdm_Image3D &img);
 
 	//
-	static bool writeAnalyzeXtr(const std::string &baseName,
+	static void writeAnalyzeXtr(const std::string &baseName,
 		const mdm_Image3D &img,
 		const XTR_type typeFlag);
 
 	//
-	static bool readAnalyzeImg(const std::string& imgFileName,
+	static void readAnalyzeImg(const std::string& imgFileName,
 		mdm_Image3D &img,
 		const AnalyzeHdr &hdr,
 		const bool swapFlag);
 
 	//
-	static bool readAnalyzeHdr(const std::string& hdrFileName,
+	static void readAnalyzeHdr(const std::string& hdrFileName,
 		AnalyzeHdr &hdr);
 
 	//
-	static bool readOldXtr(std::ifstream &xtrFileStream,
+	static void readOldXtr(std::ifstream &xtrFileStream,
 		mdm_Image3D &img);
 
 	//
-	static bool readNewXtr(std::ifstream &xtrFileStream,
+	static void readNewXtr(std::ifstream &xtrFileStream,
 		mdm_Image3D &img);
 
 	//
-	static bool readAnalyzeXtr(const std::string &xtrFileName,
+	static void readAnalyzeXtr(const std::string &xtrFileName,
 		mdm_Image3D &img);
 
 

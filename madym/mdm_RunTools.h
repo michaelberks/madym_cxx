@@ -59,11 +59,12 @@ public:
 	//! Virtual destructor
 	MDM_API virtual ~mdm_RunTools();
   	
-	//! Run the analysis pipeline. 
+	//! Run the analysis pipeline, with catch block to tidy up log file. 
 	/*!
-	Must be implemented by the derived classes that will be instantiated into run tools objects.
+  Calls pure virtual function run, which must be
+	implemented by the derived classes that will be instantiated into run tools objects.
 	*/
-	MDM_API virtual int run() = 0;
+	MDM_API int run_catch();
 
 	/*! parseInputs overload for when there isn't have a command line to parse
 	//!
@@ -95,6 +96,12 @@ public:
 	MDM_API virtual int parseInputs(int argc, const char *argv[]) = 0;
 
 protected:
+  //! Run the analysis pipeline 
+  /*!
+  Must be implemented by the derived classes that will be instantiated into run tools objects.
+  */
+  MDM_API virtual int run() = 0;
+
 	//! Helper function to call on successful analysis completion.
 	/*!
 	Closes any open program/audit logs, and returns 0 for successful program completion

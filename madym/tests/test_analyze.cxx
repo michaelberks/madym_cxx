@@ -6,6 +6,7 @@
 
 #include <madym/mdm_AnalyzeFormat.h>
 #include <madym/mdm_Image3D.h>
+#include <madym/mdm_exception.h>
 
 
 void test_write_read(const mdm_Image3D &img, const mdm_AnalyzeFormat::Data_type format, const bool sparse)
@@ -31,13 +32,13 @@ void test_write_read(const mdm_Image3D &img, const mdm_AnalyzeFormat::Data_type 
 
 	//Double format
 	std::string img_name = mdm_test_utils::temp_dir() + "/" + format_str;
-	bool success = mdm_AnalyzeFormat::writeImage3D(
-		img_name, img, format, mdm_AnalyzeFormat::NO_XTR, sparse);
+
+  BOOST_TEST_MESSAGE("Test write: format " + format_str + sparse_str);
+	BOOST_CHECK_NO_THROW(mdm_AnalyzeFormat::writeImage3D(
+		img_name, img, format, mdm_AnalyzeFormat::NO_XTR, sparse));
+
 
 	mdm_Image3D img_r = mdm_AnalyzeFormat::readImage3D(img_name, false);
-
-	BOOST_TEST_MESSAGE( "Test write: format " + format_str + sparse_str);
-	BOOST_CHECK(success);
 
 	BOOST_TEST_MESSAGE("Test read, correct size: format " + format_str + sparse_str);
 	BOOST_CHECK_EQUAL(img.numVoxels(), img_r.numVoxels());
@@ -59,10 +60,9 @@ void test_xtr(mdm_Image3D &img)
 	img.setType(mdm_Image3D::ImageType::TYPE_DEGR);
 
 	std::string img_name = mdm_test_utils::temp_dir() + "/xtr_test";
-	bool success = mdm_AnalyzeFormat::writeImage3D(
-		img_name, img, mdm_AnalyzeFormat::DT_FLOAT, mdm_AnalyzeFormat::NEW_XTR, false);
-	BOOST_TEST_MESSAGE("Testing: xtr write");
-	BOOST_CHECK(success);
+  BOOST_TEST_MESSAGE("Testing: xtr write");
+	BOOST_CHECK_NO_THROW(mdm_AnalyzeFormat::writeImage3D(
+		img_name, img, mdm_AnalyzeFormat::DT_FLOAT, mdm_AnalyzeFormat::NEW_XTR, false));
 
 	mdm_Image3D img_r = mdm_AnalyzeFormat::readImage3D(img_name, true);
 	BOOST_TEST_MESSAGE("Tesing xtr read: FA");

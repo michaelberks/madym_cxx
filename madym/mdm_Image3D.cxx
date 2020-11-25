@@ -18,6 +18,7 @@
 #include <iomanip>
 #include <boost/date_time.hpp>
 #include <boost/format.hpp>
+#include <madym/mdm_exception.h>
 
 const std::string mdm_Image3D::MetaData::ImageTypeKey = "ImageType";
 const std::string mdm_Image3D::MetaData::TimeStampKey = "TimeStamp";
@@ -74,19 +75,29 @@ MDM_API const std::vector<double>& mdm_Image3D::data() const
 //
 MDM_API double mdm_Image3D::voxel(int i) const
 {
-	//Should we check the input is in range - possibly, although adds overhead?
-	//Maybe have a separate safe method?
-	assert(i >= 0 && i < numVoxels());
-	return data_[i];
+  try { return data_[i]; }
+  catch (std::out_of_range &e)
+  {
+    mdm_exception em(__func__, e.what());
+    em.append(boost::format(
+      "Attempting to access voxel %1% when there are only %2% voxels")
+      % i % data_.size());
+    throw em;
+  }
 }
 
 //
 MDM_API void mdm_Image3D::setVoxel(int i, double value)
 {
-	//Should we check the input is in range - possibly, although adds overhead?
-	//Maybe have a separate safe method?
-	assert(i >= 0 && i < numVoxels());
-	data_[i] = value;
+  try { data_[i] = value; }
+  catch (std::out_of_range &e)
+  {
+    mdm_exception em(__func__, e.what());
+    em.append(boost::format(
+      "Attempting to set voxel %1% when there are only %2% voxels")
+      % i % data_.size());
+    throw em;
+  }
 }
 
 //
@@ -115,9 +126,8 @@ MDM_API mdm_Image3D::ImageType mdm_Image3D::type() const
 }
 
 //
-MDM_API void mdm_Image3D::setDimensions(const int nX, const int nY, const int nZ)
+MDM_API void mdm_Image3D::setDimensions(const size_t nX, const size_t nY, const size_t nZ)
 {
-  assert((nX >= 0) && (nY >= 0) && (nZ >= 0));
 
   nX_ = nX;
   nY_ = nY;
@@ -153,7 +163,20 @@ MDM_API int mdm_Image3D::numVoxels() const
 //
 MDM_API void mdm_Image3D::setVoxelDims(const double xmm, const double ymm, const double zmm)
 {
-  assert((xmm >= 0.0) && (ymm >= 0.0) && (zmm >= 0.0));
+  if (xmm <= 0)
+    throw mdm_exception(__func__, boost::format(
+      "Invalid voxel dimension: trying to set xmm = %1%, should be strictly positive")
+      % xmm);
+
+  if (ymm <= 0)
+    throw mdm_exception(__func__, boost::format(
+      "Invalid voxel dimension: trying to set ymm = %1%, should be strictly positive")
+      % ymm);
+
+  if (zmm <= 0)
+    throw mdm_exception(__func__, boost::format(
+      "Invalid voxel dimension: trying to set zmm = %1%, should be strictly positive")
+      % zmm);
 
   info_.Xmm.setValue(xmm);
 	info_.Ymm.setValue(ymm);
@@ -274,7 +297,7 @@ MDM_API void mdm_Image3D::setMetaData(const std::string &key, const double &valu
 	else
 	{
 		//Throw exception that key not recognised
-    throw boost::format("Error: Key %1% not recognised") % key;
+    throw mdm_exception(__func__, boost::format("Key %1% not recognised") % key);
 	}
 
 }
@@ -484,7 +507,7 @@ MDM_API void mdm_Image3D::nonZeroVoxels(std::vector<int> &idx, std::vector<doubl
 }
 
 //
-template <class T> MDM_API bool mdm_Image3D::toBinaryStream(std::ostream &ofs, bool nonZero)  const
+template <class T> MDM_API void mdm_Image3D::toBinaryStream(std::ostream &ofs, bool nonZero)  const
 {
 	size_t elSize = sizeof(T);
 	if (nonZero)
@@ -521,29 +544,28 @@ template <class T> MDM_API bool mdm_Image3D::toBinaryStream(std::ostream &ofs, b
 		}
 			
 	}
-	return true;
 }
 
 //Now force instantiation of the templated functions for the datatype we
 //need or we'll get linker errors
 
 //! Template specialization declaration of toBinaryStream for char datatype
-template MDM_API	bool mdm_Image3D::toBinaryStream<char>(
+template MDM_API	void mdm_Image3D::toBinaryStream<char>(
 	std::ostream &ofs, bool nonZero)  const;
 //! Template specialization declaration of toBinaryStream for short datatype
-template MDM_API	bool mdm_Image3D::toBinaryStream<short>(
+template MDM_API	void mdm_Image3D::toBinaryStream<short>(
 	std::ostream &ofs, bool nonZero)  const;
 //! Template specialization declaration of toBinaryStream for int datatype
-template MDM_API	bool mdm_Image3D::toBinaryStream<int>(
+template MDM_API	void mdm_Image3D::toBinaryStream<int>(
 	std::ostream &ofs, bool nonZero)  const;
 //! Template specialization declaration of toBinaryStream for float datatype
-template MDM_API	bool mdm_Image3D::toBinaryStream<float>(
+template MDM_API	void mdm_Image3D::toBinaryStream<float>(
 	std::ostream &ofs, bool nonZero)  const;
 //! Template specialization declaration of toBinaryStream for double datatype
-template MDM_API	bool mdm_Image3D::toBinaryStream<double>(
+template MDM_API	void mdm_Image3D::toBinaryStream<double>(
 	std::ostream &ofs, bool nonZero)  const;
 
-template <class T> MDM_API bool mdm_Image3D::fromBinaryStream(
+template <class T> MDM_API void mdm_Image3D::fromBinaryStream(
 	std::istream &ifs, bool nonZero, bool swap)
 {
 
@@ -564,7 +586,10 @@ template <class T> MDM_API bool mdm_Image3D::fromBinaryStream(
 		
 		//Check here if not divisible
 		if ((nNonZero*(intSize + elSize)) != bufferSize)
-			return false;
+			throw mdm_exception(__func__, boost::format(
+        "Failed to load sparse format data. "
+        "Buffer size (%1%) is not divisble by combined index and value size (%2%)")
+        % bufferSize % (intSize + elSize));
 
 		//Set up vectors to store data and indices
 		std::vector<T> data(nNonZero);
@@ -601,7 +626,10 @@ template <class T> MDM_API bool mdm_Image3D::fromBinaryStream(
 		//Check here buffer size matche nVoxels * size of input type
 		size_t expectedSize = (size_t)numVoxels()*elSize;
 		if (expectedSize != bufferSize)
-			return false;
+      throw mdm_exception(__func__, boost::format(
+        "Failed to image data. "
+        "Buffer size (%1%) does not match expected size (%2%)")
+        % bufferSize % expectedSize);
 
 		//Now we know buffer is correct size, loop through, casting each element
 		//from char* to input type, and then to double for storing in main data array
@@ -615,26 +643,24 @@ template <class T> MDM_API bool mdm_Image3D::fromBinaryStream(
 			d = (double)t;
 		}
 	}
-	//If here, everything should have worked
-	return true;
 }
 
 //Now force instantiation of the templated functions for the datatype we
 //need or we'll get linker errors
 //! Template specialization declaration of fromBinaryStream for char datatype
-template MDM_API bool mdm_Image3D::fromBinaryStream<char>(
+template MDM_API void mdm_Image3D::fromBinaryStream<char>(
 	std::istream &ifs, bool nonZero, bool swap);
 //! Template specialization declaration of fromBinaryStream for short datatype
-template MDM_API	bool mdm_Image3D::fromBinaryStream<short>(
+template MDM_API	void mdm_Image3D::fromBinaryStream<short>(
 	std::istream &ifs, bool nonZero, bool swap);
 //! Template specialization declaration of fromBinaryStream for int datatype
-template MDM_API	bool mdm_Image3D::fromBinaryStream<int>(
+template MDM_API	void mdm_Image3D::fromBinaryStream<int>(
 	std::istream &ifs, bool nonZero, bool swap);
 //! Template specialization declaration of fromBinaryStream for float datatype
-template MDM_API	bool mdm_Image3D::fromBinaryStream<float>(
+template MDM_API	void mdm_Image3D::fromBinaryStream<float>(
 	std::istream &ifs, bool nonZero, bool swap);
 //! Template specialization declaration of fromBinaryStream for double datatype
-template MDM_API	bool mdm_Image3D::fromBinaryStream<double>(
+template MDM_API	void mdm_Image3D::fromBinaryStream<double>(
 	std::istream &ifs, bool nonZero, bool swap);
 
 //
@@ -643,7 +669,13 @@ template <class T> MDM_API void mdm_Image3D::swapBytes(T& data)
 {
 	const int MAX_BYTES = 32;
 	int nBytes = sizeof(data);
-	assert(nBytes != 0 && nBytes <= MAX_BYTES);
+
+	if(!nBytes)
+    throw mdm_exception(__func__, "Attempting to swap empty bytes buffer");
+  
+  if (nBytes > MAX_BYTES)
+    throw mdm_exception(__func__, boost::format(
+      "Cannot swap bytes in buffer size %1%, must be <= 32 bytes") % nBytes);
 
 	char  temp[MAX_BYTES];
 	char *data_p = (char *)&data;
@@ -678,14 +710,9 @@ MDM_API int mdm_Image3D::sub2ind(int x, int y, int z) const
 // Private functions
 //**************************************************************************
 //
-bool mdm_Image3D::initDataArray()
+void mdm_Image3D::initDataArray()
 {
 	//Don't bother error checking this anymore, just assume memory will be managed correctly
 	//that's what the vector container class is for
-	int nVoxels = numVoxels();
-	assert(nVoxels != 0);
-
-	data_.resize(nVoxels);
-
-	return true;
+	data_.resize(numVoxels());
 }

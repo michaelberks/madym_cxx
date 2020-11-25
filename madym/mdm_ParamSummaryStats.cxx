@@ -17,6 +17,7 @@
 #include <fstream>
 #include <algorithm>
 #include <boost/format.hpp>
+#include <madym/mdm_exception.h>
 
 const std::vector<std::string> mdm_ParamSummaryStats::headers_ = {
 	"param",
@@ -182,29 +183,25 @@ MDM_API const mdm_ParamSummaryStats::SummaryStats& mdm_ParamSummaryStats::stats(
 }
 
 //
-MDM_API bool mdm_ParamSummaryStats::writeROISummary(const std::string &roiFile)
+MDM_API void mdm_ParamSummaryStats::writeROISummary(const std::string &roiFile)
 {
 	std::ofstream roiStream(roiFile);
 	if (!roiStream)
-	{
-		throw boost::format("Failed to open stats file %1%") % roiFile;
-		return false;
-	}
+	  throw mdm_exception(__func__, boost::format("Failed to open stats file %1%") % roiFile);
+		
 
 	double nVoxels = (double)roiIdx_.size();
 	roiStream <<
 		"number_of_voxels = " << nVoxels <<
 		" volume = " << nVoxels * xmm_ * ymm_ * zmm_;
-
-	return true;
 }
 
 //
-MDM_API bool mdm_ParamSummaryStats::openNewStatsFile(const std::string &statsFile)
+MDM_API void mdm_ParamSummaryStats::openNewStatsFile(const std::string &statsFile)
 {
 	statsOStream_.open(statsFile, std::ios::out);
 	if (!statsOStream_)
-    throw boost::format("Failed to open stats file %1%") % statsFile;
+    throw mdm_exception(__func__, boost::format("Failed to open stats file %1%") % statsFile);
 
 	//Write stats headers
 	for (const auto hdr : headers_)
@@ -212,24 +209,22 @@ MDM_API bool mdm_ParamSummaryStats::openNewStatsFile(const std::string &statsFil
 	
 	statsOStream_ << "\n";
 
-	return true;
 }
 
 //
-MDM_API bool mdm_ParamSummaryStats::closeNewStatsFile()
+MDM_API void mdm_ParamSummaryStats::closeNewStatsFile()
 {
-	if (!statsOStream_)
-		return false;	
+	if (statsOStream_)
+		statsOStream_.close();
 
-	statsOStream_.close();
-	return true;
 }
 
 //
-MDM_API bool mdm_ParamSummaryStats::writeStats()
+MDM_API void mdm_ParamSummaryStats::writeStats()
 {
 	if (!statsOStream_.is_open())
-		return false;
+    throw mdm_exception(__func__, 
+      "Tried to write stats, but no stats file open");
 
 	statsOStream_ <<
 		stats_.paramName_ << "," <<
@@ -242,15 +237,14 @@ MDM_API bool mdm_ParamSummaryStats::writeStats()
 		stats_.upperQ_ << "," <<
 		stats_.iqr_ << ",\n";
 
-	return true;
 }
 
 //
-MDM_API bool mdm_ParamSummaryStats::openStatsFile(const std::string &statsFile)
+MDM_API void mdm_ParamSummaryStats::openStatsFile(const std::string &statsFile)
 {
 	statsIStream_.open(statsFile, std::ios::in);
 	if (!statsIStream_)
-    throw boost::format("Failed to open stats file %1%") % statsFile;
+    throw mdm_exception(__func__, boost::format("Failed to open stats file %1%") % statsFile);
 
 	//Write stats headers
 	std::string hdr_in;
@@ -258,29 +252,25 @@ MDM_API bool mdm_ParamSummaryStats::openStatsFile(const std::string &statsFile)
 	{
 		std::getline(statsIStream_, hdr_in, ',');
 		if (hdr_in != hdr)
-			return false;
+      throw mdm_exception(__func__, boost::format("Incorrect headers in %1%, cannot open") % statsFile);
 	}
 	//Get rid of final comma to \n part
 	std::getline(statsIStream_, hdr_in);
-
-	return true;
 }
 
 //
-MDM_API bool mdm_ParamSummaryStats::closeStatsFile()
+MDM_API void mdm_ParamSummaryStats::closeStatsFile()
 {
-	if (!statsIStream_)
-		return false;
-
-	statsIStream_.close();
-	return true;
+	if (statsIStream_)
+		statsIStream_.close();
 }
 
 //
-MDM_API bool mdm_ParamSummaryStats::readStats()
+MDM_API void mdm_ParamSummaryStats::readStats()
 {
 	if (!statsIStream_.is_open())
-		return false;
+    throw mdm_exception(__func__,
+      "Tried to read stats, but no stats file open");
 
 	std::getline(statsIStream_, stats_.paramName_, ',');
 
@@ -311,8 +301,6 @@ MDM_API bool mdm_ParamSummaryStats::readStats()
 
 	//Get rid of final comma to \n part
 	std::getline(statsIStream_, val);
-
-	return true;
 }
 
 //------------------------------------------------------------------------
