@@ -76,6 +76,9 @@ void validate(boost::any& v,
 	const std::vector<std::string>& values,
 	mdm_input_double_list* target_type, int)
 {
+  //Format:
+  // optional enclosing [ ]
+  // comma separated
 
 	// Make sure no previous assignment to 'a' was made.
 	po::validators::check_first_occurrence(v);
@@ -85,11 +88,13 @@ void validate(boost::any& v,
 
 	// Do regex match and convert the interesting part to 
 	// int.
-	boost::char_separator<char> sep("  ,[]");
-	boost::tokenizer<boost::char_separator<char> > tokens(s, sep);
-	std::vector<double> vd;
-	for (auto t : tokens)
-		vd.push_back(boost::lexical_cast<double>(t));
+  std::vector<std::string> tokens;
+  boost::split(tokens, s, boost::is_any_of("  ,\[\]"));
+
+  std::vector<double> vd;
+  for (auto t : tokens)
+    if (!t.empty())
+      vd.push_back(boost::lexical_cast<double>(t));
 
 	v = mdm_input_double_list(vd);
 }
@@ -98,6 +103,13 @@ void validate(boost::any& v,
 	const std::vector<std::string>& values,
 	mdm_input_int_list* target_type, int)
 {
+  //Format:
+  // optional enclosing [ ]
+  // comma separated
+  // - indicates range between start and end items
+
+  //eg: [1-3, 5] should generate {1, 2, 3, 5}
+
 
 	// Make sure no previous assignment to 'a' was made.
 	po::validators::check_first_occurrence(v);
@@ -107,11 +119,32 @@ void validate(boost::any& v,
 
 	// Do regex match and convert the interesting part to 
 	// int.
-	boost::char_separator<char> sep("  ,[]");
-	boost::tokenizer<boost::char_separator<char> > tokens(s, sep);
-	std::vector<int> vi;
-	for (auto t : tokens)
-		vi.push_back(boost::lexical_cast<int>(t));
+  std::vector<std::string> tokens;
+  boost::split(tokens, s, boost::is_any_of("  ,\[\]"));
+
+  std::vector<int> vi;
+  for (auto t : tokens)
+  {
+    if (!t.empty())
+    {
+      std::vector<std::string> range;
+      boost::split(range, t, boost::is_any_of("-"));
+
+      if (range.size() == 1)
+        vi.push_back(boost::lexical_cast<int>(t));
+
+      else if (range.size() == 2)
+      {
+        int start = boost::lexical_cast<int>(range[0]);
+        int end = boost::lexical_cast<int>(range[1]);
+        for (int i = start; i <= end; i++)
+          vi.push_back(i);
+      }
+      else
+        throw po::error("Range operation for integer lists should be of form i-j");
+    }
+      
+  } 
 
 	v = mdm_input_int_list(vi);
 }

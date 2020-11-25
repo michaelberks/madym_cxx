@@ -27,9 +27,9 @@ public:
 	/*!
 	\param errorTracker error tracker shared across the volume analysis objects
 	*/
-	MDM_API mdm_T1VolumeAnalysis(mdm_ErrorTracker &errorTracker);/*!/
+	MDM_API mdm_T1VolumeAnalysis(mdm_ErrorTracker &errorTracker);
 		
-	//!
+	//! Destructor
 	/*!
 	*/
 	MDM_API ~mdm_T1VolumeAnalysis();
@@ -88,27 +88,27 @@ public:
 	/*!
 	\return read-only reference to T1 map
 	*/
-	MDM_API const mdm_Image3D& T1Map() const;
+	MDM_API const mdm_Image3D& T1() const;
 	
 	//! Return read-only reference to M0 map
 	/*!
 	\return read-only reference to M0 map
 	*/
-	MDM_API const mdm_Image3D& M0Map() const;
+	MDM_API const mdm_Image3D& M0() const;
 
 	//! Return T1 value at specified voxel
 	/*!
 	\param voxel index, must be >=0 and < T1Map_.numVoxels()
 	\return T1 value at voxel
 	*/
-	MDM_API double T1atVoxel(int voxel) const;
+	MDM_API double T1(int voxel) const;
 
 	//! Return M0 value at specified voxel
 	/*!
 	\param voxel index, must be >=0 and < T1Map_.numVoxels()
 	\return T1 value at voxel
 	*/
-	MDM_API double M0atVoxel(int voxel) const;
+	MDM_API double M0(int voxel) const;
 
 	//! Set T1 and M0 to zero specified voxel
 	/*!

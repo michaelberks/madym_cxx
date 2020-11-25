@@ -34,8 +34,10 @@ void test_model_time_series(
 	BOOST_REQUIRE_MESSAGE(modelType != mdm_DCEModelGenerator::UNDEFINED,
 		"Model name " << modelName << "Is undefined ");
 
+  AIF.setAIFType(mdm_AIF::AIF_TYPE::AIF_POP);
+  AIF.setPIFType(mdm_AIF::PIF_TYPE::PIF_POP);
 	auto model = mdm_DCEModelGenerator::createModel(AIF,
-		modelType, false, false, {},
+		modelType, {},
 		initialParams, {}, {}, {}, {});
 	
 	model->computeCtModel(nTimes);

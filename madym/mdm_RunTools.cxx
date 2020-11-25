@@ -31,12 +31,6 @@ MDM_API mdm_RunTools::mdm_RunTools(mdm_InputOptions &options, mdm_OptionsParser 
   options_(options),
 	options_parser_(options_parser)
 {
-	//Make the audit log absolute before we change directory
-	options_.auditLogDir.set( fs::absolute(options_.auditLogDir()).string() );
-
-	//If dataDir is set in the options, change the current path to this
-	if (!options_.dataDir().empty())
-		fs::current_path(fs::absolute(options_.dataDir()));
 }
 
 
@@ -92,8 +86,18 @@ std::string mdm_RunTools::timeNow()
 	return ss.str();
 }
 
-/**/
+//
+void mdm_RunTools::set_up_cwd()
+{
+  //Make the audit log absolute before we change directory
+  options_.auditLogDir.set(fs::absolute(options_.auditLogDir()).string());
 
+  //If dataDir is set in the options, change the current path to this
+  if (!options_.dataDir().empty())
+    fs::current_path(fs::absolute(options_.dataDir()));
+}
+
+//
 void mdm_RunTools::set_up_output_folder()
 {
 	//Using boost filesyetm, can call one line to make absolute path from input

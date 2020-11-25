@@ -36,8 +36,10 @@ void make_model_time_series(
 		return;
 	}
 
+  AIF.setAIFType(mdm_AIF::AIF_TYPE::AIF_POP);
+  AIF.setPIFType(mdm_AIF::PIF_TYPE::PIF_POP);
 	auto model = mdm_DCEModelGenerator::createModel(AIF,
-		modelType, false, false, {},
+		modelType, {},
 		initialParams, {}, {}, {}, {});
 	
 

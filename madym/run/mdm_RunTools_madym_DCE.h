@@ -15,7 +15,7 @@
 //! Class to run the DCE analysis tool
 /*!
 */
-class mdm_RunTools_madym_DCE : public mdm_RunToolsDCEFit, mdm_RunToolsT1Fit, mdm_RunToolsVolumeAnalysis {
+class mdm_RunTools_madym_DCE : public mdm_RunToolsDCEFit, mdm_RunToolsVolumeAnalysis {
 
 public:
 
@@ -67,19 +67,13 @@ private:
 
 	void setVolumeAnalysisParams();
 
-	void loadSt();
-
-	void loadCt();
-
-	void loadT1();
-
-	void mapT1();
-
 	void loadAIF();
 
 	void loadInitParamMaps();
 
 	void fitModel();
+
+  void writeOutput();
 
 	//Variables:
 	bool paramMapsInitialised_;

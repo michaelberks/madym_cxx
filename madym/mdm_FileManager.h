@@ -94,10 +94,33 @@ public:
 
 	//! Load ROI mask image
 	/*!
-	\param ROIpath filepath to ROI mask image
+	\param path of ROI mask image
 	\return true if image loads successfully. False if file doesn't exist or load error.
 	*/
-	MDM_API bool loadROI(const std::string &ROIpath);
+	MDM_API bool loadROI(const std::string &path);
+
+  //! Save ROI mask
+  /*!
+  \param outputDir directory path
+  \param name of ROI mask image
+  \return true if image saves successfully. False if save error.
+  */
+  MDM_API bool saveROI(const std::string &outputDir, const std::string &name);
+
+  //! Load AIF map
+  /*!
+  \param path filepath to ROI mask image
+  \return true if image loads successfully. False if file doesn't exist or load error.
+  */
+  MDM_API bool loadAIFmap(const std::string &path);
+
+  //! Save AIF map
+  /*!
+  \param outputDir directory path
+  \param name of AIF map
+  \return true if image saves successfully. False if save error.
+  */
+  MDM_API bool saveAIFmap(const std::string &outputDir, const std::string &name);
 
 	//! Load tracer-kinetic model parameter maps
 	/*!
@@ -107,45 +130,45 @@ public:
 	*/
 	MDM_API bool loadParameterMaps(const std::string &paramDir);
 
-	//! Write all output maps to disk
+	//! Save all output maps to disk
 	/*!
 	\param outputDir directory in which to write output maps.
 	\return true if maps saved successfully. False if save error.
 	*/
-	MDM_API bool writeOutputMaps(const std::string &outputDir);
+	MDM_API bool saveOutputMaps(const std::string &outputDir);
 
-	//! Write model residuals map to disk
+	//! Save model residuals map to disk
 	/*!
 	\param outputDir directory in which to write output map.
 	\return true if map saved successfully. False if save error.
 	*/
-	MDM_API bool writeModelResiduals(const std::string &outputDir);
+	MDM_API bool saveModelResiduals(const std::string &outputDir);
 
-	//! Write parameter stats file
+	//! Save parameter stats file
 	/*!
 	\param outputDir directory in which to write output maps.
 	\return true if stats saved successfully. False if save error.
 	*/
-	MDM_API bool writeSummaryStats(const std::string &outputDir);
+	MDM_API bool saveSummaryStats(const std::string &outputDir);
 
-	//! Write error codes map to disk
+	//! Save error codes map to disk
 	/*!
 	\param outputDir directory in which to write output map.
 	\return true if map saved successfully. False if save error.
 	*/
-	MDM_API bool writeErrorMap(const std::string &outputDir);
+	MDM_API bool saveErrorMap(const std::string &outputDir);
 
 	//! Set flag to write out signal-derived concentration time-series maps
 	/*!
 	\param flag if true, writes out time-series C(t)
 	*/
-	MDM_API void setWriteCtDataMaps(bool flag);
+	MDM_API void setSaveCtDataMaps(bool flag);
 
 	//! Set flag to write out model estimated concentration time-series maps
 	/*!
 	\param flag if true, writes out time-series Cm(t)
 	*/
-	MDM_API void setWriteCtModelMaps(bool flag);
+	MDM_API void setSaveCtModelMaps(bool flag);
 
 	//! Set flag to write out in sparse format
 	/*!
@@ -165,15 +188,15 @@ private:
 	void makeSequenceFilename(const std::string &path, const std::string &prefix,
 		const int fileNumber, std::string &filePath, const std::string &fileNumberFormat);
 	
-	bool writeOutputMap(const std::string &mapName, 
+	bool saveOutputMap(const std::string &mapName, 
 		const std::string &outputDir, bool writeXtr = false);
 
-	bool writeOutputMap(const std::string &mapName, const mdm_Image3D &img, 
+	bool saveOutputMap(const std::string &mapName, const mdm_Image3D &img, 
 		const std::string &outputDir, bool writeXtr = false);
 
-	bool writeMapsSummaryStats(const std::string &roiName, mdm_ParamSummaryStats &stats);
+	bool saveMapsSummaryStats(const std::string &roiName, mdm_ParamSummaryStats &stats);
 
-	bool writeMapSummaryStats(const std::string &mapName, const mdm_Image3D &img, 
+	bool saveMapSummaryStats(const std::string &mapName, const mdm_Image3D &img, 
 		mdm_ParamSummaryStats &stats);
 
 	/*VARIABLES*/
@@ -183,15 +206,6 @@ private:
 	mdm_T1VolumeAnalysis &T1Mapper_;
 	mdm_DCEVolumeAnalysis &volumeAnalysis_;
 	mdm_ErrorTracker &errorTracker_;
-
-	/*Full file paths to loaded images and AIF*/
-	std::vector<std::string>  T1InputPaths_;
-	std::vector<std::string>  StPaths_;
-	std::vector<std::string>  CtPaths_;
-
-	std::string  T1Path_;
-	std::string  M0Path_;
-	std::string  ROIPath_;
 
 	bool writeCtDataMaps_;
   bool writeCtModelMaps_;

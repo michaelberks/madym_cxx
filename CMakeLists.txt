@@ -8,6 +8,7 @@ if (APPLE)
   cmake_policy(SET CMP0025 NEW)
   cmake_policy(SET CMP0042 NEW)
   set(CMAKE_MACOSX_RPATH 1)
+  add_compile_options()
 endif()
 
 ####################################################

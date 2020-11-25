@@ -36,7 +36,7 @@
          <x>0</x>
          <y>0</y>
          <width>674</width>
-         <height>855</height>
+         <height>838</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -58,13 +58,6 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_2">
-              <item row="0" column="0">
-               <widget class="QPushButton" name="computeT1Button">
-                <property name="text">
-                 <string>Compute baseline T1</string>
-                </property>
-               </widget>
-              </item>
               <item row="1" column="0">
                <widget class="QPushButton" name="computeIFButton">
                 <property name="text">
@@ -79,10 +72,10 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
-               <widget class="QPushButton" name="outputStatsButton">
+              <item row="0" column="0">
+               <widget class="QPushButton" name="computeT1Button">
                 <property name="text">
-                 <string>Output summary statistics</string>
+                 <string>Compute baseline T1</string>
                 </property>
                </widget>
               </item>

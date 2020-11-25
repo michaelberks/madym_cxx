@@ -9,6 +9,7 @@
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
 #include <madym/run/mdm_RunTools_madym_T1.h>
 #include <madym/run/mdm_RunTools_madym_DCE.h>
+#include <madym/run/mdm_RunTools_madym_AIF.h>
 
 #include "madym_gui_model_configure.h"
 #include <iomanip>
@@ -252,7 +253,7 @@ void madym_gui_ui::on_computeIFButton_clicked()
 	//we don't want to read a config file
 	madym_options_.configFile.set("");
 
-	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
+	mdm_RunTools_madym_AIF madym_exe(madym_options_, options_parser_);
 	madym_exe.parseInputs(AIF_ARGV);
 	int result = madym_exe.run();
 
@@ -577,8 +578,10 @@ void madym_gui_ui::on_modelSelectComboBox_currentIndexChanged(const QString &tex
 
 	mdm_AIF aif;
 	auto modelType = mdm_DCEModelGenerator::ParseModelName(text.toStdString());
+  aif.setAIFType(mdm_AIF::AIF_TYPE::AIF_POP);
+  aif.setPIFType(mdm_AIF::PIF_TYPE::PIF_POP);
   model_ = mdm_DCEModelGenerator::createModel(aif,
-    modelType, false, false, {},
+    modelType, {},
 		{}, {}, {}, {}, {});
 	madym_options_.model.set(text.toStdString());
   madym_options_.paramNames.set({});
@@ -604,9 +607,11 @@ void madym_gui_ui::on_configureModelButton_clicked()
 
 	mdm_AIF aif;
 	auto modelType = mdm_DCEModelGenerator::ParseModelName(modelName.toStdString());
+  aif.setAIFType(mdm_AIF::AIF_TYPE::AIF_POP);
+  aif.setPIFType(mdm_AIF::PIF_TYPE::PIF_POP);
 	model_ = mdm_DCEModelGenerator::createModel(aif,
 		modelType,
-    false, false, madym_options_.paramNames(),
+    madym_options_.paramNames(),
     madym_options_.initialParams(), 
 		madym_options_.fixedParams(), madym_options_.fixedValues(),
 		madym_options_.relativeLimitParams(), madym_options_.relativeLimitValues());

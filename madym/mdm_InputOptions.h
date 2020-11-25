@@ -71,14 +71,17 @@ struct mdm_InputOptions {
 		3.4, "r1", "", "Relaxivity constant of concentration in tissue");
 
 	//AIF options
+  mdm_input_int aifType = mdm_input_int(
+    0, "aif_type", "",
+    "AIF type, overriden by --aif and --aif_map");
 	mdm_input_string aifName = mdm_input_string(
 		mdm_input_str(""), "aif", "",
 		"Path to precomputed AIF, if not set uses population AIF");
+  mdm_input_string aifMap = mdm_input_string(
+    mdm_input_str(""), "aif_map", "", "Map of voxels to average in AIF computation");
 	mdm_input_string pifName = mdm_input_string(
 		mdm_input_str(""), "pif", "",
 		"Path to precomputed AIF, if not set derives from AIF");
-	mdm_input_int aifSlice = mdm_input_int(
-		0, "aif_slice", "", "Slice used to automatically measure AIF");
 	mdm_input_double dose = mdm_input_double(
 		0.1, "dose", "D", "Contrast-agent dose");
 	mdm_input_double hct = mdm_input_double(
@@ -142,6 +145,27 @@ struct mdm_InputOptions {
 	mdm_input_doubles IAUCTimes = mdm_input_doubles(
 		mdm_input_double_list({ 60.0,90.0,120.0 }), "iauc", "I",
 		"Times (in s, post-bolus injection) at which to compute IAUC");
+
+  //AIF detection
+  mdm_input_ints aifSlices = mdm_input_ints(
+    mdm_input_int_list(std::vector<int>{}), "aif_slices", "",
+    "Slices used to automatically measure AIF");
+  mdm_input_ints aifXrange = mdm_input_ints(
+    mdm_input_int_list(std::vector<int>{}), "aif_x_range", "",
+    "Range of voxels to consider as AIF candidates in x-axis");
+  mdm_input_ints aifYrange = mdm_input_ints(
+    mdm_input_int_list(std::vector<int>{}), "aif_y_range", "",
+    "Range of voxels to consider as AIF candidates in y-axis");
+  mdm_input_double minT1Blood = mdm_input_double(
+    1000, "min_T1_blood", "", "Minimum T1 to be considered as potential blood voxel");
+  mdm_input_double peakTime = mdm_input_double(
+    1.0, "peak_time", "", "Time window post bolus for peak to arrive");
+  mdm_input_double prebolusNoise = mdm_input_double(
+    0, "prebolus_noise", "", "Estimate of noise on the prebolus signal used when unable to compute");
+  mdm_input_int prebolusMinImages = mdm_input_int(
+    5, "prebolus_min_images", "", "Minimum number of images required to estimate prebolus noise");
+  mdm_input_double selectPct = mdm_input_double(
+    0, "select_pct", "", "Percentage of candidates to select");
 
 	//General output options
 	mdm_input_string outputRoot = mdm_input_string(

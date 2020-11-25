@@ -59,21 +59,20 @@ protected:
 private:
   //Methods:
 	void fit_series(std::ostream &outputData,
-		const std::vector<double> &ts, const bool &inputCt,
-		const std::vector<double> &noiseVar,
-		const double &t10, const double &s0,
+    mdm_DCEModelFitter &fitter,
+		const std::vector<double> &timeSeries, 
+    const bool &inputCt,
+		const double &T1, 
+    const double &M0,
 		const double &r1,
 		const double &TR,
 		const double & FA,
-		const int &firstImage,
-		const int &lastImage,
 		const bool&testEnhancement,
 		const bool&useM0Ratio,
 		const std::vector<double> &IAUCTimes,
 		const bool &outputCt_mod,
 		const bool &outputCt_sig,
-		const bool &optimiseModel,
-		const int &maxIterations);
+		const bool &optimiseModel);
 
 	//Variables:
 };

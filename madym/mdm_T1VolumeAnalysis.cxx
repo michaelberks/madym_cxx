@@ -144,21 +144,21 @@ MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::inputImage(int i) const
 	assert(i >= 0 && i < inputImages_.size());
 	return inputImages_[i];
 }
-MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::T1Map() const
+MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::T1() const
 {
 	return T1_;
 }
-MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::M0Map() const
+MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::M0() const
 {
 	return M0_;
 }
 
-MDM_API double mdm_T1VolumeAnalysis::T1atVoxel(int voxel) const
+MDM_API double mdm_T1VolumeAnalysis::T1(int voxel) const
 {
 	return T1_.voxel(voxel);
 }
 
-MDM_API double mdm_T1VolumeAnalysis::M0atVoxel(int voxel) const
+MDM_API double mdm_T1VolumeAnalysis::M0(int voxel) const
 {
 	return M0_.voxel(voxel);
 }

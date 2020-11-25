@@ -26,8 +26,8 @@ namespace po = boost::program_options;
 MDM_API mdm_RunTools_madym_DCE::mdm_RunTools_madym_DCE(mdm_InputOptions &options_, mdm_OptionsParser &options_parser)
 	: 
 	mdm_RunToolsDCEFit(options_, options_parser),
-	mdm_RunToolsT1Fit(options_, options_parser),
 	mdm_RunToolsVolumeAnalysis(options_, options_parser),
+	mdm_RunToolsT1Fit(options_, options_parser),
 	mdm_RunTools(options_, options_parser)
 {
 }
@@ -43,13 +43,19 @@ MDM_API int mdm_RunTools_madym_DCE::run()
 	//Check required inputs
 	checkRequiredInputs();
 
+  //Set curent working dir
+  set_up_cwd();
+
 	//Set parameters from user inputs
 	setFileManagerParams();
 	setAIFParams();
 	setVolumeAnalysisParams();
 
-	//Set which type of model we're using
-	setModel(options_.model(), !options_.aifName().empty(), !options_.pifName().empty(),
+  //Set AIF
+  setAIF();
+
+	//Set which type of model we're using, must do this after defining AIF
+	setModel(options_.model(),
 		options_.paramNames(), options_.initialParams(),
 		options_.fixedParams(), options_.fixedValues(),
 		options_.relativeLimitParams(), options_.relativeLimitValues());
@@ -111,7 +117,7 @@ MDM_API int mdm_RunTools_madym_DCE::run()
 	fitModel();
 
 	//Write output
-	writeOuput();
+	writeOutput();
 
 	return mdm_progExit();
 }
@@ -119,8 +125,8 @@ MDM_API int mdm_RunTools_madym_DCE::run()
 //
 MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 {
-	po::options_description cmdline_options("madym options_");
-	po::options_description config_options("madym config options_");
+	po::options_description cmdline_options("madym_DCE options");
+	po::options_description config_options("madym_DCE config options");
 
 	options_parser_.add_option(cmdline_options, options_.configFile);
 	options_parser_.add_option(cmdline_options, options_.dataDir);
@@ -131,9 +137,9 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.dynFormat);
 	options_parser_.add_option(config_options, options_.nDyns);
 	options_parser_.add_option(config_options, options_.injectionImage);
-
-	//ROI options_
-	options_parser_.add_option(config_options, options_.roiName);
+  options_parser_.add_option(config_options, options_.roiName);
+	
+  //T1 mapping options
 	options_parser_.add_option(config_options, options_.T1method);
 	options_parser_.add_option(config_options, options_.T1inputNames);
 	options_parser_.add_option(config_options, options_.T1noiseThresh);
@@ -146,9 +152,9 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.r1Const);
 
 		//AIF options_
-	options_parser_.add_option(config_options, options_.aifName);
-	options_parser_.add_option(config_options, options_.pifName);
-	options_parser_.add_option(config_options, options_.aifSlice);
+  options_parser_.add_option(config_options, options_.aifName);
+  options_parser_.add_option(config_options, options_.aifMap);
+  options_parser_.add_option(config_options, options_.pifName);
 	options_parser_.add_option(config_options, options_.dose);
 	options_parser_.add_option(config_options, options_.hct);
 
@@ -216,8 +222,8 @@ void mdm_RunTools_madym_DCE::checkRequiredInputs()
 
 void mdm_RunTools_madym_DCE::setFileManagerParams()
 {
-	fileManager_.setWriteCtDataMaps(options_.outputCt_sig());
-	fileManager_.setWriteCtModelMaps(options_.outputCt_mod());
+	fileManager_.setSaveCtDataMaps(options_.outputCt_sig());
+	fileManager_.setSaveCtModelMaps(options_.outputCt_mod());
 	fileManager_.setSparseWrite(options_.sparseWrite());
 }
 
@@ -233,99 +239,17 @@ void mdm_RunTools_madym_DCE::setVolumeAnalysisParams()
 	volumeAnalysis_.setComputeCt(!options_.inputCt());
 	volumeAnalysis_.setOutputCt(options_.outputCt_sig());
 	volumeAnalysis_.setOutputCmod(options_.outputCt_mod());
-	volumeAnalysis_.setRelaxCoeff(options_.r1Const());
+	volumeAnalysis_.setR1Const(options_.r1Const());
+  volumeAnalysis_.setPrebolusImage(options_.injectionImage());
 	volumeAnalysis_.setTestEnhancement(options_.testEnhancement());
 	volumeAnalysis_.setUseNoise(options_.dynNoise());
 	volumeAnalysis_.setM0Ratio(options_.M0Ratio());
-	if (options_.firstImage())
+	if (options_.firstImage() > 0)
 		volumeAnalysis_.setFirstImage(options_.firstImage() - 1);
 	if (options_.lastImage() > 0)
-		volumeAnalysis_.setLastImage(options_.lastImage());
+		volumeAnalysis_.setLastImage(options_.lastImage() - 1);
 	volumeAnalysis_.setIAUCtimes(options_.IAUCTimes());
 	volumeAnalysis_.setMaxIterations(options_.maxIterations());
-}
-
-//
-void mdm_RunTools_madym_DCE::loadSt()
-{
-	fs::path dynPath = fs::absolute(fs::path(options_.dynDir()) / options_.dynName());
-	std::string dynPrefix = dynPath.filename().string();
-	std::string dynBasePath = dynPath.remove_filename().string();
-
-	if (!volumeAnalysis_.modelType().empty())
-	{
-		//If not case 4, and we want to fit a model we *must* have dynamic images
-		if (dynBasePath.empty() && dynPrefix.empty())
-			mdm_progAbort("paths and/or prefix to dynamic images not set");
-
-		//Load the dynamic images
-		if (!fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns(), options_.dynFormat()))
-			mdm_progAbort("error loading dynamic images");
-		
-	}
-}
-
-//
-void mdm_RunTools_madym_DCE::loadCt()
-{
-	fs::path CtPath = fs::absolute(fs::path(options_.dynDir()) / options_.dynName());
-	std::string catPrefix = CtPath.filename().string();
-	std::string catBasePath = CtPath.remove_filename().string();
-	if (!catBasePath.empty() && !catPrefix.empty())
-	{
-		if (!fileManager_.loadCtDataMaps(catBasePath, catPrefix, options_.nDyns(), options_.dynFormat()))
-			mdm_progAbort("error loading catMaps");
-
-		//Set the times in the AIF from the dynamic times
-		AIF_.setAIFTimes(volumeAnalysis_.dynamicTimes());
-	}
-	else
-		mdm_progAbort("Ct flag set to true, but paths and/or prefix to Ct maps not set");
-}
-
-//
-void mdm_RunTools_madym_DCE::loadT1()
-{
-	fs::path T1Path = fs::absolute(options_.T1Name());
-	if (!fileManager_.loadT1Map(T1Path.string()))
-		mdm_progAbort("error loading T1 map");
-
-	//Now check for cases 2 and 3, if useBaselineM0 is true
-	//we need both M0 and T1, otherwise we can just use T1
-	if (!options_.M0Ratio())
-	{
-
-		if (options_.M0Name().empty())
-			mdm_progAbort("M0MapFlag set to true, but path to M0 not set");
-
-		//Otherwise load M0 and return
-		fs::path M0Path = fs::absolute(options_.M0Name());
-		if (!fileManager_.loadM0Map(M0Path.string()))
-			mdm_progAbort("error loading M0 map");
-		
-	}
-}
-
-//
-void mdm_RunTools_madym_DCE::mapT1()
-{
-	//Check inputs set by user
-	if (options_.T1inputNames().empty())
-		mdm_progAbort("input map names (option --T1_vols) must be provided");
-
-	//Parse T1 method from string, will abort if method type not recognised
-	auto methodType = parseMethod(options_.T1method());
-
-	//Check number of signal inputs, will abort if too many/too few
-	checkNumInputs(methodType, options_.T1inputNames().size());
-
-	//Load T1 inputs
-	loadT1Inputs();
-
-	//FA images loaded, try computing T1 and M0 maps
-	volumeAnalysis_.T1Mapper().setMethod(methodType);
-	volumeAnalysis_.T1Mapper().setNoiseThreshold(options_.T1noiseThresh());
-	volumeAnalysis_.T1Mapper().mapT1();
 }
 
 //
@@ -334,28 +258,31 @@ void mdm_RunTools_madym_DCE::loadAIF()
 	//Set the times in the AIF from the dynamic times
 	AIF_.setAIFTimes(volumeAnalysis_.dynamicTimes());
 
-	//Load AIF
-	if (!options_.aifName().empty())
+	//Load AIF from file
+	if (AIF_.AIFType() == mdm_AIF::AIF_TYPE::AIF_FILE)
 	{
-		std::string aifPath = fs::absolute(options_.aifName()).string();
-		if (aifPath.empty())
-		{
-			mdm_progAbort(options_.model() + " chosen as model but no AIF filename set");
-		}
+		auto aifPath = fs::absolute(options_.aifName()).string();
 		if (!AIF_.readAIF(aifPath, volumeAnalysis_.numDynamics()))
 		{
 			mdm_progAbort("error loading AIF for model " + options_.model());
 		}
 	}
 
+  //Load AIF from voxel map
+  else if (AIF_.AIFType() == mdm_AIF::AIF_TYPE::AIF_MAP)
+  {
+    auto aifPath = fs::absolute(options_.aifMap()).string();
+    fileManager_.loadAIFmap(aifPath);
+
+    std::vector<double> baseAIF(volumeAnalysis_.AIFfromMap());
+    if (!AIF_.setBaseAIF(baseAIF))
+      mdm_progAbort("Failed to compute AIF values from AIF map");
+  }
+
 	//Load PIF
-	if (!options_.pifName().empty())
+	if (AIF_.PIFType() == mdm_AIF::PIF_TYPE::PIF_FILE)
 	{
 		std::string pifPath = fs::absolute(options_.pifName()).string();
-		if (pifPath.empty())
-		{
-			mdm_progAbort(options_.model() + " chosen as model but no AIF filename set");
-		}
 		if (!AIF_.readPIF(pifPath, volumeAnalysis_.numDynamics()))
 		{
 			mdm_progAbort("error loading PIF for model " + options_.model());
@@ -390,4 +317,12 @@ void mdm_RunTools_madym_DCE::fitModel()
 	if (!modelsFitted)
 		mdm_progAbort("error fitting models");
 
+}
+
+void mdm_RunTools_madym_DCE::writeOutput()
+{
+  if (model_->numParams())
+    AIF_.writeAIF(outputPath_.string() + "/AIF.txt");
+
+  mdm_RunToolsVolumeAnalysis::writeOutput();
 }

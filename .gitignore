@@ -2,3 +2,4 @@
 build/*
 builds/*
 .DS_Store
+examples/*

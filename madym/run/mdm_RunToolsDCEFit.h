@@ -10,6 +10,7 @@
 #define MDM_RUNTOOLS_DCE_FIT_HDR
 #include "mdm_api.h"
 #include <madym/mdm_RunTools.h>
+#include <madym/mdm_DCEModelFitter.h>
 #include <memory>
 
 //! Abstract base class providing methods common to DCE analysis tools
@@ -34,6 +35,16 @@ public:
 protected:
 	//Methods:
 
+  //! Set-up AIF
+  /*!
+  Parse input AIF options
+   - aifName overrides all
+   - aifMap overrides aifType
+   - warn if aifType not default but doesn't match aifName/Map if specified
+   - error if aifType set to aifFile/Map but aifName/Map not specified
+  */
+  void setAIF();
+
 	//! Set-up tracer-kinetic model
 	/*!
 	Calls factory method in mdm_DCEModelGenerator to instantiate tracer-kinetic model
@@ -52,13 +63,15 @@ protected:
 	\see mdm_DCEModelGenerator
 	\see mdm_DCEModelBase
 	*/
-	void setModel(const std::string &model_name, bool auto_aif, bool auto_pif,
+	void setModel(const std::string &model_name,
 		const std::vector<std::string> &paramNames,
 		const std::vector<double> &initialParams,
 		const std::vector<int> fixedParams,
 		const std::vector<double> fixedValues,
 		const std::vector<int> relativeLimitParams,
 		const std::vector<double> relativeLimitValues);
+
+  
 
 	//Variables:
 	//! Shared pointer to tracer-kinetic model, which will be instantiated to specified model type
