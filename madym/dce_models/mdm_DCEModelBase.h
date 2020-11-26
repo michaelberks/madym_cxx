@@ -19,7 +19,6 @@
 
 #include <vector>
 #include <mdm_AIF.h>
-#include <mdm_version.h>
 #include <mdm_ErrorTracker.h>
 
 //! Abstract base class for implementing DCE tracer-kinetic models

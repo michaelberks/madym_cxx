@@ -1,6 +1,6 @@
 /**
-*  @file    mdm_DCEVolumeAnalysis.cxx
-*  @brief   Implementation of mdm_DCEVolumeAnalysis class
+*  @file    mdm_VolumeAnalysis.cxx
+*  @brief   Implementation of mdm_VolumeAnalysis class
 *
 *  Original author MA Berks 24 Oct 2018
 *  (c) Copyright QBI, University of Manchester 2020
@@ -11,34 +11,32 @@
 #endif // !MDM_API_EXPORTS
 
 
-#include "mdm_DCEVolumeAnalysis.h"
+#include "mdm_VolumeAnalysis.h"
 
 #include <cmath>
-#include <cassert>
 #include <chrono>  // chrono::system_clock
 #include <sstream> // stringstream
 #include <algorithm>
 #include <boost/format.hpp>
 
-#include <mdm_version.h>
 #include <mdm_exception.h>
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/mdm_AIF.h>
 
 //Names of output maps
-const std::string mdm_DCEVolumeAnalysis::MAP_NAME_IAUC = "IAUC"; //Appended with IAUC time
-const std::string mdm_DCEVolumeAnalysis::MAP_NAME_RESDIUALS = "residuals";
-const std::string mdm_DCEVolumeAnalysis::MAP_NAME_ENHANCING = "enhVox";
-const std::string mdm_DCEVolumeAnalysis::MAP_NAME_ROI = "ROI";
-const std::string mdm_DCEVolumeAnalysis::MAP_NAME_ERROR_TRACKER = "error_tracker";
-const std::string mdm_DCEVolumeAnalysis::MAP_NAME_T1 = "T1";
-const std::string mdm_DCEVolumeAnalysis::MAP_NAME_M0 = "M0";
+const std::string mdm_VolumeAnalysis::MAP_NAME_IAUC = "IAUC"; //Appended with IAUC time
+const std::string mdm_VolumeAnalysis::MAP_NAME_RESDIUALS = "residuals";
+const std::string mdm_VolumeAnalysis::MAP_NAME_ENHANCING = "enhVox";
+const std::string mdm_VolumeAnalysis::MAP_NAME_ROI = "ROI";
+const std::string mdm_VolumeAnalysis::MAP_NAME_ERROR_TRACKER = "error_tracker";
+const std::string mdm_VolumeAnalysis::MAP_NAME_T1 = "T1";
+const std::string mdm_VolumeAnalysis::MAP_NAME_M0 = "M0";
 //Signal derived concentration - appended with volume number
-const std::string mdm_DCEVolumeAnalysis::MAP_NAME_CT_SIG = "Ct_sig"; 
+const std::string mdm_VolumeAnalysis::MAP_NAME_CT_SIG = "Ct_sig"; 
 //Model estimated concentration - appended with volume number
-const std::string mdm_DCEVolumeAnalysis::MAP_NAME_CT_MOD = "Ct_mod"; 
+const std::string mdm_VolumeAnalysis::MAP_NAME_CT_MOD = "Ct_mod"; 
 
-MDM_API mdm_DCEVolumeAnalysis::mdm_DCEVolumeAnalysis()
+MDM_API mdm_VolumeAnalysis::mdm_VolumeAnalysis()
 	:
 	T1_mapper_(errorTracker_),
 	testEnhancement_(false),
@@ -56,43 +54,43 @@ MDM_API mdm_DCEVolumeAnalysis::mdm_DCEVolumeAnalysis()
 	setIAUCtimes({ 60.0, 90.0, 120.0 }, true);
 }
 
-MDM_API mdm_DCEVolumeAnalysis::~mdm_DCEVolumeAnalysis()
+MDM_API mdm_VolumeAnalysis::~mdm_VolumeAnalysis()
 {
 
 }
 
 //
-MDM_API mdm_ErrorTracker& mdm_DCEVolumeAnalysis::errorTracker()
+MDM_API mdm_ErrorTracker& mdm_VolumeAnalysis::errorTracker()
 {
 	return errorTracker_;
 }
 
 //
-MDM_API mdm_T1VolumeAnalysis& mdm_DCEVolumeAnalysis::T1Mapper()
+MDM_API mdm_T1Mapper& mdm_VolumeAnalysis::T1Mapper()
 {
 	return T1_mapper_;
 }
 
 //
-MDM_API const mdm_T1VolumeAnalysis& mdm_DCEVolumeAnalysis::T1Mapper() const
+MDM_API const mdm_T1Mapper& mdm_VolumeAnalysis::T1Mapper() const
 {
   return T1_mapper_;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setROI(const mdm_Image3D ROI)
+MDM_API void mdm_VolumeAnalysis::setROI(const mdm_Image3D ROI)
 {
 	ROI_ = ROI;
   T1_mapper_.setROI(ROI);
 }
 
 //
-MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::ROI() const
+MDM_API mdm_Image3D mdm_VolumeAnalysis::ROI() const
 {
 	return ROI_;
 }
 
-MDM_API void mdm_DCEVolumeAnalysis::setAIFmap(
+MDM_API void mdm_VolumeAnalysis::setAIFmap(
   const mdm_Image3D map)
 {
   if (map.type() != mdm_Image3D::ImageType::TYPE_AIFVOXELMAP)
@@ -108,7 +106,7 @@ MDM_API void mdm_DCEVolumeAnalysis::setAIFmap(
 }
 
 //
-MDM_API std::vector<double> mdm_DCEVolumeAnalysis::AIFfromMap()
+MDM_API std::vector<double> mdm_VolumeAnalysis::AIFfromMap()
 {
   if (!referenceDynamicImg_.numVoxels())
     throw mdm_exception(__func__, "Dynamic maps not loaded.");
@@ -123,12 +121,12 @@ MDM_API std::vector<double> mdm_DCEVolumeAnalysis::AIFfromMap()
 };
 
 //
-MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::AIFmap() const
+MDM_API mdm_Image3D mdm_VolumeAnalysis::AIFmap() const
 {
   return AIFmap_;
 }
 
-MDM_API void mdm_DCEVolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
+MDM_API void mdm_VolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
 {
 	//Add the image to the list
 	StDataMaps_.push_back(dynImg);
@@ -172,7 +170,7 @@ MDM_API void mdm_DCEVolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
 }
 
 //
-MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::StDataMap(size_t i) const
+MDM_API mdm_Image3D mdm_VolumeAnalysis::StDataMap(size_t i) const
 {
   try { return StDataMaps_[i]; }
   catch (std::out_of_range &e)
@@ -186,13 +184,13 @@ MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::StDataMap(size_t i) const
 }
 
 //
-MDM_API const std::vector<mdm_Image3D> & mdm_DCEVolumeAnalysis::StDataMaps() const
+MDM_API const std::vector<mdm_Image3D> & mdm_VolumeAnalysis::StDataMaps() const
 {
   return StDataMaps_;
 }
 
 //
-MDM_API size_t  mdm_DCEVolumeAnalysis::numDynamics() const
+MDM_API size_t  mdm_VolumeAnalysis::numDynamics() const
 {
 	if (StDataMaps_.empty())
 		return numCtSignal();
@@ -201,7 +199,7 @@ MDM_API size_t  mdm_DCEVolumeAnalysis::numDynamics() const
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::computeMeanCt(
+MDM_API void mdm_VolumeAnalysis::computeMeanCt(
   const mdm_Image3D &map, double map_val,
   std::vector<double> &meanCt, std::vector<size_t> &badVoxels) const
 {
@@ -251,7 +249,7 @@ MDM_API void mdm_DCEVolumeAnalysis::computeMeanCt(
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::addCtDataMap(const mdm_Image3D ctMap)
+MDM_API void mdm_VolumeAnalysis::addCtDataMap(const mdm_Image3D ctMap)
 {
 
 	//Add the image to the list
@@ -279,7 +277,7 @@ MDM_API void mdm_DCEVolumeAnalysis::addCtDataMap(const mdm_Image3D ctMap)
 }
 
 //
-MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::CtDataMap(size_t i) const
+MDM_API mdm_Image3D mdm_VolumeAnalysis::CtDataMap(size_t i) const
 {
   try { return CtDataMaps_[i]; }
   catch (std::out_of_range &e)
@@ -293,13 +291,13 @@ MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::CtDataMap(size_t i) const
 }
 
 //
-MDM_API const std::vector<mdm_Image3D> & mdm_DCEVolumeAnalysis::CtDataMaps() const
+MDM_API const std::vector<mdm_Image3D> & mdm_VolumeAnalysis::CtDataMaps() const
 {
   return CtDataMaps_;
 }
 
 //
-MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::CtModelMap(size_t i) const
+MDM_API mdm_Image3D mdm_VolumeAnalysis::CtModelMap(size_t i) const
 {
   try { return CtModelMaps_[i]; }
   catch (std::out_of_range &e)
@@ -313,13 +311,13 @@ MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::CtModelMap(size_t i) const
 }
 
 //
-MDM_API const std::vector<mdm_Image3D> & mdm_DCEVolumeAnalysis::CtModelMaps() const
+MDM_API const std::vector<mdm_Image3D> & mdm_VolumeAnalysis::CtModelMaps() const
 {
   return CtModelMaps_;
 }
 
 //
-MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::DCEMap(const std::string &mapName) const
+MDM_API mdm_Image3D mdm_VolumeAnalysis::DCEMap(const std::string &mapName) const
 {
   if (model_)
   {
@@ -348,7 +346,7 @@ MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::DCEMap(const std::string &mapName) co
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setDCEMap(const std::string &mapName, const mdm_Image3D &map)
+MDM_API void mdm_VolumeAnalysis::setDCEMap(const std::string &mapName, const mdm_Image3D &map)
 {
   if (pkParamMaps_.size() != model_->numParams())
     pkParamMaps_.resize(model_->numParams());
@@ -387,7 +385,7 @@ MDM_API void mdm_DCEVolumeAnalysis::setDCEMap(const std::string &mapName, const 
 }
 
 //
-MDM_API std::string mdm_DCEVolumeAnalysis::modelType() const
+MDM_API std::string mdm_VolumeAnalysis::modelType() const
 {
   if (model_)
     return model_->modelType();
@@ -396,13 +394,13 @@ MDM_API std::string mdm_DCEVolumeAnalysis::modelType() const
 }
 
 //
-MDM_API std::vector<double> mdm_DCEVolumeAnalysis::dynamicTimes() const
+MDM_API std::vector<double> mdm_VolumeAnalysis::dynamicTimes() const
 {
 	return dynamicTimes_;
 }
 
 //
-MDM_API double mdm_DCEVolumeAnalysis::dynamicTime(size_t i) const
+MDM_API double mdm_VolumeAnalysis::dynamicTime(size_t i) const
 {
   try { return dynamicTimes_[i]; }
   catch (std::out_of_range &e)
@@ -416,66 +414,66 @@ MDM_API double mdm_DCEVolumeAnalysis::dynamicTime(size_t i) const
 }
 
 //
-MDM_API std::vector<std::string> mdm_DCEVolumeAnalysis::paramNames() const
+MDM_API std::vector<std::string> mdm_VolumeAnalysis::paramNames() const
 {
 	return model_->paramNames();
 }
 
 //
-MDM_API std::vector<double> mdm_DCEVolumeAnalysis::IAUCtimes() const
+MDM_API std::vector<double> mdm_VolumeAnalysis::IAUCtimes() const
 {
 	return IAUCTimes_;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setR1Const(double rc)
+MDM_API void mdm_VolumeAnalysis::setR1Const(double rc)
 {
 	r1Const_ = rc;
 }
 
-MDM_API void mdm_DCEVolumeAnalysis::setPrebolusImage(int prebolus)
+MDM_API void mdm_VolumeAnalysis::setPrebolusImage(int prebolus)
 {
   prebolusImage_ = prebolus;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setModel(std::shared_ptr<mdm_DCEModelBase> model)
+MDM_API void mdm_VolumeAnalysis::setModel(std::shared_ptr<mdm_DCEModelBase> model)
 {
 	model_ = model;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setTestEnhancement(bool flag)
+MDM_API void mdm_VolumeAnalysis::setTestEnhancement(bool flag)
 {
 	testEnhancement_ = flag;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setM0Ratio(bool flag)
+MDM_API void mdm_VolumeAnalysis::setM0Ratio(bool flag)
 {
 	useM0Ratio_ = flag;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setComputeCt(bool flag)
+MDM_API void mdm_VolumeAnalysis::setComputeCt(bool flag)
 {
 	computeCt_ = flag;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setOutputCt(bool flag)
+MDM_API void mdm_VolumeAnalysis::setOutputCt(bool flag)
 {
 	outputCt_sig_ = flag;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setOutputCmod(bool flag)
+MDM_API void mdm_VolumeAnalysis::setOutputCmod(bool flag)
 {
   outputCt_mod_ = flag;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setIAUCtimes(const std::vector<double> &times, bool convertToMins)
+MDM_API void mdm_VolumeAnalysis::setIAUCtimes(const std::vector<double> &times, bool convertToMins)
 {
 	IAUCTimes_ = times;
 	std::sort(IAUCTimes_.begin(), IAUCTimes_.end());
@@ -490,31 +488,31 @@ MDM_API void mdm_DCEVolumeAnalysis::setIAUCtimes(const std::vector<double> &time
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setUseNoise(bool b)
+MDM_API void mdm_VolumeAnalysis::setUseNoise(bool b)
 {
   useNoise_ = b;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setFirstImage(size_t t)
+MDM_API void mdm_VolumeAnalysis::setFirstImage(size_t t)
 {
   firstImage_ = t;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setLastImage(size_t t)
+MDM_API void mdm_VolumeAnalysis::setLastImage(size_t t)
 {
   lastImage_ = t;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setMaxIterations(int maxItr)
+MDM_API void mdm_VolumeAnalysis::setMaxIterations(int maxItr)
 {
 	maxIterations_ = maxItr;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::initialiseParameterMaps()
+MDM_API void mdm_VolumeAnalysis::initialiseParameterMaps()
 {
   //Model parameter maps may already have been loaded
   if (pkParamMaps_.size() != model_->numParams())
@@ -541,7 +539,7 @@ MDM_API void mdm_DCEVolumeAnalysis::initialiseParameterMaps()
 }
 
 //
-MDM_API void  mdm_DCEVolumeAnalysis::fitDCEModel(bool paramMapsInitialised, bool optimiseModel, const std::vector<int> initMapParams)
+MDM_API void  mdm_VolumeAnalysis::fitDCEModel(bool paramMapsInitialised, bool optimiseModel, const std::vector<int> initMapParams)
 {
   // Check we have the input files we need, either concentration maps
   //or dynamic images
@@ -569,25 +567,25 @@ MDM_API void  mdm_DCEVolumeAnalysis::fitDCEModel(bool paramMapsInitialised, bool
 //------------------------------------------------------------------
 
 //
-size_t mdm_DCEVolumeAnalysis::numSt() const
+size_t mdm_VolumeAnalysis::numSt() const
 {
   return StDataMaps_.size();
 }
 
 //
-size_t mdm_DCEVolumeAnalysis::numCtSignal() const
+size_t mdm_VolumeAnalysis::numCtSignal() const
 {
   return CtDataMaps_.size();
 }
 
 //
-size_t mdm_DCEVolumeAnalysis::numCtModel() const
+size_t mdm_VolumeAnalysis::numCtModel() const
 {
   return CtModelMaps_.size();
 }
 
 //
-mdm_DCEVoxel mdm_DCEVolumeAnalysis::setUpVoxel(size_t voxelIndex) const
+mdm_DCEVoxel mdm_VolumeAnalysis::setUpVoxel(size_t voxelIndex) const
 {
   
 
@@ -621,7 +619,7 @@ mdm_DCEVoxel mdm_DCEVolumeAnalysis::setUpVoxel(size_t voxelIndex) const
 }
 
 //
-void  mdm_DCEVolumeAnalysis::voxelStData(size_t voxelIndex, std::vector<double> &data) const
+void  mdm_VolumeAnalysis::voxelStData(size_t voxelIndex, std::vector<double> &data) const
 {
 	size_t n = numSt();
 
@@ -631,7 +629,7 @@ void  mdm_DCEVolumeAnalysis::voxelStData(size_t voxelIndex, std::vector<double> 
 }
 
 //
-void  mdm_DCEVolumeAnalysis::voxelCtData(size_t voxelIndex, std::vector<double> &data) const
+void  mdm_VolumeAnalysis::voxelCtData(size_t voxelIndex, std::vector<double> &data) const
 {
 	size_t n = CtDataMaps_.size();
 
@@ -641,7 +639,7 @@ void  mdm_DCEVolumeAnalysis::voxelCtData(size_t voxelIndex, std::vector<double> 
 }
 
 //
-void  mdm_DCEVolumeAnalysis::voxelCtModel(size_t voxelIndex, std::vector<double> &data) const
+void  mdm_VolumeAnalysis::voxelCtModel(size_t voxelIndex, std::vector<double> &data) const
 {
   size_t n = CtModelMaps_.size();
 
@@ -651,7 +649,7 @@ void  mdm_DCEVolumeAnalysis::voxelCtModel(size_t voxelIndex, std::vector<double>
 }
 
 //
-void mdm_DCEVolumeAnalysis::setVoxelErrors(size_t voxelIndex, const mdm_DCEVoxel &vox)
+void mdm_VolumeAnalysis::setVoxelErrors(size_t voxelIndex, const mdm_DCEVoxel &vox)
 {
 	//
   size_t voxelOk = vox.status();
@@ -666,7 +664,7 @@ void mdm_DCEVolumeAnalysis::setVoxelErrors(size_t voxelIndex, const mdm_DCEVoxel
 }
 
 //
-void mdm_DCEVolumeAnalysis::setVoxelInAllMaps(size_t voxelIndex, 
+void mdm_VolumeAnalysis::setVoxelInAllMaps(size_t voxelIndex, 
   const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter)
 {
 	for (size_t i = 0; i < pkParamMaps_.size(); i++)
@@ -690,13 +688,13 @@ void mdm_DCEVolumeAnalysis::setVoxelInAllMaps(size_t voxelIndex,
 }
 
 //
-void mdm_DCEVolumeAnalysis::setVoxelModelError(size_t voxelIndex, const mdm_DCEModelFitter  &fitter)
+void mdm_VolumeAnalysis::setVoxelModelError(size_t voxelIndex, const mdm_DCEModelFitter  &fitter)
 {
   modelResidualsMap_.setVoxel(voxelIndex, fitter.modelFitError());
 }
 
 //
-void mdm_DCEVolumeAnalysis::setVoxelInAllMaps(size_t voxelIndex, double value)
+void mdm_VolumeAnalysis::setVoxelInAllMaps(size_t voxelIndex, double value)
 {
   for (auto &map : pkParamMaps_)
 		map.setVoxel(voxelIndex, value);
@@ -720,7 +718,7 @@ void mdm_DCEVolumeAnalysis::setVoxelInAllMaps(size_t voxelIndex, double value)
 }
 
 //
-void  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, 
+void  mdm_VolumeAnalysis::fitModel(bool paramMapsInitialised, 
   bool optimiseModel, const std::vector<int> initMapParams)
 {
   if (!referenceDynamicImg_.numVoxels())
@@ -811,14 +809,14 @@ void  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised,
 	std::chrono::duration<double> elapsed_seconds = fit_end - fit_start;
 	
 	std::stringstream ss;
-	ss << "mdm_DCEVolumeAnalysis: Processed " << 
+	ss << "mdm_VolumeAnalysis: Processed " << 
 		numProcessed << " voxels in " << elapsed_seconds.count() << "s.\n" << 
 		numErrors << " voxels returned fit errors\n";
 	mdm_ProgramLogger::logProgramMessage(ss.str());
 }
 
 //
-void mdm_DCEVolumeAnalysis::createMap(mdm_Image3D& img)
+void mdm_VolumeAnalysis::createMap(mdm_Image3D& img)
 {
   if (!referenceDynamicImg_.numVoxels())
     throw mdm_exception(__func__, boost::format("Error allocating parameter maps, "

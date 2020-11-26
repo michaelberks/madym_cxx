@@ -5,8 +5,8 @@
  *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
  */
 
-#ifndef mdm_DCEVolumeAnalysis_HDR
-#define mdm_DCEVolumeAnalysis_HDR
+#ifndef MDM_VOLUMEANALYSIS_HDR
+#define MDM_VOLUMEANALYSIS_HDR
 #include <madym/mdm_api.h>
 
 #include <madym/mdm_Image3D.h>
@@ -14,15 +14,13 @@
 #include <madym/mdm_ErrorTracker.h>
 #include <madym/mdm_DCEVoxel.h>
 #include <madym/dce_models/mdm_DCEModelBase.h>
-#include <madym/mdm_T1VolumeAnalysis.h>
+#include <madym/mdm_T1Mapper.h>
 #include <madym/mdm_DCEModelFitter.h>
-
-#include <memory>
 
 //! Manager class for DCE analysis, stores input images and output parameter maps
 /*!
 */
-class mdm_DCEVolumeAnalysis {
+class mdm_VolumeAnalysis {
 
 public:
 
@@ -40,6 +38,9 @@ public:
 	//! Name of ROI mask
 	const static std::string   MAP_NAME_ROI;
 
+  //! Name of error tracker map
+  const static std::string   MAP_NAME_ERROR_TRACKER;
+
   //! Name of AIF map
   const static std::string   MAP_NAME_AIF;
 
@@ -55,18 +56,15 @@ public:
 	//! Name of modelled concentration - appended with volume number
 	const static std::string   MAP_NAME_CT_MOD;
 
-	//! Name of error map
-	const static std::string   MAP_NAME_ERROR_CODE;
-
 	//! Default constructor
 	/*!
 	*/
-	MDM_API mdm_DCEVolumeAnalysis();
+	MDM_API mdm_VolumeAnalysis();
 	
 	//! Default destructor
 	/*!
 	*/
-	MDM_API ~mdm_DCEVolumeAnalysis();
+	MDM_API ~mdm_VolumeAnalysis();
 
 	//! Return reference to error tracker
 	/*!
@@ -78,13 +76,13 @@ public:
 	/*!
 	\return reference to T1 mapper
 	*/
-	MDM_API mdm_T1VolumeAnalysis &T1Mapper();
+	MDM_API mdm_T1Mapper &T1Mapper();
 
   //! Return read-only reference to T1 mapper
   /*!
   \return const reference to T1 mapper
   */
-  MDM_API const mdm_T1VolumeAnalysis &T1Mapper() const;
+  MDM_API const mdm_T1Mapper &T1Mapper() const;
 
 	//! Set ROI mask
 	/*!
@@ -398,7 +396,7 @@ private:
   mdm_Image3D referenceDynamicImg_;
   int prebolusImage_;
 
-	mdm_T1VolumeAnalysis T1_mapper_;
+	mdm_T1Mapper T1_mapper_;
 	mdm_ErrorTracker errorTracker_;
 
 	/* Images for inputs and output */

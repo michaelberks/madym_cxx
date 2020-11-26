@@ -17,7 +17,6 @@
 #include "opt/optimization.h"
 #include "opt/linalg.h"
 
-#include <mdm_version.h>
 #include <madym/mdm_exception.h>
 
 

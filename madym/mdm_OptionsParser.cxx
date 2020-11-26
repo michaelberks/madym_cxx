@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 
+#include <mdm_version.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/tokenizer.hpp>

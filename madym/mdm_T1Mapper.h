@@ -1,12 +1,12 @@
 /*!
-*  @file    mdm_T1VolumeAnalysis.h
+*  @file    mdm_T1Mapper.h
 *  @brief   Class for mapping T1 for a full volume from input signal images
 *  @details Currently only variable flip angle method supported
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 */
 
-#ifndef mdm_T1VolumeAnalysis_HDR
-#define mdm_T1VolumeAnalysis_HDR
+#ifndef mdm_T1MAPPER_HDR
+#define mdm_T1MAPPER_HDR
 #include "mdm_api.h"
 
 #include "mdm_Image3D.h"
@@ -19,7 +19,7 @@
 
 	Currently only variable flip angle method supported
 */
-class mdm_T1VolumeAnalysis {
+class mdm_T1Mapper {
 
 public:
 	
@@ -27,12 +27,12 @@ public:
 	/*!
 	\param errorTracker error tracker shared across the volume analysis objects
 	*/
-	MDM_API mdm_T1VolumeAnalysis(mdm_ErrorTracker &errorTracker);
+	MDM_API mdm_T1Mapper(mdm_ErrorTracker &errorTracker);
 		
 	//! Destructor
 	/*!
 	*/
-	MDM_API ~mdm_T1VolumeAnalysis();
+	MDM_API ~mdm_T1Mapper();
 
 	//! Add input image from which to map T1
 	/*!	
@@ -56,19 +56,19 @@ public:
 	/*!
 	\param T1_img T1 map, pre-computed externally (eg from an earlier analysis) 
 	*/
-	MDM_API void addT1Map(mdm_Image3D T1_img);
+	MDM_API void setT1(mdm_Image3D T1_img);
 
 	//! Add a precomputed T1 map
 	/*!
 	\param M0_img M0 map, pre-computed externally (eg from an earlier analysis)
 	*/
-	MDM_API void addM0Map(mdm_Image3D M0_img);
+	MDM_API void setM0(mdm_Image3D M0_img);
 
 	//! Add ROI mask, mapping will only be performed for voxels set non-zero in the mask
 	/*!
 	\param ROI mask image
 	*/
-	MDM_API void addROI(mdm_Image3D ROI);
+	MDM_API void setROI(mdm_Image3D ROI);
 
 	//! Return read-only reference to input images
 	/*!

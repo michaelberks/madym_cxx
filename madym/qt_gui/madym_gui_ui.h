@@ -108,7 +108,7 @@ private slots:
 
   //Logging options
   void on_logNameLineEdit_textChanged(const QString &text);
-  void on_errorCodesLineEdit_textChanged(const QString &text);
+  void on_errorTrackerLineEdit_textChanged(const QString &text);
   void on_auditNameLineEdit_textChanged(const QString &text);
   void on_auditDirLineEdit_textChanged(const QString &text);
   void on_auditDirSelect_clicked();

@@ -9,11 +9,9 @@
 #define MDM_FILELOAD_HDR
 #include "mdm_api.h"
 
-#include "mdm_AIF.h"
-#include "mdm_T1VolumeAnalysis.h"
-#include "mdm_DCEVolumeAnalysis.h"
+#include "mdm_VolumeAnalysis.h"
 #include "mdm_ParamSummaryStats.h"
-#include "mdm_ErrorTracker.h"
+#include "mdm_AnalyzeFormat.h"
 
 //!   Manager class for reading input and writing ouput of volume-wise model analysis
 /*!
@@ -28,20 +26,18 @@ public:
 	/*!
 	\param volumeAnalysis reference to volume analysis object
 	*/
-	MDM_API mdm_FileManager(mdm_DCEVolumeAnalysis &volumeAnalysis);
+	MDM_API mdm_FileManager(mdm_VolumeAnalysis &volumeAnalysis);
 		
 	//! Destructor
 	/*!
 	*/
 	MDM_API ~mdm_FileManager();
 
-	//! Load in error codes map
+	//! Load in error tracker map
 	/*!
-	\param errorPath filepath to error codes map
-	\param warnMissing flag, if true, returns false if image file doesn't exist. 
-	If false, silently creates new empty image if existing image doesn't exist.
+	\param errorPath filepath to error tracker map
 	*/
-	MDM_API void loadErrorMap(const std::string &errorPath, bool warnMissing = false);
+	MDM_API void loadErrorTracker(const std::string &errorPath);
 
 	//! Load signal image volumes for mapping baseline T1
 	/*!
@@ -92,13 +88,6 @@ public:
 	*/
 	MDM_API void loadROI(const std::string &path);
 
-  //! Save ROI mask
-  /*!
-  \param outputDir directory path
-  \param name of ROI mask image
-  */
-  MDM_API void saveROI(const std::string &outputDir, const std::string &name);
-
   //! Load AIF map
   /*!
   \param path filepath to ROI mask image
@@ -106,20 +95,26 @@ public:
   */
   MDM_API void loadAIFmap(const std::string &path);
 
-  //! Save AIF map
-  /*!
-  \param outputDir directory path
-  \param name of AIF map
-  \return true if image saves successfully. False if save error.
-  */
-  MDM_API void saveAIFmap(const std::string &outputDir, const std::string &name);
-
 	//! Load tracer-kinetic model parameter maps
 	/*!
 	\param paramDir directory containing parameter maps. This must contain image volumes with names matching the parameter names specified in the volume analysis model
 	\see mdm_DCEModelBase#paramNames
 	*/
 	MDM_API void loadParameterMaps(const std::string &paramDir);
+
+  //! Save ROI mask
+  /*!
+  \param outputDir directory path
+  \param name of output image file
+  */
+  MDM_API void saveROI(const std::string &outputDir, const std::string &name);
+
+  //! Save AIF map
+  /*!
+  \param outputDir directory path
+  \param name of output image file
+  */
+  MDM_API void saveAIFmap(const std::string &outputDir, const std::string &name);
 
 	//! Save all output maps to disk
 	/*!
@@ -143,8 +138,9 @@ public:
 	//! Save error codes map to disk
 	/*!
 	\param outputDir directory in which to write output map.
+  \param name of output image file
 	*/
-	MDM_API void saveErrorMap(const std::string &outputDir);
+	MDM_API void saveErrorTracker(const std::string &outputDir, const std::string &name);
 
 	//! Set flag to write out signal-derived concentration time-series maps
 	/*!
@@ -180,7 +176,8 @@ private:
 		const std::string &outputDir, bool writeXtr = false);
 
 	void saveOutputMap(const std::string &mapName, const mdm_Image3D &img, 
-		const std::string &outputDir, bool writeXtr = false);
+		const std::string &outputDir, bool writeXtr = false,
+    const mdm_AnalyzeFormat::Data_type format = mdm_AnalyzeFormat::DT_FLOAT);
 
   void saveMapsSummaryStats(const std::string &roiName, mdm_ParamSummaryStats &stats);
 
@@ -191,9 +188,7 @@ private:
 
 	/*Object that store the loaded data and used in processing - 
 	set at global level and maintain a local reference in this class*/
-	mdm_T1VolumeAnalysis &T1Mapper_;
-	mdm_DCEVolumeAnalysis &volumeAnalysis_;
-	mdm_ErrorTracker &errorTracker_;
+	mdm_VolumeAnalysis &volumeAnalysis_;
 
 	bool writeCtDataMaps_;
   bool writeCtModelMaps_;

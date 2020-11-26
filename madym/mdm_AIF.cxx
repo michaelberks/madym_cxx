@@ -15,10 +15,7 @@
 #include <cmath>
 #include <istream>
 
-#include <mdm_version.h>
 #include <madym/mdm_exception.h>
-
-#include <madym/mdm_DCEVoxel.h>
 #include <madym/mdm_ProgramLogger.h>
 #include <boost/format.hpp>
 

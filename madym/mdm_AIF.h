@@ -8,7 +8,6 @@
 #ifndef MDM_AIF_HDR
 #define MDM_AIF_HDR
 #include "mdm_api.h"
-#include "mdm_version.h"
 
 #include "mdm_Image3D.h"
 

@@ -36,7 +36,6 @@
 #include <ifaddrs.h>
 #include <float.h>
 #define PLATFORM_USER "USER"
-#endif
 
 #define DO_PRAGMA(X) _Pragma(#X)
 #define DISABLE_WARNING_PUSH           DO_PRAGMA(GCC diagnostic push)
@@ -50,6 +49,6 @@
 #define DISABLE_WARNING_PUSH
 #define DISABLE_WARNING_POP
 #define DISABLE_WARNING_UNKNOWN_ESCAPE_SEQUENCE
-
+#endif
 
 #endif /* MDM_PLATFORM_DEFS */

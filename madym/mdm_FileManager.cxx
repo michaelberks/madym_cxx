@@ -18,18 +18,14 @@
 
 namespace fs = boost::filesystem;
 
-#include <mdm_version.h>
-#include <madym/mdm_AnalyzeFormat.h>
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/mdm_exception.h>
 
 const int mdm_FileManager::MAX_DYN_IMAGES = 1024;
 
-MDM_API mdm_FileManager::mdm_FileManager(mdm_DCEVolumeAnalysis &volumeAnalysis)
+MDM_API mdm_FileManager::mdm_FileManager(mdm_VolumeAnalysis &volumeAnalysis)
 	: 
 	volumeAnalysis_(volumeAnalysis),
-	T1Mapper_(volumeAnalysis.T1Mapper()),
-	errorTracker_(volumeAnalysis.errorTracker()),
 	writeCtDataMaps_(false),
   writeCtModelMaps_(false),
 	sparseWrite_(false)
@@ -46,9 +42,7 @@ MDM_API void mdm_FileManager::loadROI(const std::string &path)
   try {
     mdm_Image3D ROI = mdm_AnalyzeFormat::readImage3D(path, false);
     ROI.setType(mdm_Image3D::ImageType::TYPE_ROI);
-
     volumeAnalysis_.setROI(ROI);
-    T1Mapper_.addROI(ROI);
   }
   catch (mdm_exception &e)
   {
@@ -65,7 +59,7 @@ MDM_API void mdm_FileManager::loadROI(const std::string &path)
 MDM_API void mdm_FileManager::saveROI(const std::string &outputDir, const std::string &name)
 {
  if (volumeAnalysis_.ROI().numVoxels())
-    saveOutputMap(name, volumeAnalysis_.ROI(), outputDir, false);
+    saveOutputMap(name, volumeAnalysis_.ROI(), outputDir, false, mdm_AnalyzeFormat::DT_UNSIGNED_CHAR);
 }
 
 //
@@ -124,12 +118,17 @@ MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir)
   //Write out ROI (if used)
   saveROI(outputDir, volumeAnalysis_.MAP_NAME_ROI);
 
+  //Write out error tracker
+  saveErrorTracker(outputDir, volumeAnalysis_.MAP_NAME_ERROR_TRACKER);
+
   //Write out T1 and M0 maps (if M0 map used)
-  if (T1Mapper_.T1().numVoxels())
-    saveOutputMap(volumeAnalysis_.MAP_NAME_T1, T1Mapper_.T1(), outputDir, true);
+  if (volumeAnalysis_.T1Mapper().T1().numVoxels())
+    saveOutputMap(volumeAnalysis_.MAP_NAME_T1, 
+      volumeAnalysis_.T1Mapper().T1(), outputDir, true);
 		
-	if (T1Mapper_.M0().numVoxels())
-		saveOutputMap(volumeAnalysis_.MAP_NAME_M0, T1Mapper_.M0(), outputDir, true);
+	if (volumeAnalysis_.T1Mapper().M0().numVoxels())
+		saveOutputMap(volumeAnalysis_.MAP_NAME_M0, 
+      volumeAnalysis_.T1Mapper().M0(), outputDir, true);
 
   //Write model parameters maps
   if (!volumeAnalysis_.modelType().empty())
@@ -205,65 +204,30 @@ MDM_API void mdm_FileManager::saveSummaryStats(const std::string &outputDir)
 }
 
 //
-MDM_API void mdm_FileManager::saveErrorMap(const std::string &outputPath)
+MDM_API void mdm_FileManager::loadErrorTracker(const std::string &errorPath)
 {
-	const mdm_Image3D &img = errorTracker_.errorImage();
-  if (!img.numVoxels())
-    mdm_exception(__func__, "Error codes map is empty");
-		
+  // Read in ROI image volume
   try {
-    mdm_AnalyzeFormat::writeImage3D(outputPath, img,
-      mdm_AnalyzeFormat::DT_SIGNED_INT, mdm_AnalyzeFormat::NO_XTR, sparseWrite_);
-  }
-  catch (mdm_exception &e)
-	{
-		e.append("Failed to write error map ");
-		throw;
-	}
-}
+    mdm_Image3D errorMap = mdm_AnalyzeFormat::readImage3D(errorPath, false);
+    errorMap.setType(mdm_Image3D::ImageType::TYPE_ERRORMAP);
 
-MDM_API void mdm_FileManager::setSaveCtDataMaps(bool b)
-{
-	writeCtDataMaps_ = b;
-}
-
-MDM_API void mdm_FileManager::setSaveCtModelMaps(bool b)
-{
-  writeCtModelMaps_ = b;
-}
-
-MDM_API void mdm_FileManager::setSparseWrite(bool b)
-{
-	sparseWrite_ = b;
-}
-
-MDM_API void mdm_FileManager::loadErrorMap(const std::string &errorPath, bool warnMissing)
-{
-	//To avoid triggering all the warnings for missing images (given we speculatively
-	//try to load the error on the chance it may exist, but happily create it if it
-	//doesn't - do our own check here and just return false if it doesn't exist yet
-	//This avoids having to put a warning check on all our analyze read functions
-	// (this is the only case where we don't care if an image loads)
-	if (!warnMissing)
-	{
-		bool b;
-		if (!mdm_AnalyzeFormat::filesExist(errorPath, b, false))
-			return;		
-	}
-		
-  try {
-    mdm_Image3D img = mdm_AnalyzeFormat::readImage3D(errorPath, false);
-    img.setType(mdm_Image3D::ImageType::TYPE_ERRORMAP);
-    errorTracker_.setErrorImage(img);
+    volumeAnalysis_.errorTracker().setErrorImage(errorMap);
   }
   catch (mdm_exception &e)
   {
-    e.append("Problem loading error map");
+    e.append("Error reading error tracker map");
     throw;
   }
 
-	mdm_ProgramLogger::logProgramMessage(
-			"Successfully read error codes image from " + errorPath);
+  mdm_ProgramLogger::logProgramMessage(
+    "Error tracker map loaded from " + errorPath);
+}
+
+//
+MDM_API void mdm_FileManager::saveErrorTracker(const std::string &outputDir, const std::string &name)
+{
+  saveOutputMap(name, volumeAnalysis_.errorTracker().errorImage(), outputDir, false,
+    mdm_AnalyzeFormat::DT_SIGNED_INT);
 }
 
 /*Does what is says on the tin*/
@@ -286,7 +250,7 @@ MDM_API void mdm_FileManager::loadT1Map(const std::string &T1path)
     T1_map.setType(mdm_Image3D::ImageType::TYPE_T1BASELINE);
 
     //If image successfully read, add it to the T1 mapper object
-    T1Mapper_.addT1Map(T1_map);
+    volumeAnalysis_.T1Mapper().setT1(T1_map);
   }
   catch (mdm_exception &e)
   {
@@ -306,7 +270,7 @@ MDM_API void mdm_FileManager::loadM0Map(const std::string &M0path)
     M0_map.setType(mdm_Image3D::ImageType::TYPE_M0MAP);
     
     //If image successfully read, add it to the T1 mapper object
-    T1Mapper_.addM0Map(M0_map);
+    volumeAnalysis_.T1Mapper().setM0(M0_map);
   }
   catch (mdm_exception &e)
   {
@@ -369,7 +333,7 @@ MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 				
 
 			//However if nDyns wasn't set, this is expected behaviour - we keep loading images
-			//until we don't find them - just set catFilesExist to false so we break the loop
+			//until we don't find them - just set dynFilesExist to false so we break the loop
 			dynFilesExist = false;
 		}
 		else
@@ -380,11 +344,6 @@ MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 
         //If successfully loaded, add image to the volume analysis
         volumeAnalysis_.addStDataMap(img);
-
-        //For first image, try initialising errorImage, if that's already been
-        //set it will just return true
-        if (nDyn == 1)
-          errorTracker_.initErrorImage(img);
       }
       catch (mdm_exception &e)
       {
@@ -400,6 +359,7 @@ MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 	}
 }
 
+//
 MDM_API void mdm_FileManager::loadCtDataMaps(const std::string &CtBasePath,
 	const std::string &CtPrefix, int nDyns, const std::string &indexPattern)
 {
@@ -460,12 +420,7 @@ MDM_API void mdm_FileManager::loadCtDataMaps(const std::string &CtBasePath,
         img.setType(mdm_Image3D::ImageType::TYPE_CAMAP);
 
         //If successfully loaded, add image to the volume analysis
-        volumeAnalysis_.addCtDataMap(img);
-
-        //For first image, try initialising errorImage, if that's already been
-      //set it will just return true
-        if (nCt == 1)
-          errorTracker_.initErrorImage(img);
+        volumeAnalysis_.addCtDataMap(img);        
       }
       catch (mdm_exception &e)
       {
@@ -481,6 +436,21 @@ MDM_API void mdm_FileManager::loadCtDataMaps(const std::string &CtBasePath,
 	}
 }
 
+MDM_API void mdm_FileManager::setSaveCtDataMaps(bool b)
+{
+  writeCtDataMaps_ = b;
+}
+
+MDM_API void mdm_FileManager::setSaveCtModelMaps(bool b)
+{
+  writeCtModelMaps_ = b;
+}
+
+MDM_API void mdm_FileManager::setSparseWrite(bool b)
+{
+  sparseWrite_ = b;
+}
+
 //---------------------------------------------------------------------------
 //Private functions
 //---------------------------------------------------------------------------
@@ -492,12 +462,7 @@ void mdm_FileManager::loadT1InputImage(const std::string& filePath, int nVFA)
     img.setType(mdm_Image3D::ImageType::TYPE_T1WTSPGR);
 
     //If image successfully read, add it to the T1 mapper object
-    T1Mapper_.addInputImage(img);
-
-    //For first image, try initialising errorImage, if that's already been
-    //set it will just return true
-    if (nVFA == 1)
-      errorTracker_.initErrorImage(img);
+    volumeAnalysis_.T1Mapper().addInputImage(img);
   }
   catch (mdm_exception &e)
   {
@@ -509,14 +474,17 @@ void mdm_FileManager::loadT1InputImage(const std::string& filePath, int nVFA)
 		"Successfully read T1 input image " + std::to_string(nVFA) + " from " + filePath);
 }
 
-void mdm_FileManager::saveOutputMap(const std::string &mapName, const std::string &outputDir, bool writeXtr/* = true*/)
+void mdm_FileManager::saveOutputMap(
+  const std::string &mapName, const std::string &outputDir, bool writeXtr/* = true*/)
 {
 	const mdm_Image3D &img = volumeAnalysis_.DCEMap(mapName);
   if (img.numVoxels())
     saveOutputMap(mapName, img, outputDir, writeXtr);
 }
 
-void mdm_FileManager::saveOutputMap(const std::string &mapName, const mdm_Image3D &img, const std::string &outputDir, bool writeXtr/* = true*/)
+void mdm_FileManager::saveOutputMap(const std::string &mapName, const mdm_Image3D &img, 
+  const std::string &outputDir, bool writeXtr/* = true*/,
+  const mdm_AnalyzeFormat::Data_type format /*= mdm_AnalyzeFormat::DT_FLOAT*/)
 {
 	std::string saveName = outputDir + "/" + mapName;
 
@@ -525,7 +493,7 @@ void mdm_FileManager::saveOutputMap(const std::string &mapName, const mdm_Image3
 
   try {
     mdm_AnalyzeFormat::writeImage3D(saveName, img,
-      mdm_AnalyzeFormat::DT_FLOAT, xtr, sparseWrite_);
+      format, xtr, sparseWrite_);
   }
   catch (mdm_exception &e)
   {
@@ -540,11 +508,13 @@ void mdm_FileManager::saveMapsSummaryStats(const std::string &roiName, mdm_Param
   stats.openNewStatsFile(roiName + "_summary_stats.csv");
 
 	//Write out T1 and M0 maps (if M0 map used)
-	if (T1Mapper_.T1().numVoxels())
-		saveMapSummaryStats(volumeAnalysis_.MAP_NAME_T1, T1Mapper_.T1(), stats);
+	if (volumeAnalysis_.T1Mapper().T1().numVoxels())
+		saveMapSummaryStats(volumeAnalysis_.MAP_NAME_T1, 
+      volumeAnalysis_.T1Mapper().T1(), stats);
 
-	if (T1Mapper_.M0().numVoxels())
-		saveMapSummaryStats(volumeAnalysis_.MAP_NAME_M0, T1Mapper_.M0(), stats);
+	if (volumeAnalysis_.T1Mapper().M0().numVoxels())
+		saveMapSummaryStats(volumeAnalysis_.MAP_NAME_M0, 
+      volumeAnalysis_.T1Mapper().M0(), stats);
 
 	//Write model parameters maps
 	if (!volumeAnalysis_.modelType().empty())
