@@ -143,7 +143,6 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.T1method);
 	options_parser_.add_option(config_options, options_.T1inputNames);
 	options_parser_.add_option(config_options, options_.T1noiseThresh);
-	options_parser_.add_option(config_options, options_.nT1Inputs);
 
 		//Signal to concentration options_
 	options_parser_.add_option(config_options, options_.M0Ratio);
@@ -239,8 +238,8 @@ void mdm_RunTools_madym_DCE::setAIFParams()
 void mdm_RunTools_madym_DCE::setVolumeAnalysisParams()
 {
 	volumeAnalysis_.setComputeCt(!options_.inputCt());
-	volumeAnalysis_.setOutputCt(options_.outputCt_sig());
-	volumeAnalysis_.setOutputCmod(options_.outputCt_mod());
+	volumeAnalysis_.setOutputCtSig(options_.outputCt_sig());
+	volumeAnalysis_.setOutputCtMod(options_.outputCt_mod());
 	volumeAnalysis_.setR1Const(options_.r1Const());
   volumeAnalysis_.setPrebolusImage(options_.injectionImage());
 	volumeAnalysis_.setTestEnhancement(options_.testEnhancement());
@@ -288,12 +287,10 @@ void mdm_RunTools_madym_DCE::loadAIF()
 //
 void mdm_RunTools_madym_DCE::loadInitParamMaps()
 {
-	paramMapsInitialised_ = false;
 	if (!options_.initMapsDir().empty())
 	{
 		fs::path initMapsPath = fs::absolute(options_.initMapsDir());
     fileManager_.loadParameterMaps(initMapsPath.string());
-		paramMapsInitialised_ = true;
 	}
 }
 
@@ -301,7 +298,6 @@ void mdm_RunTools_madym_DCE::loadInitParamMaps()
 void mdm_RunTools_madym_DCE::fitModel()
 {
 	volumeAnalysis_.fitDCEModel(
-			paramMapsInitialised_,
 			!options_.noOptimise(),
 			options_.initMapParams());
 }

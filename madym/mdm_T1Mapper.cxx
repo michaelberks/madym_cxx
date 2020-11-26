@@ -21,9 +21,10 @@
 #include <boost/format.hpp>
 
 //
-MDM_API mdm_T1Mapper::mdm_T1Mapper(mdm_ErrorTracker &errorTracker)
+MDM_API mdm_T1Mapper::mdm_T1Mapper(mdm_ErrorTracker &errorTracker, mdm_Image3D &ROI)
 	:inputImages_(0),
 	errorTracker_(errorTracker),
+  ROI_(ROI),
 	noiseThreshold_(0),
 	method_(mdm_T1MethodGenerator::T1Methods::VFA)
 {}
@@ -35,33 +36,22 @@ MDM_API mdm_T1Mapper::~mdm_T1Mapper()
 //
 MDM_API void mdm_T1Mapper::addInputImage(mdm_Image3D img)
 {
-	/* MB - Copied this Gio comment from elsewhere - here would be an obvious place to enforce this check!
-	* Note that there is an assumption throughout MaDyM that all images used in the analysis have the same
-	* dimensions.  This is why we intialise with all the values from first_image.  However, this
-	* assumption is never tested.  It would robustify the code to include tests at the file-reading stage.
-	*/
-  if (inputImages_.empty())
-    errorTracker_.initErrorImage(img); //If already set, returns silently
-
+  checkOrSetDimension(img);
 	inputImages_.push_back(img);
 }
 
 //
-MDM_API void mdm_T1Mapper::setT1(mdm_Image3D T1_img)
+MDM_API void mdm_T1Mapper::setT1(mdm_Image3D T1)
 {
-	T1_ = T1_img;
+  checkOrSetDimension(T1);
+	T1_ = T1;
 }
 
 //
-MDM_API void mdm_T1Mapper::setM0(mdm_Image3D M0_img)
+MDM_API void mdm_T1Mapper::setM0(mdm_Image3D M0)
 {
-	M0_ = M0_img;
-}
-
-//
-MDM_API void mdm_T1Mapper::setROI(mdm_Image3D ROI)
-{
-	ROI_ = ROI;
+  checkOrSetDimension(M0);
+	M0_ = M0;
 }
 
 //
@@ -82,7 +72,7 @@ MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 	M0_.copy(inputImages_[0]);
 	M0_.setType(mdm_Image3D::ImageType::TYPE_M0MAP);
 
-	bool useROI = ROI_.numVoxels() > 0;
+  bool useROI = (bool)ROI_;
 
 	int numFitted = 0;
 	int numErrors = 0;
@@ -151,15 +141,12 @@ MDM_API const std::vector<mdm_Image3D>& mdm_T1Mapper::inputImages() const
 //
 MDM_API const mdm_Image3D& mdm_T1Mapper::inputImage(size_t i) const
 {
-  try { return inputImages_[i]; }
-  catch (std::out_of_range &e)
-  {
-    mdm_exception em(__func__, e.what());
-    em.append(boost::format(
+  if (i >= inputImages_.size())
+    throw mdm_exception(__func__, boost::format(
       "Attempting to access input image %1% when there are %2% input images")
       % i % inputImages_.size());
-    throw em;
-  }
+
+  return inputImages_[i];
 }
 
 //
@@ -216,3 +203,12 @@ MDM_API void  mdm_T1Mapper::setNoiseThreshold(double t)
 //******************************************************************
 //Private methods
 //******************************************************************
+
+void mdm_T1Mapper::checkOrSetDimension(const mdm_Image3D &img)
+{
+  if (!errorTracker_.errorImage())
+    errorTracker_.initErrorImage(img);
+
+  else if (!img.dimensionsMatch(errorTracker_.errorImage()))
+    throw mdm_dimension_mismatch(__func__, errorTracker_.errorImage(), img);
+}

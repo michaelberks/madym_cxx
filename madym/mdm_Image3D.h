@@ -13,6 +13,8 @@
 #include <string>
 #include <fstream>
 #include <cmath>
+#include <madym/mdm_exception.h>
+
  /*!
 	*  @brief   Storing 3D image data and associated meta-information
 	*/
@@ -20,108 +22,108 @@ class mdm_Image3D
 {
 	public:
 
-		//! mdm_image3D nested helper class to store image meta data
-		class MetaData{
+	//! mdm_image3D nested helper class to store image meta data
+	class MetaData{
 
+	public:
+		//! Default constructor
+		MetaData();
+
+		//! mdm_image3D nested helper class to store image key(string)/value(double) pairs of meta data
+		class KeyPair {
 		public:
 			//! Default constructor
-			MetaData();
+			/*!
+			\param key name of meta data field
+			*/
+			KeyPair(const std::string &key)
+				:
+				key_(key),
+				value_(NAN)
+			{};
 
-			//! mdm_image3D nested helper class to store image key(string)/value(double) pairs of meta data
-			class KeyPair {
-			public:
-				//! Default constructor
-				/*!
-				\param key name of meta data field
-				*/
-				KeyPair(const std::string &key)
-					:
-					key_(key),
-					value_(NAN)
-				{};
-
-				//! Return meta data key name
-				/*!
-				\return key name
-				*/
-				const std::string &key() const
-				{
-					return key_;
-				};
-
-				//! Return meta data value
-				/*!
-				\return meta data value
-				*/
-				double value() const
-				{
-					return value_;
-				};
-
-				//! Set meta data value
-				/*!
-				\param value
-				*/
-				void setValue(double value)
-				{
-					value_ = value;
-				}
-
-				//! Check if meta data value is set
-				/*!
-				\return true if value is set (not NaN)
-				*/
-				bool isSet() const
-				{
-					return !std::isnan(value_);
-				}
-				
-			private:
-				std::string key_;
-				double value_;
+			//! Return meta data key name
+			/*!
+			\return key name
+			*/
+			const std::string &key() const
+			{
+				return key_;
 			};
-			KeyPair flipAngle; ///> Flip-angle
-			KeyPair TR; ///> Repetition time in ms
-			KeyPair TE; ///> Echo time in ms
-			KeyPair B; ///> Magnitude field B-value
-			KeyPair TI; ///> T1 in ms
-			KeyPair TA; ///> TA
-			KeyPair ETL; ///> ETL
-			KeyPair Xmm; ///> X0
-			KeyPair Ymm; ///> Y0
-			KeyPair Zmm; ///> Z0
-			KeyPair rowDirCosX; ///> rowDirCosX
-			KeyPair rowDirCosY; ///> rowDirCosY
-			KeyPair rowDirCosZ; ///> rowDirCosZ
-			KeyPair colDirCosX; ///> colDirCosX
-			KeyPair colDirCosY; ///> colDirCosY
-			KeyPair colDirCosZ; ///> colDirCosZ
-			KeyPair noiseSigma; ///> Estimate of noise standard deviation
 
-			static const std::string ImageTypeKey;
-			static const std::string TimeStampKey;
-		};
+			//! Return meta data value
+			/*!
+			\return meta data value
+			*/
+			double value() const
+			{
+				return value_;
+			};
 
-		//! Enum of defined image types
-		/*!
-		*/
-		enum ImageType {
-			TYPE_UNDEFINED, ///> Unspecified type
-			TYPE_T1WTSPGR, ///> T1 weighted, spoiled gradient echo image
-			TYPE_T1BASELINE, ///> Baseline T1 map
-			TYPE_T1DYNAMIC, ///> Dynamic T1 map
-			TYPE_M0MAP, ///> M0 map
-			TYPE_CAMAP, ///> Contrast-agent concentration map
-			TYPE_DEGR, ///> Variable flip-angle map
-			TYPE_T2STARMAP, ///> T2* map
-			TYPE_DYNMEAN, ///> Temporal mean of dynamic images
-			TYPE_DWI, ///> Diffusion weighted-image
-			TYPE_ADCMAP, ///> Apparent diffusion coefficient (ADC) map
-			TYPE_ERRORMAP, ///> Error map
-			TYPE_AIFVOXELMAP, ///> Mask for selecting AIF
-			TYPE_KINETICMAP, ///> Tracer-kinetic model parameter map
-      TYPE_ROI ///> Region of interest mask
+			//! Set meta data value
+			/*!
+			\param value
+			*/
+			void setValue(double value)
+			{
+				value_ = value;
+			}
+
+			//! Check if meta data value is set
+			/*!
+			\return true if value is set (not NaN)
+			*/
+			bool isSet() const
+			{
+				return !std::isnan(value_);
+			}
+				
+		private:
+			std::string key_;
+			double value_;
 		};
+		KeyPair flipAngle; ///> Flip-angle
+		KeyPair TR; ///> Repetition time in ms
+		KeyPair TE; ///> Echo time in ms
+		KeyPair B; ///> Magnitude field B-value
+		KeyPair TI; ///> T1 in ms
+		KeyPair TA; ///> TA
+		KeyPair ETL; ///> ETL
+		KeyPair Xmm; ///> X0
+		KeyPair Ymm; ///> Y0
+		KeyPair Zmm; ///> Z0
+		KeyPair rowDirCosX; ///> rowDirCosX
+		KeyPair rowDirCosY; ///> rowDirCosY
+		KeyPair rowDirCosZ; ///> rowDirCosZ
+		KeyPair colDirCosX; ///> colDirCosX
+		KeyPair colDirCosY; ///> colDirCosY
+		KeyPair colDirCosZ; ///> colDirCosZ
+		KeyPair noiseSigma; ///> Estimate of noise standard deviation
+
+		static const std::string ImageTypeKey;
+		static const std::string TimeStampKey;
+	};
+
+	//! Enum of defined image types
+	/*!
+	*/
+	enum ImageType {
+		TYPE_UNDEFINED, ///> Unspecified type
+		TYPE_T1WTSPGR, ///> T1 weighted, spoiled gradient echo image
+		TYPE_T1BASELINE, ///> Baseline T1 map
+		TYPE_T1DYNAMIC, ///> Dynamic T1 map
+		TYPE_M0MAP, ///> M0 map
+		TYPE_CAMAP, ///> Contrast-agent concentration map
+		TYPE_DEGR, ///> Variable flip-angle map
+		TYPE_T2STARMAP, ///> T2* map
+		TYPE_DYNMEAN, ///> Temporal mean of dynamic images
+		TYPE_DWI, ///> Diffusion weighted-image
+		TYPE_ADCMAP, ///> Apparent diffusion coefficient (ADC) map
+		TYPE_ERRORMAP, ///> Error map
+		TYPE_AIFVOXELMAP, ///> Mask for selecting AIF
+		TYPE_KINETICMAP, ///> Tracer-kinetic model parameter map
+    TYPE_ROI ///> Region of interest mask
+	};
 	
 		
 	//!    Default constructor
@@ -134,6 +136,12 @@ class mdm_Image3D
 	/*!
 	*/
 	MDM_API ~mdm_Image3D();
+
+  //! Explicit conversion to bool, defined as a non-empty image
+  explicit operator bool() const
+  {
+    return numVoxels() > 0;
+  }
 
 	//! Read only access to the image data array
 	/*!
@@ -396,5 +404,37 @@ private:
 
 	//! Image meta data
 	MetaData info_;
+};
+
+class mdm_dimension_mismatch : virtual public mdm_exception {
+
+public:
+  //! Constructor from standard string message
+  /*!
+  \param func name of throwing function
+  \param msg exception message displayed by what()
+  */
+  mdm_dimension_mismatch(const char* func,
+    const mdm_Image3D &ref, const mdm_Image3D &img) noexcept
+    : mdm_exception(func, "Dimension mismatch: ")
+  {
+    size_t nxr, nyr, nzr, nxi, nyi, nzi;
+    const auto &r = ref.info();
+    const auto &i = img.info();
+
+    ref.getDimensions(nxr, nyr, nzr);
+    img.getDimensions(nxi, nyi, nzi);
+    
+    append(boost::format(
+      "new image (dimensions %1% x %2% x %3%, voxel sizes %4% x %5% x %6% mm3) does not match \n"
+      "reference image (dimensions %7% x %8% x %9%, voxel sizes %10% x %11% x %12% mm3)"
+      )
+      % nxr % nyr %nzr % r.Xmm.value() % r.Ymm.value() % r.Zmm.value()
+      % nxi % nyi %nzi % i.Xmm.value() % i.Ymm.value() % i.Zmm.value());
+   
+  }
+
+private:
+
 };
 #endif /* MDM_IMAGE3D_H */

@@ -72,9 +72,6 @@ private:
 	void fitModel();
 
   void writeOutput();
-
-	//Variables:
-	bool paramMapsInitialised_;
 };
 
 #endif

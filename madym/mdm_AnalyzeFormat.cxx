@@ -89,7 +89,7 @@ MDM_API mdm_Image3D mdm_AnalyzeFormat::readImage3D(const std::string &fileName,
 
   img.setDimensions(nX, nY, nZ);
 
-  if (img.numVoxels() <= 0)
+  if (!img)
     throw mdm_exception(__func__, "Can't allocate voxel array for image " + imgFileName);
 
 
@@ -144,7 +144,7 @@ MDM_API void mdm_AnalyzeFormat::writeImage3D(const std::string &baseName,
   if (baseName.empty())
     throw mdm_exception(__func__, "Basename for writing image must not be empty");
 
-  if (!img.numVoxels())
+  if (!img)
     throw mdm_exception(__func__, "Image for writing image must not be empty");
 
 	// Ensure all hdr fields have been initialised, set the req'd fields from

@@ -262,13 +262,13 @@ public:
 	/*!
 	\param flag
 	*/
-	MDM_API void setOutputCt(bool flag);
+	MDM_API void setOutputCtSig(bool flag);
 
 	//! Set flag to output model estimated concentration maps
 	/*!
 	\param flag
 	*/
-	MDM_API void setOutputCmod(bool flag);
+	MDM_API void setOutputCtMod(bool flag);
 
 	//! Set the time points at which we calculate IAUC
 	/*!
@@ -304,24 +304,15 @@ public:
 	*/
 	MDM_API void setMaxIterations(int maxItr);
 
-  //! Initialise all DCE and tracer-kinetic model maps
-	/*!
-	Creates maps of appropiate size for each output map, with zero-values in all voxels. 
-	Must be called prior to model fitting to ensure there are output containers in which
-	to store fitted values, IAUC measures etc.
-	*/
-	MDM_API void initialiseParameterMaps();
-
 	//! Fit DCE tracer-kinetic model to all voxels
 	/*!
-	\param paramMapsInitialised flag if model parameters are loaded from which initial values are set
 	\param optimiseModel flag to optimise parameter fits. If false, modelled concentration will be computed
 	at the initial values for each voxel.
 	\param  initMapParams indices of parameters to initialise from maps. Ignored if paramMapsInitialised is false.
 	Fit failures in individual voxels are logged. Volume-wise errors throw an mdm_exception to be caught by calling code.
 	*/
-	MDM_API void   fitDCEModel(bool paramMapsInitialised = false, 
-		bool optimiseModel = true, 
+	MDM_API void   fitDCEModel(
+    bool optimiseModel = true, 
 		const std::vector<int> initMapParams = {});
 
 	//! Return length of dynamic time-series
@@ -345,6 +336,36 @@ protected:
 
 private:
 
+  //! Throw exception if model not set, guards any function that requires a model
+  void checkModelSet() const;
+
+  //! Throw exception if dynamic maps not set
+  void checkDynamicsSet() const;
+
+  //!Check the image dimensions match, with option to set if no current reference dimensions
+  /* If no other images set yet, this will
+   - initialise the error tracker
+   - in doing so, set the dimension for all subsequent images to be checked against
+   Throws mdm_mismatched_image() exception if dimensions don't match
+   \param img input image to check
+   */
+  void checkOrSetDimension(const mdm_Image3D &img);
+
+  //!Check the image dimension match, throws mdm_mismatched_image() exception if they don't
+  /*
+  \param img input image to check
+  */
+  void checkDimension(const mdm_Image3D &img) const;
+
+  //! Initialise all DCE and tracer-kinetic model maps
+  /*!
+  Creates maps of appropiate size for each output map, with zero-values in all voxels.
+  Must be called prior to model fitting to ensure there are output containers in which
+  to store fitted values, IAUC measures etc.
+  bool (output) set true if maps have already been loaded
+  */
+  void initialiseParameterMaps(const mdm_DCEModelBase &model, bool &mapsAlreadyLoaded);
+
   mdm_DCEVoxel setUpVoxel(size_t voxelIndex) const;
 
 
@@ -363,17 +384,36 @@ private:
 	/*!
 	*/
 	void setVoxelInAllMaps(size_t voxelIndex,
-    const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter);
+    const mdm_DCEModelBase &model, const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter);
 
   /*!
   */
   void setVoxelInAllMaps(size_t voxelIndex, double value);
 
+  /*!
+  */
   void setVoxelModelError(size_t voxelIndex, const mdm_DCEModelFitter &fitter);
+
+  /*!
+  */
+  std::vector <size_t> getVoxelsToFit() const;
+
+  /*!
+  */
+  void initialiseModelParams(const size_t voxelIndex,
+    mdm_DCEModelBase &model, const std::vector<int> initMapParams);
+
+  /*!
+  */
+  void logProgress(double &numProcessed, const double numVoxels);
 
 	/*!
 	*/
-	void  fitModel(bool paramMapsInitialised, bool optimiseModel, const std::vector<int> initMapParams);
+	void  fitModel(
+    mdm_DCEModelBase &model, 
+    bool paramMapsInitialised, 
+    bool optimiseModel, 
+    const std::vector<int> initMapParams);
 
 	/* See comments for initialiseParameterMaps() */
 	void createMap(mdm_Image3D& img);
@@ -393,7 +433,7 @@ private:
   std::vector<double> dynamicTimes_;
   std::vector<double> noiseVar_;
 	std::shared_ptr < mdm_DCEModelBase > model_;
-  mdm_Image3D referenceDynamicImg_;
+  std::unique_ptr<mdm_Image3D::MetaData> dynamicMetaData_;
   int prebolusImage_;
 
 	mdm_T1Mapper T1_mapper_;
@@ -433,9 +473,11 @@ private:
   size_t firstImage_;
   size_t lastImage_;
 
-	//Maximum number of iterations
 	//Maximum number of iterations applied
 	int maxIterations_;
+
+  //Counter to keep tracker of progress logging
+  double pctTarget_;
 };
 
 #endif /* mdm_DCEVolumeAnalysis_HDR */
