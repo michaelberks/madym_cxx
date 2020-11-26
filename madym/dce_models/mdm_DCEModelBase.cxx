@@ -91,7 +91,7 @@ MDM_API void mdm_DCEModelBase::init(
 	reset(AIF_.AIFTimes().size());
 }
 
-MDM_API void mdm_DCEModelBase::reset(int nTimes)
+MDM_API void mdm_DCEModelBase::reset(size_t nTimes)
 {
   CtModel_.resize(nTimes);
 
@@ -110,12 +110,12 @@ MDM_API void mdm_DCEModelBase::reset(int nTimes)
 
 MDM_API int mdm_DCEModelBase::numParams() const
 {
-  return pkInitParams_.size();
+  return (int)pkInitParams_.size();
 }
 
 MDM_API int mdm_DCEModelBase::numOptimised() const
 {
-  return pkParamsOpt_.size();  
+  return (int)pkParamsOpt_.size();  
 }
 
 MDM_API int mdm_DCEModelBase::numFixed() const

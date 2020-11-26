@@ -29,6 +29,8 @@ std::ofstream mdm_ProgramLogger::program_log_stream_;
 std::ofstream mdm_ProgramLogger::audit_log_stream_;
 bool mdm_ProgramLogger::quiet_ = false;
 
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_DEPRECATED
 //
 MDM_API bool mdm_ProgramLogger::openProgramLog(const std::string &fileName,
 	const std::string &caller)
@@ -185,6 +187,7 @@ MDM_API bool mdm_ProgramLogger::logAuditMessage(const std::string &message)
 	audit_log_stream_ << message << std::endl;
 	return true;
 }
+DISABLE_WARNING_POP
 
 //****************************************************************************
 // Private

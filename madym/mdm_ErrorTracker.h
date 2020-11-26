@@ -63,27 +63,24 @@ public:
 	Input image must be non-empty and of type mdm_Image3D#imageType#TYPE_ERRORMAP, otherwise
 	the error image will not be set, and the function will return false.
 	\param    imgWithDims   mdm_Image3D object, must have type mdm_Image3D#imageType#TYPE_ERRORMAP
-	\return   bool true on success or false otherwise
 	\see mdm_Image3D#imageType
 	*/
-	MDM_API bool setErrorImage(const mdm_Image3D &imgWithDims);
+	MDM_API void setErrorImage(const mdm_Image3D &imgWithDims);
 
 	//!    Initialise error image, copying dimensions from existing image
 	/*!
 	\param    img   mdm_Image3D object with voxel and matrix dimensions to copy
-	\return   bool true on success or false otherwise
 	*/
-	MDM_API bool initErrorImage(const mdm_Image3D &img);
+	MDM_API void initErrorImage(const mdm_Image3D &img);
 
 	//!    Update a voxel in the error image with the specified error code
 	/*!
 	\param    voxelIndex  Integer image voxel index (from x, y, z co-ordinates), must be >=0 and 
 	< errorImage_.numVoxels()
 	\param    errCode     Integer error code
-	\return   true on success or false if voxel cannot be set
 	\see ErrorCode
 	*/
-	MDM_API bool updateVoxel(const int voxelIndex, ErrorCode errCode);
+	MDM_API void updateVoxel(const size_t voxelIndex, ErrorCode errCode);
 
 	//! Return mask image where all voxels matching the given error code are set to 1
 	/*!

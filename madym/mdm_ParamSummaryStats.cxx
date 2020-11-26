@@ -42,9 +42,9 @@ double percentile(const std::vector<double> &A, const double &prct)
 		return A.back();
 
 	//See https://en.wikipedia.org/wiki/Quartile#Method_4
-	double n1 = A.size() + 1;
+	double n1 = (double)A.size() + 1;
 	double pn1 = n1 * prct / 100.00;
-	double k = std::floor(pn1);
+	size_t k = size_t(std::floor(pn1));
 
 	//If size A < 3, then k = 0 for prctile(25) and k = 3 for prctile(75)
 	if (!k)

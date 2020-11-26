@@ -41,10 +41,10 @@ void mdm_RunToolsDCEFit::setModel(const std::string &modelName,
 {
 	auto modelType = mdm_DCEModelGenerator::ParseModelName(modelName);
 	if (modelType == mdm_DCEModelGenerator::UNDEFINED)
-		mdm_progAbort("Invalid or unsupported model (from command-line)");
+    throw mdm_exception(__func__, "Invalid or unsupported model (from command-line)");
 
   if (AIF_.AIFType() == mdm_AIF::AIF_TYPE::AIF_UNDEFINED)
-    mdm_progAbort("Tried to create model before AIF set");
+    throw mdm_exception(__func__, "Tried to create model before AIF set");
 
 	model_ = mdm_DCEModelGenerator::createModel(AIF_,
 		modelType, paramNames,

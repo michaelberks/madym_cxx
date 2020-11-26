@@ -22,7 +22,7 @@ void test_model_time_fit(
 	bool test_IAUC = false)
 {
 	//Read in the model calibration file - this has noise added to it
-	int nTimes = AIF.AIFTimes().size();
+	auto nTimes = AIF.AIFTimes().size();
 	int nParams;
 	std::vector<double> CtCalibration(nTimes);
 	std::string modelFileName = mdm_test_utils::calibration_dir() + modelName + "_noise.dat";

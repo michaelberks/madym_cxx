@@ -13,6 +13,7 @@
 #include "mdm_RunTools_madym_DCE.h"
 
 #include <madym/mdm_ProgramLogger.h>
+#include <madym/mdm_exception.h>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/erase.hpp>
@@ -38,7 +39,7 @@ MDM_API mdm_RunTools_madym_DCE::~mdm_RunTools_madym_DCE()
 }
 
 //
-MDM_API int mdm_RunTools_madym_DCE::run()
+MDM_API void mdm_RunTools_madym_DCE::run()
 {
 	//Check required inputs
 	checkRequiredInputs();
@@ -118,8 +119,6 @@ MDM_API int mdm_RunTools_madym_DCE::run()
 
 	//Write output
 	writeOutput();
-
-	return mdm_progExit();
 }
 
 //
@@ -212,16 +211,16 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 void mdm_RunTools_madym_DCE::checkRequiredInputs()
 {
 	if (options_.model().empty())
-		mdm_progAbort("model (option -m) must be provided");
+    throw mdm_exception(__func__, "model (option -m) must be provided");
 
 	if (!options_.T1Name().empty() && options_.T1Name().at(0) == '-')
-		mdm_progAbort("Error no value associated with T1 map name from command-line");
+    throw mdm_exception(__func__, "Error no value associated with T1 map name from command-line");
 
 	if (!options_.M0Name().empty() && options_.M0Name().at(0) == '-')
-		mdm_progAbort("Error no value associated with M0 map name from command-line");
+    throw mdm_exception(__func__, "Error no value associated with M0 map name from command-line");
 
 	if (!options_.dynName().empty() && options_.dynName().at(0) == '-')
-		mdm_progAbort("Error no value associated with dynamic series file name from command-line");
+    throw mdm_exception(__func__, "Error no value associated with dynamic series file name from command-line");
 }
 
 void mdm_RunTools_madym_DCE::setFileManagerParams()
@@ -276,8 +275,7 @@ void mdm_RunTools_madym_DCE::loadAIF()
     fileManager_.loadAIFmap(aifPath);
 
     std::vector<double> baseAIF(volumeAnalysis_.AIFfromMap());
-    if (!AIF_.setBaseAIF(baseAIF))
-      mdm_progAbort("Failed to compute AIF values from AIF map");
+    AIF_.setBaseAIF(baseAIF);
   }
 
 	//Load PIF
@@ -303,15 +301,10 @@ void mdm_RunTools_madym_DCE::loadInitParamMaps()
 //
 void mdm_RunTools_madym_DCE::fitModel()
 {
-	bool modelsFitted =
-		volumeAnalysis_.fitDCEModel(
+	volumeAnalysis_.fitDCEModel(
 			paramMapsInitialised_,
 			!options_.noOptimise(),
 			options_.initMapParams());
-
-	if (!modelsFitted)
-		mdm_progAbort("error fitting models");
-
 }
 
 void mdm_RunTools_madym_DCE::writeOutput()

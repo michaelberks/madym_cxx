@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(test_image3D) {
 	int nx = 2, ny = 2, nz = 2;
 	img.setDimensions(nx, ny, nz);
 
-	int nVoxels = img.numVoxels();
+	auto nVoxels = img.numVoxels();
 	BOOST_TEST_MESSAGE("Image initialised");
 	BOOST_CHECK_EQUAL(nVoxels, nx*ny*nz);
 

@@ -53,9 +53,9 @@ protected:
   4. Processes each line in input data file, fitting tracer-kineti model to input signals/concentrations,
   writing fited parameters and IAUC measurements to output file
   5. Closes input/output file and reports the number of samples processed.
-  \return 0 on success, non-zero otherwise
+  Throws mdm_exception if errors encountered
   */
-  MDM_API int run();
+  MDM_API void run();
 
 private:
   //Methods:
@@ -72,34 +72,34 @@ private:
 
   //
   void computeAutoAIFSlice(
-    const int slice,
+    const size_t slice,
     mdm_Image3D &AIFmap,
-    const std::vector<int> &xRange,
-    const std::vector<int> &yRange,
-    std::vector<int> &candidateVoxels,
+    const std::vector<size_t> &xRange,
+    const std::vector<size_t> &yRange,
+    std::vector<size_t> &candidateVoxels,
     std::vector<double> &candidateMaxSignals);
 
   // 
   void processSlices(
-    const int slice,
+    const size_t slice,
     mdm_Image3D &AIFmap,
-    std::vector<int> &candidateVoxels,
+    std::vector<size_t> &candidateVoxels,
     std::vector<double> &candidateMaxSignals);
 
   // 
   void getSliceCandidateVoxels(
-    const int slice,
-    const std::vector<int> &xRange,
-    const std::vector<int> &yRange,
+    const size_t slice,
+    const std::vector<size_t> &xRange,
+    const std::vector<size_t> &yRange,
     mdm_Image3D &AIFmap,
     mdm_Image3D &AIFmapSlice,
-    std::vector<int> &candidateVoxels,
+    std::vector<size_t> &candidateVoxels,
     std::vector<double> &candidateMaxSignals);
 
   //
   void selectVoxelsFromCandidates(
     mdm_Image3D &AIFmap,
-    const std::vector<int> &candidateVoxels,
+    const std::vector<size_t> &candidateVoxels,
     const std::vector<double> &candidateMaxSignals);
 
   //
@@ -110,15 +110,15 @@ private:
     const std::vector<mdm_Image3D> &dynImages,
     mdm_Image3D &AIFmap,
     mdm_Image3D &AIFmapSlice,
-    int voxelIndex, double &maxSig);
+    size_t voxelIndex, double &maxSig);
 
   //
   void getMinMaxSignal(const std::vector<double> &signalData,
-    double &minSignal, double&maxSignal, int &maxImg);
+    double &minSignal, double&maxSignal, size_t &maxImg);
 
   //
   double prebolusNoiseThresh(const std::vector<double> &signalData,
-    const int arrivalImg);
+    const size_t arrivalImg);
 
 	//Variables:
   mdm_AIF AIF_;

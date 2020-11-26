@@ -34,8 +34,8 @@ public:
 	*/
 	MDM_API mdm_DCEModelFitter(
 		mdm_DCEModelBase &model,
-    const int timepoint0,
-		const int timepointN,
+    const size_t timepoint0,
+		const size_t timepointN,
     const std::vector<double> &noiseVar,
 		const int maxIterations = 0);
 
@@ -61,13 +61,13 @@ public:
 	/*!
 	\return first timepoint used in computing model fit
 	*/
-	MDM_API int timepoint0() const;
+	MDM_API size_t timepoint0() const;
 	
 	//! Return last timepoint used in computing model fit
 	/*!
 	\return last timepoint used in computing model fit
 	*/
-	MDM_API int timepointN() const;
+	MDM_API size_t timepointN() const;
   
 	//! Return signal-derived contrast-agent concentration time-series
 	/*!
@@ -105,8 +105,8 @@ private:
   mdm_DCEModelBase &model_;
 
   
-  int timepoint0_;
-  int timepointN_;
+  size_t timepoint0_;
+  size_t timepointN_;
   std::vector<double> noiseVar_;			//DCE time series vector of estimated noise variance for each temporal volume
 
 	double modelFitError_; //SSD error between catData (actual concentrations) and catModel (fitted concentrations)

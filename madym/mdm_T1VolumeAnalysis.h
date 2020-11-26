@@ -81,7 +81,7 @@ public:
 	\param idx index of input images to return, must be >= 0, < inputImages_.size()
 	\return read-only reference to input image at index idx
 	*/
-	MDM_API const mdm_Image3D& inputImage(int idx) const;
+	MDM_API const mdm_Image3D& inputImage(size_t idx) const;
 		
 	
 	//! Return read-only reference to T1 map
@@ -101,20 +101,20 @@ public:
 	\param voxel index, must be >=0 and < T1Map_.numVoxels()
 	\return T1 value at voxel
 	*/
-	MDM_API double T1(int voxel) const;
+	MDM_API double T1(size_t voxel) const;
 
 	//! Return M0 value at specified voxel
 	/*!
 	\param voxel index, must be >=0 and < T1Map_.numVoxels()
 	\return T1 value at voxel
 	*/
-	MDM_API double M0(int voxel) const;
+	MDM_API double M0(size_t voxel) const;
 
 	//! Set T1 and M0 to zero specified voxel
 	/*!
 	\param voxel index, must be >=0 and < T1Map_.numVoxels()
 	*/
-	MDM_API void zeroVoxel(int voxel);
+	MDM_API void zeroVoxel(size_t voxel);
 
 	//! Return default T1 mapping method
 	/*!

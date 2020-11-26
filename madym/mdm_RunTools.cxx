@@ -20,6 +20,7 @@
 
 #include <mdm_version.h>
 #include <madym/mdm_exception.h>
+#include <madym/mdm_platform_defs.h>
 
 #include <madym/mdm_ProgramLogger.h>
 
@@ -102,6 +103,8 @@ void mdm_RunTools::mdm_progAbort(const std::string &err_str)
   exit(1);
 }
 
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_DEPRECATED
 std::string mdm_RunTools::timeNow()
 {
 	
@@ -112,6 +115,7 @@ std::string mdm_RunTools::timeNow()
 	ss << std::put_time(std::localtime(&in_time_t), "_%Y%m%d_%H%M%S_");
 	return ss.str();
 }
+DISABLE_WARNING_POP
 
 //
 void mdm_RunTools::set_up_cwd()

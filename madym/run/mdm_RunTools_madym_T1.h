@@ -50,9 +50,9 @@ protected:
   3. Loads in signal input volumes (and ROI if given)
   4. Processes all voxels (in ROI mask if given), mapping T1 from input signals, saving T1 and M0 values to output maps
   5. Saves output maps.
-  \return 0 on success, non-zero otherwise
+  Throws mdm_exception if errors encountered
   */
-  MDM_API int run();
+  MDM_API void run();
 
 private:
   //Methods:

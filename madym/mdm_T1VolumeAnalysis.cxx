@@ -65,7 +65,7 @@ MDM_API void mdm_T1VolumeAnalysis::addROI(mdm_Image3D ROI)
 MDM_API void  mdm_T1VolumeAnalysis::mapT1(mdm_T1MethodGenerator::T1Methods method)
 {
 	//
-	int nSignals = inputImages_.size();
+	auto nSignals = inputImages_.size();
 
 	//Instantiate T1 fitter object of required method type
 	auto T1Fitter = mdm_T1MethodGenerator::createFitter(method, inputImages_);
@@ -84,14 +84,14 @@ MDM_API void  mdm_T1VolumeAnalysis::mapT1(mdm_T1MethodGenerator::T1Methods metho
 	int numFitted = 0;
 	int numErrors = 0;
 	auto fit_start = std::chrono::system_clock::now();
-	for (int voxelIndex = 0, n = M0_.numVoxels(); voxelIndex < n; voxelIndex++)
+	for (size_t voxelIndex = 0, n = M0_.numVoxels(); voxelIndex < n; voxelIndex++)
 	{
 		if (useROI && !ROI_.voxel(voxelIndex))
 			continue;
 
 		//Get signals at this voxel
 		std::vector<double> signal(nSignals);
-		for (int i_f = 0; i_f < nSignals; i_f++)
+		for (size_t i_f = 0; i_f < nSignals; i_f++)
 			signal[i_f] = inputImages_[i_f].voxel(voxelIndex);   /* sig FA_1 */
 
 		//TODO - MB, why only check the first signal?				
@@ -146,7 +146,7 @@ MDM_API const std::vector<mdm_Image3D>& mdm_T1VolumeAnalysis::inputImages() cons
 }
 
 //
-MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::inputImage(int i) const
+MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::inputImage(size_t i) const
 {
   try { return inputImages_[i]; }
   catch (std::out_of_range &e)
@@ -172,19 +172,19 @@ MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::M0() const
 }
 
 //
-MDM_API double mdm_T1VolumeAnalysis::T1(int voxel) const
+MDM_API double mdm_T1VolumeAnalysis::T1(size_t voxel) const
 {
 	return T1_.voxel(voxel);
 }
 
 //
-MDM_API double mdm_T1VolumeAnalysis::M0(int voxel) const
+MDM_API double mdm_T1VolumeAnalysis::M0(size_t voxel) const
 {
 	return M0_.voxel(voxel);
 }
 
 //
-MDM_API void mdm_T1VolumeAnalysis::zeroVoxel(int voxel)
+MDM_API void mdm_T1VolumeAnalysis::zeroVoxel(size_t voxel)
 {
 	T1_.setVoxel(voxel, 0);
 	M0_.setVoxel(voxel, 0);

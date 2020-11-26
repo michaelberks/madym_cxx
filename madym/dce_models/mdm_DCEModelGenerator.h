@@ -112,7 +112,7 @@ public:
 			return DIBEM;
 
 		else if (modelName == "DIBEM_FP")
-			DIBEM_FP;
+			return DIBEM_FP;
 
 		else
 			return UNDEFINED;

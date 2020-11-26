@@ -12,7 +12,7 @@ void test_model_time_series(
 	mdm_AIF &AIF)
 {
 	//Read in the model calibration file
-	int nTimes = AIF.AIFTimes().size();
+	auto nTimes = AIF.AIFTimes().size();
 	int nParams;
 	std::vector<double> CtCalibration(nTimes);
 	std::string modelFileName = mdm_test_utils::calibration_dir() + modelName + ".dat";

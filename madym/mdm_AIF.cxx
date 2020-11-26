@@ -46,7 +46,7 @@ MDM_API mdm_AIF::~mdm_AIF()
 }
 
 //
-MDM_API void mdm_AIF::readAIF(const std::string &full_AIF_filename, const int nDynamics)
+MDM_API void mdm_AIF::readAIF(const std::string &full_AIF_filename, const size_t nDynamics)
 {
   try {
     readIFFromFile(base_AIF_, full_AIF_filename, nDynamics);
@@ -60,7 +60,7 @@ MDM_API void mdm_AIF::readAIF(const std::string &full_AIF_filename, const int nD
 }
 
 //
-MDM_API void mdm_AIF::readPIF(const std::string &full_PIF_filename, const int nDynamics)
+MDM_API void mdm_AIF::readPIF(const std::string &full_PIF_filename, const size_t nDynamics)
 {
   try {
     readIFFromFile(base_PIF_, full_PIF_filename, nDynamics);
@@ -103,15 +103,14 @@ MDM_API void mdm_AIF::writePIF(const std::string &filename)
 }
 
 //
-MDM_API bool mdm_AIF::setBaseAIF(const std::vector<double> &aifVals)
+MDM_API void mdm_AIF::setBaseAIF(const std::vector<double> &aifVals)
 {
-  if (aifVals.size() == AIFTimes_.size())
-  {
-    base_AIF_ = aifVals;
-    return true;
-  }
-  else
-    return false;
+  if (aifVals.size() != AIFTimes_.size())
+    throw mdm_exception(__func__, boost::format(
+      "Size of input AIF values (%1%) does not match number of times (%2%)")
+      % aifVals.size() % AIFTimes_.size());
+  
+  base_AIF_ = aifVals;
 }
 
 //
@@ -130,7 +129,7 @@ MDM_API const std::vector<double>& mdm_AIF::PIF() const
 MDM_API void mdm_AIF::resample_AIF(double tOffset)
 {
 	//Important this is only called after AIFTimes has been set
-	const int nTimes = AIFTimes_.size();
+	const auto nTimes = AIFTimes_.size();
 
 	switch (AIFtype_)
 	{
@@ -157,7 +156,7 @@ MDM_API void mdm_AIF::resample_AIF(double tOffset)
 MDM_API void mdm_AIF::resample_PIF(double tOffset, bool offsetAIF/* = true*/, bool resampleIRF/* = true*/)
 {
 	//Important this is only called after AIFTimes has been set
-	const int nTimes = AIFTimes_.size();
+	const auto nTimes = AIFTimes_.size();
 
 	switch (PIFtype_)
 	{
@@ -242,22 +241,30 @@ MDM_API const std::vector<double>& mdm_AIF::AIFTimes() const
 }
 
 //
-MDM_API double mdm_AIF::AIFTime(int i) const
+MDM_API double mdm_AIF::AIFTime(size_t i) const
 {
-	return AIFTimes_[i];
+  try { return AIFTimes_[i]; }
+  catch (std::out_of_range &e)
+  {
+    mdm_exception em(__func__, e.what());
+    em.append(boost::format(
+      "Attempting to access timepoint %1% when there are only %2% times")
+      % i % AIFTimes_.size());
+    throw em;
+  }
 }
 
 //
 MDM_API void mdm_AIF::setAIFTimes(const std::vector<double> times)
 {
-	int nTimes = times.size();
+	const auto nTimes = times.size();
 	AIFTimes_.resize(nTimes);
-	for (int i = 0; i < nTimes; i++)
+	for (size_t i = 0; i < nTimes; i++)
 		AIFTimes_[i] = times[i] - times[0];
 }
 
 //
-MDM_API void  mdm_AIF::setPrebolus(int p)
+MDM_API void  mdm_AIF::setPrebolus(size_t p)
 {
 	prebolus_ = p;
 }
@@ -275,7 +282,7 @@ MDM_API void  mdm_AIF::setDose(double d)
 }
 
 //
-MDM_API int mdm_AIF::prebolus() const
+MDM_API size_t mdm_AIF::prebolus() const
 {
 	return prebolus_;
 }
@@ -297,7 +304,7 @@ MDM_API double mdm_AIF::dose() const
 //**************************************************************************
 
 //
-void mdm_AIF::aifPopGJMP(int nTimes, double tOffset)
+void mdm_AIF::aifPopGJMP(size_t nTimes, double tOffset)
 {
   double gaussian1, gaussian2, sigmoid;
   std::vector<double> offsetTimes(nTimes);
@@ -318,7 +325,7 @@ void mdm_AIF::aifPopGJMP(int nTimes, double tOffset)
   const double kTau    = 0.483;
 
   // Get AIF timing data
-  for (int i = 0; i < nTimes; i++)
+  for (size_t i = 0; i < nTimes; i++)
     offsetTimes[i] = (double) (AIFTimes_[i] - AIFTimes_[0] + tOffset);
 
   // TODO Trying out Anita's pb - 1 instead of 2 in GJMP AIF
@@ -338,7 +345,7 @@ void mdm_AIF::aifPopGJMP(int nTimes, double tOffset)
   }
 }
 
-void mdm_AIF::aifPopHepaticAB(int nTimes, double tOffset, bool offsetAIF, bool resampleIRF)
+void mdm_AIF::aifPopHepaticAB(size_t nTimes, double tOffset, bool offsetAIF, bool resampleIRF)
 {
 	//If we've got an offset, make sure AIF has been resampled
 	if (offsetAIF || resampled_AIF_.size() != nTimes)
@@ -349,7 +356,7 @@ void mdm_AIF::aifPopHepaticAB(int nTimes, double tOffset, bool offsetAIF, bool r
 	{
 		PIF_IRF_.resize(nTimes);
 		double irf_sum = 0.0;
-		for (int i_t = 0; i_t < nTimes; i_t++)
+		for (size_t i_t = 0; i_t < nTimes; i_t++)
 		{
 			const double &t = AIFTimes_[i_t] - tOffset;
 			if (t < 0.08)
@@ -381,7 +388,7 @@ void mdm_AIF::aifPopHepaticAB(int nTimes, double tOffset, bool offsetAIF, bool r
 }
 
 //
-void mdm_AIF::aifWeinman(int nTimes, double tOffset)
+void mdm_AIF::aifWeinman(size_t nTimes, double tOffset)
 {
   std::vector<double> AIF(nTimes), offsetTimes(nTimes);
   double delta_t, remainder;
@@ -393,11 +400,11 @@ void mdm_AIF::aifWeinman(int nTimes, double tOffset)
   const double kBeta2  = 0.0111;
 
   /* Get AIF timing data */
-  for (int i = 0; i < nTimes; i++)
+  for (size_t i = 0; i < nTimes; i++)
     offsetTimes[i] = (double) (AIFTimes_[i] - AIFTimes_[0] + tOffset);
 
   AIF[0] = 0.0;
-  for (int i = 1; i < nTimes; i++)
+  for (size_t i = 1; i < nTimes; i++)
   {
     if (i < prebolus_)
       AIF[i] = 0.0;
@@ -408,11 +415,11 @@ void mdm_AIF::aifWeinman(int nTimes, double tOffset)
   
 	//Linear resample AIF to shifted time points
   resampled_AIF_[0] = 0.0;
-  for (int i = 1; i < nTimes; i++)
+  for (size_t i = 1; i < nTimes; i++)
   {
     if (AIFTimes_[i] <= offsetTimes[0])
       resampled_AIF_[i] = 0.0;
-    for (int j = 1; j < nTimes; j++)
+    for (size_t j = 1; j < nTimes; j++)
       // find where in the AIF time series the current tissue time point falls
       if (AIFTimes_[i] > offsetTimes[j - 1] && AIFTimes_[i] <= offsetTimes[j])
       {
@@ -425,7 +432,7 @@ void mdm_AIF::aifWeinman(int nTimes, double tOffset)
 }
 
 //
-void mdm_AIF::aifFromBase(int nTimes, double tOffset)
+void mdm_AIF::aifFromBase(size_t nTimes, double tOffset)
 {
 	resampleBase(resampled_AIF_, base_AIF_,
 		nTimes, tOffset);
@@ -433,7 +440,7 @@ void mdm_AIF::aifFromBase(int nTimes, double tOffset)
 
 //
 //Load an hepatic portal vein from file
-void mdm_AIF::pifFromBase(int nTimes, double tOffset)
+void mdm_AIF::pifFromBase(size_t nTimes, double tOffset)
 {
 	resampleBase(resampled_PIF_, base_PIF_,
 		nTimes, tOffset);
@@ -441,21 +448,21 @@ void mdm_AIF::pifFromBase(int nTimes, double tOffset)
 
 //Load input funtion previously loaded from file
 void mdm_AIF::resampleBase(std::vector<double> &resampled_if, const std::vector<double> &loaded_if,
-	int nTimes, double tOffset)
+  size_t nTimes, double tOffset)
 {
 	std::vector<double> offsetTimes(nTimes);
 	double delta_t, remainder;
 
 	// Get AIF timing data
-	for (int i = 0; i < nTimes; i++)
+	for (size_t i = 0; i < nTimes; i++)
 		offsetTimes[i] = AIFTimes_[i] + tOffset;
 
 
 	// Linear resample AIF to shifted time points
 	resampled_if.resize(nTimes);
-	for (int i = 1; i < nTimes; i++)
+	for (size_t i = 1; i < nTimes; i++)
 	{
-		for (int j = 1; j < nTimes; j++)
+		for (size_t j = 1; j < nTimes; j++)
 		{
 			// find where in the AIF time series the current tissue time point falls
 			if (AIFTimes_[i] > offsetTimes[j - 1] && AIFTimes_[i] <= offsetTimes[j])
@@ -473,7 +480,8 @@ void mdm_AIF::resampleBase(std::vector<double> &resampled_if, const std::vector<
 }
 
 //Load an AIF from file
-void mdm_AIF::readIFFromFile(std::vector<double> &loaded_if, const std::string &filename, const int nDynamics)
+void mdm_AIF::readIFFromFile(std::vector<double> &loaded_if, 
+  const std::string &filename, const size_t nDynamics)
 {
 	std::vector<double>  timesFromFile(nDynamics, 0);
 	loaded_if.resize(nDynamics);
@@ -487,7 +495,7 @@ void mdm_AIF::readIFFromFile(std::vector<double> &loaded_if, const std::string &
 	//Load times and values from file - MB added check we don't reach EOF
 	//If we do this suggests the AIF file does not have sufficient time points -
 	//most likely we've loaded a file with data organised in the wrong format
-	for (int i = 0; i < nDynamics; i++)
+	for (size_t i = 0; i < nDynamics; i++)
 	{
 		if (aifStream.eof())
 		{
@@ -525,7 +533,7 @@ void mdm_AIF::writeIFToFile(const std::vector<double> &if_to_save, const std::st
       boost::format("Unable to open IF file %1% for writing") % filename);
 
   //
-  for (int i = 0; i < if_to_save.size(); i++)
+  for (size_t i = 0; i < if_to_save.size(); i++)
     aifStream << AIFTimes_[i] << " " << if_to_save[i] << std::endl;
 
 	mdm_ProgramLogger::logProgramMessage(

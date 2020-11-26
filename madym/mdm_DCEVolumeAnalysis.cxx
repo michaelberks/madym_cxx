@@ -96,7 +96,7 @@ MDM_API void mdm_DCEVolumeAnalysis::setAIFmap(
   {
     AIFmap_.copy(map);
     AIFmap_.setType(mdm_Image3D::ImageType::TYPE_AIFVOXELMAP);
-    for (int idx = 0; idx < map.numVoxels(); idx++)
+    for (size_t idx = 0; idx < map.numVoxels(); idx++)
       if (map.voxel(idx) > 0)
         AIFmap_.setVoxel(idx, mdm_AIF::AIFmapVoxel::SELECTED);
   }
@@ -110,7 +110,7 @@ MDM_API std::vector<double> mdm_DCEVolumeAnalysis::AIFfromMap()
   if (!referenceDynamicImg_.numVoxels())
     throw mdm_exception(__func__, "Dynamic maps not loaded.");
 
-  std::vector<int> badVoxels;
+  std::vector<size_t> badVoxels;
   std::vector<double>baseAIF;
   computeMeanCt(AIFmap_, mdm_AIF::AIFmapVoxel::SELECTED, baseAIF, badVoxels);
   for (const auto vox : badVoxels)
@@ -164,7 +164,7 @@ MDM_API void mdm_DCEVolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
 }
 
 //
-MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::StDataMap(int i) const
+MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::StDataMap(size_t i) const
 {
   try { return StDataMaps_[i]; }
   catch (std::out_of_range &e)
@@ -184,7 +184,7 @@ MDM_API const std::vector<mdm_Image3D> & mdm_DCEVolumeAnalysis::StDataMaps() con
 }
 
 //
-MDM_API int  mdm_DCEVolumeAnalysis::numDynamics() const
+MDM_API size_t  mdm_DCEVolumeAnalysis::numDynamics() const
 {
 	if (StDataMaps_.empty())
 		return numCtSignal();
@@ -195,20 +195,20 @@ MDM_API int  mdm_DCEVolumeAnalysis::numDynamics() const
 //
 MDM_API void mdm_DCEVolumeAnalysis::computeMeanCt(
   const mdm_Image3D &map, double map_val,
-  std::vector<double> &meanCt, std::vector<int> &badVoxels) const
+  std::vector<double> &meanCt, std::vector<size_t> &badVoxels) const
 {
-  int nTimes = numDynamics();
+  auto nTimes = numDynamics();
   
   if (!nTimes)
     throw mdm_exception(__func__, "Trying to compute mean C(t) when no dynamic maps set");
 
-  if (!referenceDynamicImg_.dimensionsMatch(map));
+  if (!referenceDynamicImg_.dimensionsMatch(map))
     throw mdm_exception(__func__, "Dimensions of map do not match dimensions of dynamic maps");
 
   meanCt.resize(nTimes, 0);
   badVoxels.clear();
   double numVox = 0;
-  for (int idx = 0; idx < map.numVoxels(); idx++)
+  for (size_t idx = 0; idx < map.numVoxels(); idx++)
   {
     if (map.voxel(idx) == map_val)
     {
@@ -228,7 +228,7 @@ MDM_API void mdm_DCEVolumeAnalysis::computeMeanCt(
       else
         voxelCtData(idx, Ct);
 
-      for (int t = 0; t < nTimes; t++)
+      for (size_t t = 0; t < nTimes; t++)
         meanCt[t] += Ct[t];
       
       numVox++;
@@ -266,9 +266,17 @@ MDM_API void mdm_DCEVolumeAnalysis::addCtDataMap(const mdm_Image3D ctMap)
 }
 
 //
-MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::CtDataMap(int i) const
+MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::CtDataMap(size_t i) const
 {
-	return CtDataMaps_[i];
+  try { return CtDataMaps_[i]; }
+  catch (std::out_of_range &e)
+  {
+    mdm_exception em(__func__, e.what());
+    em.append(boost::format(
+      "Attempting to access C(t) map %1% when there are %2% C(t) maps")
+      % i % CtDataMaps_.size());
+    throw em;
+  }
 }
 
 //
@@ -278,9 +286,17 @@ MDM_API const std::vector<mdm_Image3D> & mdm_DCEVolumeAnalysis::CtDataMaps() con
 }
 
 //
-MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::CtModelMap(int i) const
+MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::CtModelMap(size_t i) const
 {
-  return CtModelMaps_[i];
+  try { return CtModelMaps_[i]; }
+  catch (std::out_of_range &e)
+  {
+    mdm_exception em(__func__, e.what());
+    em.append(boost::format(
+      "Attempting to access C_m(t) map %1% when there are %2% C_m(t) maps")
+      % i % CtModelMaps_.size());
+    throw em;
+  }
 }
 
 //
@@ -301,7 +317,7 @@ MDM_API mdm_Image3D mdm_DCEVolumeAnalysis::DCEMap(const std::string &mapName) co
     }
   }
 
-	for (int i = 0; i < IAUCTimes_.size(); i++)
+	for (size_t i = 0; i < IAUCTimes_.size(); i++)
 	{
 		if (mapName == (MAP_NAME_IAUC + std::to_string(int(IAUCTimes_[i]))))
 			return IAUCMaps_[i];
@@ -333,7 +349,7 @@ MDM_API void mdm_DCEVolumeAnalysis::setDCEMap(const std::string &mapName, const 
     }  
   }
 
-  for (int i = 0; i < IAUCTimes_.size(); i++)
+  for (size_t i = 0; i < IAUCTimes_.size(); i++)
   {
     if (mapName == (MAP_NAME_IAUC + std::to_string(int(IAUCTimes_[i]))))
     {
@@ -373,9 +389,17 @@ MDM_API std::vector<double> mdm_DCEVolumeAnalysis::dynamicTimes() const
 }
 
 //
-MDM_API double mdm_DCEVolumeAnalysis::dynamicTime(int i) const
+MDM_API double mdm_DCEVolumeAnalysis::dynamicTime(size_t i) const
 {
-	return dynamicTimes_[i];
+  try { return dynamicTimes_[i]; }
+  catch (std::out_of_range &e)
+  {
+    mdm_exception em(__func__, e.what());
+    em.append(boost::format(
+      "Attempting to access timepoint %1% when there are only %2% timepoints")
+      % i % dynamicTimes_.size());
+    throw em;
+  }
 }
 
 //
@@ -459,13 +483,13 @@ MDM_API void mdm_DCEVolumeAnalysis::setUseNoise(bool b)
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setFirstImage(int t)
+MDM_API void mdm_DCEVolumeAnalysis::setFirstImage(size_t t)
 {
   firstImage_ = t;
 }
 
 //
-MDM_API void mdm_DCEVolumeAnalysis::setLastImage(int t)
+MDM_API void mdm_DCEVolumeAnalysis::setLastImage(size_t t)
 {
   lastImage_ = t;
 }
@@ -477,105 +501,53 @@ MDM_API void mdm_DCEVolumeAnalysis::setMaxIterations(int maxItr)
 }
 
 //
-MDM_API bool mdm_DCEVolumeAnalysis::initialiseParameterMaps()
+MDM_API void mdm_DCEVolumeAnalysis::initialiseParameterMaps()
 {
   //Model parameter maps may already have been loaded
   if (pkParamMaps_.size() != model_->numParams())
   {
     pkParamMaps_.resize(model_->numParams());
-    for (int i = 0; i < pkParamMaps_.size(); i++)
-    {
-      if (!createMap(pkParamMaps_[i]))
-      {
-        mdm_ProgramLogger::logProgramMessage(
-          "ERROR: mdm_DCEVolumeAnalysis::initialiseParameterMaps: "
-          "Could not create PK model maps");
-        return false;
-      }
-    }
+    for (auto &map : pkParamMaps_)
+      createMap(map);
   }
 
   IAUCMaps_.resize(IAUCTimes_.size());
-  for (int i = 0; i < IAUCMaps_.size(); i++)
-  {
-    if (!createMap(IAUCMaps_[i]))
-    {
-      mdm_ProgramLogger::logProgramMessage(
-        "ERROR: mdm_DCEVolumeAnalysis::initialiseParameterMaps: "
-        "Could not create IAUC maps");
-      return false;
-    }
-  }
+  for (auto &map : IAUCMaps_)
+    createMap(map);
 
-  if (!createMap(modelResidualsMap_))
-  {
-    mdm_ProgramLogger::logProgramMessage(
-      "ERROR: mdm_DCEVolumeAnalysis::initialiseParameterMaps: "
-      "Could not create model residuals map");
-    return false;
-  }
-  if (!createMap(enhVoxMap_))
-  {
-    mdm_ProgramLogger::logProgramMessage(
-      "ERROR: mdm_DCEVolumeAnalysis::initialiseParameterMaps: "
-      "Could not create enhancing map");
-    return false;
-  }
+  createMap(modelResidualsMap_);
+  createMap(enhVoxMap_);
 
   //
   if (outputCt_mod_)
   {
-    const int &nDyns = numDynamics();
-    CtModelMaps_.resize(nDyns);
-    for (int i = 0; i < nDyns; i++)
-    {
-      if (!createMap(CtModelMaps_[i]))
-      {
-        mdm_ProgramLogger::logProgramMessage(
-          "ERROR: mdm_DCEVolumeAnalysis::initialiseParameterMaps: "
-          "Could not create model concentration maps");
-        return false;
-      }
-    }
+    CtModelMaps_.resize(numDynamics());
+    for (auto &map : CtModelMaps_)
+      createMap(map);
   }
-  return true;
 }
 
 //
-MDM_API bool  mdm_DCEVolumeAnalysis::fitDCEModel(bool paramMapsInitialised, bool optimiseModel, const std::vector<int> initMapParams)
+MDM_API void  mdm_DCEVolumeAnalysis::fitDCEModel(bool paramMapsInitialised, bool optimiseModel, const std::vector<int> initMapParams)
 {
-  /* Check we have the input files we need, either concentration maps
-  or dynamic images*/
+  // Check we have the input files we need, either concentration maps
+  //or dynamic images
   if (computeCt_)
   {
     if (!numDynamics() || !StDataMaps_[0].numVoxels())
-    {
-      mdm_ProgramLogger::logProgramError(__func__, "No input dynamic images - nothing to fit");
-      return false;
-    }
+      throw mdm_exception(__func__, "No input dynamic images - nothing to fit");
+      
   }
   else if (!numCtSignal() || !CtDataMaps_[0].numVoxels())
-  {
-    mdm_ProgramLogger::logProgramError(__func__, "No input concentration maps - nothing to fit");
-    return false;
-  }
+    throw mdm_exception(__func__, "No input concentration maps - nothing to fit");
+    
 
-  /* Allocate all the output maps */
-  if (!initialiseParameterMaps())
-  {
-    mdm_ProgramLogger::logProgramError(__func__, "Could not create parameter maps");
-    return false;
-  }
+  //
+  initialiseParameterMaps();
+    
 
-  /*Fit the models*/
-  bool models_fitted = fitModel(paramMapsInitialised, optimiseModel, initMapParams);
-
-  if (!models_fitted)
-  {
-    mdm_ProgramLogger::logProgramError(__func__, "Error fitting models, check logs");
-    return false;
-  }
-  return models_fitted;
+  //Fit the model
+  fitModel(paramMapsInitialised, optimiseModel, initMapParams);
 
 }
 
@@ -584,25 +556,25 @@ MDM_API bool  mdm_DCEVolumeAnalysis::fitDCEModel(bool paramMapsInitialised, bool
 //------------------------------------------------------------------
 
 //
-int   mdm_DCEVolumeAnalysis::numSt() const
+size_t mdm_DCEVolumeAnalysis::numSt() const
 {
   return StDataMaps_.size();
 }
 
 //
-int   mdm_DCEVolumeAnalysis::numCtSignal() const
+size_t mdm_DCEVolumeAnalysis::numCtSignal() const
 {
   return CtDataMaps_.size();
 }
 
 //
-int   mdm_DCEVolumeAnalysis::numCtModel() const
+size_t mdm_DCEVolumeAnalysis::numCtModel() const
 {
   return CtModelMaps_.size();
 }
 
 //
-mdm_DCEVoxel mdm_DCEVolumeAnalysis::setUpVoxel(int voxelIndex) const
+mdm_DCEVoxel mdm_DCEVolumeAnalysis::setUpVoxel(size_t voxelIndex) const
 {
   
 
@@ -636,40 +608,40 @@ mdm_DCEVoxel mdm_DCEVolumeAnalysis::setUpVoxel(int voxelIndex) const
 }
 
 //
-void  mdm_DCEVolumeAnalysis::voxelStData(int voxelIndex, std::vector<double> &data) const
+void  mdm_DCEVolumeAnalysis::voxelStData(size_t voxelIndex, std::vector<double> &data) const
 {
 	size_t n = numSt();
 
 	data.resize(n);
-  for (int k = 0; k < n; k++)
+  for (size_t k = 0; k < n; k++)
     data[k] = StDataMaps_[k].voxel(voxelIndex);
 }
 
 //
-void  mdm_DCEVolumeAnalysis::voxelCtData(int voxelIndex, std::vector<double> &data) const
+void  mdm_DCEVolumeAnalysis::voxelCtData(size_t voxelIndex, std::vector<double> &data) const
 {
 	size_t n = CtDataMaps_.size();
 
 	data.resize(n);
-	for (int k = 0; k < n; k++)
+	for (size_t k = 0; k < n; k++)
 		data[k] = CtDataMaps_[k].voxel(voxelIndex);
 }
 
 //
-void  mdm_DCEVolumeAnalysis::voxelCtModel(int voxelIndex, std::vector<double> &data) const
+void  mdm_DCEVolumeAnalysis::voxelCtModel(size_t voxelIndex, std::vector<double> &data) const
 {
   size_t n = CtModelMaps_.size();
 
   data.resize(n);
-  for (int k = 0; k < n; k++)
+  for (size_t k = 0; k < n; k++)
     data[k] = CtModelMaps_[k].voxel(voxelIndex);
 }
 
 //
-void mdm_DCEVolumeAnalysis::setVoxelErrors(int voxelIndex, const mdm_DCEVoxel &vox)
+void mdm_DCEVolumeAnalysis::setVoxelErrors(size_t voxelIndex, const mdm_DCEVoxel &vox)
 {
 	//
-  int voxelOk = vox.status();
+  size_t voxelOk = vox.status();
   if (voxelOk == mdm_DCEVoxel::CA_NAN)
     errorTracker_.updateVoxel(voxelIndex, mdm_ErrorTracker::CA_IS_NAN);
   
@@ -681,13 +653,13 @@ void mdm_DCEVolumeAnalysis::setVoxelErrors(int voxelIndex, const mdm_DCEVoxel &v
 }
 
 //
-void mdm_DCEVolumeAnalysis::setVoxelInAllMaps(int voxelIndex, 
+void mdm_DCEVolumeAnalysis::setVoxelInAllMaps(size_t voxelIndex, 
   const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter)
 {
-	for (int i = 0; i < pkParamMaps_.size(); i++)
-		pkParamMaps_[i].setVoxel(voxelIndex, model_->params(i));
+	for (size_t i = 0; i < pkParamMaps_.size(); i++)
+		pkParamMaps_[i].setVoxel(voxelIndex, model_->params(int(i)));
 
-	for (int i = 0; i < IAUCMaps_.size(); i++)
+	for (size_t i = 0; i < IAUCMaps_.size(); i++)
 		IAUCMaps_[i].setVoxel(voxelIndex, vox.IAUC_val(i));
   
   setVoxelModelError(voxelIndex, fitter);
@@ -695,23 +667,23 @@ void mdm_DCEVolumeAnalysis::setVoxelInAllMaps(int voxelIndex,
 
   //
   if (outputCt_sig_)
-    for (int i = 0; i < numDynamics(); i++)
+    for (size_t i = 0; i < numDynamics(); i++)
       CtDataMaps_[i].setVoxel(voxelIndex, vox.CtData()[i]);
     
   if (outputCt_mod_)
-    for (int i = 0; i < numDynamics(); i++)
+    for (size_t i = 0; i < numDynamics(); i++)
       CtModelMaps_[i].setVoxel(voxelIndex, fitter.CtModel()[i]);
     
 }
 
 //
-void mdm_DCEVolumeAnalysis::setVoxelModelError(int voxelIndex, const mdm_DCEModelFitter  &fitter)
+void mdm_DCEVolumeAnalysis::setVoxelModelError(size_t voxelIndex, const mdm_DCEModelFitter  &fitter)
 {
   modelResidualsMap_.setVoxel(voxelIndex, fitter.modelFitError());
 }
 
 //
-void mdm_DCEVolumeAnalysis::setVoxelInAllMaps(int voxelIndex, double value)
+void mdm_DCEVolumeAnalysis::setVoxelInAllMaps(size_t voxelIndex, double value)
 {
   for (auto &map : pkParamMaps_)
 		map.setVoxel(voxelIndex, value);
@@ -735,7 +707,7 @@ void mdm_DCEVolumeAnalysis::setVoxelInAllMaps(int voxelIndex, double value)
 }
 
 //
-bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, 
+void  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised, 
   bool optimiseModel, const std::vector<int> initMapParams)
 {
   if (!referenceDynamicImg_.numVoxels())
@@ -755,7 +727,7 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised,
 	int numProcessed = 0;
 	int numErrors = 0;
 	auto fit_start = std::chrono::system_clock::now();
-  for(int voxelIndex = 0; voxelIndex < referenceDynamicImg_.numVoxels(); voxelIndex++)
+  for(size_t voxelIndex = 0; voxelIndex < referenceDynamicImg_.numVoxels(); voxelIndex++)
   {
         
     if ((!computeCt_ || T1_mapper_.T1(voxelIndex) > 0.0)
@@ -830,26 +802,16 @@ bool  mdm_DCEVolumeAnalysis::fitModel(bool paramMapsInitialised,
 		numProcessed << " voxels in " << elapsed_seconds.count() << "s.\n" << 
 		numErrors << " voxels returned fit errors\n";
 	mdm_ProgramLogger::logProgramMessage(ss.str());
-  return true;
 }
 
 //
-bool mdm_DCEVolumeAnalysis::createMap(mdm_Image3D& img)
+void mdm_DCEVolumeAnalysis::createMap(mdm_Image3D& img)
 {
   if (!referenceDynamicImg_.numVoxels())
-  {
-		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_DCEVolumeAnalysis::createMap: Error allocating parameter maps, "
+    throw mdm_exception(__func__, boost::format("Error allocating parameter maps, "
 			"at least one of dynamic signal (StDataMaps_) or concentration series "
-			"(CtDataMaps_) should be non-empty");
-		return false;
-  }
-  else
-  {
-    img.copy(referenceDynamicImg_);
-  }
-    
-
+			"(CtDataMaps_) should be non-empty"));
+		
+  img.copy(referenceDynamicImg_);
 	img.setType(mdm_Image3D::ImageType::TYPE_KINETICMAP);
-	return true;
 }

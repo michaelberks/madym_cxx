@@ -485,7 +485,7 @@ void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(AnalyzeHdr &hdr,
 	const int typeFlag,
 	bool sparse)
 {
-	int   nX, nY, nZ;
+	size_t   nX, nY, nZ;
 
 	if(hdr.header_key_.sizeof_hdr != 348)
     throw mdm_exception(__func__, "Header key must have size 348 bytes. Cannot process Analyze hdr");
@@ -499,10 +499,10 @@ void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(AnalyzeHdr &hdr,
 	hdr.dimensions_.dim[3] = (short)nZ;
 	hdr.dimensions_.dim[4] = (short)1;
 
-	hdr.dimensions_.pixdim[0] = (double) 4.0;
-	hdr.dimensions_.pixdim[1] = (double)img.info().Xmm.value();
-	hdr.dimensions_.pixdim[2] = (double)img.info().Ymm.value();
-	hdr.dimensions_.pixdim[3] = (double)img.info().Zmm.value();
+	hdr.dimensions_.pixdim[0] = (float) 4.0;
+	hdr.dimensions_.pixdim[1] = (float)img.info().Xmm.value();
+	hdr.dimensions_.pixdim[2] = (float)img.info().Ymm.value();
+	hdr.dimensions_.pixdim[3] = (float)img.info().Zmm.value();
 	switch (typeFlag)
 	{
 	case DT_UNSIGNED_CHAR:
@@ -538,32 +538,37 @@ void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(AnalyzeHdr &hdr,
 //
 void  mdm_AnalyzeFormat::hdrBlankInit(AnalyzeHdr &hdr)
 {
-	int i;
-
+	
 	hdr.header_key_.sizeof_hdr = (int) sizeof(struct AnalyzeHdr);       /* Should be 348 */
 
-	for (i = 0; i < 10; i++)
-		hdr.header_key_.data_type[i] = '\0';
-	for (i = 0; i < 18; i++)
-		hdr.header_key_.db_name[i] = '\0';
+	for (auto &el : hdr.header_key_.data_type)//i = 0; i < 10; i++
+		el = '\0';
+
+	for (auto &el : hdr.header_key_.db_name) //18
+		el = '\0';
+
 	hdr.header_key_.extents = (int)0;
 	hdr.header_key_.session_error = (short)0;
 	hdr.header_key_.regular = 'r';
 	hdr.header_key_.hkey_un0 = ' ';
 
-	for (i = 0; i < 8; i++)
-		hdr.dimensions_.dim[i] = (short)0;
-	for (i = 0; i < 4; i++)
-		hdr.dimensions_.vox_units[i] = '\0';
-	std::strcpy(hdr.dimensions_.vox_units, "mm");
-	for (i = 0; i < 8; i++)
-		hdr.dimensions_.cal_units[i] = '\0';
+	for (auto &el : hdr.dimensions_.dim)
+		el = (short)0;
+	
+  for (auto &el : hdr.dimensions_.vox_units)
+    el = '\0';
+	hdr.dimensions_.vox_units[0] = 'm';
+  hdr.dimensions_.vox_units[1] = 'm';
+
+	for (auto &el : hdr.dimensions_.cal_units)
+		el = '\0';
+
 	hdr.dimensions_.unused1 = (short)0;
 	hdr.dimensions_.datatype = (short)DT_UNKNOWN;
 	hdr.dimensions_.bitpix = (short)0;
 	hdr.dimensions_.dim_un0 = (short)0;
-	for (i = 0; i < 8; i++)
-		hdr.dimensions_.pixdim[i] = (float)0;
+	for (auto &el : hdr.dimensions_.pixdim)
+		el = (float)0;
 	hdr.dimensions_.vox_offset = (float) 0.0;
 	// This is where mricro expects to find a scale factor
 	hdr.dimensions_.roi_scale = (float) 1.0;
@@ -576,25 +581,25 @@ void  mdm_AnalyzeFormat::hdrBlankInit(AnalyzeHdr &hdr)
 	hdr.dimensions_.glmax = (int)0;
 	hdr.dimensions_.glmin = (int)0;
 
-	for (i = 0; i < 80; i++)
-		hdr.history_.descrip[i] = '\0';
-	for (i = 0; i < 24; i++)
-		hdr.history_.aux_file[i] = '\0';
+	for (auto &el : hdr.history_.descrip)
+		el = '\0';
+	for (auto &el : hdr.history_.aux_file)
+		el = '\0';
 	hdr.history_.orient = (char)0;
-	for (i = 0; i < 10; i++)
-		hdr.history_.originator[i] = '\0';
-	for (i = 0; i < 10; i++)
-		hdr.history_.generated[i] = '\0';
-	for (i = 0; i < 10; i++)
-		hdr.history_.scannum[i] = '\0';
-	for (i = 0; i < 10; i++)
-		hdr.history_.patient_id[i] = '\0';
-	for (i = 0; i < 10; i++)
-		hdr.history_.exp_date[i] = '\0';
-	for (i = 0; i < 10; i++)
-		hdr.history_.exp_time[i] = '\0';
-	for (i = 0; i < 3; i++)
-		hdr.history_.hist_un0[i] = '\0';
+	for (auto &el : hdr.history_.originator)
+		el = '\0';
+	for (auto &el : hdr.history_.generated)
+		el = '\0';
+	for (auto &el : hdr.history_.scannum)
+		el = '\0';
+	for (auto &el : hdr.history_.patient_id)
+		el = '\0';
+	for (auto &el : hdr.history_.exp_date)
+		el = '\0';
+	for (auto &el : hdr.history_.exp_time)
+		el = '\0';
+	for (auto &el : hdr.history_.hist_un0)
+		el = '\0';
 	hdr.history_.views = (int)0;
 	hdr.history_.vols_added = (int)0;
 	hdr.history_.start_field = (int)0;

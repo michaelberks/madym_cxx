@@ -81,7 +81,7 @@ public:
 	MDM_API static std::unique_ptr<mdm_T1FitterBase> createFitter( 
 		T1Methods methodType, const std::vector<mdm_Image3D> &inputImages)
   {
-		const int &nSignals = inputImages.size();
+		const auto &nSignals = inputImages.size();
 
     switch (methodType)
 		{

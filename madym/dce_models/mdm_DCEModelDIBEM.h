@@ -35,7 +35,7 @@ public:
 
   MDM_API virtual std::string modelType() const;
 
-  MDM_API virtual void computeCtModel(int nTimes);
+  MDM_API virtual void computeCtModel(size_t nTimes);
 
   MDM_API virtual double checkParams();
 

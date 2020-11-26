@@ -73,7 +73,7 @@ MDM_API const std::vector<double>& mdm_Image3D::data() const
 }
 
 //
-MDM_API double mdm_Image3D::voxel(int i) const
+MDM_API double mdm_Image3D::voxel(size_t i) const
 {
   try { return data_[i]; }
   catch (std::out_of_range &e)
@@ -87,7 +87,7 @@ MDM_API double mdm_Image3D::voxel(int i) const
 }
 
 //
-MDM_API void mdm_Image3D::setVoxel(int i, double value)
+MDM_API void mdm_Image3D::setVoxel(size_t i, double value)
 {
   try { data_[i] = value; }
   catch (std::out_of_range &e)
@@ -101,13 +101,13 @@ MDM_API void mdm_Image3D::setVoxel(int i, double value)
 }
 
 //
-MDM_API double mdm_Image3D::voxel(int x, int y, int z) const
+MDM_API double mdm_Image3D::voxel(size_t x, size_t y, size_t z) const
 {
   return voxel(sub2ind(x, y, z));
 }
 
 //
-MDM_API void mdm_Image3D::setVoxel(int x, int y, int z, double value)
+MDM_API void mdm_Image3D::setVoxel(size_t x, size_t y, size_t z, double value)
 {
   setVoxel(sub2ind(x, y, z), value);
 }
@@ -147,7 +147,7 @@ MDM_API void mdm_Image3D::setDimensions(const mdm_Image3D &img)
 }
 
 //
-MDM_API void mdm_Image3D::getDimensions(int &nX, int &nY, int &nZ) const
+MDM_API void mdm_Image3D::getDimensions(size_t &nX, size_t &nY, size_t &nZ) const
 {
   nX = nX_;
   nY = nY_;
@@ -155,9 +155,9 @@ MDM_API void mdm_Image3D::getDimensions(int &nX, int &nY, int &nZ) const
 }
 
 //
-MDM_API int mdm_Image3D::numVoxels() const
+MDM_API size_t mdm_Image3D::numVoxels() const
 {
-  return (int) (nX_ * nY_ * nZ_);
+  return data_.size();
 }
 
 //
@@ -198,7 +198,7 @@ MDM_API void mdm_Image3D::setTimeStampFromNow()
 	double hh = timeLocal.time_of_day().hours();
 	double mm = timeLocal.time_of_day().minutes();
 	double ss = timeLocal.time_of_day().seconds();
-	double ms = timeLocal.time_of_day().total_milliseconds();
+	double ms = (double)timeLocal.time_of_day().total_milliseconds();
 	timeStamp_ = 10000 * hh + 100 * mm + ss + (ms/1000);
 }
 
@@ -393,7 +393,7 @@ MDM_API bool mdm_Image3D::dimensionsMatch(const mdm_Image3D &img) const
   assert(img.numVoxels()>0);
 
   /* Test that voxel matrix dimensions match */
-	int nx, ny, nz;
+	size_t nx, ny, nz;
 	img.getDimensions(nx, ny, nz);
   if ((nX_ != nx)
        || (nY_ != ny)
@@ -492,11 +492,11 @@ MDM_API void mdm_Image3D::setMetaDataFromStreamOld(std::istream &ifs)
 }
 
 //
-MDM_API void mdm_Image3D::nonZeroVoxels(std::vector<int> &idx, std::vector<double> &vals) const
+MDM_API void mdm_Image3D::nonZeroVoxels(std::vector<size_t> &idx, std::vector<double> &vals) const
 {
 	idx.clear();
 	vals.clear();
-	for (int i = 0, n = numVoxels(); i < n; i++)
+	for (size_t i = 0, n = numVoxels(); i < n; i++)
 	{
 		if (data_[i])
 		{
@@ -512,12 +512,12 @@ template <class T> MDM_API void mdm_Image3D::toBinaryStream(std::ostream &ofs, b
 	size_t elSize = sizeof(T);
 	if (nonZero)
 	{
-		int nVoxels = numVoxels();
-		std::vector<int> idx;
+		auto nVoxels = numVoxels();
+		std::vector<unsigned int> idx;
 		
-		for (int i = 0; i < nVoxels; i++)
+		for (size_t i = 0; i < nVoxels; i++)
 		{
-			//Check if element non-zeor (TODO: behaviour of NAN?)
+			//Check if element non-zero (TODO: behaviour of NAN?)
 			if (data_[i])
 			{
 				//If non-zero, cast data to output type and write to buffer
@@ -525,13 +525,13 @@ template <class T> MDM_API void mdm_Image3D::toBinaryStream(std::ostream &ofs, b
 				ofs.write(reinterpret_cast<const char*>(&t), elSize);
 
 				//Append index
-				idx.push_back(i);
+				idx.push_back((unsigned int)i);
 			}
 		}
 		//For the indices we can now write in one chunk as only casting once
 		//from int to char*
 		if (!idx.empty())
-			ofs.write(reinterpret_cast<const char*>(&idx[0]), sizeof(int)*idx.size());
+			ofs.write(reinterpret_cast<const char*>(&idx[0]), sizeof(unsigned int)*idx.size());
 	}
 	else
 	{
@@ -593,7 +593,7 @@ template <class T> MDM_API void mdm_Image3D::fromBinaryStream(
 
 		//Set up vectors to store data and indices
 		std::vector<T> data(nNonZero);
-		std::vector<int> idx(nNonZero);
+		std::vector<size_t> idx(nNonZero);
 		
 		//TODO: We really should do some error checking of EOF etc here
 		//although we have checked buffer size?
@@ -608,9 +608,9 @@ template <class T> MDM_API void mdm_Image3D::fromBinaryStream(
 			
 
 		//Read indices - directly casting from char* to int
-		for (int &i : idx)
+		for (size_t &i : idx)
 		{
-			ifs.read(reinterpret_cast<char*>(&i), sizeof(int));
+			ifs.read(reinterpret_cast<char*>(&i), sizeof(unsigned int));
 			if (swap)
 				swapBytes(i);
 		}
@@ -701,7 +701,7 @@ template  MDM_API void mdm_Image3D::swapBytes<float>(float& data);
 template  MDM_API void mdm_Image3D::swapBytes<double>(double& data);
 
 //
-MDM_API int mdm_Image3D::sub2ind(int x, int y, int z) const
+MDM_API size_t mdm_Image3D::sub2ind(size_t x, size_t y, size_t z) const
 {
   return x + (y * nX_) + (z * nX_ * nY_);
 }
@@ -714,5 +714,5 @@ void mdm_Image3D::initDataArray()
 {
 	//Don't bother error checking this anymore, just assume memory will be managed correctly
 	//that's what the vector container class is for
-	data_.resize(numVoxels());
+	data_.resize(nX_ * nY_ * nZ_);
 }

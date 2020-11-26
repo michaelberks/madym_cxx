@@ -50,9 +50,9 @@ protected:
   4. Processes each line in input data file, fitting tracer-kineti model to input signals/concentrations,
   writing fited parameters and IAUC measurements to output file
   5. Closes input/output file and reports the number of samples processed.
-  \return 0 on success, non-zero otherwise
+  Throws mdm_exception if errors encountered
   */
-  MDM_API int run();
+  MDM_API void run();
 
 private:
   //Methods:

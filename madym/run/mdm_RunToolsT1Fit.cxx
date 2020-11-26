@@ -13,6 +13,7 @@
 #include "mdm_RunToolsT1Fit.h"
 
 #include <madym/mdm_ProgramLogger.h>
+#include <madym/mdm_exception.h>
 
 namespace fs = boost::filesystem;
 
@@ -35,13 +36,14 @@ mdm_T1MethodGenerator::T1Methods mdm_RunToolsT1Fit::parseMethod(const std::strin
 		options_.T1method());
 
 	if (methodType == mdm_T1MethodGenerator::UNDEFINED)
-		mdm_progAbort("T1 method not recognised");
+    throw mdm_exception(__func__, "T1 method not recognised");
 
 	return methodType;
 }
 
 //
-bool mdm_RunToolsT1Fit::checkNumInputs(mdm_T1MethodGenerator::T1Methods methodType, const int& numInputs)
+void mdm_RunToolsT1Fit::checkNumInputs(mdm_T1MethodGenerator::T1Methods methodType, 
+  const int& numInputs)
 {
 	//This is a bit rubbish - instantiating a whole new object just to get
 	//some limits returned. But we want limits defined by the derived T1 method class,
@@ -50,13 +52,9 @@ bool mdm_RunToolsT1Fit::checkNumInputs(mdm_T1MethodGenerator::T1Methods methodTy
 	auto T1fitter = mdm_T1MethodGenerator::createFitter(methodType, options_);
 
 	if (numInputs < T1fitter->minimumInputs())
-	{
-		mdm_progAbort("not enough variable flip angle file names");
-	}
+    throw mdm_exception(__func__, "not enough variable flip angle file names");
+	
 	else if (numInputs > T1fitter->maximumInputs())
-	{
-		mdm_progAbort("too many variable flip angle file names");
-	}
-	return true;
+    throw mdm_exception(__func__, "too many variable flip angle file names");
 }
 

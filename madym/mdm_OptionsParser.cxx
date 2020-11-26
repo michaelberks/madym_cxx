@@ -11,6 +11,7 @@
 #endif // !MDM_API_EXPORTS
 
 #include "mdm_OptionsParser.h"
+#include <madym/mdm_platform_defs.h>
 
 #include <iostream>
 #include <fstream>
@@ -41,6 +42,10 @@ void validate(boost::any& v,
 	else
 		v = str;
 }
+
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_ESCAPE_SEQUENCE
+
 void validate(boost::any& v,
 	const std::vector<std::string>& values,
 	mdm_input_string_list* target_type, int)
@@ -148,11 +153,9 @@ void validate(boost::any& v,
 
 	v = mdm_input_int_list(vi);
 }
+DISABLE_WARNING_POP
 
-/**
-*  @brief   Defines options and their default values for all inputs to DCE analysis and T1 mapping tools
-*/
-
+//
 MDM_API  mdm_OptionsParser::mdm_OptionsParser()
 {
 	help_.add_options()
@@ -161,8 +164,7 @@ MDM_API  mdm_OptionsParser::mdm_OptionsParser()
 		;
 }
 
-/*
-*/
+//
 MDM_API bool mdm_OptionsParser::to_stream(std::ostream &stream, 
 	const mdm_InputOptions &options) const
 {
@@ -198,8 +200,7 @@ MDM_API bool mdm_OptionsParser::to_stream(std::ostream &stream,
 	return true;
 }
 
-/*
-*/
+//
 MDM_API bool mdm_OptionsParser::to_file(const std::string &filename, 
 	const mdm_InputOptions &options) const
 {
@@ -212,8 +213,7 @@ MDM_API bool mdm_OptionsParser::to_file(const std::string &filename,
 	return true;
 }
 
-/*
-*/
+//
 MDM_API int mdm_OptionsParser::parseInputs(
 	po::options_description &cmdline_options,
 	po::options_description &config_options,

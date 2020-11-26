@@ -11,11 +11,12 @@
 #endif // !MDM_API_EXPORTS
 #include "mdm_DCEVoxel.h"
 
-//#include <cmath>
+
 #include <algorithm>
 
-#include "mdm_version.h"
-#include "mdm_ProgramLogger.h"
+#include <mdm_version.h>
+#include <madym/mdm_ProgramLogger.h>
+#include <madym/mdm_exception.h>
 
 const double mdm_DCEVoxel::Ca_BAD1 = -1.0e3;
 const double mdm_DCEVoxel::Ca_BAD2 = -2.0e3;
@@ -26,7 +27,7 @@ const double mdm_DCEVoxel::DYN_T1_INVALID = -1.0;
 MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	const std::vector<double> &dynSignals,
 	const std::vector<double> &dynConc,
-  const int injectionImg,
+  const size_t injectionImg,
 	const std::vector<double> &dynamicTimings,
 	const std::vector<double> &IAUC_times)
 	:
@@ -49,7 +50,7 @@ MDM_API mdm_DCEVoxel::~mdm_DCEVoxel()
 //
 MDM_API void mdm_DCEVoxel::computeCtFromSignal(
   const double T1, const double FA, const double TR, const double r1Const,
-  const double M0, int timepoint0)
+  const double M0, size_t timepoint0)
 {
   //Only apply if we have signal data to convert
   const auto &nTimes = StData().size();
@@ -75,8 +76,8 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal(
     if (injectionImg_ > timepoint0)
     {
       double prebolusSum = 0.0;
-      int nPrebolus = 0;
-      for (int k = timepoint0; k < injectionImg_; k++)
+      size_t nPrebolus = 0;
+      for (size_t k = timepoint0; k < injectionImg_; k++)
       {
         prebolusSum += StData()[k];
         nPrebolus++;
@@ -192,7 +193,7 @@ std::vector<double> mdm_DCEVoxel::computeIAUC(const std::vector<double> &times)
 
 	//This relies on IAUC times being sorted, which we enforce externally to save
 	//time, but for robustness could do so here?
-	int currIAUCt = 0;
+	size_t currIAUCt = 0;
 	for (auto i_t = injectionImg_; i_t < nTimes; i_t++)
 	{
 		double elapsedTime = dynamicTimings_[i_t] - bolusTime;
@@ -245,19 +246,35 @@ MDM_API const std::vector<double>&	mdm_DCEVoxel::CtData() const
 }
 
 //
-MDM_API double     mdm_DCEVoxel::IAUC_val(int i) const
+MDM_API double mdm_DCEVoxel::IAUC_val(size_t i) const
 {
-	return IAUC_vals_[i];
+  try { return IAUC_vals_[i]; }
+  catch (std::out_of_range &e)
+  {
+    mdm_exception em(__func__, e.what());
+    em.append(boost::format(
+      "Attempting to access IAUC value %1% when there are only %2% IAUC times")
+      % i % IAUC_vals_.size());
+    throw em;
+  }
 }
 
 //
-MDM_API double			mdm_DCEVoxel::IAUC_time(int i) const
+MDM_API double mdm_DCEVoxel::IAUC_time(size_t i) const
 {
-	return IAUC_times_[i];
+  try { return IAUC_times_[i]; }
+  catch (std::out_of_range &e)
+  {
+    mdm_exception em(__func__, e.what());
+    em.append(boost::format(
+      "Attempting to access IAUC time %1% when there are only %2% IAUC times")
+      % i % IAUC_times_.size());
+    throw em;
+  }
 }
 
 //
-MDM_API bool       mdm_DCEVoxel::enhancing() const
+MDM_API bool mdm_DCEVoxel::enhancing() const
 {
 	return enhancing_;
 }

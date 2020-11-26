@@ -41,7 +41,7 @@ MDM_API std::string mdm_DCEModelNONE::modelType() const
   return "mdm_DCEModelNONE";
 }
 
-MDM_API void mdm_DCEModelNONE::computeCtModel(int nTimes)
+MDM_API void mdm_DCEModelNONE::computeCtModel(size_t nTimes)
 {
   return;
 }

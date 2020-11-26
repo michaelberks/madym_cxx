@@ -39,7 +39,7 @@ public:
 
   /*!
 	*/
-	MDM_API virtual void computeCtModel(int nTimes);
+	MDM_API virtual void computeCtModel(size_t nTimes);
 
   /*!
 	*/

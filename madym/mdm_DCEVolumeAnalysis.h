@@ -131,7 +131,7 @@ public:
 	\param timepoint
 	\return signal map at specified time-point as mdm_Image3D object
 	*/
-	MDM_API mdm_Image3D StDataMap(int timepoint) const;
+	MDM_API mdm_Image3D StDataMap(size_t timepoint) const;
 
   //! Get all signal maps in dynamic series
 	/*!
@@ -151,7 +151,7 @@ public:
 	\param timepoint
 	\return signal-derived contrast-agent concentration map at specified time-point as mdm_Image3D object
 	*/
-	MDM_API mdm_Image3D CtDataMap(int timepoint) const;
+	MDM_API mdm_Image3D CtDataMap(size_t timepoint) const;
 
 	//! Get all signal-derived contrast-agent concentration maps
 	/*!
@@ -166,7 +166,7 @@ public:
 	\param timepoint
 	\return model-estimated contrast-agent concentration map at specified time-point as mdm_Image3D object
 	*/
-	MDM_API mdm_Image3D CtModelMap(int timepoint) const;
+	MDM_API mdm_Image3D CtModelMap(size_t timepoint) const;
 
 	//! Get all model estimated contrast-agent concentration maps
 	/*!
@@ -208,7 +208,7 @@ public:
 	\param timepoint
 	\return time in minutes of each time-point
 	*/
-	MDM_API double dynamicTime(int timepoint) const;
+	MDM_API double dynamicTime(size_t timepoint) const;
 
 	//! Return parameter names of tracer-kinetic model
 	/*!
@@ -292,13 +292,13 @@ public:
 	/*!
 	\param timepoint must be >=0 and < numDynamics()
 	*/
-	MDM_API void setFirstImage(int timepoint);
+	MDM_API void setFirstImage(size_t timepoint);
 
 	//! Set last timepoint used in computing model fit
 	/*!
 	\param timepoint must be >=0 and < numDynamics()
 	*/
-	MDM_API void setLastImage(int timepoint);
+	MDM_API void setLastImage(size_t timepoint);
 
 	//! Set maximum number of iterations used in computing model fit
 	/*!
@@ -312,7 +312,7 @@ public:
 	Must be called prior to model fitting to ensure there are output containers in which
 	to store fitted values, IAUC measures etc.
 	*/
-	MDM_API bool initialiseParameterMaps();
+	MDM_API void initialiseParameterMaps();
 
 	//! Fit DCE tracer-kinetic model to all voxels
 	/*!
@@ -320,10 +320,9 @@ public:
 	\param optimiseModel flag to optimise parameter fits. If false, modelled concentration will be computed
 	at the initial values for each voxel.
 	\param  initMapParams indices of parameters to initialise from maps. Ignored if paramMapsInitialised is false.
-	\return true if model successfully fitted to voxels. Note this returns true even if there were fit
-	failures in individual voxels. It only checks volume-wise issues (eg missing dynamic input maps)
+	Fit failures in individual voxels are logged. Volume-wise errors throw an mdm_exception to be caught by calling code.
 	*/
-	MDM_API bool   fitDCEModel(bool paramMapsInitialised = false, 
+	MDM_API void   fitDCEModel(bool paramMapsInitialised = false, 
 		bool optimiseModel = true, 
 		const std::vector<int> initMapParams = {});
 
@@ -331,7 +330,7 @@ public:
 	/*!
 	\return length of dynamic time-series
 	*/
-	MDM_API int   numDynamics() const;
+	MDM_API size_t numDynamics() const;
 
   //! Return average concentration time-series for voxels in a map
   /*!
@@ -342,50 +341,50 @@ public:
   */
   MDM_API void computeMeanCt(
     const mdm_Image3D &map, double map_val, 
-    std::vector<double> &meanCt, std::vector<int> &badVoxels) const;
+    std::vector<double> &meanCt, std::vector<size_t> &badVoxels) const;
 
 protected:
 
 private:
 
-  mdm_DCEVoxel setUpVoxel(int voxelIndex) const;
+  mdm_DCEVoxel setUpVoxel(size_t voxelIndex) const;
 
 
 	/*!
 	*/
-	void  voxelStData(int voxelIndex, std::vector<double> &data) const;
+	void  voxelStData(size_t voxelIndex, std::vector<double> &data) const;
 
-	void  voxelCtData(int voxelIndex, std::vector<double> &data) const;
+	void  voxelCtData(size_t voxelIndex, std::vector<double> &data) const;
 
-  void  voxelCtModel(int voxelIndex, std::vector<double> &data) const;
-
-	/*!
-	*/
-	void setVoxelErrors(int voxelIndex, const mdm_DCEVoxel &p);
+  void  voxelCtModel(size_t voxelIndex, std::vector<double> &data) const;
 
 	/*!
 	*/
-	void setVoxelInAllMaps(int voxelIndex, 
+	void setVoxelErrors(size_t voxelIndex, const mdm_DCEVoxel &p);
+
+	/*!
+	*/
+	void setVoxelInAllMaps(size_t voxelIndex,
     const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter);
 
   /*!
   */
-  void setVoxelInAllMaps(int voxelIndex, double value);
+  void setVoxelInAllMaps(size_t voxelIndex, double value);
 
-  void setVoxelModelError(int voxelIndex, const mdm_DCEModelFitter &fitter);
+  void setVoxelModelError(size_t voxelIndex, const mdm_DCEModelFitter &fitter);
 
 	/*!
 	*/
-	bool  fitModel(bool paramMapsInitialised, bool optimiseModel, const std::vector<int> initMapParams);
+	void  fitModel(bool paramMapsInitialised, bool optimiseModel, const std::vector<int> initMapParams);
 
 	/* See comments for initialiseParameterMaps() */
-	bool createMap(mdm_Image3D& img);
+	void createMap(mdm_Image3D& img);
 
-  int   numSt() const;
+  size_t numSt() const;
 
-	int   numCtSignal() const;
+  size_t numCtSignal() const;
 	
-	int   numCtModel() const;
+  size_t numCtModel() const;
 
 	/*VARIABLES:*/
 	mdm_Image3D ROI_;
@@ -433,8 +432,8 @@ private:
   bool useNoise_;
 
   //Start and end points for evaluating model
-  int firstImage_;
-  int lastImage_;
+  size_t firstImage_;
+  size_t lastImage_;
 
 	//Maximum number of iterations
 	//Maximum number of iterations applied

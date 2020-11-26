@@ -42,11 +42,11 @@ protected:
 
 	//! Check there are a valid number of signal inputs for a given T1 method
 	/*!
+  Throws mdm_exception if number of inputs not valid
 	\param methodType T1 method
 	\param numInputs number of input signals specified by user
-	\return true if valid number of signals given, false otherwise
 	*/
-	bool checkNumInputs(mdm_T1MethodGenerator::T1Methods methodType, const int& numInputs);
+	void checkNumInputs(mdm_T1MethodGenerator::T1Methods methodType, const int& numInputs);
 
 	//Variables:
 

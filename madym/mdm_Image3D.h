@@ -146,14 +146,14 @@ class mdm_Image3D
 	\param idx index into data array, using C-style ordering. Must be >=0, < numVoxels()
 	\return value at voxel index
 	*/
-	MDM_API double voxel(int idx) const;
+	MDM_API double voxel(size_t idx) const;
 
 	//! Set value at specified voxel index
 	/*!
 	\param idx index into data array, using C-style ordering. Must be >=0, < numVoxels()
 	\param value to set
 	*/
-	MDM_API void setVoxel(int idx, double value);
+	MDM_API void setVoxel(size_t idx, double value);
 
   //! Return value at specified voxel subscripts
   /*!
@@ -162,7 +162,7 @@ class mdm_Image3D
   \param z, z-axis subscript. Must be >=0, < nZ
   \return value at voxel subscript
   */
-  MDM_API double voxel(int x, int y, int z) const;
+  MDM_API double voxel(size_t x, size_t y, size_t z) const;
 
   //! Set value at specified voxel subscripts
   /*!
@@ -171,7 +171,7 @@ class mdm_Image3D
   \param z, z-axis subscript. Must be >=0, < nZ
   \param value to set
   */
-  MDM_API void setVoxel(int x, int y, int z, double value);
+  MDM_API void setVoxel(size_t x, size_t y, size_t z, double value);
 
 	//! Set image type
 	/*!
@@ -208,13 +208,13 @@ class mdm_Image3D
 	\param   nY reference to hold dimension of y-axis
 	\param   nZ reference to hold dimension of z-axis (image slices)
 	*/
-	MDM_API void getDimensions(int &nX, int &nY, int &nZ) const;
+	MDM_API void getDimensions(size_t &nX, size_t &nY, size_t &nZ) const;
 
 	//! Return the number of voxels in the data array
 	/*!
 	\return  integer number of voxels (0 if dimensions not set)
 	*/
-	MDM_API int numVoxels() const;
+	MDM_API size_t numVoxels() const;
 
 	//! Set the voxel dimensions in mm
 	/*!
@@ -331,7 +331,7 @@ class mdm_Image3D
 	\param idx reference to hold list of voxels indices with non-zero values
 	\param vals reference to hold list of non-zero values
 	*/
-	MDM_API void nonZeroVoxels(std::vector<int> &idx, std::vector<double> &vals) const;
+	MDM_API void nonZeroVoxels(std::vector<size_t> &idx, std::vector<double> &vals) const;
 
 	//! Write the data array into binary stream   
 	/*!
@@ -371,7 +371,7 @@ class mdm_Image3D
   \param z subscript co-ordinate in z-axis
   \return voxel index
   */
-	MDM_API int sub2ind(int x, int y, int z) const;
+	MDM_API size_t sub2ind(size_t x, size_t y, size_t z) const;
 
 private:
 	/*!

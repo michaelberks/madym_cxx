@@ -73,7 +73,7 @@ public:
 	\param filename (can absolute or relative to current working directory)
 	\param nDynamics the number of time-points to read.
 	*/
-	MDM_API void readAIF(const std::string &filename, const int nDynamics);
+	MDM_API void readAIF(const std::string &filename, const size_t nDynamics);
 
 	//! Read PIF from given filename
 	/*!
@@ -83,7 +83,7 @@ public:
 	\param filename (can absolute or relative to current working directory)
 	\param nDynamics the number of time-points to read.
 	*/
-	MDM_API void readPIF(const std::string &filename, const int nDynamics);
+	MDM_API void readPIF(const std::string &filename, const size_t nDynamics);
 
 	//! Write AIF to given filename
 	/*!
@@ -101,7 +101,7 @@ public:
   /*!
   \param aifVals contrast-agent concentration associated with each time point
   */
-  MDM_API bool setBaseAIF(const std::vector<double> &aifVals);
+  MDM_API void setBaseAIF(const std::vector<double> &aifVals);
 
 	//! Return the current AIF
 	/*!
@@ -161,7 +161,7 @@ public:
 	/*!
 	\param timepoint must be >=0 and < nTimes
 	*/
-	MDM_API double AIFTime(int timepoint) const;
+	MDM_API double AIFTime(size_t timepoint) const;
 
 	//! Set the time (in mintues) of each AIF time-point
 	/*!
@@ -172,7 +172,7 @@ public:
 	/*!
 	\param timepoint must be >=0 and < nTimes
 	*/
-	MDM_API void  setPrebolus(int timepoint);
+	MDM_API void  setPrebolus(size_t timepoint);
 
 	//! Set haematocrit correction
 	/*!
@@ -192,7 +192,7 @@ public:
 	//! Get the time point contrast bolus was injected
 	/*!
 	*/
-	MDM_API int prebolus() const;
+	MDM_API size_t prebolus() const;
 
 	//! Get haematocrit correction
 	/*!
@@ -212,27 +212,27 @@ private:
 
 	/*!
 	*/
-	void aifPopGJMP(int nData, double tOffset);
+	void aifPopGJMP(size_t nData, double tOffset);
 
-	void aifPopHepaticAB(int nData, double tOffset, bool resample_AIF, bool resampleIRF);
-
-	/*!
-	*/
-	void aifWeinman(int nData, double tOffset);
+	void aifPopHepaticAB(size_t nData, double tOffset, bool resample_AIF, bool resampleIRF);
 
 	/*!
 	*/
-	void aifFromBase(int nData, double tOffset);
+	void aifWeinman(size_t nData, double tOffset);
+
+	/*!
+	*/
+	void aifFromBase(size_t nData, double tOffset);
 
 	//Resample hepatic portal vein input funtion previously loaded from file
-	void pifFromBase(int nData, double tOffset);
+	void pifFromBase(size_t nData, double tOffset);
 
 	//Load input funtion previously loaded from file
 	void resampleBase(std::vector<double> &resampled_if, const std::vector<double> &loaded_if,
-		int nData, double tOffset);
+    size_t nData, double tOffset);
 
 	//Load/save an AIF from/to file
-	void readIFFromFile(std::vector<double> &loaded_if, const std::string &filename, const int nDynamics);
+	void readIFFromFile(std::vector<double> &loaded_if, const std::string &filename, const size_t nDynamics);
   void writeIFToFile(const std::vector<double> &if_to_save, const std::string &filename);
 
   //----------------------------------------------------------
@@ -246,7 +246,7 @@ private:
 	std::vector<double> base_PIF_;
 	std::vector<double> PIF_IRF_;
 	std::vector<double> AIFTimes_;
-	int prebolus_;
+	size_t prebolus_;
 	double  Hct_;
 	double  dose_;
 
