@@ -14,7 +14,6 @@
 
 #include <algorithm>
 
-#include <mdm_version.h>
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/mdm_exception.h>
 

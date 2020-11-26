@@ -9,12 +9,11 @@
 #define MDM_RUNTOOLS_HDR
 
 #include "mdm_api.h"
-#include <mdm_version.h>
 #include <mdm_OptionsParser.h>
 #include <madym/mdm_FileManager.h>
-#include <madym/mdm_DCEVolumeAnalysis.h>
+#include <madym/mdm_VolumeAnalysis.h>
 #include <madym/mdm_AIF.h>
-#include <madym/mdm_T1VolumeAnalysis.h>
+#include <madym/mdm_T1Mapper.h>
 #include <madym/mdm_ErrorTracker.h>
 
 #include <madym/dce_models/mdm_DCEModelBase.h>

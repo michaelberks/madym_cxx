@@ -31,12 +31,13 @@ MDM_API mdm_RunToolsVolumeAnalysis::~mdm_RunToolsVolumeAnalysis()
 
 }
 
-MDM_API void mdm_RunToolsVolumeAnalysis::loadErrorMap()
+MDM_API void mdm_RunToolsVolumeAnalysis::loadErrorTracker()
 {
-	//Before we start, try and load an errorImage, this allows us to add
-	//to any existing errors in a re-analysis
-	errorMapPath_ = outputPath_ / options_.errorCodesName();
-	fileManager_.loadErrorMap(errorMapPath_.string());
+  if (!options_.errorTrackerName().empty())
+  {
+    std::string errorTrackerPath = fs::absolute(options_.errorTrackerName()).string();
+    fileManager_.loadErrorTracker(errorTrackerPath);
+  }
 }
 
 MDM_API void mdm_RunToolsVolumeAnalysis::loadROI()
@@ -132,7 +133,6 @@ void mdm_RunToolsVolumeAnalysis::mapT1()
 MDM_API void mdm_RunToolsVolumeAnalysis::writeOutput()
 {
   fileManager_.saveOutputMaps(outputPath_.string());
-	fileManager_.saveErrorMap(errorMapPath_.string());
 }
 
 //

@@ -727,7 +727,7 @@
                  <item row="1" column="0">
                   <widget class="QLabel" name="label_12">
                    <property name="text">
-                    <string>Error codes name:</string>
+                    <string>Error tracker name:</string>
                    </property>
                   </widget>
                  </item>
@@ -756,7 +756,7 @@
                   </widget>
                  </item>
                  <item row="1" column="1">
-                  <widget class="QLineEdit" name="errorCodesLineEdit"/>
+                  <widget class="QLineEdit" name="errorTrackerLineEdit"/>
                  </item>
                  <item row="0" column="1">
                   <widget class="QLineEdit" name="logNameLineEdit"/>

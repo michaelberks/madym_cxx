@@ -8,7 +8,6 @@
 #ifndef MDM_INPUT_OPTIONS_HDR
 #define MDM_INPUT_OPTIONS_HDR
 
-#include <mdm_version.h>
 #include <mdm_InputTypes.h>
 
 //! Input options structure defining default input options for T1 mapping and DCE analysis
@@ -42,6 +41,9 @@ struct mdm_InputOptions {
 	//ROI options
 	mdm_input_string roiName = mdm_input_string(
 		mdm_input_str(""), "roi", "", "Path to ROI map");
+  mdm_input_string errorTrackerName = mdm_input_string(
+    mdm_input_str(""), "err", "E",
+    "Path to existing error tracker map, if empty a new map created");
 
 	//T1 calculation options
 	mdm_input_string T1method = mdm_input_string(
@@ -189,9 +191,6 @@ struct mdm_InputOptions {
   mdm_input_bool quiet = mdm_input_bool(
     false, "quiet", "q",
     "Do not display logging messages in cout");
-	mdm_input_string errorCodesName = mdm_input_string(
-		mdm_input_str("error_codes"), "err", "E",
-		"Filename of error codes map");
 	mdm_input_string programLogName = mdm_input_string(
 		mdm_input_str("ProgramLog.txt"), "program_log", "",
 		"Filename of program log, will be appended with datetime");

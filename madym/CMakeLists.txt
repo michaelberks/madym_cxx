@@ -24,7 +24,6 @@ set(mdm_sources
 	mdm_AnalyzeFormat.cxx			mdm_AnalyzeFormat.h
 	mdm_ErrorTracker.cxx			mdm_ErrorTracker.h			
 		
-	mdm_DCEVolumeAnalysis.cxx	mdm_DCEVolumeAnalysis.h
 	mdm_DCEVoxel.cxx				  mdm_DCEVoxel.h
 	mdm_DCEModelFitter.cxx		mdm_DCEModelFitter.h
 		
@@ -33,8 +32,9 @@ set(mdm_sources
 	mdm_ProgramLogger.cxx			mdm_ProgramLogger.h
 	mdm_ParamSummaryStats.cxx	mdm_ParamSummaryStats.h
 
-	mdm_T1VolumeAnalysis.cxx	mdm_T1VolumeAnalysis.h	
-
+	mdm_T1Mapper.cxx	        mdm_T1Mapper.h	
+  mdm_VolumeAnalysis.cxx	  mdm_VolumeAnalysis.h
+	
 	mdm_OptionsParser.cxx			mdm_OptionsParser.h
 	mdm_InputTypes.cxx				mdm_InputTypes.h
 	mdm_InputOptions.h

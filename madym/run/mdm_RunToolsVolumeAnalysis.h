@@ -42,7 +42,7 @@ protected:
 	3. If error map doesn't exist, create a new empty one
 	4. Save the error map path for future use
 	*/
-	MDM_API void loadErrorMap();
+	MDM_API void loadErrorTracker();
 
 	//! Check if user has specified an ROI mask, and if so, load it
 	MDM_API void loadROI();
@@ -71,10 +71,10 @@ protected:
 	mdm_FileManager fileManager_;
 
 	//! Analysis object that performs specified analyses on all volume voxels
-	mdm_DCEVolumeAnalysis volumeAnalysis_;
+	mdm_VolumeAnalysis volumeAnalysis_;
 
 private:
-	fs::path errorMapPath_;
+	//fs::path errorTrackerPath_;
 };
 
 #endif

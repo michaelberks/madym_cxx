@@ -52,7 +52,7 @@ MDM_API void mdm_RunTools_madym_T1::run()
 	set_up_logging();
 
 	//Load existing error image if it exists
-	loadErrorMap();
+	loadErrorTracker();
 
 	//Load ROI
 	loadROI();
@@ -82,6 +82,7 @@ MDM_API int mdm_RunTools_madym_T1::parseInputs(int argc, const char *argv[])
 
 		//ROI options_
 	options_parser_.add_option(config_options, options_.roiName);
+  options_parser_.add_option(config_options, options_.errorTrackerName);
 
 		//T1 calculation options_
 	options_parser_.add_option(config_options, options_.T1method);
@@ -99,7 +100,6 @@ MDM_API int mdm_RunTools_madym_T1::parseInputs(int argc, const char *argv[])
   options_parser_.add_option(config_options, options_.noLog);
   options_parser_.add_option(config_options, options_.noAudit);
   options_parser_.add_option(config_options, options_.quiet);
-	options_parser_.add_option(config_options, options_.errorCodesName);
 	options_parser_.add_option(config_options, options_.programLogName);
 	options_parser_.add_option(config_options, options_.outputConfigFileName);
 	options_parser_.add_option(config_options, options_.auditLogBaseName);

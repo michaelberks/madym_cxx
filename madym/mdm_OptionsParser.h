@@ -8,7 +8,6 @@
 #ifndef MDM_OPTIONS_PARSER_HDR
 #define MDM_OPTIONS_PARSER_HDR
 #include "mdm_api.h"
-#include <mdm_version.h>
 
 #include <string>
 #include <vector>

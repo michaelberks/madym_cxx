@@ -56,6 +56,12 @@ MDM_API void mdm_RunTools_madym_AIF::run()
   //Set up logging trail
   set_up_logging();
 
+  //Load existing error image if it exists
+  loadErrorTracker();
+
+  //Load ROI
+  loadROI();
+
   //Load dynamic volumes
   if (options_.inputCt())
     loadCt();
@@ -73,7 +79,7 @@ MDM_API void mdm_RunTools_madym_AIF::run()
     //mapping T1 from input signal volumes
     mapT1();
 
-  //Load AIF roi
+  //Load AIF map
   if (!options_.aifMap().empty())
   {
     //Load AIF map
@@ -86,6 +92,14 @@ MDM_API void mdm_RunTools_madym_AIF::run()
   else
     //Otherwise, try and auto-fit the AIF
     computeAutoAIF();
+
+  //Save the error tracker
+  fileManager_.saveErrorTracker(outputPath_.string(),
+    volumeAnalysis_.MAP_NAME_ERROR_TRACKER);
+
+  //Save an ROI if used
+  fileManager_.saveROI(outputPath_.string(),
+    volumeAnalysis_.MAP_NAME_ROI);
 }
 
 //
@@ -104,6 +118,8 @@ MDM_API int mdm_RunTools_madym_AIF::parseInputs(int argc, const char *argv[])
   options_parser_.add_option(config_options, options_.dynFormat);
   options_parser_.add_option(config_options, options_.nDyns);
   options_parser_.add_option(config_options, options_.injectionImage);
+  options_parser_.add_option(config_options, options_.roiName);
+  options_parser_.add_option(config_options, options_.errorTrackerName);
 
   //T1 mapping options
   options_parser_.add_option(config_options, options_.T1method);
@@ -138,7 +154,6 @@ MDM_API int mdm_RunTools_madym_AIF::parseInputs(int argc, const char *argv[])
   options_parser_.add_option(config_options, options_.noLog);
   options_parser_.add_option(config_options, options_.noAudit);
   options_parser_.add_option(config_options, options_.quiet);
-  options_parser_.add_option(config_options, options_.errorCodesName);
   options_parser_.add_option(config_options, options_.programLogName);
   options_parser_.add_option(config_options, options_.outputConfigFileName);
   options_parser_.add_option(config_options, options_.auditLogBaseName);
@@ -336,11 +351,17 @@ void mdm_RunTools_madym_AIF::getSliceCandidateVoxels(
 
   const mdm_Image3D &T1 = volumeAnalysis_.T1Mapper().T1();
 
+  bool useROI = volumeAnalysis_.ROI().numVoxels() > 0;
+
   for (const auto ix : xRange)
   {
     for (const auto iy : yRange)
     {
       auto voxelIndex = T1.sub2ind(ix, iy, slice);
+
+      //Skip if using ROI and voxel not in ROI
+      if (useROI && !volumeAnalysis_.ROI().voxel(voxelIndex))
+        continue;
 
       // assume pre-contrast T1 of blood is around 1500 ms
       if (T1.voxel(voxelIndex) > options_.minT1Blood())

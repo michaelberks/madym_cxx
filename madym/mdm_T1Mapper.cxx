@@ -1,6 +1,6 @@
 /**
-*  @file    mdm_T1VolumeAnalysis.cxx
-*  @brief   implementation of mdm_T1VolumeAnalysis class
+*  @file    mdm_T1Mapper.cxx
+*  @brief   implementation of mdm_T1Mapper class
 *  Original author MA Berks 24 Oct 2018
 *  (c) Copyright QBI, University of Manchester 2020
 */
@@ -9,7 +9,7 @@
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
 
-#include "mdm_T1VolumeAnalysis.h"
+#include "mdm_T1Mapper.h"
 
 #include <cassert>
 #include <chrono>  // chrono::system_clock
@@ -21,7 +21,7 @@
 #include <boost/format.hpp>
 
 //
-MDM_API mdm_T1VolumeAnalysis::mdm_T1VolumeAnalysis(mdm_ErrorTracker &errorTracker)
+MDM_API mdm_T1Mapper::mdm_T1Mapper(mdm_ErrorTracker &errorTracker)
 	:inputImages_(0),
 	errorTracker_(errorTracker),
 	noiseThreshold_(0),
@@ -29,11 +29,11 @@ MDM_API mdm_T1VolumeAnalysis::mdm_T1VolumeAnalysis(mdm_ErrorTracker &errorTracke
 {}
 
 //
-MDM_API mdm_T1VolumeAnalysis::~mdm_T1VolumeAnalysis()
+MDM_API mdm_T1Mapper::~mdm_T1Mapper()
 {}
 
 //
-MDM_API void mdm_T1VolumeAnalysis::addInputImage(mdm_Image3D img)
+MDM_API void mdm_T1Mapper::addInputImage(mdm_Image3D img)
 {
 	/* MB - Copied this Gio comment from elsewhere - here would be an obvious place to enforce this check!
 	* Note that there is an assumption throughout MaDyM that all images used in the analysis have the same
@@ -47,25 +47,25 @@ MDM_API void mdm_T1VolumeAnalysis::addInputImage(mdm_Image3D img)
 }
 
 //
-MDM_API void mdm_T1VolumeAnalysis::setT1(mdm_Image3D T1_img)
+MDM_API void mdm_T1Mapper::setT1(mdm_Image3D T1_img)
 {
 	T1_ = T1_img;
 }
 
 //
-MDM_API void mdm_T1VolumeAnalysis::setM0(mdm_Image3D M0_img)
+MDM_API void mdm_T1Mapper::setM0(mdm_Image3D M0_img)
 {
 	M0_ = M0_img;
 }
 
 //
-MDM_API void mdm_T1VolumeAnalysis::setROI(mdm_Image3D ROI)
+MDM_API void mdm_T1Mapper::setROI(mdm_Image3D ROI)
 {
 	ROI_ = ROI;
 }
 
 //
-MDM_API void  mdm_T1VolumeAnalysis::mapT1(mdm_T1MethodGenerator::T1Methods method)
+MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 {
 	//
 	auto nSignals = inputImages_.size();
@@ -129,27 +129,27 @@ MDM_API void  mdm_T1VolumeAnalysis::mapT1(mdm_T1MethodGenerator::T1Methods metho
 	std::chrono::duration<double> elapsed_seconds = fit_end - fit_start;
 
 	std::stringstream ss;
-	ss << "mdm_T1VolumeAnalysis: Fitted " <<
+	ss << "mdm_T1Mapper: Fitted " <<
 		numFitted << " voxels in " << elapsed_seconds.count() << "s.\n" <<
 		numErrors << " voxels returned fit errors\n";
 	mdm_ProgramLogger::logProgramMessage(ss.str());
 }
 
 //
-MDM_API void mdm_T1VolumeAnalysis::mapT1()
+MDM_API void mdm_T1Mapper::mapT1()
 {
 	//Just call the overload mapT1 with the method- member variable
 	mapT1(method_);
 }
 
 //
-MDM_API const std::vector<mdm_Image3D>& mdm_T1VolumeAnalysis::inputImages() const
+MDM_API const std::vector<mdm_Image3D>& mdm_T1Mapper::inputImages() const
 {
 	return inputImages_;
 }
 
 //
-MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::inputImage(size_t i) const
+MDM_API const mdm_Image3D& mdm_T1Mapper::inputImage(size_t i) const
 {
   try { return inputImages_[i]; }
   catch (std::out_of_range &e)
@@ -163,53 +163,53 @@ MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::inputImage(size_t i) const
 }
 
 //
-MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::T1() const
+MDM_API const mdm_Image3D& mdm_T1Mapper::T1() const
 {
 	return T1_;
 }
 
 //
-MDM_API const mdm_Image3D& mdm_T1VolumeAnalysis::M0() const
+MDM_API const mdm_Image3D& mdm_T1Mapper::M0() const
 {
 	return M0_;
 }
 
 //
-MDM_API double mdm_T1VolumeAnalysis::T1(size_t voxel) const
+MDM_API double mdm_T1Mapper::T1(size_t voxel) const
 {
 	return T1_.voxel(voxel);
 }
 
 //
-MDM_API double mdm_T1VolumeAnalysis::M0(size_t voxel) const
+MDM_API double mdm_T1Mapper::M0(size_t voxel) const
 {
 	return M0_.voxel(voxel);
 }
 
 //
-MDM_API void mdm_T1VolumeAnalysis::zeroVoxel(size_t voxel)
+MDM_API void mdm_T1Mapper::zeroVoxel(size_t voxel)
 {
 	T1_.setVoxel(voxel, 0);
 	M0_.setVoxel(voxel, 0);
 }
 
 //
-MDM_API mdm_T1MethodGenerator::T1Methods  mdm_T1VolumeAnalysis::method() const
+MDM_API mdm_T1MethodGenerator::T1Methods  mdm_T1Mapper::method() const
 {
 	return method_;
 }
 
 //
-MDM_API void  mdm_T1VolumeAnalysis::setMethod(mdm_T1MethodGenerator::T1Methods method)
+MDM_API void  mdm_T1Mapper::setMethod(mdm_T1MethodGenerator::T1Methods method)
 {
 	method_ = method;
 }
 
-MDM_API double  mdm_T1VolumeAnalysis::noiseThreshold() const
+MDM_API double  mdm_T1Mapper::noiseThreshold() const
 {
 	return noiseThreshold_;
 }
-MDM_API void  mdm_T1VolumeAnalysis::setNoiseThreshold(double t)
+MDM_API void  mdm_T1Mapper::setNoiseThreshold(double t)
 {
 	noiseThreshold_ = t;
 }

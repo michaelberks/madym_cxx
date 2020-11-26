@@ -437,9 +437,9 @@ void madym_gui_ui::on_logNameLineEdit_textChanged(const QString &text)
 {
 	madym_options_.programLogName.set(text.toStdString());
 }
-void madym_gui_ui::on_errorCodesLineEdit_textChanged(const QString &text)
+void madym_gui_ui::on_errorTrackerLineEdit_textChanged(const QString &text)
 {
-	madym_options_.errorCodesName.set(text.toStdString());
+	madym_options_.errorTrackerName.set(text.toStdString());
 }
 void madym_gui_ui::on_auditNameLineEdit_textChanged(const QString &text)
 {
@@ -736,7 +736,7 @@ void madym_gui_ui::initialize_widget_values()
 
   //Logging options
   ui.logNameLineEdit->setText(madym_options_.programLogName().c_str());
-  ui.errorCodesLineEdit->setText(madym_options_.errorCodesName().c_str());
+  ui.errorTrackerLineEdit->setText(madym_options_.errorTrackerName().c_str());
 	ui.configLineEdit->setText(madym_options_.outputConfigFileName().c_str());
   ui.auditNameLineEdit->setText(madym_options_.auditLogBaseName().c_str());
   ui.auditDirLineEdit->setText(madym_options_.auditLogDir().c_str());
