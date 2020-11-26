@@ -41,7 +41,7 @@ public:
 	MDM_API mdm_DCEVoxel(
 		const std::vector<double> &dynSignals,
 		const std::vector<double> &dynConc,
-    const int injectionImg,
+    const size_t injectionImg,
 		const std::vector<double> &dynamicTimings,
 		const std::vector<double> &IAUC_times);
 
@@ -57,7 +57,7 @@ public:
 	*/
 	MDM_API void computeCtFromSignal(
     const double T1, const double FA, const double TR, const double r1Const,
-    const double M0, int timepoint0 = 0);
+    const double M0, size_t timepoint0 = 0);
 
 	//! Compute IAUC values at selected times
 	/*!
@@ -87,14 +87,14 @@ public:
 	\param idx index into IAUC values
 	\return IAUC value at specified index
 	*/
-	MDM_API double			IAUC_val(int idx) const;
+	MDM_API double			IAUC_val(size_t idx) const;
 
 	//! Return IAUC time at specified index
 	/*
 	\param idx index into IAUC times
 	\return IAUC time at specified index
 	*/
-	MDM_API double			IAUC_time(int idx) const;
+	MDM_API double			IAUC_time(size_t idx) const;
 	
 	//! Return enhancing status
 	/*!
@@ -140,7 +140,7 @@ private:
   //double T1_;						//T1 value for this voxel
 	//double M0_;						//M0 value for this voxel - not used if using ratio method
 	//double r1Const_;				//relaxivity constant of tissue 
-  int injectionImg_;    //Time point of injection
+  size_t injectionImg_;    //Time point of injection
 	std::vector<double> IAUC_times_; //Vector of times (in secs) at which to caclucate IAUC values
 	std::vector<double> IAUC_vals_; 
 	

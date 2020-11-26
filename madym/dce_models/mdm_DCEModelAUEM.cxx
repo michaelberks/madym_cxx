@@ -50,10 +50,10 @@ MDM_API std::string mdm_DCEModelAUEM::modelType() const
   return "mdm_DCEModelAUEM";
 }
 
-MDM_API void mdm_DCEModelAUEM::computeCtModel(int nTimes)
+MDM_API void mdm_DCEModelAUEM::computeCtModel(size_t nTimes)
 {
   //Reset all the model concentrations to 0
-  for (int i_t = 0; i_t < nTimes; i_t++)
+  for (size_t i_t = 0; i_t < nTimes; i_t++)
     CtModel_[i_t] = 0;
 
   for (const double& param : pkParams_)
@@ -98,7 +98,7 @@ MDM_API void mdm_DCEModelAUEM::computeCtModel(int nTimes)
   CtModel_[0] = 0;
   double Cp_t0 = (f_a*Ca_t[0] + f_v * Cv_t[0]);
 
-  for (int i_t = 1; i_t < nTimes; i_t++)
+  for (size_t i_t = 1; i_t < nTimes; i_t++)
   {
     // Get current time, and time change
     double delta_t = AIFtimes[i_t] - AIFtimes[i_t-1];
@@ -128,34 +128,6 @@ MDM_API void mdm_DCEModelAUEM::computeCtModel(int nTimes)
     CtModel_[i_t] = C_t;
     Cp_t0 = Cp_t1;
   }
-
-  /*
-  const double delta_t = AIFtimes[1] - AIFtimes[0];
-  for (int i_t = 0; i_t < nTimes; i_t++)
-  {
-    //Generally I don't like single letter parameter names, but to be consistent with
-    //the equations published in Leo's paper, use t as alias for dynamic times
-    const double &t = AIFtimes[i_t];
-    const double ex_i = std::exp(-t / T_i);
-    const double ex_e = std::exp(-t / T_e);
-
-    double ETie = E_i / (1 - T_e / T_i);
-
-    //Make combined input function
-    Cp_t[i_t] = (f_a*Ca_t[i_t] + f_v * Cv_t[i_t]);
-
-    //Compute the exchange term for the concentration time series
-    Cx_t[i_t] = F_p * (ETie*ex_i + (1 - ETie)*ex_e);
-
-    //Finally convolve the exchange time series with the combined input function
-    double Cl_t_sum = 0.0; //conv(Cx_t, Cp_t);
-    for (int j_t = 0; j_t <= i_t; j_t++)
-    {
-      Cl_t_sum += Cx_t[j_t] * Cp_t[i_t - j_t];
-    }
-    CtModel_[i_t] = Cl_t_sum * delta_t;
-
-  }*/
 }
 
 MDM_API double mdm_DCEModelAUEM::checkParams()

@@ -11,6 +11,7 @@
 #endif // !MDM_API_EXPORTS
 
 #include "mdm_RunTools_madym_DCE_lite.h"
+#include <madym/mdm_exception.h>
 
 namespace fs = boost::filesystem;
 
@@ -28,20 +29,20 @@ MDM_API mdm_RunTools_madym_DCE_lite::~mdm_RunTools_madym_DCE_lite()
 }
 
 //
-MDM_API int mdm_RunTools_madym_DCE_lite::run()
+MDM_API void mdm_RunTools_madym_DCE_lite::run()
 {
 	//Check required inputs
 	if (options_.model().empty())
 	{
-		mdm_progAbort("model (option -m) must be provided");
+    throw mdm_exception(__func__, "model (option -m) must be provided");
 	}
 	if (options_.inputDataFile().empty())
 	{
-		mdm_progAbort("input data file (option -i) must be provided");
+    throw mdm_exception(__func__, "input data file (option -i) must be provided");
 	}
 	if (!options_.nDyns())
 	{
-		mdm_progAbort("number of dynamics (option -n) must be provided");
+    throw mdm_exception(__func__, "number of dynamics (option -n) must be provided");
 	}
 
   //Set curent working dir
@@ -55,7 +56,7 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
   //Set up AIF, option from map is not allowed in lite analysis
   setAIF();
   if (AIF_.AIFType() == mdm_AIF::AIF_TYPE::AIF_MAP)
-    mdm_progAbort("AIF can not be read from a map in DCE-lite analysis");
+    throw mdm_exception(__func__, "AIF can not be read from a map in DCE-lite analysis");
 	
   //Set which type of model we're using
 	setModel(options_.model(),
@@ -73,13 +74,13 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 		//Using population AIF
 		if (options_.dynTimesFile().empty())
 		{
-			mdm_progAbort("if not using an auto-AIF, a dynamic times file must be provided");
+      throw mdm_exception(__func__, "if not using an auto-AIF, a dynamic times file must be provided");
 		}
 		//Try and open the file and read in the times
 		std::ifstream dynTimesStream(options_.dynTimesFile(), std::ios::in);
 		if (!dynTimesStream.is_open())
 		{
-			mdm_progAbort("error opening dynamic times file, Check it exists");
+      throw mdm_exception(__func__, "error opening dynamic times file, Check it exists");
 		}
 		std::vector<double> dynamicTimes;
 		for (int i = 0; i < options_.nDyns(); i++)
@@ -94,9 +95,8 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 	{
 		std::string aifPath = fs::absolute(options_.aifName()).string();
 		if (aifPath.empty())
-		{
-			mdm_progAbort(options_.model() + " chosen as model but no AIF filename set");
-		}
+		  throw mdm_exception(__func__, options_.model() + " chosen as model but no AIF filename set");
+		
     AIF_.readAIF(aifPath, options_.nDyns());
 	}
 
@@ -105,31 +105,24 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 	{
 		std::string pifPath = fs::absolute(options_.pifName()).string();
 		if (pifPath.empty())
-		{
-			mdm_progAbort(options_.model() + " chosen as model but no AIF filename set");
-		}
+      throw mdm_exception(__func__, options_.model() + " chosen as model but no AIF filename set");
+		
     AIF_.readPIF(pifPath, options_.nDyns());
 	}
 
 	//If we're converting from signal to concentration, make sure we've been supplied TR and FA values
 	if (!options_.inputCt() && (!options_.TR() || !options_.FA() || !options_.r1Const()))
-	{
-		mdm_progAbort("TR, FA, r1 must be set to convert from signal concentration");
-	}
+    throw mdm_exception(__func__, "TR, FA, r1 must be set to convert from signal concentration");
 
 	//Open the input data file
 	std::ifstream inputData(options_.inputDataFile(), std::ios::in);
 	if (!inputData.is_open())
-	{
-		mdm_progAbort("error opening input data file, Check it exists");
-	}
+    throw mdm_exception(__func__, "error opening input data file, Check it exists");
 
 	//Open up an output file
 	std::ofstream outputData(outputDataFile, std::ios::out);
 	if (!outputData.is_open())
-	{
-		mdm_progAbort("error opening ouput data file");
-	}
+    throw mdm_exception(__func__, "error opening ouput data file");
 
 	//If we've been given a initial parameters for every time-series open stream to file
 	//containing these
@@ -139,9 +132,8 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 	{
 		inputParams.open(options_.initParamsFile(), std::ios::in);
 		if (!inputParams.is_open())
-		{
-			mdm_progAbort("error opening input parameter file, Check it exists");
-		}
+      throw mdm_exception(__func__, "error opening input parameter file, Check it exists");
+		
 		load_params = true;
 	}
 
@@ -152,9 +144,8 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
 		//Try and open the file and read in the noise values
 		std::ifstream dynNoiseStream(options_.dynNoiseFile(), std::ios::in);
 		if (!dynNoiseStream.is_open())
-		{
-			mdm_progAbort("error opening dynamic times file, Check it exists");
-		}
+      throw mdm_exception(__func__, "error opening dynamic times file, Check it exists");
+		
 		for (int i = 0; i < options_.nDyns(); i++)
 		{
 			double sigma;
@@ -267,9 +258,6 @@ MDM_API int mdm_RunTools_madym_DCE_lite::run()
     std::cout << "Finished processing! " << std::endl;
     std::cout << "Processed " << row_counter << " time-series in total." << std::endl;
   }
-	
-	//Tidy up the logging objects
-	return mdm_progExit();
 }
 
 //
@@ -361,7 +349,7 @@ void mdm_RunTools_madym_DCE_lite::fit_series(
 	else
 		signalData = timeSeries;
 
-	const int nDyns = timeSeries.size();
+	const auto nDyns = timeSeries.size();
 
 	//Create a perm object
 	mdm_DCEVoxel vox(
@@ -395,26 +383,21 @@ void mdm_RunTools_madym_DCE_lite::fit_series(
 		vox.enhancing() << " " <<
 		fitter.modelFitError() << " ";
 
-	for (int i = 0; i < IAUCTimes.size(); i++)
+	for (size_t i = 0; i < IAUCTimes.size(); i++)
 		outputData << " " << vox.IAUC_val(i);
 
-	for (int i = 0; i < model_->numParams(); i++)
-		outputData << " " << model_->params(i);
+	for (const auto p : model_->params())
+		outputData << " " << p; 
 
 
 	if (outputCt_mod)
-	{
-		const std::vector<double> &Cm_t = fitter.CtModel();
-		for (int i = 0; i < nDyns; i++)
-			outputData << " " << Cm_t[i];
-	}
+	  for (const auto c : fitter.CtModel())
+			outputData << " " << c;
+	
 
 	if (outputCt_sig)
-	{
-		const std::vector<double> &Cs_t = vox.CtData();
-		for (int i = 0; i < nDyns; i++)
-			outputData << " " << Cs_t[i];
-	}
+	for (const auto c : vox.CtData())
+		outputData << " " << c;
 
 	outputData << std::endl;
 }

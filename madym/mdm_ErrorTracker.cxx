@@ -13,7 +13,7 @@
 #include "mdm_ErrorTracker.h"
 
 #include <cassert>
-#include <madym/mdm_ProgramLogger.h>
+#include <madym/mdm_exception.h>
 
 //
 //
@@ -36,88 +36,55 @@ MDM_API const mdm_Image3D& mdm_ErrorTracker::errorImage() const
 
 //
 //
-MDM_API bool mdm_ErrorTracker::setErrorImage(const mdm_Image3D &img)
+MDM_API void mdm_ErrorTracker::setErrorImage(const mdm_Image3D &img)
 {
 	
   //Check input image is not empty and of correct type
   if (img.numVoxels() <= 0)
-  {
-		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_ErrorTracker::setErrorImage : Input image is empty");
-    return false;
-  }
+    throw mdm_exception(__func__, "Trying to set error image from empty image");
+    
 	else if (img.type() != mdm_Image3D::ImageType::TYPE_ERRORMAP)
-	{
-		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_ErrorTracker::setErrorImage: "
-			"Type of input image does not match TYPE_ERRORMAP");
-		return false;
-	}
+    throw mdm_exception(__func__, "Type of input image does not match TYPE_ERRORMAP");
+		
 	errorImage_ = img;
-  return true;
 }
 
 //
-MDM_API bool mdm_ErrorTracker::initErrorImage(const mdm_Image3D &imgWithDims)
+MDM_API void mdm_ErrorTracker::initErrorImage(const mdm_Image3D &imgWithDims)
 {
 	if (errorImage_.numVoxels() > 0)
 		//Error image has already been set, can just return true and get on silently
-		return true;
+		return;
 
 	errorImage_.setType(mdm_Image3D::ImageType::TYPE_ERRORMAP);
 	errorImage_.setDimensions(imgWithDims);
-
-	/* ... and make sure it worked */
-	if (errorImage_.numVoxels() <= 0)
-	{
-		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_ErrorTracker::setErrorImage Failed to set up error image");
-		return false;
-	}
-
-	return true;
 }
 
-/*
- */
-MDM_API bool mdm_ErrorTracker::updateVoxel(const int voxelIndex, ErrorCode errCode)
+//
+MDM_API void mdm_ErrorTracker::updateVoxel(const size_t voxelIndex, ErrorCode errCode)
 {
-  assert(voxelIndex >= 0 && voxelIndex < errorImage_.numVoxels());
-
-  if (!errorImage_.numVoxels())
-  {
-    return false;
-  }
-
-  /* Update error at given voxel here */
+  
+  // Update error at given voxel here - no need for size checks, access will throw
+  //appropriate mdm_exception if voxelIndex out of range or image empty
   int errVal = (int)errorImage_.voxel(voxelIndex);
   errVal |= errCode;
 	errorImage_.setVoxel(voxelIndex, errVal);
-
-  return true;
 }
 
 MDM_API mdm_Image3D mdm_ErrorTracker::maskSingleErrorCode(const int errCodesInt)
 {
-	
-
-	mdm_Image3D maskOut;
-
 	// Following is crude test that fields have been set
-	int nVoxels = errorImage_.numVoxels();
+	auto nVoxels = errorImage_.numVoxels();
 	if (nVoxels <= 0)
-	{
-		mdm_ProgramLogger::logProgramMessage(
-			"ERROR: mdm_ErrorTracker::maskSingleErrorCode: Input image has a zero voxel dimension");
-		return maskOut;
-	}
+    throw mdm_exception(__func__, "Attempting to mask empty error image");
 
+  mdm_Image3D maskOut;
 	maskOut.copy(errorImage_);
 	maskOut.setType(mdm_Image3D::ImageType::TYPE_ERRORMAP);
 	maskOut.setTimeStampFromDoubleStr(errorImage_.timeStamp());
 
 	/* And finally the fun bit */
-	for (int iVoxel = 0; iVoxel < nVoxels; iVoxel++)
+	for (size_t iVoxel = 0; iVoxel < nVoxels; iVoxel++)
 	{
 		double mask_val = (int)errorImage_.voxel(iVoxel) & errCodesInt;
 		maskOut.setVoxel(iVoxel, mask_val);

@@ -13,6 +13,7 @@
 #include "mdm_RunToolsVolumeAnalysis.h"
 
 #include <madym/mdm_ProgramLogger.h>
+#include <madym/mdm_exception.h>
 
 namespace fs = boost::filesystem;
 
@@ -56,7 +57,7 @@ void mdm_RunToolsVolumeAnalysis::loadSt()
 
   //If not case 4, and we want to fit a model we *must* have dynamic images
   if (dynBasePath.empty() && dynPrefix.empty())
-    mdm_progAbort("paths and/or prefix to dynamic images not set");
+    throw mdm_exception(__func__, "paths and/or prefix to dynamic images not set");
 
   //Load the dynamic images
   fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns(), options_.dynFormat());
@@ -67,12 +68,12 @@ void mdm_RunToolsVolumeAnalysis::loadSt()
 void mdm_RunToolsVolumeAnalysis::loadCt()
 {
   fs::path CtPath = fs::absolute(fs::path(options_.dynDir()) / options_.dynName());
-  std::string catPrefix = CtPath.filename().string();
-  std::string catBasePath = CtPath.remove_filename().string();
-  if (catBasePath.empty() && catPrefix.empty())
-    mdm_progAbort("Ct flag set to true, but paths and/or prefix to Ct maps not set");
+  std::string CtPrefix = CtPath.filename().string();
+  std::string CtBasePath = CtPath.remove_filename().string();
+  if (CtBasePath.empty() && CtPrefix.empty())
+    throw mdm_exception(__func__, "Ct flag set to true, but paths and/or prefix to Ct maps not set");
 
-  fileManager_.loadCtDataMaps(catBasePath, catPrefix, options_.nDyns(), options_.dynFormat());
+  fileManager_.loadCtDataMaps(CtBasePath, CtPrefix, options_.nDyns(), options_.dynFormat());
 }
 
 //
@@ -87,7 +88,7 @@ void mdm_RunToolsVolumeAnalysis::loadT1()
   {
 
     if (options_.M0Name().empty())
-      mdm_progAbort("If M0_ratio is false, path to M0 map must be set");
+      throw mdm_exception(__func__, "If M0_ratio is false, path to M0 map must be set");
 
     //Otherwise load M0 and return
     fs::path M0Path = fs::absolute(options_.M0Name());
@@ -111,13 +112,13 @@ void mdm_RunToolsVolumeAnalysis::mapT1()
 {
   //Check inputs set by user
   if (options_.T1inputNames().empty())
-    mdm_progAbort("input map names (option --T1_vols) must be provided");
+    throw mdm_exception(__func__, "input map names (option --T1_vols) must be provided");
 
   //Parse T1 method from string, will abort if method type not recognised
   auto methodType = parseMethod(options_.T1method());
 
   //Check number of signal inputs, will abort if too many/too few
-  checkNumInputs(methodType, options_.T1inputNames().size());
+  checkNumInputs(methodType, (int)options_.T1inputNames().size());
 
   //Load T1 inputs
   loadT1Inputs();

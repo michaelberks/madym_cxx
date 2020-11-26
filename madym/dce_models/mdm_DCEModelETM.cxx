@@ -53,10 +53,10 @@ MDM_API std::string mdm_DCEModelETM::modelType() const
   return "mdm_DCEModelETM";
 }
 
-MDM_API void mdm_DCEModelETM::computeCtModel(int nTimes)
+MDM_API void mdm_DCEModelETM::computeCtModel(size_t nTimes)
 {
   //Reset all the model concentrations to 0
-  for (int i_t = 0; i_t < nTimes; i_t++)
+  for (size_t i_t = 0; i_t < nTimes; i_t++)
     CtModel_[i_t] = 0;
 
   for (const double& param : pkParams_)
@@ -78,7 +78,7 @@ MDM_API void mdm_DCEModelETM::computeCtModel(int nTimes)
 
   if (ve == 0.0 || kTrans == 0.0)
   {
-    for (int i = 0; i < nTimes; i++)
+    for (size_t i = 0; i < nTimes; i++)
       CtModel_[i] = vp * Ca_t[i];
     return;
   }
@@ -87,7 +87,7 @@ MDM_API void mdm_DCEModelETM::computeCtModel(int nTimes)
   double kep = kTrans / ve;
 
   CtModel_[0] = vp * Ca_t[0];
-  for (int i_t = 1; i_t < nTimes; i_t++)
+  for (size_t i_t = 1; i_t < nTimes; i_t++)
   {
     double delta_t = t[i_t] - t[i_t - 1];
     double e_delta = std::exp(-kep * delta_t);

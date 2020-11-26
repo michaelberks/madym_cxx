@@ -50,10 +50,10 @@ MDM_API std::string mdm_DCEModelDISCM::modelType() const
   return "mdm_DCEModelDISCM";
 }
 
-MDM_API void mdm_DCEModelDISCM::computeCtModel(int nTimes)
+MDM_API void mdm_DCEModelDISCM::computeCtModel(size_t nTimes)
 {
   //Reset all the model concentrations to 0
-  for (int i_t = 0; i_t < nTimes; i_t++)
+  for (size_t i_t = 0; i_t < nTimes; i_t++)
     CtModel_[i_t] = 0;
 
   for (const double& param : pkParams_)
@@ -84,7 +84,7 @@ MDM_API void mdm_DCEModelDISCM::computeCtModel(int nTimes)
   
   double Cp_t0 = (k1a*Ca_t[0] + k1hpv * Cv_t[0]);
 
-  for (int i_t = 1; i_t < nTimes; i_t++)
+  for (size_t i_t = 1; i_t < nTimes; i_t++)
   {
     //Make combined input function
     double Cp_t1 = (k1a * Ca_t[i_t] + k1hpv * Cv_t[i_t]);

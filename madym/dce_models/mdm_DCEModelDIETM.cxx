@@ -53,10 +53,10 @@ MDM_API std::string mdm_DCEModelDIETM::modelType() const
   return "mdm_DCEModelDIETM";
 }
 
-MDM_API void mdm_DCEModelDIETM::computeCtModel(int nTimes)
+MDM_API void mdm_DCEModelDIETM::computeCtModel(size_t nTimes)
 {
   //Reset all the model concentrations to 0
-  for (int i_t = 0; i_t < nTimes; i_t++)
+  for (size_t i_t = 0; i_t < nTimes; i_t++)
     CtModel_[i_t] = 0;
 
   for (const double& param : pkParams_)
@@ -82,7 +82,7 @@ MDM_API void mdm_DCEModelDIETM::computeCtModel(int nTimes)
 
   if (ve == 0.0 || kTrans == 0.0)
   {
-    for (int i_t = 0; i_t < nTimes; i_t++)
+    for (size_t i_t = 0; i_t < nTimes; i_t++)
       CtModel_[i_t] = vp * (f_a*Ca_t[i_t] + f_v*Cv_t[i_t]);
     return;
   }
@@ -92,7 +92,7 @@ MDM_API void mdm_DCEModelDIETM::computeCtModel(int nTimes)
 
 	double Cp_t0 = (f_a*Ca_t[0] + f_v * Cv_t[0]);
 	CtModel_[0] = vp * Cp_t0;
-  for (int i_t = 1; i_t < nTimes; i_t++)
+  for (size_t i_t = 1; i_t < nTimes; i_t++)
   {
 		//Get average of AIF and PIF, weighted by their respective fractions
     double Cp_t1 = (f_a*Ca_t[i_t] + f_v * Cv_t[i_t]);

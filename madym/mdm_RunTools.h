@@ -100,23 +100,7 @@ protected:
   /*!
   Must be implemented by the derived classes that will be instantiated into run tools objects.
   */
-  MDM_API virtual int run() = 0;
-
-	//! Helper function to call on successful analysis completion.
-	/*!
-	Closes any open program/audit logs, and returns 0 for successful program completion
-	to the original calling function.
-	\return 0
-	*/
-	int mdm_progExit();
-
-	//! Helper function to call when a fatal error occurs
-	/*!
-	Logs the specified error message, closes the program/audit logs, and returns 1 for
-	program completion with errors to the original calling function.
-	\return 1
-	*/
-	void mdm_progAbort(const std::string &err_str);
+  MDM_API virtual void run() = 0;
 
 	//! Return the current time, in standardised string format
 	/*!
@@ -161,6 +145,22 @@ protected:
 
 private:
   //Methods:
+
+  //! Helper function to call on successful analysis completion.
+  /*!
+  Closes any open program/audit logs, and returns 0 for successful program completion
+  to the original calling function.
+  \return 0
+  */
+  int mdm_progExit();
+
+  //! Helper function to call when a fatal error occurs
+  /*!
+  Logs the specified error message, closes the program/audit logs, and returns 1 for
+  program completion with errors to the original calling function.
+  \return 1
+  */
+  void mdm_progAbort(const std::string &err_str);
 	
 };
 

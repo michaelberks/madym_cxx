@@ -51,10 +51,10 @@ MDM_API std::string mdm_DCEModelDIBEM_Fp::modelType() const
   return "mdm_DCEModelDIBEM_Fp";
 }
 
-MDM_API void mdm_DCEModelDIBEM_Fp::computeCtModel(int nTimes)
+MDM_API void mdm_DCEModelDIBEM_Fp::computeCtModel(size_t nTimes)
 {
   //Reset all the model concentrations to 0
-  for (int i_t = 0; i_t < nTimes; i_t++)
+  for (size_t i_t = 0; i_t < nTimes; i_t++)
     CtModel_[i_t] = 0;
 
   for (const double& param : pkParams_)
@@ -103,7 +103,7 @@ MDM_API void mdm_DCEModelDIBEM_Fp::computeCtModel(int nTimes)
 
   double Cp_t0 = (f_a*Ca_t[0] + f_v * Cv_t[0]);
 
-  for (int i_t = 1; i_t < nTimes; i_t++)
+  for (size_t i_t = 1; i_t < nTimes; i_t++)
   {
 
     // Get current time, and time change

@@ -85,7 +85,7 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 		setErrorValuesAndTidyUp("Error 2 - alglib:CG() failed", T1value, M0value);
 		return mdm_ErrorTracker::T1_FIT_FAIL;
 	}
-	int iterations = rep_.iterationscount;
+	int iterations = int(rep_.iterationscount);
 
 
 	// Check for non-convergence
@@ -213,7 +213,7 @@ void mdm_T1FitterVFA::computeSSEGradient(
 //
 void mdm_T1FitterVFA::initFAs()
 {
-	nFAs_ = FAs_.size();
+	nFAs_ = int(FAs_.size());
   if (nFAs_ < minimumInputs())
     throw mdm_exception(__func__, "Fewer FAs (" + std::to_string(nFAs_) +
       ") than minimum required (" + std::to_string(minimumInputs()) + ")");

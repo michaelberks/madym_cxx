@@ -49,9 +49,10 @@ protected:
   3. Opens input data file
   4. Processes each line in input data file, mapping T1 from input signals, writing T1 and M0 values to output file
   5. Closes input/output file and reports the number of samples processed.
-  \return 0 on success, non-zero otherwise
+  
+  Throws mdm_exception if errors encountered
   */
-  MDM_API int run();
+  MDM_API void run();
 
 private:
 

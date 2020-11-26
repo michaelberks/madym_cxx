@@ -9,8 +9,8 @@
 void write_series_to_binary(const std::string filename, 
 	const std::vector<double> ts, const std::vector<double> params)
 {
-	int nTimes = ts.size();
-	int nParams = params.size();
+	auto nTimes = ts.size();
+	int nParams = (int)params.size();
 	std::ofstream modelFileStream(filename, std::ios::out | std::ios::binary);
 	modelFileStream.write(reinterpret_cast<const char*>(
 		&nParams), sizeof(int));
@@ -44,7 +44,7 @@ void make_model_time_series(
 	
 
 	//Compute model Ct
-	int nTimes = AIF.AIF().size();
+	auto nTimes = AIF.AIF().size();
 	model->computeCtModel(nTimes);
 	std::vector<double> Ct = model->CtModel();
 
@@ -70,13 +70,13 @@ void make_model_time_series(
 
 		const auto &dynamicTimings_ = AIF.AIFTimes();
 		double cumulativeCt = 0;
-		const int &bolusImage = AIF.prebolus();
-		const double bolusTime = dynamicTimings_[bolusImage];
+		const auto &bolusImage = AIF.prebolus();
+		const auto &bolusTime = dynamicTimings_[bolusImage];
 
 		//This relies on IAUC times being sorted, which we enforce externally to save
 		//time, but for robustness could do so here?
 		int currIAUCt = 0;
-		for (int i_t = bolusImage; i_t < nTimes; i_t++)
+		for (auto i_t = bolusImage; i_t < nTimes; i_t++)
 		{
 			double elapsedTime = dynamicTimings_[i_t] - bolusTime;
 
@@ -98,7 +98,6 @@ void make_model_time_series(
 		}
 
 		std::string iaucFileName = outputDir + "" + modelName + "_IAUC.dat";
-		int nParams = initialParams.size();
 		std::ofstream iaucFileStream(iaucFileName, std::ios::out | std::ios::binary);
 		iaucFileStream.write(reinterpret_cast<const char*>(
 			&nIAUC), sizeof(int));
@@ -211,7 +210,7 @@ int main(int argc, char *argv[])
 	//Create signals from T1 and S0
 	const auto PI = acos(-1.0);
 	std::vector<double> FAs = { PI*2.0/180, PI*10.0 / 180, PI*18.0 / 180 };
-	int nFAs = FAs.size();
+	int nFAs = (int)FAs.size();
 	double T1 = 1500;
 	double S0 = 1000;
 	double TR = 3.5;

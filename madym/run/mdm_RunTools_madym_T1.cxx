@@ -13,6 +13,7 @@
 #include "mdm_RunTools_madym_T1.h"
 
 #include <madym/mdm_ProgramLogger.h>
+#include <madym/mdm_exception.h>
 #include <madym/t1_methods/mdm_T1FitterBase.h>
 
 namespace fs = boost::filesystem;
@@ -29,11 +30,11 @@ MDM_API mdm_RunTools_madym_T1::mdm_RunTools_madym_T1(mdm_InputOptions &options_,
 MDM_API mdm_RunTools_madym_T1::~mdm_RunTools_madym_T1()
 {}
 
-MDM_API int mdm_RunTools_madym_T1::run()
+MDM_API void mdm_RunTools_madym_T1::run()
 {
 	//Check inputs set by user
 	if (options_.T1inputNames().empty())
-		mdm_progAbort("input map names (option --T1_vols) must be provided");
+    throw mdm_exception(__func__, "Input map names (option --T1_vols) must be provided");
 
   //Set curent working dir
   set_up_cwd();
@@ -42,7 +43,7 @@ MDM_API int mdm_RunTools_madym_T1::run()
 	auto methodType = parseMethod(options_.T1method());
 
 	//Check number of signal inputs, will abort if too many/too few
-	checkNumInputs(methodType, options_.T1inputNames().size());
+	checkNumInputs(methodType, (int)options_.T1inputNames().size());
 
 	//Create output folder/check overwrite
 	set_up_output_folder();
@@ -66,9 +67,6 @@ MDM_API int mdm_RunTools_madym_T1::run()
 
 	//Write output
 	writeOutput();
-
-	//Tidy up the logging objects
-	return mdm_progExit();
 }
 
 //

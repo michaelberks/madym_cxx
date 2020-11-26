@@ -13,10 +13,10 @@
 #include "mdm_RunTools_madym_AIF.h"
 
 #include <madym/mdm_ProgramLogger.h>
+#include <madym/mdm_exception.h>
 
 #include <algorithm>
 #include <numeric>
-#include <cassert>
 
 #include <boost/format.hpp>
 
@@ -37,7 +37,7 @@ MDM_API mdm_RunTools_madym_AIF::~mdm_RunTools_madym_AIF()
 }
 
 //
-MDM_API int mdm_RunTools_madym_AIF::run()
+MDM_API void mdm_RunTools_madym_AIF::run()
 {
   //Check required inputs
   checkRequiredInputs();
@@ -159,16 +159,16 @@ MDM_API int mdm_RunTools_madym_AIF::parseInputs(int argc, const char *argv[])
 void mdm_RunTools_madym_AIF::checkRequiredInputs()
 {
   if (!options_.T1Name().empty() && options_.T1Name().at(0) == '-')
-    mdm_progAbort("Error no value associated with T1 map name from command-line");
+    throw mdm_exception(__func__, "No value associated with T1 map name from command-line");
 
   if (!options_.M0Name().empty() && options_.M0Name().at(0) == '-')
-    mdm_progAbort("Error no value associated with M0 map name from command-line");
+    throw mdm_exception(__func__, "No value associated with M0 map name from command-line");
 
   if (!options_.dynName().empty() && options_.dynName().at(0) == '-')
-    mdm_progAbort("Error no value associated with dynamic series file name from command-line");
+    throw mdm_exception(__func__, "No value associated with dynamic series file name from command-line");
 
   if (options_.aifSlices().empty() && options_.aifMap().empty())
-    mdm_progAbort("You must specify either --aif_slices or --aif_map");
+    throw mdm_exception(__func__, "You must specify either --aif_slices or --aif_map");
 }
 
 //
@@ -197,7 +197,7 @@ void mdm_RunTools_madym_AIF::computeAutoAIF()
   AIFmap.setType(mdm_Image3D::ImageType::TYPE_AIFVOXELMAP);
 
   //Get candidate voxels, saving their max signal, and associated timepoint
-  std::vector<int> allCandidateVoxels;
+  std::vector<size_t> allCandidateVoxels;
   std::vector<double> allCandidateMaxSignals;
   processSlices(options_.aifSlices()[0], AIFmap, allCandidateVoxels, allCandidateMaxSignals);
 
@@ -225,11 +225,11 @@ void mdm_RunTools_madym_AIF::computeAutoAIF()
 
 //
 void mdm_RunTools_madym_AIF::computeAutoAIFSlice(
-  const int slice,
+  const size_t slice,
   mdm_Image3D &AIFmap,
-  const std::vector<int> &xRange,
-  const std::vector<int> &yRange,
-  std::vector<int> &candidateVoxels,
+  const std::vector<size_t> &xRange,
+  const std::vector<size_t> &yRange,
+  std::vector<size_t> &candidateVoxels,
   std::vector<double> &candidateMaxSignals)
 {
   mdm_Image3D AIFSliceMap;
@@ -268,27 +268,28 @@ void mdm_RunTools_madym_AIF::computeAutoAIFSlice(
 
 //
 void mdm_RunTools_madym_AIF::processSlices(
-  const int slice,
+  const size_t slice,
   mdm_Image3D &AIFmap,
-  std::vector<int> &candidateVoxels,
+  std::vector<size_t> &candidateVoxels,
   std::vector<double> &candidateMaxSignals)
 {
   candidateVoxels.clear();
   candidateMaxSignals.clear();
 
   //Scan T1 map for pixels that might be blood
-  int nX, nY, nZ;
+  size_t nX, nY, nZ;
   AIFmap.getDimensions(nX, nY, nZ);
 
   //Get ranges for X and Y from inputs if they're set
-  std::vector<int> xRange, yRange;
+  std::vector<size_t> xRange, yRange;
   if (options_.aifXrange().empty())
   {
     xRange.resize(nX);
     std::iota(xRange.begin(), xRange.end(), 0);
   }
   else
-    xRange = options_.aifXrange();
+    for (const auto x: options_.aifXrange())
+      xRange.push_back(size_t(x));
 
   if (options_.aifYrange().empty())
   {
@@ -296,11 +297,12 @@ void mdm_RunTools_madym_AIF::processSlices(
     std::iota(yRange.begin(), yRange.end(), 0);
   }
   else
-    yRange = options_.aifYrange();
+    for (const auto y : options_.aifYrange())
+      yRange.push_back(size_t(y));
 
   for (const auto slice : options_.aifSlices())
   {
-    std::vector<int> sliceCandidateVoxels;
+    std::vector<size_t> sliceCandidateVoxels;
     std::vector<double> sliceCandidateMaxSignals;
     computeAutoAIFSlice(
       slice,
@@ -321,12 +323,12 @@ void mdm_RunTools_madym_AIF::processSlices(
 
 // 
 void mdm_RunTools_madym_AIF::getSliceCandidateVoxels(
-  const int slice,
-  const std::vector<int> &xRange,
-  const std::vector<int> &yRange,
+  const size_t slice,
+  const std::vector<size_t> &xRange,
+  const std::vector<size_t> &yRange,
   mdm_Image3D &AIFmap,
   mdm_Image3D &AIFmapSlice,
-  std::vector<int> &candidateVoxels,
+  std::vector<size_t> &candidateVoxels,
   std::vector<double> &candidateMaxSignals)
 {
   const std::vector<mdm_Image3D> &dynImages = options_.inputCt() ?
@@ -338,7 +340,7 @@ void mdm_RunTools_madym_AIF::getSliceCandidateVoxels(
   {
     for (const auto iy : yRange)
     {
-      int voxelIndex = T1.sub2ind(ix, iy, slice);
+      auto voxelIndex = T1.sub2ind(ix, iy, slice);
 
       // assume pre-contrast T1 of blood is around 1500 ms
       if (T1.voxel(voxelIndex) > options_.minT1Blood())
@@ -360,18 +362,18 @@ void mdm_RunTools_madym_AIF::getSliceCandidateVoxels(
 //
 void mdm_RunTools_madym_AIF::selectVoxelsFromCandidates(
   mdm_Image3D &AIFmap,
-  const std::vector<int> &candidateVoxels,
+  const std::vector<size_t> &candidateVoxels,
   const std::vector<double> &candidateMaxSignals)
 {
   // sort max conc array and return sorted indices
-  int nMax = candidateMaxSignals.size();
+  auto nMax = candidateMaxSignals.size();
   std::vector<size_t> indices(nMax);
   std::iota(indices.begin(), indices.end(), 0); //returns 0, 1, 2,... etc
   std::sort(indices.begin(), indices.end(),
     [&candidateMaxSignals](size_t i1, size_t i2) {return candidateMaxSignals[i1] > candidateMaxSignals[i2]; });
 
   // Keep the indices of the top 5%
-  int threshIdx = (int)(options_.selectPct() * (double)(nMax)/100.0);
+  size_t threshIdx = (size_t)(options_.selectPct() * (double)(nMax)/100.0);
 
   //Get all voxel indexes with concentration above threshold and save in AIF map
   for (size_t idx = 0; idx < threshIdx; idx++)
@@ -388,9 +390,7 @@ void mdm_RunTools_madym_AIF::selectVoxelsFromCandidates(
 void mdm_RunTools_madym_AIF::saveAIF(const std::string &sliceName)
 {
   std::vector<double> baseAIF(volumeAnalysis_.AIFfromMap());
-
-  if (!AIF_.setBaseAIF(baseAIF))
-    mdm_progAbort("Failed to compute AIF values from AIF map");
+  AIF_.setBaseAIF(baseAIF);
 
   //Write the AIF and save the AIF map
   AIF_.writeAIF(outputPath_.string() + "/" + sliceName + ".txt");
@@ -407,17 +407,17 @@ bool mdm_RunTools_madym_AIF::validCandidate(
   const std::vector<mdm_Image3D> &dynImages,
   mdm_Image3D &AIFmap,
   mdm_Image3D &AIFmapSlice,
-  int voxelIndex, double &maxSignal)
+  size_t voxelIndex, double &maxSignal)
 {
   //Aim of this function is to:
   // Check if voxel valid:
   // - Has max signal at time t, where prebolus < t < prebolus + 1 minute;
   // - Has no negative values after t
   // - Has max signal distinguishable from noise
-  int nTimes = dynImages.size();
+  auto nTimes = dynImages.size();
 
   std::vector<double> signalData(nTimes);
-  for (int it = 0; it < nTimes; it++)
+  for (size_t it = 0; it < nTimes; it++)
     signalData[it] = dynImages[it].voxel(voxelIndex);
 
   //Convenient to alias these
@@ -430,7 +430,7 @@ bool mdm_RunTools_madym_AIF::validCandidate(
   //
   // Get max and min signals in time series
   double minSignal;
-  int maxImg;
+  size_t maxImg;
   getMinMaxSignal(signalData, minSignal, maxSignal, maxImg);
 
   //First check if the max signal arrives in peak window post injection
@@ -451,9 +451,9 @@ bool mdm_RunTools_madym_AIF::validCandidate(
 
   // Find arrival image as image which first exceed 10% 
   // from min to max signal after bolus arrival
-  int arrivalImg = 0;
+  size_t arrivalImg = 0;
   double lowerThreshold = minSignal + 0.1 * (maxSignal - minSignal);
-  for (int it = prebolusImg; it < maxImg; it++)
+  for (size_t it = prebolusImg; it < maxImg; it++)
   {
     if (!arrivalImg && signalData[it] > lowerThreshold)
       arrivalImg = it;
@@ -484,12 +484,12 @@ bool mdm_RunTools_madym_AIF::validCandidate(
 
 //
 void mdm_RunTools_madym_AIF::getMinMaxSignal(const std::vector<double> &signalData,
-  double &minSignal, double&maxSignal, int &maxImg)
+  double &minSignal, double&maxSignal, size_t &maxImg)
 {
   maxSignal = signalData[0];
   minSignal = maxSignal;
   maxImg = 0;
-  for (int it = 1; it < signalData.size(); it++)
+  for (size_t it = 1; it < signalData.size(); it++)
   {
     if (signalData[it] > maxSignal)
     {
@@ -504,18 +504,18 @@ void mdm_RunTools_madym_AIF::getMinMaxSignal(const std::vector<double> &signalDa
 //
 double mdm_RunTools_madym_AIF::prebolusNoiseThresh(
   const std::vector<double> &signalData,
-  const int arrivalImg)
+  const size_t arrivalImg)
 {
   //Compute mean and standard deviation in prebolu signal
   double sum = 0.0;
   double sumsq = 0.0;
-  for (int it = 0; it <= arrivalImg; it++)
+  for (size_t it = 0; it <= arrivalImg; it++)
   {
     sum += signalData[it];
     sumsq += signalData[it] * signalData[it];
   }
 
-  double nT = arrivalImg + 1;
+  double nT = double(arrivalImg) + 1;
   double mean = sum / nT;
   double std = nT >= options_.prebolusMinImages() ?
     sqrt((sumsq - sum * sum / nT) / (nT - 1)) : options_.prebolusNoise();

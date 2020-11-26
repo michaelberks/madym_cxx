@@ -69,7 +69,7 @@ public:
 	
 	\param nTimes number of time-points in reset Cm(t)
 	*/
-	MDM_API virtual void reset(int nTimes);
+	MDM_API virtual void reset(size_t nTimes);
 
   //! Return the number of model parameters
 	/*!	
@@ -228,7 +228,7 @@ public:
 	\param nTimes number of time-points, starting from 0 at which to compute Cm(t). Must be < AIF.nTimes()
 	\return
 	*/
-	MDM_API virtual void computeCtModel(int nTimes) = 0;
+	MDM_API virtual void computeCtModel(size_t nTimes) = 0;
 
   //! Check the validity of fitted model prameters.
 	/*!

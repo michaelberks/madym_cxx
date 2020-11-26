@@ -23,8 +23,8 @@
 
 MDM_API mdm_DCEModelFitter::mdm_DCEModelFitter(
 	mdm_DCEModelBase &model,
-	const int timepoint0,
-	const int timepointN,
+	const size_t timepoint0,
+	const size_t timepointN,
   const std::vector<double> &noiseVar,
 	const int maxIterations)
 	:
@@ -111,11 +111,11 @@ MDM_API void mdm_DCEModelFitter::fitModel(
 
 }
 
-MDM_API int mdm_DCEModelFitter::timepoint0() const
+MDM_API size_t mdm_DCEModelFitter::timepoint0() const
 {
   return timepoint0_;
 }
-MDM_API int mdm_DCEModelFitter::timepointN() const
+MDM_API size_t mdm_DCEModelFitter::timepointN() const
 {
   return timepointN_;
 }
@@ -125,7 +125,7 @@ MDM_API const std::vector<double>&	mdm_DCEModelFitter::CtModel() const
   return model_.CtModel();
 }
 
-MDM_API double     mdm_DCEModelFitter::modelFitError() const
+MDM_API double mdm_DCEModelFitter::modelFitError() const
 {
   return modelFitError_;
 }
@@ -159,7 +159,7 @@ double mdm_DCEModelFitter::computeSSD(
   const std::vector<double> &CtModel) const
 {
   double  ssd = 0.0;
-  for (int i = timepoint0_; i < timepointN_; i++)
+  for (size_t i = timepoint0_; i < timepointN_; i++)
   {
     double diff = ((*CtData_)[i] - CtModel[i]);
     ssd += (diff * diff) / noiseVar_[i];
