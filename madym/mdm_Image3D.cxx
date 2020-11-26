@@ -18,7 +18,6 @@
 #include <iomanip>
 #include <boost/date_time.hpp>
 #include <boost/format.hpp>
-#include <madym/mdm_exception.h>
 
 const std::string mdm_Image3D::MetaData::ImageTypeKey = "ImageType";
 const std::string mdm_Image3D::MetaData::TimeStampKey = "TimeStamp";
@@ -75,29 +74,23 @@ MDM_API const std::vector<double>& mdm_Image3D::data() const
 //
 MDM_API double mdm_Image3D::voxel(size_t i) const
 {
-  try { return data_[i]; }
-  catch (std::out_of_range &e)
-  {
-    mdm_exception em(__func__, e.what());
-    em.append(boost::format(
+  if (i >= data_.size())
+    throw mdm_exception(__func__, boost::format(
       "Attempting to access voxel %1% when there are only %2% voxels")
       % i % data_.size());
-    throw em;
-  }
+
+  return data_[i];
 }
 
 //
 MDM_API void mdm_Image3D::setVoxel(size_t i, double value)
 {
-  try { data_[i] = value; }
-  catch (std::out_of_range &e)
-  {
-    mdm_exception em(__func__, e.what());
-    em.append(boost::format(
-      "Attempting to set voxel %1% when there are only %2% voxels")
+  if (i >= data_.size())
+    throw mdm_exception(__func__, boost::format(
+      "Attempting to access voxel %1% when there are only %2% voxels")
       % i % data_.size());
-    throw em;
-  }
+
+  data_[i] = value;
 }
 
 //
@@ -385,29 +378,22 @@ MDM_API void mdm_Image3D::getSetKeyValuePairs(std::vector<std::string> &keys,
 //
 MDM_API bool mdm_Image3D::dimensionsMatch(const mdm_Image3D &img) const
 {
-  bool incompatible = false;
-  bool compatible   = true;
-
-  /* Following is crude test that fields have been set */
-  assert(numVoxels()>0);
-  assert(img.numVoxels()>0);
-
-  /* Test that voxel matrix dimensions match */
+  // Test that voxel matrix dimensions match
 	size_t nx, ny, nz;
 	img.getDimensions(nx, ny, nz);
   if ((nX_ != nx)
        || (nY_ != ny)
        || (nZ_ != nz))
-    return incompatible;
+    return false;
 
-  /* Test that individual voxel mm dimensions match */
+  // Test that individual voxel mm dimensions match
 	if ((fabs(info_.Xmm.value() - img.info_.Xmm.value()) > 0.01)
        || (fabs(info_.Ymm.value() - img.info_.Ymm.value()) > 0.01)
        || (fabs(info_.Zmm.value() - img.info_.Zmm.value()) > 0.01))
-    return incompatible;
+    return false;
 
-  /* If we got here we're OK */
-  return compatible;
+  //
+  return true;
 }
 
 //

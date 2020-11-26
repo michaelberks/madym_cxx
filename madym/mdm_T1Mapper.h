@@ -25,9 +25,10 @@ public:
 	
 	//! Constructor
 	/*!
-	\param errorTracker error tracker shared across the volume analysis objects
+	\param errorTracker shared across the volume analysis objects
+  \param ROI shared across the volume analysis objects
 	*/
-	MDM_API mdm_T1Mapper(mdm_ErrorTracker &errorTracker);
+	MDM_API mdm_T1Mapper(mdm_ErrorTracker &errorTracker, mdm_Image3D &ROI);
 		
 	//! Destructor
 	/*!
@@ -54,21 +55,15 @@ public:
 
 	//! Add a precomputed T1 map
 	/*!
-	\param T1_img T1 map, pre-computed externally (eg from an earlier analysis) 
+	\param T1 T1 map, pre-computed externally (eg from an earlier analysis) 
 	*/
-	MDM_API void setT1(mdm_Image3D T1_img);
+	MDM_API void setT1(mdm_Image3D T1);
 
 	//! Add a precomputed T1 map
 	/*!
-	\param M0_img M0 map, pre-computed externally (eg from an earlier analysis)
+	\param M0 M0 map, pre-computed externally (eg from an earlier analysis)
 	*/
-	MDM_API void setM0(mdm_Image3D M0_img);
-
-	//! Add ROI mask, mapping will only be performed for voxels set non-zero in the mask
-	/*!
-	\param ROI mask image
-	*/
-	MDM_API void setROI(mdm_Image3D ROI);
+	MDM_API void setM0(mdm_Image3D M0);
 
 	//! Return read-only reference to input images
 	/*!
@@ -150,11 +145,20 @@ private:
 
 	//Methods:
 
+  //!Check the image dimensions match, with option to set if no current reference dimensions
+  /* If no other images set yet, this will
+   - initialise the error tracker
+   - in doing so, set the dimension for all subsequent images to be checked against
+   Throws mdm_mismatched_image() exception if dimensions don't match
+   \param img input image to check
+   */
+  void checkOrSetDimension(const mdm_Image3D &img);
+
 	//
 	std::vector<mdm_Image3D> inputImages_;
 
 	// if ROI not empty, only compute values for ROI
-	mdm_Image3D ROI_;
+	mdm_Image3D &ROI_;
 
 	// Output image maps
 	mdm_Image3D T1_, M0_;

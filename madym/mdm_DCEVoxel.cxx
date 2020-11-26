@@ -247,29 +247,23 @@ MDM_API const std::vector<double>&	mdm_DCEVoxel::CtData() const
 //
 MDM_API double mdm_DCEVoxel::IAUC_val(size_t i) const
 {
-  try { return IAUC_vals_[i]; }
-  catch (std::out_of_range &e)
-  {
-    mdm_exception em(__func__, e.what());
-    em.append(boost::format(
+  if (i >= IAUC_vals_.size())
+    throw mdm_exception(__func__, boost::format(
       "Attempting to access IAUC value %1% when there are only %2% IAUC times")
       % i % IAUC_vals_.size());
-    throw em;
-  }
+    
+  return IAUC_vals_[i];
 }
 
 //
 MDM_API double mdm_DCEVoxel::IAUC_time(size_t i) const
 {
-  try { return IAUC_times_[i]; }
-  catch (std::out_of_range &e)
-  {
-    mdm_exception em(__func__, e.what());
-    em.append(boost::format(
+  if (i >= IAUC_times_.size())
+    throw mdm_exception(__func__, boost::format(
       "Attempting to access IAUC time %1% when there are only %2% IAUC times")
       % i % IAUC_times_.size());
-    throw em;
-  }
+
+  return IAUC_times_[i]; 
 }
 
 //

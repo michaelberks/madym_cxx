@@ -58,7 +58,7 @@ MDM_API void mdm_FileManager::loadROI(const std::string &path)
 //
 MDM_API void mdm_FileManager::saveROI(const std::string &outputDir, const std::string &name)
 {
- if (volumeAnalysis_.ROI().numVoxels())
+ if (volumeAnalysis_.ROI())
     saveOutputMap(name, volumeAnalysis_.ROI(), outputDir, false, mdm_AnalyzeFormat::DT_UNSIGNED_CHAR);
 }
 
@@ -84,7 +84,7 @@ MDM_API void mdm_FileManager::loadAIFmap(const std::string &path)
 //
 MDM_API void mdm_FileManager::saveAIFmap(const std::string &outputDir, const std::string &name)
 {
-  if (volumeAnalysis_.AIFmap().numVoxels())
+  if (volumeAnalysis_.AIFmap())
     saveOutputMap(name, volumeAnalysis_.AIFmap(), outputDir, false);
 }
 
@@ -122,16 +122,19 @@ MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir)
   saveErrorTracker(outputDir, volumeAnalysis_.MAP_NAME_ERROR_TRACKER);
 
   //Write out T1 and M0 maps (if M0 map used)
-  if (volumeAnalysis_.T1Mapper().T1().numVoxels())
+  if (volumeAnalysis_.T1Mapper().T1())
     saveOutputMap(volumeAnalysis_.MAP_NAME_T1, 
       volumeAnalysis_.T1Mapper().T1(), outputDir, true);
 		
-	if (volumeAnalysis_.T1Mapper().M0().numVoxels())
+	if (volumeAnalysis_.T1Mapper().M0())
 		saveOutputMap(volumeAnalysis_.MAP_NAME_M0, 
       volumeAnalysis_.T1Mapper().M0(), outputDir, true);
 
+  //Everything after this point is only applicable to analysis with a DCE model
+  if (volumeAnalysis_.modelType().empty())
+    return;
+
   //Write model parameters maps
-  if (!volumeAnalysis_.modelType().empty())
   {
     for (const auto paramName : volumeAnalysis_.paramNames())
       saveOutputMap(paramName, outputDir, false);
@@ -150,10 +153,6 @@ MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir)
 
 	//Write output stats
 	saveSummaryStats(outputDir);
-
-	//If used, write ROI
-	if (volumeAnalysis_.ROI().numVoxels()) 
-    saveOutputMap(volumeAnalysis_.MAP_NAME_ROI, volumeAnalysis_.ROI(), outputDir, false);
 
 	if (writeCtDataMaps_)
 	{
@@ -178,7 +177,7 @@ MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir)
 //
 MDM_API void mdm_FileManager::saveModelResiduals(const std::string &outputDir)
 {
-  return saveOutputMap(volumeAnalysis_.MAP_NAME_RESDIUALS, outputDir, false);
+  saveOutputMap(volumeAnalysis_.MAP_NAME_RESDIUALS, outputDir, false);
 }
 
 //
@@ -188,15 +187,15 @@ MDM_API void mdm_FileManager::saveSummaryStats(const std::string &outputDir)
 	mdm_ParamSummaryStats stats;
 
 	//Do stats for whole ROI
-	const auto &roi = volumeAnalysis_.ROI();
-	if (roi.numVoxels())
-		stats.setROI(roi);
+	const auto &ROI = volumeAnalysis_.ROI();
+	if (ROI)
+		stats.setROI(ROI);
 
 	saveMapsSummaryStats(outputDir + "/" + volumeAnalysis_.MAP_NAME_ROI, stats);
 
 	//Repeat for the enhancing map
 	const auto &enh = volumeAnalysis_.DCEMap(volumeAnalysis_.MAP_NAME_ENHANCING);
-	if (enh.numVoxels())
+	if (enh)
 	{
 		stats.setROI(enh);
 		saveMapsSummaryStats(outputDir + "/" + volumeAnalysis_.MAP_NAME_ENHANCING, stats);
@@ -478,7 +477,7 @@ void mdm_FileManager::saveOutputMap(
   const std::string &mapName, const std::string &outputDir, bool writeXtr/* = true*/)
 {
 	const mdm_Image3D &img = volumeAnalysis_.DCEMap(mapName);
-  if (img.numVoxels())
+  if (img)
     saveOutputMap(mapName, img, outputDir, writeXtr);
 }
 
@@ -508,11 +507,11 @@ void mdm_FileManager::saveMapsSummaryStats(const std::string &roiName, mdm_Param
   stats.openNewStatsFile(roiName + "_summary_stats.csv");
 
 	//Write out T1 and M0 maps (if M0 map used)
-	if (volumeAnalysis_.T1Mapper().T1().numVoxels())
+	if (volumeAnalysis_.T1Mapper().T1())
 		saveMapSummaryStats(volumeAnalysis_.MAP_NAME_T1, 
       volumeAnalysis_.T1Mapper().T1(), stats);
 
-	if (volumeAnalysis_.T1Mapper().M0().numVoxels())
+	if (volumeAnalysis_.T1Mapper().M0())
 		saveMapSummaryStats(volumeAnalysis_.MAP_NAME_M0, 
       volumeAnalysis_.T1Mapper().M0(), stats);
 

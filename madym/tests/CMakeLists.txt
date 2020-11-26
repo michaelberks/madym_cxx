@@ -23,6 +23,8 @@ add_executable( test_mdm
   test_DCE_models.cxx
   test_DCE_fit.cxx
   test_summaryStats.cxx
+  test_volumeAnalysis.cxx
+  test_mdm_exception.cxx
 )
 
 target_link_libraries(test_mdm Boost::unit_test_framework mdm)

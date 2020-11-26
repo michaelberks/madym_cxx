@@ -40,7 +40,7 @@ MDM_API void mdm_ErrorTracker::setErrorImage(const mdm_Image3D &img)
 {
 	
   //Check input image is not empty and of correct type
-  if (img.numVoxels() <= 0)
+  if (!img)
     throw mdm_exception(__func__, "Trying to set error image from empty image");
     
 	else if (img.type() != mdm_Image3D::ImageType::TYPE_ERRORMAP)
@@ -52,7 +52,7 @@ MDM_API void mdm_ErrorTracker::setErrorImage(const mdm_Image3D &img)
 //
 MDM_API void mdm_ErrorTracker::initErrorImage(const mdm_Image3D &imgWithDims)
 {
-	if (errorImage_.numVoxels() > 0)
+	if (errorImage_)
 		//Error image has already been set, can just return true and get on silently
 		return;
 
