@@ -162,9 +162,14 @@ MDM_API int mdm_RunTools_madym_AIF::parseInputs(int argc, const char *argv[])
     cmdline_options,
     config_options,
     options_.configFile(),
+    who(),
     argc, argv);
 }
 
+MDM_API std::string mdm_RunTools_madym_AIF::who() const
+{
+	return "madym_AIF";
+}
 //*******************************************************************************
 // Private:
 //*******************************************************************************
@@ -348,7 +353,8 @@ void mdm_RunTools_madym_AIF::getSliceCandidateVoxels(
   const std::vector<mdm_Image3D> &dynImages = options_.inputCt() ?
     volumeAnalysis_.CtDataMaps() : volumeAnalysis_.StDataMaps();
 
-  const mdm_Image3D &T1 = volumeAnalysis_.T1Mapper().T1();
+  const auto &T1 = volumeAnalysis_.T1Mapper().T1();
+  const auto &errorMap = volumeAnalysis_.errorTracker().errorImage();
 
   bool useROI = (bool)volumeAnalysis_.ROI();
 
@@ -360,6 +366,10 @@ void mdm_RunTools_madym_AIF::getSliceCandidateVoxels(
 
       //Skip if using ROI and voxel not in ROI
       if (useROI && !volumeAnalysis_.ROI().voxel(voxelIndex))
+        continue;
+
+      //Also skip if bad value set in error tracker
+      if (errorMap.voxel(voxelIndex) != mdm_ErrorTracker::OK)
         continue;
 
       // assume pre-contrast T1 of blood is around 1500 ms

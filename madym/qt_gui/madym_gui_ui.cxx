@@ -160,7 +160,7 @@ void madym_gui_ui::on_actionSaveConfigFileDCE_triggered()
 	madym_options_.configFile.set("");
 	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
 	madym_exe.parseInputs(DCE_ARGV);
-	options_parser_.to_file(config_file.toStdString(), madym_options_);
+  madym_exe.saveConfigFile(config_file.toStdString());
 
 }
 void madym_gui_ui::on_actionSaveConfigFileT1_triggered()
@@ -177,7 +177,7 @@ void madym_gui_ui::on_actionSaveConfigFileT1_triggered()
 	madym_options_.configFile.set("");
 	mdm_RunTools_madym_T1 madym_exe(madym_options_, options_parser_);
 	madym_exe.parseInputs(T1_ARGV);
-	options_parser_.to_file(config_file.toStdString(), madym_options_);
+  madym_exe.saveConfigFile(config_file.toStdString());
 
 }
 void madym_gui_ui::on_actionSaveConfigFileIF_triggered()
@@ -194,7 +194,7 @@ void madym_gui_ui::on_actionSaveConfigFileIF_triggered()
 	madym_options_.configFile.set("");
 	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
 	madym_exe.parseInputs(AIF_ARGV);
-	options_parser_.to_file(config_file.toStdString(), madym_options_);
+  madym_exe.saveConfigFile(config_file.toStdString());
 
 }
 void madym_gui_ui::on_actionExit_triggered()

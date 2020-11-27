@@ -28,10 +28,12 @@ int main(int argc, char *argv[])
 	mdm_RunTools_madym_DCE_lite madym_exe(options_, options_parser_);
 
 	//Parse inputs
-	int parse_error = madym_exe.parseInputs(argc, (const char **)argv);
-	if (parse_error)
+	auto parse_error = madym_exe.parseInputs(argc, (const char **)argv);
+	if (parse_error == mdm_OptionsParser::HELP || parse_error == mdm_OptionsParser::VERSION)
+		return 0;
+	else if (parse_error != mdm_OptionsParser::OK)
 		return parse_error;
-
+		
 	//If inputs ok, then run
 	return madym_exe.run_catch();
 }
