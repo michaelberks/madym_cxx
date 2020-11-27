@@ -321,6 +321,11 @@ MDM_API int mdm_RunTools_madym_DCE_lite::parseInputs(int argc, const char *argv[
 		argc, argv);
 }
 
+MDM_API std::string mdm_RunTools_madym_DCE_lite::who() const
+{
+	return "madym_DCE_lite";
+}
+
 //*******************************************************************************
 // Private:
 //*******************************************************************************

@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(test_config) {
 
 	BOOST_TEST_MESSAGE("Writing params file");
 	BOOST_CHECK(!madym_write.parseInputs("test_write"));
-	BOOST_CHECK(options_parser_write.to_file(params_name, options));
+	BOOST_CHECK(options_parser_write.to_file(params_name, options, madym_write.who()));
 
 	mdm_InputOptions options_in;
 	options_in.configFile.set(params_name);

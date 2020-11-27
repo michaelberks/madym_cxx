@@ -43,6 +43,13 @@ public:
 	using mdm_RunTools::parseInputs;
 	MDM_API int parseInputs(int argc, const char *argv[]);
 
+	//! Return name of the tool
+	/*!
+  Must be implemented by the derived classes that will be instantiated into run tools objects.
+	\return name of the tool 
+  */
+  MDM_API std::string who() const;
+	
 protected:
   //! Runs the T1 mapping pipeline
   /*!

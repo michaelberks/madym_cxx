@@ -131,6 +131,11 @@ MDM_API int mdm_RunTools_madym_T1_lite::parseInputs(int argc, const char *argv[]
 		config_options,
 		argc, argv);
 }
+
+MDM_API std::string mdm_RunTools_madym_T1_lite::who() const
+{
+	return "madym_T1_lite";
+}
 //*******************************************************************************
 // Private:
 //*******************************************************************************

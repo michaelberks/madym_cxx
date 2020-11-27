@@ -55,7 +55,15 @@ namespace po = boost::program_options;
 */
 class mdm_OptionsParser {
 public:
-  
+
+	enum ParseType {
+		OK = 0, ///> Inputs parsed OK, continue with run
+		VERSION = 1, ///> Version set, exit calling program 0
+		HELP = 2, ///> Help set, exit calling program 0
+		CMD_ERROR = 3, ///> Error parsing command line
+		CONFIG_ERROR = 3, ///> Error parsing config file
+	};
+
 	//! Default constructor
 	MDM_API mdm_OptionsParser();
 
@@ -68,20 +76,22 @@ public:
 
 	\param stream output stream to write to
 	\param options set of madym options
+	\param caller name of the calling tool
 	\return true if write successful, false if any errors
 	*/
 	MDM_API bool to_stream(std::ostream &stream, 
-		const mdm_InputOptions &options) const;
+		const mdm_InputOptions &options, const std::string &caller) const;
 
 	//! Write option keys and values to file
 	/*!
 	\param filename
 	\param options set of madym options
+	\param caller name of the calling tool
 	\return true if write successful, false if any errors (eg unable to open file)
 	\see to_stream
 	*/
 	MDM_API bool to_file(const std::string &filename, 
-		const mdm_InputOptions &options) const;
+		const mdm_InputOptions &options, const std::string &caller) const;
 	
 	//! Parse inputs from command *and* config file
 	/*!
@@ -94,17 +104,18 @@ public:
 	command-line parser if the user includesthe config option in their command line call.
 	\param argc count of command line arguments, from main executable
 	\param argv array of command line arguments, from main executable
-	\return int succes code
-		- 0 success, continue execution
-		- 1 problem reading commandline, exit
-		- 2 help flag set, print options description and exit
-		- 3 version flag set, print version and exit
-		- 4 problem reading config file, exit
+	\return succes code enum
+		- OK success, continue execution
+		- CMD_ERROR problem reading commandline, exit
+		- HELP help flag set, print options description and exit
+		- VERSION version flag set, print version and exit
+		- CONFIG_ERROR problem reading config file, exit
 	*/
-	MDM_API int parseInputs(
+	MDM_API ParseType parseInputs(
 		po::options_description &cmdline_options,
 		po::options_description &config_options,
 		const std::string &configFile,
+		const std::string &configType,
 		int argc, const char *argv[]);
 
 	//! Parse inputs from command line *only*
@@ -113,13 +124,12 @@ public:
 	\param argc count of command line arguments, from main executable
 	\param argv array of command line arguments, from main executable
 	\return int succes code
-		- 0 success, continue execution
-		- 1 problem reading commandline, exit
-		- 2 help flag set, print options description and exit
-		- 3 version flag set, print version and exit
-		- 4 problem reading config file, exit
+		- OK success, continue execution
+		- CMD_ERROR problem reading commandline, exit
+		- HELP help flag set, print options description and exit
+		- VERSION version flag set, print version and exit
 	*/
-	MDM_API int parseInputs(
+	MDM_API ParseType parseInputs(
 		po::options_description &cmdline_options,
 		int argc, const char *argv[]);
 
@@ -156,7 +166,9 @@ private:
 	bool version_set();
 
 	bool parse_config_file(const po::options_description &config_options,
-		const std::string &configFile);
+		const std::string &configFile, const std::string &configType);
+
+	bool check_config_type(std::ifstream &ifs, const std::string &configType);
 
 	void make_exe_args(int argc, const char *argv[]);
 	

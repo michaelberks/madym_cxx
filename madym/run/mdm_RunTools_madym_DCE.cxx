@@ -199,7 +199,13 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 		cmdline_options,
 		config_options,
 		options_.configFile(),
+    who(),
 		argc, argv);
+}
+
+MDM_API std::string mdm_RunTools_madym_DCE::who() const
+{
+	return "madym_DCE";
 }
 
 //*******************************************************************************

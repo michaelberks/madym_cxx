@@ -77,6 +77,14 @@ public:
 	*/
 	MDM_API int parseInputs(const std::string &argv);
 
+  /*! save current options in configuration file
+  //!
+  parseInputs should always be called this, to ensure the mdm_InputOptions object
+  is mapped into the mdm_OptionsParser variable map.
+  \param filepath of saved config file
+  */
+  MDM_API void saveConfigFile(const std::string &filepath) const;
+
 	//! parse command and/or config file arguments.
 	/*!
 	parseInputs should always be called before run, to ensure the mdm_InputOptions object
@@ -94,6 +102,13 @@ public:
 	*/
 	MDM_API virtual int parseInputs(int argc, const char *argv[]) = 0;
 
+	//! Return name of the tool
+	/*!
+  Must be implemented by the derived classes that will be instantiated into run tools objects.
+	\return name of the tool 
+  */
+  MDM_API virtual std::string who()  const = 0;
+	
 protected:
   //! Run the analysis pipeline 
   /*!

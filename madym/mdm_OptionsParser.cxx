@@ -167,10 +167,11 @@ MDM_API  mdm_OptionsParser::mdm_OptionsParser()
 
 //
 MDM_API bool mdm_OptionsParser::to_stream(std::ostream &stream, 
-	const mdm_InputOptions &options) const
+	const mdm_InputOptions &options, const std::string &caller) const
 {
 	//Print out the config and cwd options first, commented so they don't get
 	//read in by the Boosts config reader
+	stream << "#" << caller << "\n";
 	stream << "#" << options.configFile.key() << " = " << options.configFile() << "\n";
 	stream << "#" << options.dataDir.key() << " = " << options.dataDir() << "\n";
 
@@ -203,22 +204,23 @@ MDM_API bool mdm_OptionsParser::to_stream(std::ostream &stream,
 
 //
 MDM_API bool mdm_OptionsParser::to_file(const std::string &filename, 
-	const mdm_InputOptions &options) const
+	const mdm_InputOptions &options, const std::string &caller) const
 {
 	std::ofstream filestream(filename, std::ios::out);
 	if (!filestream.is_open())
 		return false;
-	to_stream(filestream, options);
+	to_stream(filestream, options, caller);
 
 	filestream.close();
 	return true;
 }
 
 //
-MDM_API int mdm_OptionsParser::parseInputs(
+MDM_API mdm_OptionsParser::ParseType mdm_OptionsParser::parseInputs(
 	po::options_description &cmdline_options,
 	po::options_description &config_options,
 	const std::string &configFile,
+	const std::string &configType,
 	int argc, const char *argv[])
 {
 	po::options_description combined_options("");
@@ -226,24 +228,24 @@ MDM_API int mdm_OptionsParser::parseInputs(
 
 	//Parse the command-line
 	if (!parse_command_line(argc, argv, combined_options))
-		return 1;
+		return CMD_ERROR;
 
 	//Check if help set, if so, just display options and quit
 	if (help_set(argc, combined_options))
-		return 2;
+		return HELP;
 
 	//Check if version set
 	if (version_set())
-		return 3;
+		return VERSION;
 
 	//Check if config file set, if so try and open it
-	if (!parse_config_file(config_options, configFile))
-		return 4;
+	if (!parse_config_file(config_options, configFile, configType))
+		return CONFIG_ERROR;
 
-	return 0;
+	return OK;
 }
 
-MDM_API int mdm_OptionsParser::parseInputs(
+MDM_API mdm_OptionsParser::ParseType mdm_OptionsParser::parseInputs(
 	po::options_description &cmdline_options,
 	int argc, const char *argv[])
 {
@@ -251,17 +253,17 @@ MDM_API int mdm_OptionsParser::parseInputs(
 
 	//Parse the command line
 	if (!parse_command_line(argc, argv, cmdline_options))
-		return 1;
+		return CMD_ERROR;
 
 	//Check if help set, if so, just display options and quit
 	if (help_set(argc, cmdline_options))
-		return 2;
+		return HELP;
 
 	//Check if version set
 	if (version_set())
-		return 3;
+		return VERSION;
 
-	return 0;
+	return OK;
 }
 
 MDM_API const std::string& mdm_OptionsParser::exe_args() const
@@ -367,7 +369,7 @@ bool mdm_OptionsParser::version_set()
 }
 
 bool mdm_OptionsParser::parse_config_file(const po::options_description &config_options,
-	const std::string &configFile)
+	const std::string &configFile, const std::string &configType)
 {
 	try
 	{
@@ -383,6 +385,10 @@ bool mdm_OptionsParser::parse_config_file(const po::options_description &config_
 			}
 			else
 			{
+				//Check config file is of correct type
+				if (!check_config_type(ifs, configType))
+					return false;
+
 				//Parse the config file into the variables map
 				po::store(po::parse_config_file(ifs, config_options), vm_);
 				po::notify(vm_);
@@ -407,6 +413,23 @@ bool mdm_OptionsParser::parse_config_file(const po::options_description &config_
 		return false;
 	}
 	return true;
+}
+
+bool mdm_OptionsParser::check_config_type(std::ifstream &ifs, const std::string &configType)
+{
+	//Get the first line of the config file
+	std::string inputConfigType;
+	std::getline (ifs, inputConfigType);
+	inputConfigType.erase(0,1);
+
+	if (inputConfigType != configType)
+	{
+		std::cout << "Input config type " << inputConfigType << " does not match required type "
+			<< configType << std::endl;
+		return false;
+	}
+	else
+		return true;
 }
 
 void mdm_OptionsParser::make_exe_args(int argc, const char *argv[])

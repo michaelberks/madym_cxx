@@ -49,6 +49,12 @@ MDM_API int mdm_RunTools::parseInputs(const std::string &argv)
 }
 
 //
+MDM_API void mdm_RunTools::saveConfigFile(const std::string &filepath) const
+{
+  options_parser_.to_file(filepath, options_, who());
+}
+
+//
 MDM_API int mdm_RunTools::run_catch()
 {
   try {
@@ -187,7 +193,7 @@ void mdm_RunTools::set_up_logging()
 	//Save the config file of input options
   std::string configName = exe_cmd + timeNow() + options_.outputConfigFileName();
   fs::path configFilePath = outputPath_ / configName;
-	options_parser_.to_file(configFilePath.string(), options_);
+  saveConfigFile(configFilePath.string());
 	mdm_ProgramLogger::logProgramMessage(
 		"Config file saved to " + configFilePath.string());
 }

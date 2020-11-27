@@ -167,7 +167,7 @@ struct mdm_InputOptions {
   mdm_input_int prebolusMinImages = mdm_input_int(
     5, "prebolus_min_images", "", "Minimum number of images required to estimate prebolus noise");
   mdm_input_double selectPct = mdm_input_double(
-    0, "select_pct", "", "Percentage of candidates to select");
+    5, "select_pct", "", "Percentage of candidates to select");
 
 	//General output options
 	mdm_input_string outputRoot = mdm_input_string(
