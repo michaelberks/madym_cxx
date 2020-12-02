@@ -25,7 +25,7 @@ public:
 	//! Constructor
 	/*!	
 	*/
-	MDM_API mdm_RunToolsDCEFit(mdm_InputOptions &options, mdm_OptionsParser &options_parser);
+	MDM_API mdm_RunToolsDCEFit();
 		
 	//! Virtual destructor
 	/*!
@@ -52,8 +52,6 @@ protected:
 	parameter initialization, optimisation limits and AIF/PIF form.
 
 	\param model_name user-specified tracer-kinetic model
-	\param auto_aif flag if the AIF associated with model is loaded from file. False if population used.
-	\param auto_pif flag if the PIF associated with model is loaded from file. False if derived from AIF.
 	\param paramNames override default names for model parameters. If empty defaults used.
 	\param initialParams override default initial values for model parameters. If empty defaults used.
 	\param fixedParams specify parameters that are fixed to their initial parameters. If empty, all parameters optimised.

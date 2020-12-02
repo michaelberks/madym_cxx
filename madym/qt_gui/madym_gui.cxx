@@ -8,6 +8,7 @@
 
 #include <QApplication>
 
+//!Launch the madym GUI
 int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);

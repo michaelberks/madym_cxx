@@ -19,8 +19,7 @@
 class mdm_DCEModelDI2CXM : public mdm_DCEModelBase {
 public:
 	
-	/*!
-	*/
+  //! Dual-input 2CXM model constructor
   MDM_API mdm_DCEModelDI2CXM(
     mdm_AIF &AIF,
     const std::vector<std::string> &paramNames = std::vector<std::string>(0),
@@ -37,8 +36,6 @@ public:
   MDM_API virtual void computeCtModel(size_t nTimes);
 
   MDM_API virtual double checkParams();
-
-  MDM_API virtual void resetRerun();
 
 protected:
 

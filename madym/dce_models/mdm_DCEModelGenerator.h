@@ -128,8 +128,6 @@ public:
 	
 	\param AIF AIF associated with model
 	\param modelType specifies model type
-	\param aif_from_file flag if the AIF associated with model is loaded from file
-	\param pif_from_file flag if the PIF associated with model is auto-generated
 	\param paramNames if non-empty, overrides default parameter names of model
 	\param initialParams if non-empty, overrides default initial parameter values of model
 	\param fixedParams indices of any parameters to be fixed in the model

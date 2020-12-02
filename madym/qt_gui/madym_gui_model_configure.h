@@ -18,16 +18,25 @@
 
 //! Helper class providing GUI controls to configure each individual model parameter
 struct paramControls {
+
+  //! Constructor
+  /*!
+  \param name of parameter in widget label
+  \param value initial value in widget linedit
+  \param fixed checkbox to show if parameter fixed
+  \param maps checkbox to show if parameter initialised from preloaded maps
+  \param relativeLimit value of relative limit in widget linedit
+  */
   paramControls(QLabel *name, QLineEdit *value, 
 		QCheckBox *fixed, QCheckBox *maps, QLineEdit *relativeLimit)
     :name_(name), value_(value), fixed_(fixed), maps_(maps), relativeLimit_(relativeLimit)
   {};
 
-  QLabel *name_;
-  QLineEdit *value_;
-  QCheckBox *fixed_;
-	QCheckBox *maps_;
-	QLineEdit *relativeLimit_;
+  QLabel *name_; //!<name of parameter in widget label
+  QLineEdit *value_; //!< initial value in widget linedit
+  QCheckBox *fixed_; //!< checkbox to show if parameter fixed
+	QCheckBox *maps_; //!< checkbox to show if parameter initialised from preloaded maps
+	QLineEdit *relativeLimit_; //!< relativeLimit value of relative limit in widget linedit
 };
 
 //! QT UI class for configuring tracer-kinetic model parameters in pop-up window of main GUI
@@ -43,7 +52,7 @@ public:
 	/*!
 	\param model tracer-kinetic model of specific type (set by main GUI), used to configure what parameter controls are visble and to label them appropriately
 	\param modelName to label pop-up window title bar
-	\madym_options reference to madym_options from main GUI, supplied so configured changes persist when pop-up window is closed and this GUI object destroyed
+	\param madym_options reference to madym_options from main GUI, supplied so configured changes persist when pop-up window is closed and this GUI object destroyed
 	\param parent QT default input
 	*/
 	madym_gui_model_configure(const mdm_DCEModelBase &model, const QString &modelName,

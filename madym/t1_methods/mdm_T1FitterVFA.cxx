@@ -82,7 +82,7 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 	}
 	catch (alglib::ap_error e)
 	{
-		setErrorValuesAndTidyUp("Error 2 - alglib:CG() failed", T1value, M0value);
+		setErrorValuesAndTidyUp(T1value, M0value);
 		return mdm_ErrorTracker::T1_FIT_FAIL;
 	}
 	int iterations = int(rep_.iterationscount);
@@ -91,14 +91,14 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 	// Check for non-convergence
 	if (iterations >= maxIterations_)
 	{
-		setErrorValuesAndTidyUp("Error 3 - alglib:CG() hit max iterations", T1value, M0value);
+		setErrorValuesAndTidyUp(T1value, M0value);
 		return mdm_ErrorTracker::T1_MAX_ITER;
 	}
 
 	// Check for crap fit or bonkers result
 	if (x[0] < 0.0 || x[0] > 6000.0)
 	{
-		setErrorValuesAndTidyUp("Error 4 - Mad values", T1value, M0value);
+		setErrorValuesAndTidyUp(T1value, M0value);
 		return mdm_ErrorTracker::T1_MAD_VALUE;
 	}
 

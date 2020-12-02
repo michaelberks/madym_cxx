@@ -186,8 +186,9 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 	//-------------------------------------------------------------------------------
 	{
 		std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct1/";
-		mdm_InputOptions madym_options;
-		mdm_OptionsParser options_parser;
+    mdm_RunTools_madym_DCE madym_exe;
+		auto &madym_options = madym_exe.options();
+
 		madym_options.model.set("ETM");
 		madym_options.outputDir.set(Ct_output_dir);
 		madym_options.dynDir.set(dyn_dir);
@@ -201,8 +202,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		madym_options.inputCt.set(true);
 		madym_options.overwrite.set(true);
     madym_options.noAudit.set(true);
-
-		mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
+		
 		madym_exe.parseInputs("test_madym_DCE");
 		int result = madym_exe.run_catch();
 
@@ -257,8 +257,8 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 	//-------------------------------------------------------------------------------
 	{
 		std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct3/";
-		mdm_InputOptions madym_options;
-		mdm_OptionsParser options_parser;
+    mdm_RunTools_madym_DCE madym_exe;
+    auto &madym_options = madym_exe.options();
 		madym_options.model.set("ETM");
 		madym_options.outputDir.set(Ct_output_dir);
 		madym_options.dynDir.set(dyn_dir);
@@ -273,7 +273,6 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		madym_options.overwrite.set(true);
     madym_options.noAudit.set(true);
 
-		mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
 		madym_exe.parseInputs("test_madym_DCE_noI");
 		int result = madym_exe.run_catch();
 
@@ -289,8 +288,8 @@ BOOST_AUTO_TEST_CASE(test_madym) {
   //-------------------------------------------------------------------------------
   {
     std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct4/";
-    mdm_InputOptions madym_options;
-    mdm_OptionsParser options_parser;
+    mdm_RunTools_madym_DCE madym_exe;
+    auto &madym_options = madym_exe.options();
     madym_options.model.set("NONE");
     madym_options.outputDir.set(Ct_output_dir);
     madym_options.dynDir.set(dyn_dir);
@@ -305,8 +304,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
     madym_options.overwrite.set(true);
     madym_options.noAudit.set(true);
 
-    mdm_RunTools_madym_DCE madym_exe(madym_options, options_parser);
-    madym_exe.parseInputs("test_madym_DCE_noI");
+    madym_exe.parseInputs("test_madym_DCE_noM");
     int result = madym_exe.run_catch();
 
     BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");

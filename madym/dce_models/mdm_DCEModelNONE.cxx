@@ -52,8 +52,3 @@ MDM_API double mdm_DCEModelNONE::checkParams()
 	return BAD_FIT_SSD;
 }
 
-MDM_API void mdm_DCEModelNONE::resetRerun()
-{
-  return;
-}
-

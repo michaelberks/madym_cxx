@@ -101,13 +101,15 @@ protected:
 	\param T1value reference to hold default error-fit value for T1
 	\param M0value reference to hold default error-fit value for M0
 	*/
-	static void setErrorValuesAndTidyUp(const std::string msg, double &T1, double &M0);
+	static void setErrorValuesAndTidyUp(double &T1, double &M0);
 	
+  //! Signals to fit
 	std::vector<double> signals_;
 	
+  //! Maximum number of iterations in optimisation, if 0 runs to convergence
 	int maxIterations_;
-	alglib::mincgstate state_;
-	alglib::mincgreport rep_;
+	alglib::mincgstate state_; //!< Cached ALGLIB internal
+	alglib::mincgreport rep_; //!< Cached ALGLIB internal
 
 private:
 	

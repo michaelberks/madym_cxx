@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>711</width>
+    <width>1169</width>
     <height>916</height>
    </rect>
   </property>
@@ -35,772 +35,1505 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>674</width>
+         <width>1132</width>
          <height>838</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QFrame" name="frame">
+         <widget class="QStackedWidget" name="stackedWidget">
+          <property name="palette">
+           <palette>
+            <active>
+             <colorrole role="WindowText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Button">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Light">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Midlight">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Dark">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>127</red>
+                <green>127</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Mid">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>170</red>
+                <green>170</green>
+                <blue>170</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Text">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="BrightText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="ButtonText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Base">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Window">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Shadow">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="AlternateBase">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="ToolTipBase">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>220</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="ToolTipText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+            </active>
+            <inactive>
+             <colorrole role="WindowText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Button">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Light">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Midlight">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Dark">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>127</red>
+                <green>127</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Mid">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>170</red>
+                <green>170</green>
+                <blue>170</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Text">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="BrightText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="ButtonText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Base">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Window">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Shadow">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="AlternateBase">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="ToolTipBase">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>220</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="ToolTipText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+            </inactive>
+            <disabled>
+             <colorrole role="WindowText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>127</red>
+                <green>127</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Button">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Light">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Midlight">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Dark">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>127</red>
+                <green>127</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Mid">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>170</red>
+                <green>170</green>
+                <blue>170</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Text">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>127</red>
+                <green>127</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="BrightText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="ButtonText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>127</red>
+                <green>127</green>
+                <blue>127</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Base">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Window">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="Shadow">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="AlternateBase">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>255</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="ToolTipBase">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>255</red>
+                <green>255</green>
+                <blue>220</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="ToolTipText">
+              <brush brushstyle="SolidPattern">
+               <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+            </disabled>
+           </palette>
+          </property>
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
           <property name="frameShape">
            <enum>QFrame::StyledPanel</enum>
           </property>
           <property name="frameShadow">
            <enum>QFrame::Raised</enum>
           </property>
-          <layout class="QGridLayout" name="gridLayout_8">
-           <item row="7" column="0" colspan="2">
-            <widget class="QFrame" name="frame_2">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_2">
-              <item row="1" column="0">
-               <widget class="QPushButton" name="computeIFButton">
-                <property name="text">
-                 <string>Compute new IF</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QPushButton" name="fitModelButton">
-                <property name="text">
-                 <string>Fit tracer kinetic models</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QPushButton" name="computeT1Button">
-                <property name="text">
-                 <string>Compute baseline T1</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="0" column="0" rowspan="5">
-            <widget class="QFrame" name="frame_3">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout">
-              <item>
-               <widget class="QGroupBox" name="groupBox_2">
-                <property name="maximumSize">
-                 <size>
-                  <width>16777215</width>
-                  <height>400</height>
-                 </size>
-                </property>
-                <property name="title">
-                 <string>DCE data</string>
-                </property>
-                <layout class="QGridLayout" name="gridLayout_3">
-                 <item row="1" column="0">
-                  <widget class="QRadioButton" name="inputTypeRadioButtonS">
-                   <property name="text">
-                    <string>Signal</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="9" column="0">
-                  <widget class="QLabel" name="label_19">
-                   <property name="text">
-                    <string>ROI</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="9" column="1">
-                  <widget class="QLineEdit" name="roiPathLineEdit"/>
-                 </item>
-                 <item row="0" column="0" colspan="2">
-                  <widget class="QLabel" name="label_17">
-                   <property name="text">
-                    <string>Input type</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QRadioButton" name="inputTypeRadioButtonC">
-                   <property name="text">
-                    <string>Concentration</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QLineEdit" name="dceInputLineEdit"/>
-                 </item>
-                 <item row="9" column="2">
-                  <widget class="QToolButton" name="roiPathSelect">
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="imageBaseName_5">
-                   <property name="text">
-                    <string>DCE volumes folder:</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QLabel" name="label_22">
-                   <property name="text">
-                    <string>DCE volumes name:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="1">
-                  <widget class="QLineEdit" name="dceFormatLineEdit"/>
-                 </item>
-                 <item row="4" column="1">
-                  <widget class="QLineEdit" name="dceNameLineEdit"/>
-                 </item>
-                 <item row="3" column="2">
-                  <widget class="QToolButton" name="dceInputSelect">
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0">
-                  <widget class="QLabel" name="label_23">
-                   <property name="text">
-                    <string>DCE number format:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="0">
-                  <widget class="QLabel" name="label_5">
-                   <property name="text">
-                    <string>Injection image:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="1">
-                  <widget class="QSpinBox" name="injectionImageSpinBox">
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="maximum">
-                    <number>1000</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="1">
-                  <widget class="QSpinBox" name="nDynSpinBox"/>
-                 </item>
-                 <item row="6" column="0">
-                  <widget class="QLabel" name="label_24">
-                   <property name="text">
-                    <string>Number of volumes:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="10" column="0">
-                  <spacer name="verticalSpacer_2">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QGroupBox" name="groupBox_5">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>180</height>
-                 </size>
-                </property>
-                <property name="title">
-                 <string>Vascular input functions</string>
-                </property>
-                <layout class="QGridLayout" name="gridLayout_4">
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="contastLabel">
-                   <property name="text">
-                    <string>AIF file:</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0" colspan="2">
-                  <widget class="QCheckBox" name="populationAIFCheckbox">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                   <property name="text">
-                    <string>Use population AIF (primary input function):</string>
-                   </property>
-                   <property name="checkable">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="brightnessLabel">
-                   <property name="text">
-                    <string>PIF file:</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0" colspan="2">
-                  <widget class="QCheckBox" name="populationPIFCheckbox">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                   <property name="text">
-                    <string>Use population PIF (secondary input function):</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0">
-                  <widget class="QLabel" name="label_7">
-                   <property name="text">
-                    <string>Dose:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="1" colspan="2">
-                  <widget class="QLineEdit" name="doseLineEdit">
-                   <property name="baseSize">
-                    <size>
-                     <width>20</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="2">
-                  <widget class="QToolButton" name="autoPIFPathSelect">
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QLineEdit" name="autoPIFPathLineEdit"/>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QLabel" name="label_9">
-                   <property name="text">
-                    <string>Haematocrit:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="1" colspan="2">
-                  <widget class="QLineEdit" name="hctLineEdit"/>
-                 </item>
-                 <item row="1" column="2">
-                  <widget class="QToolButton" name="autoAIFPathSelect">
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="autoAIFPathLineEdit"/>
-                 </item>
-                 <item row="6" column="1">
-                  <spacer name="verticalSpacer_4">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QGroupBox" name="groupBox_7">
-                <property name="title">
-                 <string>Model fitting</string>
-                </property>
-                <layout class="QGridLayout" name="gridLayout">
-                 <item row="1" column="0" colspan="3">
-                  <widget class="QPushButton" name="configureModelButton">
-                   <property name="text">
-                    <string>Configure model</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="0">
-                  <widget class="QCheckBox" name="optimiseFitCheckBox">
-                   <property name="text">
-                    <string>Optimise fit</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="0" colspan="3">
-                  <widget class="QCheckBox" name="temporalNoiseCheckBox">
-                   <property name="text">
-                    <string>Use temporally varying noise</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_20">
-                   <property name="text">
-                    <string>First image:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="10" column="0">
-                  <widget class="QLabel" name="label_16">
-                   <property name="text">
-                    <string>Max iterations:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_15">
-                   <property name="text">
-                    <string>Tracer kinetic model:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="label_21">
-                   <property name="text">
-                    <string>Last image:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="11" column="1">
-                  <widget class="QLineEdit" name="initMapsLineEdit"/>
-                 </item>
-                 <item row="11" column="2">
-                  <widget class="QToolButton" name="initMapsDirSelect">
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="11" column="0">
-                  <widget class="QLabel" name="label_26">
-                   <property name="text">
-                    <string>Initial maps folder:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QSpinBox" name="lastImageSpinBox">
-                   <property name="maximum">
-                    <number>1000</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="1">
-                  <widget class="QCheckBox" name="testEnhancementCheckBox">
-                   <property name="text">
-                    <string>Test enhancement</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QSpinBox" name="firstImageSpinBox">
-                   <property name="maximum">
-                    <number>1000</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1" colspan="2">
-                  <widget class="QComboBox" name="modelSelectComboBox"/>
-                 </item>
-                 <item row="10" column="1">
-                  <widget class="QLineEdit" name="maxIterationsLineEdit"/>
-                 </item>
-                 <item row="12" column="0">
-                  <spacer name="verticalSpacer_6">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="0" column="1" rowspan="5">
-            <widget class="QFrame" name="frame_4">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_2">
-              <item>
-               <widget class="QGroupBox" name="groupBox_6">
-                <property name="title">
-                 <string>T1 calculation</string>
-                </property>
-                <layout class="QGridLayout" name="gridLayout_6">
-                 <item row="2" column="1">
-                  <widget class="QLineEdit" name="t1ThresholdLineEdit"/>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_8">
-                   <property name="text">
-                    <string>Noise threshold:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QComboBox" name="t1MethodComboBox"/>
-                 </item>
-                 <item row="1" column="2">
-                  <widget class="QToolButton" name="t1InputSelect">
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QTextEdit" name="t1InputTextEdit">
-                   <property name="maximumSize">
-                    <size>
-                     <width>16777215</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_2">
-                   <property name="text">
-                    <string>Signal volumes:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_4">
-                   <property name="text">
-                    <string>T1 method:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <spacer name="verticalSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QGroupBox" name="groupBox_3">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>150</height>
-                 </size>
-                </property>
-                <property name="title">
-                 <string>Signal to concentration</string>
-                </property>
-                <layout class="QGridLayout" name="gridLayout_5">
-                 <item row="6" column="1">
-                  <widget class="QLineEdit" name="s0VolLineEdit">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>18</height>
-                    </size>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0">
-                  <widget class="QLabel" name="label">
-                   <property name="text">
-                    <string>T1 volume:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="0">
-                  <widget class="QLabel" name="label_3">
-                   <property name="text">
-                    <string>S0 volume:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="2">
-                  <widget class="QToolButton" name="s0VolPathSelect">
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="2">
-                  <widget class="QToolButton" name="t1VolPathSelect">
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="1">
-                  <widget class="QLineEdit" name="t1VolLineEdit">
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>18</height>
-                    </size>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="7" column="1">
-                  <widget class="QLineEdit" name="r1LineEdit"/>
-                 </item>
-                 <item row="7" column="0">
-                  <widget class="QLabel" name="label_6">
-                   <property name="text">
-                    <string>Relaxivity coefficient:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0" colspan="2">
-                  <widget class="QCheckBox" name="s0UseRatioCheckBox">
-                   <property name="text">
-                    <string>Use ratio method</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0" colspan="2">
-                  <widget class="QCheckBox" name="t1UsePrecomputedCheckBox">
-                   <property name="text">
-                    <string>Use pre-computed T1</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="8" column="1">
-                  <spacer name="verticalSpacer_3">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QGroupBox" name="groupBox_4">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>100</height>
-                 </size>
-                </property>
-                <property name="title">
-                 <string>Output</string>
-                </property>
-                <layout class="QGridLayout" name="gridLayout_9">
-                 <item row="1" column="0" colspan="2">
-                  <widget class="QCheckBox" name="overwriteCheckBox">
-                   <property name="text">
-                    <string>Overwrite existing output</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="2">
-                  <widget class="QToolButton" name="outputDirSelect">
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="1">
-                  <widget class="QLineEdit" name="iaucTimesLineEdit"/>
-                 </item>
-                 <item row="5" column="0">
-                  <widget class="QLabel" name="label_18">
-                   <property name="text">
-                    <string>IAUC times:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0" colspan="2">
-                  <widget class="QCheckBox" name="outputCmCheckBox">
-                   <property name="text">
-                    <string>Output model-estimated concentration maps</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_10">
-                   <property name="text">
-                    <string>Output folder:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="outputDirLineEdit"/>
-                 </item>
-                 <item row="2" column="0" colspan="3">
-                  <widget class="QCheckBox" name="outputCsCheckBox">
-                   <property name="text">
-                    <string>Output signal-derived concentration maps</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="0" colspan="2">
-                  <widget class="QCheckBox" name="sparseCheckBox">
-                   <property name="text">
-                    <string>Save data using sparse format</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="6" column="0">
-                  <spacer name="verticalSpacer_7">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-              <item>
-               <widget class="QGroupBox" name="groupBox_8">
-                <property name="title">
-                 <string>Logging</string>
-                </property>
-                <layout class="QGridLayout" name="gridLayout_10">
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_12">
-                   <property name="text">
-                    <string>Error tracker name:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QLabel" name="label_14">
-                   <property name="text">
-                    <string>Audit folder:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QLineEdit" name="auditNameLineEdit"/>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="label_13">
-                   <property name="text">
-                    <string>Audit name:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="2">
-                  <widget class="QToolButton" name="auditDirSelect">
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="errorTrackerLineEdit"/>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLineEdit" name="logNameLineEdit"/>
-                 </item>
-                 <item row="4" column="1">
-                  <widget class="QLineEdit" name="auditDirLineEdit"/>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_11">
-                   <property name="text">
-                    <string>Log name:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QLineEdit" name="configLineEdit"/>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_25">
-                   <property name="text">
-                    <string>Config name:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0">
-                  <spacer name="verticalSpacer_5">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
+          <property name="currentIndex">
+           <number>1</number>
+          </property>
+          <widget class="QWidget" name="homePage">
+           <layout class="QGridLayout" name="gridLayout_3">
+            <item row="0" column="1">
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>273</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="1" column="1" rowspan="3">
+             <widget class="QLabel" name="label_11">
+              <property name="minimumSize">
+               <size>
+                <width>232</width>
+                <height>231</height>
+               </size>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+              <property name="pixmap">
+               <pixmap resource="madym_gui.qrc">:/images/madym_lrg.png</pixmap>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QPushButton" name="computeT1Button">
+              <property name="minimumSize">
+               <size>
+                <width>232</width>
+                <height>75</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>T1 mapping</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>197</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="2" column="2">
+             <widget class="QPushButton" name="computeIFButton">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>75</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>AIF detection</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="3">
+             <spacer name="horizontalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>196</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item row="3" column="2">
+             <widget class="QPushButton" name="fitModelButton">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>75</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Fit DCE model</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <spacer name="verticalSpacer_8">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>272</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="runPage" native="true">
+           <layout class="QGridLayout" name="gridLayout_8">
+            <item row="0" column="1" rowspan="2">
+             <widget class="QFrame" name="controls">
+              <property name="maximumSize">
+               <size>
+                <width>500</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::StyledPanel</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_2">
+               <item>
+                <widget class="QGroupBox" name="groupBox">
+                 <property name="title">
+                  <string>General input</string>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_11">
+                  <item row="3" column="5">
+                   <widget class="QToolButton" name="errorTrackerSelect">
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="3">
+                   <widget class="QLineEdit" name="dataDirLineEdit"/>
+                  </item>
+                  <item row="2" column="5">
+                   <widget class="QToolButton" name="roiPathSelect">
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="5">
+                   <widget class="QToolButton" name="dataDirSelect">
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="0" colspan="2">
+                   <widget class="QLabel" name="label_28">
+                    <property name="text">
+                     <string>Error tracker:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="3">
+                   <widget class="QLineEdit" name="roiPathLineEdit"/>
+                  </item>
+                  <item row="3" column="3">
+                   <widget class="QLineEdit" name="errorTrackerLineEdit"/>
+                  </item>
+                  <item row="0" column="0" colspan="2">
+                   <widget class="QLabel" name="imageBaseName_2">
+                    <property name="text">
+                     <string>Data folder:</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_19">
+                    <property name="text">
+                     <string>ROI:</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <widget class="QTabWidget" name="inputTabWidget">
+                 <property name="currentIndex">
+                  <number>2</number>
+                 </property>
+                 <widget class="QWidget" name="dceTab">
+                  <attribute name="title">
+                   <string>DCE data</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_5">
+                   <item row="5" column="4">
+                    <widget class="QSpinBox" name="injectionImageSpinBox">
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                     <property name="maximum">
+                      <number>1000</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1" colspan="4">
+                    <widget class="QLineEdit" name="dceFormatLineEdit"/>
+                   </item>
+                   <item row="5" column="0">
+                    <widget class="QLabel" name="label_24">
+                     <property name="text">
+                      <string>Number of volumes:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1" colspan="4">
+                    <widget class="QLineEdit" name="dceNameLineEdit"/>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_22">
+                     <property name="text">
+                      <string>DCE volumes name:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1" colspan="4">
+                    <widget class="QLineEdit" name="dceInputLineEdit"/>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_23">
+                     <property name="text">
+                      <string>DCE number format:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="imageBaseName">
+                     <property name="text">
+                      <string>DCE volumes folder:</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="3">
+                    <widget class="QLabel" name="label_5">
+                     <property name="text">
+                      <string>Injection image:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <widget class="QSpinBox" name="nDynSpinBox"/>
+                   </item>
+                   <item row="0" column="3">
+                    <widget class="QRadioButton" name="inputTypeRadioButtonC">
+                     <property name="text">
+                      <string>Concentration</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="5">
+                    <widget class="QToolButton" name="dceInputSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_17">
+                     <property name="text">
+                      <string>Input type</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QRadioButton" name="inputTypeRadioButtonS">
+                     <property name="text">
+                      <string>Signal</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="concentrationTab">
+                  <attribute name="title">
+                   <string>Signal to concentration</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_4">
+                   <item row="0" column="0" colspan="2">
+                    <widget class="QCheckBox" name="s0UseRatioCheckBox">
+                     <property name="text">
+                      <string>Use ratio method</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="2">
+                    <widget class="QToolButton" name="s0VolPathSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QToolButton" name="t1VolPathSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QLineEdit" name="s0VolLineEdit">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>18</height>
+                      </size>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label">
+                     <property name="text">
+                      <string>T1 volume:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_6">
+                     <property name="text">
+                      <string>Relaxivity coefficient:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_3">
+                     <property name="text">
+                      <string>S0 volume:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="QLineEdit" name="r1LineEdit"/>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="t1VolLineEdit">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>18</height>
+                      </size>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0" colspan="2">
+                    <widget class="QCheckBox" name="t1UsePrecomputedCheckBox">
+                     <property name="text">
+                      <string>Use pre-computed T1</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="0">
+                    <spacer name="verticalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="t1MapTab" native="true">
+                  <attribute name="title">
+                   <string>T1 mapping</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_6">
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="t1ThresholdLineEdit"/>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QToolButton" name="t1InputSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_4">
+                     <property name="text">
+                      <string>T1 method:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_8">
+                     <property name="text">
+                      <string>Noise threshold:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QTextEdit" name="t1InputTextEdit">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>50</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QComboBox" name="t1MethodComboBox"/>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_2">
+                     <property name="text">
+                      <string>Signal volumes:</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </widget>
+               </item>
+               <item>
+                <widget class="QTabWidget" name="fittingTabWidget">
+                 <property name="currentIndex">
+                  <number>1</number>
+                 </property>
+                 <widget class="QWidget" name="modelTab" native="true">
+                  <attribute name="title">
+                   <string>Model fitting</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout">
+                   <item row="11" column="0">
+                    <widget class="QLabel" name="label_26">
+                     <property name="text">
+                      <string>Initial maps folder:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QSpinBox" name="firstImageSpinBox">
+                     <property name="maximum">
+                      <number>1000</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="13" column="0">
+                    <spacer name="verticalSpacer_6">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_20">
+                     <property name="text">
+                      <string>First image:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="10" column="0">
+                    <widget class="QLabel" name="label_16">
+                     <property name="text">
+                      <string>Max iterations:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_15">
+                     <property name="text">
+                      <string>Tracer kinetic model:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1" colspan="2">
+                    <widget class="QComboBox" name="modelSelectComboBox"/>
+                   </item>
+                   <item row="1" column="0" colspan="4">
+                    <widget class="QPushButton" name="configureModelButton">
+                     <property name="text">
+                      <string>Configure model</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QLabel" name="label_21">
+                     <property name="text">
+                      <string>Last image:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="0" colspan="2">
+                    <widget class="QCheckBox" name="temporalNoiseCheckBox">
+                     <property name="text">
+                      <string>Use temporally varying noise</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="2">
+                    <widget class="QCheckBox" name="optimiseFitCheckBox">
+                     <property name="text">
+                      <string>Optimise fit</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="3">
+                    <widget class="QSpinBox" name="lastImageSpinBox">
+                     <property name="maximum">
+                      <number>1000</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="3">
+                    <widget class="QCheckBox" name="testEnhancementCheckBox">
+                     <property name="text">
+                      <string>Test enhancement</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="11" column="4">
+                    <widget class="QToolButton" name="initMapsDirSelect">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="11" column="1" colspan="3">
+                    <widget class="QLineEdit" name="initMapsLineEdit"/>
+                   </item>
+                   <item row="10" column="1" colspan="3">
+                    <widget class="QLineEdit" name="maxIterationsLineEdit"/>
+                   </item>
+                   <item row="12" column="0">
+                    <widget class="QLabel" name="label_36">
+                     <property name="text">
+                      <string>Target residuals:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="12" column="1" colspan="3">
+                    <widget class="QLineEdit" name="residualsLineEdit"/>
+                   </item>
+                   <item row="12" column="4">
+                    <widget class="QPushButton" name="residualsSelect">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="vascularTab">
+                  <attribute name="title">
+                   <string>Vascular input</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_7">
+                   <item row="1" column="0" colspan="5">
+                    <widget class="QGroupBox" name="groupBox_4">
+                     <property name="title">
+                      <string>PIF (secondary input function)</string>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_14">
+                      <item row="0" column="0" colspan="2">
+                       <widget class="QCheckBox" name="populationPIFCheckbox">
+                        <property name="enabled">
+                         <bool>true</bool>
+                        </property>
+                        <property name="text">
+                         <string>Use population PIF (secondary input function):</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="brightnessLabel">
+                        <property name="text">
+                         <string>PIF file:</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="1">
+                       <widget class="QLineEdit" name="autoPIFPathLineEdit"/>
+                      </item>
+                      <item row="1" column="2">
+                       <widget class="QToolButton" name="autoPIFPathSelect">
+                        <property name="text">
+                         <string>...</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="0" column="0" colspan="5">
+                    <widget class="QGroupBox" name="groupBox_3">
+                     <property name="title">
+                      <string>AIF (primary input function)</string>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_13">
+                      <item row="1" column="4">
+                       <widget class="QToolButton" name="AIFmapSelect">
+                        <property name="text">
+                         <string>...</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="6" column="0">
+                       <widget class="QLabel" name="label_7">
+                        <property name="text">
+                         <string>Dose:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="6" column="2">
+                       <widget class="QLabel" name="label_9">
+                        <property name="text">
+                         <string>Haematocrit:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="6" column="3">
+                       <widget class="QLineEdit" name="hctLineEdit">
+                        <property name="baseSize">
+                         <size>
+                          <width>20</width>
+                          <height>0</height>
+                         </size>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="4" column="4">
+                       <widget class="QToolButton" name="AIFfileSelect">
+                        <property name="text">
+                         <string>...</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="4" column="1" colspan="3">
+                       <widget class="QLineEdit" name="AIFfileLineEdit"/>
+                      </item>
+                      <item row="1" column="1" colspan="3">
+                       <widget class="QLineEdit" name="AIFmapLineEdit"/>
+                      </item>
+                      <item row="4" column="0">
+                       <widget class="QLabel" name="contastLabel">
+                        <property name="text">
+                         <string>AIF file:</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QComboBox" name="AIFtypeComboBox"/>
+                      </item>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_13">
+                        <property name="text">
+                         <string>AIF type:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="contastLabel_2">
+                        <property name="text">
+                         <string>AIF map:</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="6" column="1">
+                       <widget class="QLineEdit" name="doseLineEdit"/>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="4" column="2">
+                    <spacer name="verticalSpacer_4">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="aifTab">
+                  <attribute name="title">
+                   <string>AIF detection</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_12">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_12">
+                     <property name="text">
+                      <string>X-range:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1" colspan="4">
+                    <widget class="QLineEdit" name="xRangeLineEdit"/>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_35">
+                     <property name="text">
+                      <string>Y-range:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1" colspan="4">
+                    <widget class="QLineEdit" name="yRangeLineEdit"/>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_14">
+                     <property name="text">
+                      <string>Slices:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1" colspan="4">
+                    <widget class="QLineEdit" name="slicesLineEdit"/>
+                   </item>
+                   <item row="5" column="0" colspan="5">
+                    <widget class="QGroupBox" name="groupBox_2">
+                     <property name="title">
+                      <string>Prebolus noise estimation:</string>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_3">
+                      <item>
+                       <widget class="QLabel" name="label_25">
+                        <property name="text">
+                         <string>Minimum images:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QSpinBox" name="prebolusMinSpinBox"/>
+                      </item>
+                      <item>
+                       <widget class="QLabel" name="label_32">
+                        <property name="text">
+                         <string>Default:</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLineEdit" name="prebolusNoiseLineEdit"/>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_18">
+                     <property name="text">
+                      <string>Minimum T1:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1" colspan="4">
+                    <widget class="QLineEdit" name="minT1lineEdit"/>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_34">
+                     <property name="text">
+                      <string>Peak time window:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1" colspan="4">
+                    <widget class="QLineEdit" name="peakTimeLineEdit"/>
+                   </item>
+                   <item row="6" column="0">
+                    <widget class="QLabel" name="label_33">
+                     <property name="text">
+                      <string>% of candidates:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="1">
+                    <widget class="QDoubleSpinBox" name="selectPctSpinBox"/>
+                   </item>
+                  </layout>
+                 </widget>
+                </widget>
+               </item>
+               <item>
+                <widget class="QTabWidget" name="outputTabWidget">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>100</height>
+                  </size>
+                 </property>
+                 <property name="currentIndex">
+                  <number>0</number>
+                 </property>
+                 <widget class="QWidget" name="outputTab" native="true">
+                  <attribute name="title">
+                   <string>Ouput</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_9">
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="outputDirLineEdit"/>
+                   </item>
+                   <item row="5" column="0">
+                    <widget class="QLabel" name="iaucLabel">
+                     <property name="text">
+                      <string>IAUC times:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <widget class="QLineEdit" name="iaucTimesLineEdit"/>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QToolButton" name="outputDirSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_10">
+                     <property name="text">
+                      <string>Output folder:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="0">
+                    <spacer name="verticalSpacer_7">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QCheckBox" name="outputCsCheckBox">
+                     <property name="text">
+                      <string>Output signal-derived C(t)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QCheckBox" name="outputCmCheckBox">
+                     <property name="text">
+                      <string>Output model-estimated C(t)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QCheckBox" name="sparseCheckBox">
+                     <property name="text">
+                      <string>Save data using sparse format</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="overwriteCheckBox">
+                     <property name="text">
+                      <string>Overwrite existing output</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="loggingTab">
+                  <attribute name="title">
+                   <string>Logging</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_10">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_30">
+                     <property name="text">
+                      <string>Log name:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="configLineEdit"/>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_27">
+                     <property name="text">
+                      <string>Audit name:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QLineEdit" name="auditNameLineEdit"/>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_31">
+                     <property name="text">
+                      <string>Audit folder:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="logNameLineEdit"/>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_29">
+                     <property name="text">
+                      <string>Config name:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="QLineEdit" name="auditDirLineEdit"/>
+                   </item>
+                   <item row="4" column="2">
+                    <widget class="QToolButton" name="auditDirSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <spacer name="verticalSpacer_5">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                </widget>
+               </item>
+               <item>
+                <widget class="QFrame" name="frame_2">
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Raised</enum>
+                 </property>
+                 <layout class="QGridLayout" name="gridLayout_2">
+                  <item row="0" column="0">
+                   <widget class="QPushButton" name="loadConfigButton">
+                    <property name="text">
+                     <string>Load config file...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0" colspan="2">
+                   <widget class="QPushButton" name="runButton">
+                    <property name="minimumSize">
+                     <size>
+                      <width>0</width>
+                      <height>32</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string>Run tool</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="madym_gui.qrc">
+                      <normaloff>:/images/play.ico</normaloff>:/images/play.ico</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="2">
+                   <widget class="QPushButton" name="homeButton">
+                    <property name="minimumSize">
+                     <size>
+                      <width>32</width>
+                      <height>32</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>32</width>
+                      <height>32</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="madym_gui.qrc">
+                      <normaloff>:/images/return.png</normaloff>:/images/return.png</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QPushButton" name="saveConfigButton">
+                    <property name="text">
+                     <string>Save config file...</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QPlainTextEdit" name="cmdTextEdit">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
          </widget>
         </item>
        </layout>
@@ -814,7 +1547,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>711</width>
+     <width>1169</width>
      <height>21</height>
     </rect>
    </property>
@@ -822,16 +1555,6 @@
     <property name="title">
      <string>File</string>
     </property>
-    <widget class="QMenu" name="menuSave_configuration_file">
-     <property name="title">
-      <string>Save configuration file...</string>
-     </property>
-     <addaction name="actionSaveConfigFileDCE"/>
-     <addaction name="actionSaveConfigFileT1"/>
-     <addaction name="actionSaveConfigFileIF"/>
-    </widget>
-    <addaction name="actionLoadConfigFile"/>
-    <addaction name="menuSave_configuration_file"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>

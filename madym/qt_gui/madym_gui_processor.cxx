@@ -6,6 +6,13 @@
 
 #include "madym_gui_processor.h"
 
+#include <madym/mdm_ProgramLogger.h>
+#include <madym/run/mdm_RunTools_madym_T1.h>
+#include <madym/run/mdm_RunTools_madym_DCE.h>
+#include <madym/run/mdm_RunTools_madym_AIF.h>
+
+static const std::string GUI = "_GUI";
+
 //  Class that pops an image from the processing queue, performs any
 //  necessary processing on the frame, and places it on the save queue for
 //  the saver to deal with.
@@ -17,40 +24,57 @@
 madym_gui_processor::madym_gui_processor()
 {
 }
- 
-//: Begin transferring images from the main queue to the save queue.
-void madym_gui_processor::start_processing( )
+
+//
+mdm_RunTools& madym_gui_processor::madym_exe()
 {
-  ;
+  return *madym_exe_;
 }
 
-//: Return true if there are still frames to process.
-bool madym_gui_processor::is_processing( ) const
+//
+void madym_gui_processor::set_madym_exe(RunType type)
 {
-  return false;
+  switch (type)
+  {
+  case RunType::T1:
+  {
+    madym_exe_.reset(new mdm_RunTools_madym_T1());
+    break;
+  }
+  case RunType::AIF:
+  {
+    madym_exe_.reset(new mdm_RunTools_madym_AIF());
+    break;
+  }
+  case RunType::DCE:
+  {
+    madym_exe_.reset(new mdm_RunTools_madym_DCE());
+    break;
+  }
+  }
 }
  
 //
 // Public slots
 //
- 
-//: Pop a frame from the main queue, process it, and push it onto the save 
-//  queue.
-void madym_gui_processor::process_series()
+//: Begin transferring images from the main queue to the save queue.
+void madym_gui_processor::start_processing()
 {
-  // Check if we're waiting to process more frames.
-	if (is_processing())
-	{
-		stop_processing();
-	}	
+  //Make sure options config file is empty, because when we call parse args
+  //we don't want to read a config file
+  mdm_ProgramLogger::logProgramMessage(
+    "******************************************************\n"
+    "Starting " + madym_exe_->who() + "...\n"
+    "******************************************************\n"
+  );
+  madym_exe_->options().configFile.set("");
+  madym_exe_->parseInputs(madym_exe_->who() + GUI);
+
+  //Run the tool
+  int result = madym_exe_->run_catch();
+  emit processing_finished(result);
 }
 
 //
 // Private methods
 //
- 
-//: Emit a signal to indicate that all frames have been processed.
-void madym_gui_processor::stop_processing()
-{
-		emit processing_finished();
-}

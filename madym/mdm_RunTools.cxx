@@ -28,10 +28,7 @@ namespace fs = boost::filesystem;
 
 
 //
-MDM_API mdm_RunTools::mdm_RunTools(mdm_InputOptions &options, mdm_OptionsParser &options_parser)
-  :
-  options_(options),
-	options_parser_(options_parser)
+MDM_API mdm_RunTools::mdm_RunTools()
 {
 }
 
@@ -55,6 +52,12 @@ MDM_API void mdm_RunTools::saveConfigFile(const std::string &filepath) const
 }
 
 //
+MDM_API mdm_InputOptions & mdm_RunTools::options()
+{
+  return options_;
+}
+
+//
 MDM_API int mdm_RunTools::run_catch()
 {
   try {
@@ -64,19 +67,23 @@ MDM_API int mdm_RunTools::run_catch()
   {
     mdm_ProgramLogger::logProgramError(__func__, e.what());
     mdm_progAbort("mdm_Exception caught");
+    return 1;
   }
   catch (std::exception &e)
   {
     mdm_ProgramLogger::logProgramError(__func__, e.what());
     mdm_progAbort("std::exception caught");
+    return 1;
   }
   catch (...)
   {
     mdm_progAbort("Unhandled exception caught, aborting");
+    return 1;
   }
 
   //Tidy up the logging objects
-  return mdm_progExit();
+  mdm_progExit();
+  return 0;
 }
 
 //
@@ -85,14 +92,13 @@ MDM_API int mdm_RunTools::run_catch()
 //-----------------------------------------------------------
 // Private methods:
 //-----------------------------------------------------------
-int mdm_RunTools::mdm_progExit()
+void mdm_RunTools::mdm_progExit()
 {
 	std::string success_msg = options_parser_.exe_cmd() + " completed successfully.\n";
 	mdm_ProgramLogger::logProgramMessage(success_msg);
 	mdm_ProgramLogger::logAuditMessage(success_msg);
 	mdm_ProgramLogger::closeAuditLog();
 	mdm_ProgramLogger::closeProgramLog();
-	return 0;
 }
 
 void mdm_RunTools::mdm_progAbort(const std::string &err_str)
@@ -106,7 +112,6 @@ void mdm_RunTools::mdm_progAbort(const std::string &err_str)
   mdm_ProgramLogger::closeProgramLog();
 
 	std::cerr << error_msg << std::endl;
-  exit(1);
 }
 
 DISABLE_WARNING_PUSH
@@ -147,8 +152,9 @@ void mdm_RunTools::set_up_output_folder()
 		fs::create_directories(outputPath_);
 
 	/* If we've got this file already warn user of previous analysis and quit */
-	if (!options_.overwrite() && !fs::is_empty(outputPath_))
-		mdm_progAbort("Output directory is not empty (use option -O to overwrite existing data)");
+  if (!options_.overwrite() && !fs::is_empty(outputPath_))
+    throw mdm_exception(__func__, 
+      "Output directory is not empty (use option -O to overwrite existing data)");
 }
 
 /**/

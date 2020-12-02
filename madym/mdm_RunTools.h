@@ -53,7 +53,7 @@ public:
 	\param options structure holding global set of input options
 	\param options_parser parse command line/config file/GUI inputs and saves into the input options
 	*/
-	MDM_API mdm_RunTools(mdm_InputOptions &options, mdm_OptionsParser &options_parser);
+	MDM_API mdm_RunTools();
 		
 	//! Virtual destructor
 	MDM_API virtual ~mdm_RunTools();
@@ -84,6 +84,12 @@ public:
   \param filepath of saved config file
   */
   MDM_API void saveConfigFile(const std::string &filepath) const;
+
+  //! Reference to options so it can be configured by GUI
+  /*!
+  \return reference to options
+  */
+  MDM_API mdm_InputOptions &options();
 
 	//! parse command and/or config file arguments.
 	/*!
@@ -149,10 +155,10 @@ protected:
 	/*! Initialised with default values on instantiation, then configured by user input from the command-line,
 	config file or GUI (or can be set directly programatically).
 	*/
-	mdm_InputOptions &options_;
+	mdm_InputOptions options_;
 
 	//! Parse command-line/config file options, saving the updates into options_
-	mdm_OptionsParser &options_parser_;
+	mdm_OptionsParser options_parser_;
 
 	//! Stores analysis output path
 	fs::path outputPath_;
@@ -164,15 +170,13 @@ private:
   /*!
   Closes any open program/audit logs, and returns 0 for successful program completion
   to the original calling function.
-  \return 0
   */
-  int mdm_progExit();
+  void mdm_progExit();
 
   //! Helper function to call when a fatal error occurs
   /*!
   Logs the specified error message, closes the program/audit logs, and returns 1 for
   program completion with errors to the original calling function.
-  \return 1
   */
   void mdm_progAbort(const std::string &err_str);
 	

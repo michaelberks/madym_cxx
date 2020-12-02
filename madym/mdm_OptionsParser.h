@@ -56,12 +56,13 @@ namespace po = boost::program_options;
 class mdm_OptionsParser {
 public:
 
+  //! Enum type for return code after parsing inputs
 	enum ParseType {
-		OK = 0, ///> Inputs parsed OK, continue with run
-		VERSION = 1, ///> Version set, exit calling program 0
-		HELP = 2, ///> Help set, exit calling program 0
-		CMD_ERROR = 3, ///> Error parsing command line
-		CONFIG_ERROR = 3, ///> Error parsing config file
+		OK = 0, //!< Inputs parsed OK, continue with run
+		VERSION = 1, //!< Version set, exit calling program 0
+		HELP = 2, //!< Help set, exit calling program 0
+		CMD_ERROR = 3, //!< Error parsing command line
+		CONFIG_ERROR = 3, //!< Error parsing config file
 	};
 
 	//! Default constructor
@@ -102,9 +103,10 @@ public:
 	is usually set with a reference to the configFile mdm_Input option, which may be 
 	empty when the method is called (the default option), but may then be set by the 
 	command-line parser if the user includesthe config option in their command line call.
+	\param configType checks correct config file is parsed, input file must have \c \#configType as first line
 	\param argc count of command line arguments, from main executable
 	\param argv array of command line arguments, from main executable
-	\return succes code enum
+  \return succes code enum
 		- OK success, continue execution
 		- CMD_ERROR problem reading commandline, exit
 		- HELP help flag set, print options description and exit

@@ -154,11 +154,3 @@ MDM_API double mdm_DCEModelDIBEM_Fp::checkParams()
 	errorCode_ = mdm_ErrorTracker::OK;
 	return 0;
 }
-
-MDM_API void mdm_DCEModelDIBEM_Fp::resetRerun()
-{
-  //Reset selected parameters to their initial value then rerun the optimisation
-  std::vector<int> fixedParams = { 5, 6 };
-  for (int i = 0; i < fixedParams.size(); i++)
-    pkParams_[fixedParams[i]] = pkInitParams_[fixedParams[i]];
-}

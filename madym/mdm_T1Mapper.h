@@ -35,6 +35,9 @@ public:
 	*/
 	MDM_API ~mdm_T1Mapper();
 
+  //! Reset all the maps to empty
+  MDM_API void reset();
+
 	//! Add input image from which to map T1
 	/*!	
 	\param img input image (eg aquired at specific flip-angle for the VFA method)

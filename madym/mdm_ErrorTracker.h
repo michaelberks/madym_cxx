@@ -73,6 +73,11 @@ public:
 	*/
 	MDM_API void initErrorImage(const mdm_Image3D &img);
 
+  //!    Reset error image to empty image
+  /*!
+  */
+  MDM_API void resetErrorImage();
+
 	//!    Update a voxel in the error image with the specified error code
 	/*!
 	\param    voxelIndex  Integer image voxel index (from x, y, z co-ordinates), must be >=0 and 

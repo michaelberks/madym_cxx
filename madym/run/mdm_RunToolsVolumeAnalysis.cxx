@@ -18,10 +18,8 @@
 namespace fs = boost::filesystem;
 
 //
-MDM_API mdm_RunToolsVolumeAnalysis::mdm_RunToolsVolumeAnalysis(mdm_InputOptions &options, mdm_OptionsParser &options_parser)
-	: mdm_RunToolsT1Fit(options, options_parser),
-  mdm_RunTools(options, options_parser),
-	fileManager_(volumeAnalysis_)
+MDM_API mdm_RunToolsVolumeAnalysis::mdm_RunToolsVolumeAnalysis()
+	: fileManager_(volumeAnalysis_)
 {
 }
 

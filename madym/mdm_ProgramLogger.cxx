@@ -29,6 +29,16 @@ std::ofstream mdm_ProgramLogger::program_log_stream_;
 std::ofstream mdm_ProgramLogger::audit_log_stream_;
 bool mdm_ProgramLogger::quiet_ = false;
 
+#ifdef USING_QT
+mdm_QProgramLogger mdm_ProgramLogger::qLogger_;
+
+MDM_API void mdm_QProgramLogger::send_log_message(const std::string& msg)
+{
+  emit log_message(msg.c_str());
+}
+
+#endif
+
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_DEPRECATED
 //
@@ -62,10 +72,7 @@ MDM_API bool mdm_ProgramLogger::openProgramLog(const std::string &fileName,
 
 }
 
-//!    Set whether program log messages are also piped to cout
-  /*!
-  \quiet  if true, messages not displayed in cout
-  */
+//
 MDM_API  void mdm_ProgramLogger::setQuiet(bool quiet)
 {
   quiet_ = quiet;
@@ -96,6 +103,10 @@ MDM_API bool mdm_ProgramLogger::closeProgramLog()
 //
 MDM_API void mdm_ProgramLogger::logProgramMessage(const std::string &message)
 {
+#ifdef USING_QT
+  qLogger_.send_log_message(message);
+#endif
+
 	if (!quiet_)
 		std::cout << message << std::endl;
 	
@@ -107,6 +118,10 @@ MDM_API void mdm_ProgramLogger::logProgramMessage(const std::string &message)
 //
 MDM_API  void mdm_ProgramLogger::logProgramError(const char *func, const std::string & message)
 {
+#ifdef USING_QT
+  qLogger_.send_log_message("ERROR in " + std::string(func) + ": " + message);
+#endif
+
   std::cerr << "ERROR in " << func << ": " << message << std::endl;
 
   if (program_log_stream_)
@@ -116,6 +131,10 @@ MDM_API  void mdm_ProgramLogger::logProgramError(const char *func, const std::st
 //
 MDM_API  void mdm_ProgramLogger::logProgramWarning(const char *func, const std::string & message)
 {
+#ifdef USING_QT
+  qLogger_.send_log_message("WARNING in " + std::string(func) + ": " + message);
+#endif
+
   std::cerr << "WARNING in " << func << ": " << message << std::endl;
 
   if (program_log_stream_)
@@ -188,6 +207,12 @@ MDM_API bool mdm_ProgramLogger::logAuditMessage(const std::string &message)
 	return true;
 }
 DISABLE_WARNING_POP
+
+//
+MDM_API mdm_QProgramLogger& mdm_ProgramLogger::qLogger()
+{
+  return qLogger_;
+}
 
 //****************************************************************************
 // Private

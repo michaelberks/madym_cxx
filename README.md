@@ -1,5 +1,7 @@
 # madym_cxx
 
+![Madym logo](madym_lrg.png)
+
 Madym is a C++ toolkit for quantative DCE-MRI analysis developed in the [QBI Lab](http://qbi-lab.org/) at the University of Manchester. It comprises a set of command line tools and a graphical user-interface based on an extendable C++ library. It is cross-platform, and requires few external libraries to build from source. Pre-built binaries for Windows, MacOS and Linux are available on request. We have also developed complementary interfaces in Matlab and python, that allow the flexibility of developing in those scripting languages, while allowing C++ to do the heavy-duty computational work of tracer-kinetic model fitting.
 
 # Installation instructions - building from source
@@ -19,10 +21,10 @@ If you're used to configuring and building C++ projects with CMake, Madym should
 + Run CMake to confiure and generate project files
     - If you want to build the Madym-GUI, switch *BUILD_QT_GUI* to *ON*. You may then need to set *Qt* fields if they are not found automatically by CMake
     - If you want to build your own documentation with Doxygen, set *BUILD_DOCUMENTATION* to on
- + Build the project. If you selected to build documentation, this will only be built for release configurations.
- + Run testing using Ctest. Everything should pass, if there are or any errors, see notes on Tests below.
++ Build the project. If you selected to build documentation, this will only be built for release configurations.
++ Run testing using Ctest. Everything should pass, if there are or any errors, see notes on Tests below.
 
- ## Detailed Instructions
+## Detailed Instructions
 
 #### C++ compiler
 Madym has mainly been developed on Windows using Visual Studio 2015 (compiler version msvc-14.0). However it has also been built and tested using [GCC 6.30](https://www.gnu.org/software/gcc/gcc-6/) (Linux) and [LLVM/Clang](https://clang.llvm.org/) (MacOs). Any compilers *at least as* modern as those should be fine.
@@ -54,7 +56,7 @@ So the final command should look like:
 
     b2 --toolset=msvc-14.0 address-model=64 --build-type=complete --with-filesystem --with-system --with-program_options --with-unit_test --with-date_time
 
-If all has been successful the libraries will have been built into **<Boost_DIR>stage\lib**. Make a note of the location of these files as you may need to manually add to CMake to configure Madym.
+If all has been successful the libraries will have been built into `**<Boost_DIR>stage\lib**`. Make a note of the location of these files as you may need to manually add to CMake to configure Madym.
 
 #### Qt
 Qt is only required if you would like to build Madym's GUI tool, that acts as a user-friendly front-end to configure and run the main tools. If you just want to build the main Madym C++ library and command line tools, Qt is not required. To download Qt, use the open source installer for Qt-5, available [here](https://www.qt.io/download-open-source?hsCtaTracking=9f6a2170-a938-42df-a8e2-a9f0b1d6cdce%7C6cb0de4f-9bb5-4778-ab02-bfb62735f3e5).
@@ -73,7 +75,7 @@ Once the external dependencies are installed, Madym should be pretty quick and s
 
 ### Linux/MacOS
 
-2. CD into the binary directory you have just created. Call CCMake with the path to your source code to start CMake's interactive configurer (*eg* **ccmake <path_to_source>**), then press **c** to configure. Once the CMake cache has been generated, future calls to Cmake can be made from the binary directory just using **ccmake .**. 
+2. CD into the binary directory you have just created. Call CCMake with the path to your source code to start CMake's interactive configurer (*eg* `ccmake <path_to_source>`), then press **c** to configure. Once the CMake cache has been generated, future calls to Cmake can be made from the binary directory just using **ccmake .**. 
 
 3.  After running compiler checks, an error will return if CMake can't find Boost (possible if you built Boost from source). 
     * Press **t** to toggle to advanced mode to see the Boost fields. Don't worry about setting *Boost_DIR* but set the paths to the debug/release versions of the filesystem and system libraries and *Boost_INCLUDE_DIR* to the root boost directory (which should contain a directory *boost*, in which the source code headers for each libraries are contained)

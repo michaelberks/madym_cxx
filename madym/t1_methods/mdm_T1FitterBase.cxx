@@ -63,10 +63,8 @@ MDM_API void mdm_T1FitterBase::setInputSignals(const std::vector<double> &sigs)
 //****************************************************************
 
 //
-void mdm_T1FitterBase::setErrorValuesAndTidyUp(const std::string msg, double &T1, double &M0)
+void mdm_T1FitterBase::setErrorValuesAndTidyUp(double &T1, double &M0)
 {
-	mdm_ProgramLogger::logProgramWarning(__func__, msg);
-
 	//Set default values for M0 and T1
 	T1 = 0.0;
 	M0 = 0.0;

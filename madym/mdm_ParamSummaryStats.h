@@ -19,15 +19,15 @@ public:
 
 	//!Helper class to hold set of basic summary stats (mean, median etc)
 	struct SummaryStats {
-		std::string paramName_; //> Name of parameter
-		double mean_; //> Mean
-		double stddev_; //> Standard deviation
-		double median_; //> Median
-		double lowerQ_; //> Lower quartile (ie 25th percentile)
-		double upperQ_; //> Upper quartile (ie 75th percentile)
-		double iqr_; //> Inter-quartile range
-		int validVoxels_; //> Number of valid voxels
-		int invalidVoxels_; //> Number of invalid voxels
+		std::string paramName_; //!< Name of parameter
+		double mean_; //!< Mean
+		double stddev_; //!< Standard deviation
+		double median_; //!< Median
+		double lowerQ_; //!< Lower quartile (ie 25th percentile)
+		double upperQ_; //!< Upper quartile (ie 75th percentile)
+		double iqr_; //!< Inter-quartile range
+		int validVoxels_; //!< Number of valid voxels
+		int invalidVoxels_; //!< Number of invalid voxels
 
 		//!Reset all values to zero
 		void reset() {
@@ -57,6 +57,7 @@ public:
 	//!Make output stats for an image
 	/*!
 	\param img Parameter to image to compute stats for
+  \param paramName name of parameter
 	\param scale scaling values to apply to parameter values (default 1.0)
 	\param invert flag to invert the parameter values (default false). If true, negative values are ignored
 	*/

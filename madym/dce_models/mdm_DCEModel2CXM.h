@@ -18,8 +18,7 @@
 class mdm_DCEModel2CXM : public mdm_DCEModelBase {
 public:
 	
-	/*!
-	*/
+  //! 2CXM model constructor
 	MDM_API mdm_DCEModel2CXM(
     mdm_AIF &AIF,
     const std::vector<std::string> &paramNames = std::vector<std::string>(0),
@@ -29,25 +28,13 @@ public:
 		const std::vector<int> &relativeLimitParams = std::vector<int>(0),
 		const std::vector<double> &relativeLimitValues = std::vector<double>(0));
 
-  /*!
-	*/
 	MDM_API ~mdm_DCEModel2CXM();
 
-  /*!
-	*/
 	MDM_API virtual std::string modelType() const;
 
-  /*!
-	*/
 	MDM_API virtual void computeCtModel(size_t nTimes);
 
-  /*!
-	*/
 	MDM_API virtual double checkParams();
-
-  /*!
-	*/
-	MDM_API virtual void resetRerun();
 
 protected:
 
