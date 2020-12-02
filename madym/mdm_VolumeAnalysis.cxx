@@ -82,8 +82,7 @@ MDM_API void mdm_VolumeAnalysis::reset()
   IAUCMaps_.clear();
   modelResidualsMap_.reset();
   enhVoxMap_.reset();
-
-  
+  initMapParams_.clear();
 }
 
 //
@@ -534,6 +533,12 @@ MDM_API void mdm_VolumeAnalysis::setMaxIterations(int maxItr)
 }
 
 //
+MDM_API void mdm_VolumeAnalysis::setInitMapParams(const std::vector<int> &params)
+{
+  initMapParams_ = params;
+}
+
+//
 MDM_API void  mdm_VolumeAnalysis::fitDCEModel(
   bool optimiseModel, const std::vector<int> initMapParams)
 {
@@ -541,11 +546,10 @@ MDM_API void  mdm_VolumeAnalysis::fitDCEModel(
   checkModelSet();
 
   //
-  bool paramMapsInitialised;
-  initialiseParameterMaps(*model_, paramMapsInitialised);
+  initialiseParameterMaps(*model_);
 
   //Fit the model
-  fitModel(*model_, paramMapsInitialised, optimiseModel, initMapParams);
+  fitModel(*model_, optimiseModel);
 
 }
 
@@ -603,28 +607,30 @@ void mdm_VolumeAnalysis::checkDimension(const mdm_Image3D &img) const
 
 //
 void mdm_VolumeAnalysis::initialiseParameterMaps(
-  const mdm_DCEModelBase &model, bool &mapsAlreadyLoaded)
+  const mdm_DCEModelBase &model)
 {
   //Model parameter maps may already have been loaded
   if (pkParamMaps_.size() != model.numParams())
-  {
     pkParamMaps_.resize(model.numParams());
-    for (auto &map : pkParamMaps_)
+
+  //For each map not already created, create it
+  for (auto &map : pkParamMaps_)
+    if (!map)
       createMap(map);
 
-    mapsAlreadyLoaded = false;
-  }
-  else
-    mapsAlreadyLoaded = true;
-
+  //Create IAUC maps
   IAUCMaps_.resize(IAUCTimes_.size());
   for (auto &map : IAUCMaps_)
     createMap(map);
 
-  createMap(modelResidualsMap_);
+  //Model residuals may already have been loaded
+  if (!modelResidualsMap_)
+    createMap(modelResidualsMap_);
+
+  //Create enhancing map
   createMap(enhVoxMap_);
 
-  //
+  //Create modelled Ct maps
   if (outputCt_mod_)
   {
     CtModelMaps_.resize(numDynamics());
@@ -703,68 +709,73 @@ void  mdm_VolumeAnalysis::voxelCtModel(size_t voxelIndex, std::vector<double> &d
 void mdm_VolumeAnalysis::setVoxelErrors(size_t voxelIndex, const mdm_DCEVoxel &vox)
 {
 	//
-  size_t voxelOk = vox.status();
-  if (voxelOk == mdm_DCEVoxel::CA_NAN)
+  auto status = vox.status();
+  if (status == mdm_DCEVoxel::CA_NAN)
     errorTracker_.updateVoxel(voxelIndex, mdm_ErrorTracker::CA_IS_NAN);
-  
-  else if (voxelOk == mdm_DCEVoxel::DYN_T1_BAD)
+
+  else if (status == mdm_DCEVoxel::DYN_T1_BAD)
     errorTracker_.updateVoxel(voxelIndex, mdm_ErrorTracker::DYNT1_NEGATIVE);
-  
-  else if (voxelOk == mdm_DCEVoxel::M0_BAD)
+
+  else if (status == mdm_DCEVoxel::M0_BAD)
     errorTracker_.updateVoxel(voxelIndex, mdm_ErrorTracker::M0_NEGATIVE);
+
+  else if (status == mdm_DCEVoxel::NON_ENHANCING)
+    errorTracker_.updateVoxel(voxelIndex, mdm_ErrorTracker::NON_ENH_IAUC);
 }
 
 //
-void mdm_VolumeAnalysis::setVoxelInAllMaps(size_t voxelIndex, 
-  const mdm_DCEModelBase &model, const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter)
+void mdm_VolumeAnalysis::setVoxelPreFit(size_t voxelIndex,
+  const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter)
 {
-  for (size_t i = 0; i < pkParamMaps_.size(); i++)
-		pkParamMaps_[i].setVoxel(voxelIndex, model.params(int(i)));
+  //Set any error codes returned from setting up the voxel in the error codes map
+  setVoxelErrors(voxelIndex, vox);
 
-	for (size_t i = 0; i < IAUCMaps_.size(); i++)
-		IAUCMaps_[i].setVoxel(voxelIndex, vox.IAUC_val(i));
-  
-  setVoxelModelError(voxelIndex, fitter);
-  enhVoxMap_.setVoxel(voxelIndex,  vox.enhancing());
+  //Set any IAUC values
+  for (size_t i = 0; i < IAUCMaps_.size(); i++)
+    IAUCMaps_[i].setVoxel(voxelIndex, vox.IAUC_val(i));
 
-  //
+  //Set output C(t) maps
   if (outputCt_sig_)
     for (size_t i = 0; i < numDynamics(); i++)
       CtDataMaps_[i].setVoxel(voxelIndex, vox.CtData()[i]);
-    
+
   if (outputCt_mod_)
     for (size_t i = 0; i < numDynamics(); i++)
       CtModelMaps_[i].setVoxel(voxelIndex, fitter.CtModel()[i]);
-    
+
+  //Set enhancing status
+  enhVoxMap_.setVoxel(voxelIndex, vox.enhancing());
 }
 
 //
-void mdm_VolumeAnalysis::setVoxelModelError(size_t voxelIndex, const mdm_DCEModelFitter  &fitter)
+void mdm_VolumeAnalysis::setVoxelPostFit(size_t voxelIndex,
+  const mdm_DCEModelBase &model, const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter,
+  int &numErrors)
 {
-  modelResidualsMap_.setVoxel(voxelIndex, fitter.modelFitError());
-}
 
-//
-void mdm_VolumeAnalysis::setVoxelInAllMaps(size_t voxelIndex, double value)
-{
-  for (auto &map : pkParamMaps_)
-		map.setVoxel(voxelIndex, value);
+  //Check if any model fitting error codes generated
+  mdm_ErrorTracker::ErrorCode errorCode = model.getModelErrorCode();
+  if (errorCode != mdm_ErrorTracker::OK)
+  {
+    errorTracker_.updateVoxel(voxelIndex, errorCode);
+    numErrors++;
+  }
 
-	for (auto &map : IAUCMaps_)
-		map.setVoxel(voxelIndex, value);
+  //Check if we have a target model residual to match
+  auto residual = fitter.modelFitError();
+  auto targetResidual = modelResidualsMap_.voxel(voxelIndex);
+  if (targetResidual && targetResidual < residual)
+    return; //Don't update parameter maps or model residuals
 
-  modelResidualsMap_.setVoxel(voxelIndex, value);
-  enhVoxMap_.setVoxel(voxelIndex, value);
-
-  /** 1.22 */
-  if (outputCt_sig_)
-    for (auto &map : CtDataMaps_)
-      map.setVoxel(voxelIndex, value);
-    
-
+  //Otherwise, residual is accepted, set parameter maps, modelled C(t) residuals
+  for (size_t i = 0; i < pkParamMaps_.size(); i++)
+		pkParamMaps_[i].setVoxel(voxelIndex, model.params(int(i)));
+  
   if (outputCt_mod_)
-    for (auto &map : CtModelMaps_)
-      map.setVoxel(voxelIndex, value);
+    for (size_t i = 0; i < numDynamics(); i++)
+      CtModelMaps_[i].setVoxel(voxelIndex, fitter.CtModel()[i]);
+
+  modelResidualsMap_.setVoxel(voxelIndex, residual); 
     
 }
 
@@ -791,17 +802,14 @@ std::vector <size_t> mdm_VolumeAnalysis::getVoxelsToFit() const
 //
 void mdm_VolumeAnalysis::initialiseModelParams(
   const size_t voxelIndex,
-  mdm_DCEModelBase &model, const std::vector<int> initMapParams)
+  mdm_DCEModelBase &model)
 {
+  
   int n = model.numParams();
   std::vector<double> initialParams = model.initialParams();
 
-  if (initMapParams.empty())
-    for (int i = 0; i < n; i++)
-      initialParams[i] = pkParamMaps_[i].voxel(voxelIndex);
-  else
-    for (int i : initMapParams)
-      initialParams[i - 1] = pkParamMaps_[i - 1].voxel(voxelIndex); //Need -1 because user indexing starts at 1
+  for (int i : initMapParams_)
+    initialParams[i] = pkParamMaps_[i].voxel(voxelIndex); 
 
   model.setInitialParams(initialParams);
 }
@@ -824,9 +832,7 @@ void mdm_VolumeAnalysis::logProgress(
 //
 void  mdm_VolumeAnalysis::fitModel(
   mdm_DCEModelBase &model,
-  bool paramMapsInitialised,
-  bool optimiseModel,
-  const std::vector<int> initMapParams)
+  bool optimiseModel)
 {
   //Create a new fitter object
   mdm_DCEModelFitter modelFitter(
@@ -843,6 +849,7 @@ void  mdm_VolumeAnalysis::fitModel(
 	double numProcessed = 0;
 	int numErrors = 0;
   pctTarget_ = 10;
+  bool paramMapsInitialised = !initMapParams_.empty();
 
   //Away we go...
   mdm_ProgramLogger::logProgramMessage(
@@ -857,7 +864,7 @@ void  mdm_VolumeAnalysis::fitModel(
     //Check if we've got parameter maps with values to initialise each voxel
     //if not the existing values set in the model will be used
     if (paramMapsInitialised)
-      initialiseModelParams(voxelIndex, model, initMapParams);
+      initialiseModelParams(voxelIndex, model);
           
     //Set up the DCE voxel object
     mdm_DCEVoxel vox(setUpVoxel(voxelIndex));
@@ -870,33 +877,19 @@ void  mdm_VolumeAnalysis::fitModel(
     //for the initial model parameters
     modelFitter.initialiseModelFit(vox.CtData());
 
-    //Set any error codes returned from setting up the voxel in the error codes map
-    setVoxelErrors(voxelIndex, vox);
-
     //Test enhancement
     if (testEnhancement_)
-    {
       vox.testEnhancing();
-      if (!vox.enhancing())
-        errorTracker_.updateVoxel(voxelIndex, mdm_ErrorTracker::NON_ENH_IAUC);
-    }
+      
+    //Set values that don't depend on model fitting
+    setVoxelPreFit(voxelIndex, vox, modelFitter);
 
     //The main event: If optimising the model fit, do so now
     if (optimiseModel)
-    {
-      modelFitter.fitModel(vox.status(), vox.enhancing());
-            
-      //Check if any model fitting error codes generated
-      mdm_ErrorTracker::ErrorCode errorCode = model.getModelErrorCode();
-      if (errorCode != mdm_ErrorTracker::OK)
-      {
-        errorTracker_.updateVoxel(voxelIndex, errorCode);
-        numErrors++;
-      }
-    }
+      modelFitter.fitModel(vox.status());
 
     //Set all the necessary values in the output maps
-    setVoxelInAllMaps(voxelIndex, model, vox, modelFitter);
+    setVoxelPostFit(voxelIndex, model, vox, modelFitter, numErrors);
 
 		logProgress(numProcessed, double(numVoxels));
   }

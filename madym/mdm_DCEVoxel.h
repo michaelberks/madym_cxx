@@ -26,7 +26,8 @@ public:
     DYN_T1_BAD = 1, ///> Dynamic T1 invalid at one or more timepoints
     CA_NAN = 2, ///> NaNs found in signal-derived concentration
     T10_BAD = 3, ///> Baseline T1 is invalid
-    M0_BAD = 4 ///> Baseline M0 is invalid
+    M0_BAD = 4, ///> Baseline M0 is invalid
+    NON_ENHANCING = 5 ///> No CA uptake
   };
 
 	

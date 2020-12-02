@@ -53,9 +53,8 @@ public:
 	//! Optimise tracer-kinetic model fit to concentration time-series
 	/*!
   \param status validity staus of voxel to fit
-	\param enhancing enhancing status of voxel to fit
   */
-	MDM_API void  fitModel(const mdm_DCEVoxel::mdm_DCEVoxelStatus status, bool enhancing);
+	MDM_API void  fitModel(const mdm_DCEVoxel::mdm_DCEVoxelStatus status);
 		
 	//! Return first timepoint used in computing model fit
 	/*!
@@ -78,6 +77,7 @@ public:
 	//! Return model fit error (sum of squared residuals)
 	/*!
 	\return fit error
+  \see BAD_FIT_SSD
 	*/
 	MDM_API double     modelFitError() const;
 
@@ -119,6 +119,8 @@ private:
 
 	//Maximum number of iterations applied
 	int maxIterations_;
+
+  const double BAD_FIT_SSD; //!< Value returned for SSD for failed model fits
 };
 
 

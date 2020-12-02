@@ -307,6 +307,12 @@ public:
 	*/
 	MDM_API void setMaxIterations(int maxItr);
 
+  //! Set initial parameters loaded from maps
+  /*!
+  \param params indices of parameters set from initial maps
+  */
+  MDM_API void setInitMapParams(const std::vector<int> &params);
+
 	//! Fit DCE tracer-kinetic model to all voxels
 	/*!
 	\param optimiseModel flag to optimise parameter fits. If false, modelled concentration will be computed
@@ -365,9 +371,8 @@ private:
   Creates maps of appropiate size for each output map, with zero-values in all voxels.
   Must be called prior to model fitting to ensure there are output containers in which
   to store fitted values, IAUC measures etc.
-  bool (output) set true if maps have already been loaded
   */
-  void initialiseParameterMaps(const mdm_DCEModelBase &model, bool &mapsAlreadyLoaded);
+  void initialiseParameterMaps(const mdm_DCEModelBase &model);
 
   mdm_DCEVoxel setUpVoxel(size_t voxelIndex) const;
 
@@ -384,18 +389,16 @@ private:
 	*/
 	void setVoxelErrors(size_t voxelIndex, const mdm_DCEVoxel &p);
 
+  /*!
+  */
+  void setVoxelPreFit(size_t voxelIndex,
+    const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter);
+
 	/*!
 	*/
-	void setVoxelInAllMaps(size_t voxelIndex,
-    const mdm_DCEModelBase &model, const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter);
-
-  /*!
-  */
-  void setVoxelInAllMaps(size_t voxelIndex, double value);
-
-  /*!
-  */
-  void setVoxelModelError(size_t voxelIndex, const mdm_DCEModelFitter &fitter);
+	void setVoxelPostFit(size_t voxelIndex,
+    const mdm_DCEModelBase &model, const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter,
+    int &numErrors);
 
   /*!
   */
@@ -404,7 +407,7 @@ private:
   /*!
   */
   void initialiseModelParams(const size_t voxelIndex,
-    mdm_DCEModelBase &model, const std::vector<int> initMapParams);
+    mdm_DCEModelBase &model);
 
   /*!
   */
@@ -414,9 +417,7 @@ private:
 	*/
 	void  fitModel(
     mdm_DCEModelBase &model, 
-    bool paramMapsInitialised, 
-    bool optimiseModel, 
-    const std::vector<int> initMapParams);
+    bool optimiseModel);
 
 	/* See comments for initialiseParameterMaps() */
 	void createMap(mdm_Image3D& img);
@@ -447,6 +448,7 @@ private:
 	std::vector<mdm_Image3D> IAUCMaps_;
 	mdm_Image3D 	modelResidualsMap_;
 	mdm_Image3D enhVoxMap_;	
+  std::vector<int> initMapParams_;
 
 	//Time points at which calculate IAUC values
 	std::vector<double> IAUCTimes_;

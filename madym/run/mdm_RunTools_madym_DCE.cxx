@@ -160,6 +160,7 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.initialParams);
 	options_parser_.add_option(config_options, options_.initMapsDir);
 	options_parser_.add_option(config_options, options_.initMapParams);
+  options_parser_.add_option(config_options, options_.modelResiduals);
 	options_parser_.add_option(config_options, options_.paramNames);
 	options_parser_.add_option(config_options, options_.fixedParams);
 	options_parser_.add_option(config_options, options_.fixedValues);
@@ -292,10 +293,12 @@ void mdm_RunTools_madym_DCE::loadAIF()
 void mdm_RunTools_madym_DCE::loadInitParamMaps()
 {
 	if (!options_.initMapsDir().empty())
-	{
-		fs::path initMapsPath = fs::absolute(options_.initMapsDir());
-    fileManager_.loadParameterMaps(initMapsPath.string());
-	}
+	  fileManager_.loadParameterMaps(
+      fs::absolute(options_.initMapsDir()).string(), options_.initMapParams());
+	
+  if (!options_.modelResiduals().empty())
+    fileManager_.loadModelResiduals(
+      fs::absolute(options_.modelResiduals()).string());
 }
 
 //

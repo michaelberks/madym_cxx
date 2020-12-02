@@ -100,6 +100,9 @@ struct mdm_InputOptions {
 	mdm_input_string initMapsDir = mdm_input_string(
 		mdm_input_str(""), "init_maps", "",
 		"Path to folder containing parameter maps for per-voxel initialisation"); //!< See initial value
+  mdm_input_string modelResiduals = mdm_input_string(
+    mdm_input_str(""), "residuals", "",
+    "Path to model residuals map as a target threshold for new fits"); //!< See initial value
 	mdm_input_ints initMapParams = mdm_input_ints(
 		mdm_input_int_list(std::vector<int>{}), "init_map_params", "",
 		"Index of parameters sampled from maps"); //!< See initial value

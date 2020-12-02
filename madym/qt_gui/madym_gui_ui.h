@@ -162,6 +162,8 @@ private slots:
   void on_maxIterationsLineEdit_textChanged(const QString &text);
 	void on_initMapsLineEdit_textChanged(const QString &text);
 	void on_initMapsDirSelect_clicked();
+  void on_residualsLineEdit_textChanged(const QString &text);
+  void on_residualsSelect_clicked();
 
   //AIF detection
 

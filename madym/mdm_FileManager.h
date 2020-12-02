@@ -90,17 +90,24 @@ public:
 
   //! Load AIF map
   /*!
-  \param path filepath to ROI mask image
-  \return true if image loads successfully. False if file doesn't exist or load error.
+  \param path filepath to AIF map
   */
   MDM_API void loadAIFmap(const std::string &path);
 
 	//! Load tracer-kinetic model parameter maps
 	/*!
 	\param paramDir directory containing parameter maps. This must contain image volumes with names matching the parameter names specified in the volume analysis model
+  \param initMapParams indices of parameters to load from maps (indexing starts at 1 as from user input)
 	\see mdm_DCEModelBase#paramNames
 	*/
-	MDM_API void loadParameterMaps(const std::string &paramDir);
+	MDM_API void loadParameterMaps(const std::string &paramDir,
+    const std::vector<int> &initMapParams);
+
+  //! Load model residuals
+  /*!
+  \param path filepath to residuals
+  */
+  MDM_API void loadModelResiduals(const std::string &path);
 
   //! Save ROI mask
   /*!

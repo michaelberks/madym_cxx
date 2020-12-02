@@ -377,7 +377,7 @@ void mdm_RunTools_madym_DCE_lite::fit_series(
 
   //Fit the model
   if (optimiseModel)
-    fitter.fitModel(vox.status(), vox.enhancing());
+    fitter.fitModel(vox.status());
 
 	//Now write the output
 	outputData <<
