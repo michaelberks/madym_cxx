@@ -34,7 +34,7 @@ public:
 
 	MDM_API virtual void computeCtModel(size_t nTimes);
 
-	MDM_API virtual double checkParams();
+	MDM_API virtual void checkParams();
 
 protected:
 

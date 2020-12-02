@@ -10,9 +10,6 @@
 #endif // !MDM_API_EXPORTS
 
 #include "mdm_DCEModelNONE.h"
-#include <cmath>
-
-const double mdm_DCEModelNONE::ETM_KEPMAX = 42.0;
 
 MDM_API mdm_DCEModelNONE::mdm_DCEModelNONE(
   mdm_AIF &AIF,
@@ -46,9 +43,7 @@ MDM_API void mdm_DCEModelNONE::computeCtModel(size_t nTimes)
   return;
 }
 
-MDM_API double mdm_DCEModelNONE::checkParams()
+MDM_API void mdm_DCEModelNONE::checkParams()
 { 
-  //Check params should never be called, so if it does, make sense to return a NULL value
-	return BAD_FIT_SSD;
 }
 

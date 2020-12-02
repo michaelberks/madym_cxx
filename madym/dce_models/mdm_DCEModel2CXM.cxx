@@ -159,7 +159,7 @@ MDM_API void mdm_DCEModel2CXM::computeCtModel(size_t nTimes)
   }
 }
 
-MDM_API double mdm_DCEModel2CXM::checkParams()
+MDM_API void mdm_DCEModel2CXM::checkParams()
 {
   /*TODO: define parameter limits - for now, just check all finite and not NAN*/
 	for (double p : pkParams_)
@@ -167,10 +167,9 @@ MDM_API double mdm_DCEModel2CXM::checkParams()
 		if (std::isnan(p) || !std::isfinite(p))
 		{
 			errorCode_ = mdm_ErrorTracker::DCE_FIT_FAIL;
-			return BAD_FIT_SSD;
+			return;
 		}
 	}
 	
 	errorCode_ = mdm_ErrorTracker::OK;
-	return 0;
 }

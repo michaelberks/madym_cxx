@@ -90,9 +90,9 @@ void test_model_time_fit(
 		AIF.prebolus(),
     AIF.AIFTimes(),
     IAUCTimes);
-
+  vox.testEnhancing();
 	fitter.initialiseModelFit(vox.CtData());
-  fitter.fitModel(vox.status(), vox.enhancing());
+  fitter.fitModel(vox.status());
 
 	//Check params match (should be within 0.01)
 	BOOST_TEST_MESSAGE("Actual vs fitted params: ");

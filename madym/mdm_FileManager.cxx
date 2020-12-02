@@ -89,11 +89,20 @@ MDM_API void mdm_FileManager::saveAIFmap(const std::string &outputDir, const std
 }
 
 //
-MDM_API void mdm_FileManager::loadParameterMaps(const std::string &paramDir)
+MDM_API void mdm_FileManager::loadParameterMaps(const std::string &paramDir,
+  const std::vector<int> &initMapParams)
 {
-  //Write model parameters maps
   std::vector<std::string> paramNames = volumeAnalysis_.paramNames();
-  for (int i = 0; i < paramNames.size(); i++)
+
+  std::vector<int> params;
+  if (initMapParams.empty())
+    for (int i = 0; i < paramNames.size(); i++)
+      params.push_back(i);
+  else
+    for (auto i : params)
+      params.push_back(i-1); //Need -1 because user indexing starts at 1
+
+  for (auto i : params)
   {
     std::string paramName = paramDir + "/" + paramNames[i];
 
@@ -108,9 +117,30 @@ MDM_API void mdm_FileManager::loadParameterMaps(const std::string &paramDir)
       throw;
     }
   }
+  volumeAnalysis_.setInitMapParams(params);
+
 	mdm_ProgramLogger::logProgramMessage(
 		"Successfully read param maps from " + paramDir);
 
+}
+
+//
+MDM_API void mdm_FileManager::loadModelResiduals(const std::string &path)
+{
+  try {
+    // Read in AIF map image volume
+    mdm_Image3D residuals = mdm_AnalyzeFormat::readImage3D(path, false);
+    residuals.setType(mdm_Image3D::ImageType::TYPE_KINETICMAP);
+    volumeAnalysis_.setDCEMap(mdm_VolumeAnalysis::MAP_NAME_RESDIUALS, residuals);
+  }
+  catch (mdm_exception &e)
+  {
+    e.append("Error reading model residuals");
+    throw;
+  }
+
+  mdm_ProgramLogger::logProgramMessage(
+    "Model residuals loaded loaded from " + path);
 }
 
 MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir)

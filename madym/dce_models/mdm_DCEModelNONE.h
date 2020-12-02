@@ -35,7 +35,7 @@ public:
 
   MDM_API virtual void computeCtModel(size_t nTimes);
 
-  MDM_API virtual double checkParams();
+  MDM_API virtual void checkParams();
 
 protected:
 
@@ -43,10 +43,6 @@ private:
   //METHODS:
 
   //VARIABLES
-	const static int ETM_ERR_VEPLUSVPGT1;   /* Ve + Vp > 1.0                           - Binary bit 14 set  */
-	const static int ETM_ERR_KEPINF;  /* Ktrans / Ve > MDM_KEPMAX                - Binary bit 15 set  */
-
-	const static double ETM_KEPMAX;
 };
 
 #endif //MDM_DCEMODELETM_HDR

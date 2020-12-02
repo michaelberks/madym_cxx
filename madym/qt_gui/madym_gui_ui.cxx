@@ -569,6 +569,8 @@ void madym_gui_ui::on_outputDirLineEdit_textChanged(const QString &text)
 {
 	processor_.madym_exe().options().outputDir.set(text.toStdString());
 }
+
+//
 void madym_gui_ui::on_outputDirSelect_clicked()
 {
   QString outputDir = QFileDialog::getExistingDirectory(this, tr("Choose output folder"),
@@ -581,19 +583,23 @@ void madym_gui_ui::on_outputDirSelect_clicked()
 
   ui.outputDirLineEdit->setText(outputDir);
 }
+
+//
 void madym_gui_ui::on_iaucTimesLineEdit_textChanged(const QString &text)
 {
   processor_.madym_exe().options().IAUCTimes.value().fromString(text.toStdString());
 }
 
+//
 void madym_gui_ui::on_initMapsLineEdit_textChanged(const QString &text)
 {
 	processor_.madym_exe().options().initMapsDir.set(text.toStdString());
 }
 
+//
 void madym_gui_ui::on_initMapsDirSelect_clicked()
 {
-	QString selectedDir = QFileDialog::getExistingDirectory(this, tr("Choose output folder"),
+	QString selectedDir = QFileDialog::getExistingDirectory(this, tr("Choose folder containing param maps"),
     dataDir_,
 		QFileDialog::ShowDirsOnly
 		| QFileDialog::DontResolveSymlinks);
@@ -603,11 +609,34 @@ void madym_gui_ui::on_initMapsDirSelect_clicked()
 
 	ui.initMapsLineEdit->setText(selectedDir);
 }
+
+
+//
+void madym_gui_ui::on_residualsLineEdit_textChanged(const QString &text)
+{
+  processor_.madym_exe().options().modelResiduals.set(text.toStdString());
+}
+
+//
+void madym_gui_ui::on_residualsSelect_clicked()
+{
+  QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select residuals map"),
+    dataDir_,
+    tr("Residuals map files (*.hdr)"));
+
+  if (selectedPath.isEmpty())
+    return;
+
+  ui.residualsLineEdit->setText(selectedPath);
+}
+
+//
 void madym_gui_ui::on_overwriteCheckBox_stateChanged(int state)
 {
 	processor_.madym_exe().options().overwrite.set(state);
 }
 
+//
 void madym_gui_ui::on_outputCsCheckBox_stateChanged(int state)
 {
 	processor_.madym_exe().options().outputCt_sig.set(state);
@@ -834,6 +863,7 @@ void madym_gui_ui::initialize_widget_values()
     ui.maxIterationsLineEdit->setValidator(new QIntValidator(0, 10000, this));
     ui.maxIterationsLineEdit->setText(QString::number(options.maxIterations()));
     ui.initMapsLineEdit->setText(options.initMapsDir().c_str());
+    ui.residualsLineEdit->setText(options.modelResiduals().c_str());
 
     //Output options specific to DCE fits
     ui.iaucLabel->show();

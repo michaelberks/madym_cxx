@@ -18,7 +18,7 @@
 #include "opt/linalg.h"
 
 #include <madym/mdm_exception.h>
-
+#include <cfloat>
 
 MDM_API mdm_DCEModelFitter::mdm_DCEModelFitter(
 	mdm_DCEModelBase &model,
@@ -32,7 +32,8 @@ MDM_API mdm_DCEModelFitter::mdm_DCEModelFitter(
 	timepointN_(timepointN),
   noiseVar_(noiseVar),
   modelFitError_(0),
-	maxIterations_(maxIterations)
+	maxIterations_(maxIterations),
+  BAD_FIT_SSD(DBL_MAX)
 {
 }
 
@@ -82,7 +83,7 @@ MDM_API void mdm_DCEModelFitter::initialiseModelFit(const std::vector<double> &C
 
 //
 MDM_API void mdm_DCEModelFitter::fitModel(
-  const mdm_DCEVoxel::mdm_DCEVoxelStatus status, bool enhancing)
+  const mdm_DCEVoxel::mdm_DCEVoxelStatus status)
 {
   //If NULL model, just return
   if (!model_.numParams())
@@ -92,13 +93,10 @@ MDM_API void mdm_DCEModelFitter::fitModel(
   if (!CtData_)
     throw mdm_exception(__func__, "CtData not set");
 
-  //Check if any issues with voxel. Note enhancing is true by default and 
-  //requires prior check to fit only voxels that have been *tested* as enhancing
+  //Check if any issues with voxel.
   if (
-    !enhancing ||
-    (status != mdm_DCEVoxel::mdm_DCEVoxelStatus::OK &&
+    status != mdm_DCEVoxel::mdm_DCEVoxelStatus::OK &&
     status != mdm_DCEVoxel::mdm_DCEVoxelStatus::DYN_T1_BAD)
-    )
   {
     model_.zeroParams();
     modelFitError_ = 0.0;
@@ -141,9 +139,9 @@ double mdm_DCEModelFitter::CtSSD(
   model_.setOptimisedParams(parameter_array);
 
 	//Get model to check params are ok - returns non-zero for bad value
-  double model_check = model_.checkParams();
-  if (model_check)
-    return model_check;
+  model_.checkParams();
+  if (model_.getModelErrorCode() != mdm_ErrorTracker::ErrorCode::OK)
+    return BAD_FIT_SSD;
 
 	//If we got this far the parameter values look OK, so ...
 	// Calculate model [CA](t) for current parameter set

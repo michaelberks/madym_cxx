@@ -293,4 +293,7 @@ MDM_API void mdm_DCEVoxel::testEnhancing()
       }
     }
   }
+  if (!enhancing_)
+    status_ = NON_ENHANCING;
 }
+

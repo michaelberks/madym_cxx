@@ -11,7 +11,6 @@
 
 #include "mdm_DCEModelBase.h"
 #include "mdm_platform_defs.h"
-#include <math.h>
 
 MDM_API mdm_DCEModelBase::mdm_DCEModelBase(
   mdm_AIF &AIF,
@@ -27,8 +26,7 @@ MDM_API mdm_DCEModelBase::mdm_DCEModelBase(
   pkParamsOpt_(0),
   pkParamNames_(paramNames),
   pkInitParams_(initialParams),
-	errorCode_(mdm_ErrorTracker::OK),
-	BAD_FIT_SSD(DBL_MAX)
+	errorCode_(mdm_ErrorTracker::OK)
 {
   
 }
@@ -245,7 +243,7 @@ MDM_API const mdm_AIF&     mdm_DCEModelBase::AIF() const
   return AIF_;
 }
 
-MDM_API mdm_ErrorTracker::ErrorCode mdm_DCEModelBase::getModelErrorCode()
+MDM_API mdm_ErrorTracker::ErrorCode mdm_DCEModelBase::getModelErrorCode() const
 {
 	return errorCode_;
 }

@@ -213,7 +213,7 @@ public:
 	\return model error code
 	\see mdm_ErrorTracker
 	*/
-	MDM_API virtual mdm_ErrorTracker::ErrorCode getModelErrorCode();
+	MDM_API virtual mdm_ErrorTracker::ErrorCode getModelErrorCode() const;
 
 	//! Return model sub-class name
 	/*!
@@ -234,11 +234,9 @@ public:
 	/*!
 	Pure virtual function, must be implemented by sub-classes. If any parameter is not valid,
 	getModelErrorCode() will return the associated error code.
-	\return 0 if all parameters valid. BAD_FIT_SSD if error found.
 	\see getModelErrorCode
-	\see BAD_FIT_SSD
 	*/
-	MDM_API virtual double checkParams() = 0;
+	MDM_API virtual void checkParams() = 0;
 
 protected:
 
@@ -262,8 +260,6 @@ protected:
 
 	//! Error code of the model after fitting
 	mdm_ErrorTracker::ErrorCode errorCode_;
-
-	const double BAD_FIT_SSD; //!< Value returned for SSD for failed model fits
 
 private:
   //METHODS:
