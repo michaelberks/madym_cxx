@@ -63,6 +63,29 @@ MDM_API mdm_VolumeAnalysis::~mdm_VolumeAnalysis()
 
 }
 
+MDM_API void mdm_VolumeAnalysis::reset()
+{
+  ROI_.reset();
+  AIFmap_.reset();
+  StDataMaps_.clear();
+  CtDataMaps_.clear();
+  CtModelMaps_.clear();
+  dynamicTimes_.clear();
+  noiseVar_.clear();
+  dynamicMetaData_.reset();
+
+  T1_mapper_.reset();
+  errorTracker_.resetErrorImage();
+
+  /* Images for inputs and output */
+  pkParamMaps_.clear();
+  IAUCMaps_.clear();
+  modelResidualsMap_.reset();
+  enhVoxMap_.reset();
+
+  
+}
+
 //
 MDM_API mdm_ErrorTracker& mdm_VolumeAnalysis::errorTracker()
 {

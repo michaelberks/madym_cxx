@@ -136,11 +136,3 @@ MDM_API double mdm_DCEModelDIETM::checkParams()
 	return 0;
 }
 
-MDM_API void mdm_DCEModelDIETM::resetRerun()
-{
-  //Reset selected parameters to their initial value then rerun the optimisation
-  std::vector<int> fixedParams = { 4, 5 };
-  for (int i = 0; i < fixedParams.size(); i++)
-    pkParams_[fixedParams[i]] = pkInitParams_[fixedParams[i]];
-}
-

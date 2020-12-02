@@ -1,29 +1,19 @@
 /**
+* @file madym_DCE.cxx
 * Main program based on command-line input.
 *
-* @brief    madym's command-line main program*  @details More info...
+* @brief    Madym's main command-line tool for DCE analysis
 * @author MA Berks(c) Copyright QBI Lab, University of Manchester 2020
 */
 
 #include <madym/run/mdm_RunTools_madym_DCE.h>
-#include <madym/mdm_OptionsParser.h>
 
-mdm_OptionsParser options_parser_;
-mdm_InputOptions options_;
-/**
-* Main program based on command-line input.
-*
-* @brief    madym's command-line main program
-* @version  madym 1.22
-* @param    argc   Number of command-line parameters
-* @param    argv   String array of command-line parameters
-* @return   int    Standard C return status flag
-*/
+//! Launch the command line tool
 int main(int argc, char *argv[])
 {
 	
 	//Instantiate new madym_exe object
-	mdm_RunTools_madym_DCE madym_exe(options_, options_parser_);
+	mdm_RunTools_madym_DCE madym_exe;
 
 	//Parse inputs
 	auto parse_error = madym_exe.parseInputs(argc, (const char **)argv);

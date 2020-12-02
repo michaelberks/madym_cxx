@@ -11,7 +11,6 @@
 #endif // !MDM_API_EXPORTS
 
 #include "mdm_OptionsParser.h"
-#include <madym/mdm_platform_defs.h>
 
 #include <iostream>
 #include <fstream>
@@ -21,7 +20,9 @@
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
+#include <madym/mdm_exception.h>
 
+//! Custom validator for input type mdm_input_str
 void validate(boost::any& v,
 	const std::vector<std::string>& values,
 	mdm_input_str* target_type, int)
@@ -39,14 +40,11 @@ void validate(boost::any& v,
 	if (s == mdm_input_str::EMPTY_STR)
 		v = mdm_input_str("");
 		
-
 	else
 		v = str;
 }
 
-DISABLE_WARNING_PUSH
-DISABLE_WARNING_UNKNOWN_ESCAPE_SEQUENCE
-
+//! Custom validator for input type mdm_input_string_list
 void validate(boost::any& v,
 	const std::vector<std::string>& values,
 	mdm_input_string_list* target_type, int)
@@ -57,27 +55,10 @@ void validate(boost::any& v,
 	// Extract the first string from 'values'. If there is more than
 	// one string, it's an error, and exception will be thrown.
 	const std::string& s = po::validators::get_single_string(values);
-
-	std::string s2(s);
-	boost::erase_all(s2, "[");
-	boost::erase_all(s2, "]");
-
-	// Do regex match and convert the interesting part to 
-	// int.
-	boost::escaped_list_separator<char> sep{ "", ",", "\"\'" };
-	boost::tokenizer<boost::escaped_list_separator<char> > tokens(s2, sep);
-	std::vector<std::string> vs;
-	for (auto t : tokens)
-	{
-		std::string s3(t);
-		boost::trim(s3);
-		if (!s3.empty())
-			vs.push_back(s3);
-	}	
-
-	v = mdm_input_string_list(vs);
+	v = mdm_input_string_list(s);
 }
 
+//! Custom validator for input type mdm_input_double_list
 void validate(boost::any& v,
 	const std::vector<std::string>& values,
 	mdm_input_double_list* target_type, int)
@@ -91,20 +72,10 @@ void validate(boost::any& v,
 	// Extract the first string from 'values'. If there is more than
 	// one string, it's an error, and exception will be thrown.
 	const std::string& s = po::validators::get_single_string(values);
-
-	// Do regex match and convert the interesting part to 
-	// int.
-  std::vector<std::string> tokens;
-  boost::split(tokens, s, boost::is_any_of("  ,\[\]"));
-
-  std::vector<double> vd;
-  for (auto t : tokens)
-    if (!t.empty())
-      vd.push_back(boost::lexical_cast<double>(t));
-
-	v = mdm_input_double_list(vd);
+  v = mdm_input_double_list(s);
 }
 
+//! Custom validator for input type mdm_input_int_list
 void validate(boost::any& v,
 	const std::vector<std::string>& values,
 	mdm_input_int_list* target_type, int)
@@ -116,45 +87,13 @@ void validate(boost::any& v,
 
   //eg: [1-3, 5] should generate {1, 2, 3, 5}
 
-
 	// Make sure no previous assignment to 'a' was made.
 	po::validators::check_first_occurrence(v);
 	// Extract the first string from 'values'. If there is more than
 	// one string, it's an error, and exception will be thrown.
 	const std::string& s = po::validators::get_single_string(values);
-
-	// Do regex match and convert the interesting part to 
-	// int.
-  std::vector<std::string> tokens;
-  boost::split(tokens, s, boost::is_any_of("  ,\[\]"));
-
-  std::vector<int> vi;
-  for (auto t : tokens)
-  {
-    if (!t.empty())
-    {
-      std::vector<std::string> range;
-      boost::split(range, t, boost::is_any_of("-"));
-
-      if (range.size() == 1)
-        vi.push_back(boost::lexical_cast<int>(t));
-
-      else if (range.size() == 2)
-      {
-        int start = boost::lexical_cast<int>(range[0]);
-        int end = boost::lexical_cast<int>(range[1]);
-        for (int i = start; i <= end; i++)
-          vi.push_back(i);
-      }
-      else
-        throw po::error("Range operation for integer lists should be of form i-j");
-    }
-      
-  } 
-
-	v = mdm_input_int_list(vi);
+	v = mdm_input_int_list(s);
 }
-DISABLE_WARNING_POP
 
 //
 MDM_API  mdm_OptionsParser::mdm_OptionsParser()
@@ -287,18 +226,19 @@ MDM_API void mdm_OptionsParser::add_option(po::options_description &config_optio
 }
 
 template void MDM_API mdm_OptionsParser::add_option(po::options_description &c, 
-	mdm_input_string &o);
+	mdm_input_string &o); //!< Template declaration for string input
 template void MDM_API mdm_OptionsParser::add_option(po::options_description &c,
-	mdm_input_int &o);
+	mdm_input_int &o); //!< Template declaration for int input
 template void MDM_API mdm_OptionsParser::add_option(po::options_description &c,
-	mdm_input_double &o);
+	mdm_input_double &o); //!< Template declaration for double input
 template void MDM_API mdm_OptionsParser::add_option(po::options_description &c,
-	mdm_input_strings &o);
+	mdm_input_strings &o);  //!< Template declaration for list of strings input
 template void MDM_API mdm_OptionsParser::add_option(po::options_description &c,
-	mdm_input_ints &o);
+	mdm_input_ints &o);  //!< Template declaration for list of ints input
 template void MDM_API mdm_OptionsParser::add_option(po::options_description &c,
-	mdm_input_doubles &o);
+	mdm_input_doubles &o);  //!< Template declaration for list of doubles input
 
+//! Template specialization for bool input
 template<>
 MDM_API void mdm_OptionsParser::add_option(po::options_description &config_options, mdm_input_bool &b)
 {
@@ -340,6 +280,12 @@ bool mdm_OptionsParser::parse_command_line(int argc, const char *argv[],
 		std::cout << e.what();
 		return false;
 	}
+  catch (const mdm_exception& e)
+  {
+    std::cout << "Madym::error Error parsing command line" << std::endl;
+    std::cout << e.what();
+    return false;
+  }
 	catch (...)
 	{
 		std::cout << "Unhandled error parsing command line" << std::endl;

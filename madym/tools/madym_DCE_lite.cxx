@@ -1,31 +1,15 @@
 /**
- *  @file    madym_lite.cxx
- *  @brief   Main program for lite-weight madym version
- *  @details More info...
+ *  @file    madym_DCE_lite.cxx
+ *  @brief   Lite version of DCE analysis tool, takes simple text files of input data.
  *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
  */
 #include <madym/run/mdm_RunTools_madym_DCE_lite.h>
-#include <madym/mdm_OptionsParser.h>
 
-mdm_OptionsParser options_parser_;
-mdm_InputOptions options_;
-
-/******************************************************************************************
- *       Model fitting                                                                    *
- ******************************************************************************************/
-
-/**
- * Main program based on command-line input.
- *
- * @brief    madym's command-line main program
- * @param    argc   Number of command-line parameters
- * @param    argv   String array of command-line parameters
- * @return   int    Standard C++ return status flag
- */
+//! Launch the command line tool
 int main(int argc, char *argv[])
 {
 	//Instantiate new madym_exe object
-	mdm_RunTools_madym_DCE_lite madym_exe(options_, options_parser_);
+	mdm_RunTools_madym_DCE_lite madym_exe;
 
 	//Parse inputs
 	auto parse_error = madym_exe.parseInputs(argc, (const char **)argv);

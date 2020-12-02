@@ -24,12 +24,7 @@ namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 
 //
-MDM_API mdm_RunTools_madym_DCE::mdm_RunTools_madym_DCE(mdm_InputOptions &options_, mdm_OptionsParser &options_parser)
-	: 
-	mdm_RunToolsDCEFit(options_, options_parser),
-	mdm_RunToolsVolumeAnalysis(options_, options_parser),
-	mdm_RunToolsT1Fit(options_, options_parser),
-	mdm_RunTools(options_, options_parser)
+MDM_API mdm_RunTools_madym_DCE::mdm_RunTools_madym_DCE()
 {
 }
 
@@ -119,6 +114,9 @@ MDM_API void mdm_RunTools_madym_DCE::run()
 
 	//Write output
 	writeOutput();
+
+  //Reset the volume analysis
+  volumeAnalysis_.reset();
 }
 
 //

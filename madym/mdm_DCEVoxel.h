@@ -52,8 +52,12 @@ public:
 
   //! Convert signal time-series to contrast agent concentration
 	/*!
-  \param useM0Ratio flag to use ratio method for scaling baseline signal, if false requires M0 to be set
-  \param timepoint0 first time point to use in prebolus average, default 0
+  \param T1 baseline T1 
+  \param FA flip-angle in degrees
+  \param TR repetition in ms
+  \param r1Const relaxivity constant of contrast-agent
+  \param M0 baseline magnetisation constant
+  \param timepoint0 first time-point to use in pre-bolus noise estimation (default 0)
 	*/
 	MDM_API void computeCtFromSignal(
     const double T1, const double FA, const double TR, const double r1Const,

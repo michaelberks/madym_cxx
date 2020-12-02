@@ -13,7 +13,6 @@
 
 #include <cassert>
 #include <chrono>  // chrono::system_clock
-#include <sstream> // stringstream
 
 #include <madym/mdm_ErrorTracker.h>
 #include <madym/mdm_ProgramLogger.h>
@@ -32,6 +31,14 @@ MDM_API mdm_T1Mapper::mdm_T1Mapper(mdm_ErrorTracker &errorTracker, mdm_Image3D &
 //
 MDM_API mdm_T1Mapper::~mdm_T1Mapper()
 {}
+
+//
+MDM_API void mdm_T1Mapper::reset()
+{
+  inputImages_.clear();
+  T1_.reset(); 
+  M0_.reset();
+}
 
 //
 MDM_API void mdm_T1Mapper::addInputImage(mdm_Image3D img)
@@ -118,11 +125,11 @@ MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 	auto fit_end = std::chrono::system_clock::now();
 	std::chrono::duration<double> elapsed_seconds = fit_end - fit_start;
 
-	std::stringstream ss;
-	ss << "mdm_T1Mapper: Fitted " <<
-		numFitted << " voxels in " << elapsed_seconds.count() << "s.\n" <<
-		numErrors << " voxels returned fit errors\n";
-	mdm_ProgramLogger::logProgramMessage(ss.str());
+	mdm_ProgramLogger::logProgramMessage("Fitted " +
+    std::to_string(numFitted) + " voxels in " + std::to_string(elapsed_seconds.count()) + "s");
+  if (numErrors)
+    mdm_ProgramLogger::logProgramWarning(__func__, 
+      std::to_string(numErrors) + " voxels returned fit errors");
 }
 
 //

@@ -24,10 +24,47 @@ public:
 	enum AIF_TYPE {
 		AIF_UNDEFINED = -1, ///< AIF not recognised or not yet set
     AIF_POP = 0, ///< Population AIF generated from fucntional form developed by Parker et al.
-    AIF_FILE = 1, ///< AIF loaded from file
-    AIF_MAP = 2, ///< AIF computed voxels specified in map (requires dynamic volumes to be loaded)
-		AIF_STD = 3 ///< Legacy STD format AIF, not expected to be used	
+    AIF_MAP = 1, ///< AIF computed voxels specified in map (requires dynamic volumes to be loaded)
+		AIF_FILE = 2, ///< AIF loaded from file
+    AIF_STD = 3 ///< Legacy STD format AIF, not expected to be used	
 	};
+
+  //! Return string name of AIF type
+  MDM_API static std::string typeToString(AIF_TYPE type)
+  {
+    switch (type)
+    {
+    case AIF_UNDEFINED:
+      return "UNDEFINED";
+    case AIF_POP:
+      return "PARKER";
+    case AIF_MAP:
+      return "MAP";
+    case AIF_FILE:
+      return "FILE";
+    case AIF_STD:
+      return "STD";
+    default:
+      throw mdm_exception(__func__, "AIF type " + std::to_string(type) + " not recognised");
+    }
+  }
+
+  //! Return AIF type from string
+  MDM_API static AIF_TYPE typeFromString(const std::string &type)
+  {
+    if (type == "UNDEFINED")
+      return AIF_UNDEFINED;
+    else if (type == "PARKER")
+      return AIF_POP;
+    else if (type == "MAP")
+      return AIF_MAP;
+    else if (type == "FILE")
+      return AIF_FILE;
+    else if (type == "STD")
+      return AIF_STD;
+    else
+      throw mdm_exception(__func__, "AIF type " + type + " not recognised");
+  }
 
   //! Values for AIF_map
   /*!

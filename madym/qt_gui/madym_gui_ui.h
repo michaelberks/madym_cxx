@@ -34,6 +34,7 @@
 
 #include <madym/mdm_OptionsParser.h>
 #include <madym/dce_models/mdm_DCEModelBase.h>
+#include <madym/run/mdm_RunTools_madym_T1.h>
 
 #include "ui_madym_gui.h"
 
@@ -63,31 +64,38 @@ protected:
 signals:
 
 	//! Signal sent to processor to do some processing. Not currently used.
-  void series_to_process(int, bool);
+  void start_processing();
   
 private slots:
 	//Private QT callbacks for all the widgets in the GUI
 
 	// Menu file
-	void on_actionLoadConfigFile_triggered();
-	void on_actionSaveConfigFileDCE_triggered();
-	void on_actionSaveConfigFileT1_triggered();
-	void on_actionSaveConfigFileIF_triggered();
 	void on_actionExit_triggered();
 
 	//Main functions
 	void on_computeT1Button_clicked();
 	void on_computeIFButton_clicked();
   void on_fitModelButton_clicked();
-  void on_outputStatsButton_clicked();
+
+  //Buttons in run window
+  void on_loadConfigButton_clicked();
+  void on_saveConfigButton_clicked();
+  void on_homeButton_clicked();
+  void on_runButton_clicked();
+
+  //General input options
+  void on_dataDirLineEdit_textChanged(const QString &text);
+  void on_dataDirSelect_clicked();
+  void on_roiPathLineEdit_textChanged(const QString &text);
+  void on_roiPathSelect_clicked();
+  void on_errorTrackerLineEdit_textChanged(const QString &text);
+  void on_errorTrackerSelect_clicked();
 
 	//DCE data options
   void on_dceInputLineEdit_textChanged(const QString &text);
   void on_dceInputSelect_clicked();
   void on_dceNameLineEdit_textChanged(const QString &text);
-  void on_dceFormatLineEdit_textChanged(const QString &text);
-  void on_roiPathLineEdit_textChanged(const QString &text);
-  void on_roiPathSelect_clicked();
+  void on_dceFormatLineEdit_textChanged(const QString &text);  
 	void on_nDynSpinBox_valueChanged(int value);
 	void on_injectionImageSpinBox_valueChanged(int value);
 
@@ -108,20 +116,31 @@ private slots:
 
   //Logging options
   void on_logNameLineEdit_textChanged(const QString &text);
-  void on_errorTrackerLineEdit_textChanged(const QString &text);
   void on_auditNameLineEdit_textChanged(const QString &text);
   void on_auditDirLineEdit_textChanged(const QString &text);
   void on_auditDirSelect_clicked();
 
   //AIF options
-  void on_populationAIFCheckbox_stateChanged(int state);
-  void on_autoAIFPathLineEdit_textChanged(const QString &text);
-  void on_autoAIFPathSelect_clicked();
+  void on_AIFtypeComboBox_currentIndexChanged(const QString &text);
+  void on_AIFfileLineEdit_textChanged(const QString &text);
+  void on_AIFfileSelect_clicked();
+  void on_AIFmapLineEdit_textChanged(const QString &text);
+  void on_AIFmapSelect_clicked();
   void on_populationPIFCheckbox_stateChanged(int state);
   void on_autoPIFPathLineEdit_textChanged(const QString &text);
   void on_autoPIFPathSelect_clicked();
 	void on_doseLineEdit_textChanged(const QString &text);
 	void on_hctLineEdit_textChanged(const QString &text);
+
+  //AIF detection options
+  void on_xRangeLineEdit_textChanged(const QString &text);
+  void on_yRangeLineEdit_textChanged(const QString &text);
+  void on_slicesLineEdit_textChanged(const QString &text);
+  void on_minT1lineEdit_textChanged(const QString &text);
+  void on_peakTimeLineEdit_textChanged(const QString &text);
+  void on_prebolusMinSpinBox_valueChanged(int value);
+  void on_prebolusNoiseLineEdit_textChanged(const QString &text);
+  void on_selectPctSpinBox_valueChanged(double value);
 
   //Output options
   void on_outputDirLineEdit_textChanged(const QString &text);
@@ -144,14 +163,24 @@ private slots:
 	void on_initMapsLineEdit_textChanged(const QString &text);
 	void on_initMapsDirSelect_clicked();
 
+  //AIF detection
+
   //: Other slots
+  void on_logMessageReceived(QString msg);
   void change_input_type(int type);
+
+  //:
+  void on_processingFinished(int result);
 
 private: // Methods
 
   void initialize_processor_thread();
   void connect_signals_to_slots();
   void initialize_widget_values();
+  void initialize_model_options();
+  void initialize_T1_options();
+  void initialize_AIF_options();
+  bool check_required_options();
 
 #ifdef _WIN32
 	bool winEvent(MSG * message, long * result);
@@ -162,6 +191,9 @@ private: // Variables
   //: User interface object
   Ui::MadymMainWindow ui;
 
+  //
+  madym_gui_processor::RunType runType_;
+
 	//Processor object
 	madym_gui_processor processor_;
 
@@ -171,12 +203,11 @@ private: // Variables
 	//Widgets added manually
 	QButtonGroup* inputTypeRadioGroup;
 
-  //Options list
-  mdm_InputOptions madym_options_;
-	mdm_OptionsParser options_parser_;
-
   //model so we can configure model params
   std::shared_ptr<mdm_DCEModelBase> model_;
+
+  //Cache data directory
+  QString dataDir_;
 
 };
 

@@ -65,6 +65,15 @@ MDM_API mdm_Image3D::~mdm_Image3D()
 
 }
 
+//
+MDM_API void mdm_Image3D::reset()
+{
+  imgType_ = TYPE_UNDEFINED;
+  MetaData empty;
+  info_ = empty;
+  setDimensions(0, 0, 0);
+}
+
 //Return const ref to data
 MDM_API const std::vector<double>& mdm_Image3D::data() const
 {

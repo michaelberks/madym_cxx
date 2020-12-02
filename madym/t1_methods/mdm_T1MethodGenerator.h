@@ -110,7 +110,7 @@ public:
 	This overload is for use with lite analysis tools, and in addition to returning an object of
 	the specified T1 method, configures the return object with meta-data (eg VFA values) required
 	to run the method from the input options structure
-	\param methodType enum code of specified T1 method
+	\param method enum code of specified T1 method
 	\param options set by user to configure mapping tool
 	\return shared pointer to T1 fitter using specified method
 	*/

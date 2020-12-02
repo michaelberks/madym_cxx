@@ -2,6 +2,10 @@
   <qresource prefix="/">
 	<file>images/flip_image_h.png</file>
 	<file>images/flip_image_v.png</file>
+    <file>images/play.ico</file>
     <file>images/madym.ico</file>
+    <file>images/madym.png</file>
+    <file>images/madym_lrg.png</file>
+    <file>images/return.png</file>
     </qresource>
 </RCC>

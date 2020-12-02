@@ -10,6 +10,8 @@
 
 #include <QObject>
 
+#include <mdm_RunTools.h>
+
 //!Class for GUI processing tasks that runs in separate thread to main GUI
 class madym_gui_processor : public QObject
 {
@@ -17,42 +19,50 @@ class madym_gui_processor : public QObject
 
 //  INTERFACE
 
+//!Enum defining the the type of tool to process
 public:
+  enum RunType {
+    T1, //!< T1 mapping
+    AIF, //!< AIF detection
+    DCE //!< DCE tracer-kinetic model fitting
+  };
+
 	madym_gui_processor();
 
-  //! Start processing task. Not currently used.
-  void start_processing();
-  
-  //! Check if currently processing
-	/*!
-	\return true if currently processing, false otherwise
-	*/
-  bool is_processing() const;
+  //! Reference to set run tools options
+  /*!
+  \return options
+  */
+  mdm_RunTools& madym_exe();
+
+  //! Set a new run tools object of the required sub-type
+  /*!
+  \param type of run tool required: T1, AIF or DCE
+  */
+  void set_madym_exe(RunType type);
 
 signals:
 
 	//! QT signal sent when processing finished
 	/*!
 	*/
-	void processing_finished();
+	void processing_finished(int);
 
 public slots:
 
 	//! QT slot to do some processing
 	/*!
 	*/
-	void process_series();
+	void start_processing();
 
 
 //  IMPLEMENTATION
 
 private: // Methods
 
-  //! Emit a signal to stop processing.
-  void stop_processing();
-
 private: // Variables
-
+  //Run tools object, dynamically allocated in factory method
+  std::unique_ptr<mdm_RunTools> madym_exe_;
 	
 
 };

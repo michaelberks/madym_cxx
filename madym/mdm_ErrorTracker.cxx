@@ -60,6 +60,11 @@ MDM_API void mdm_ErrorTracker::initErrorImage(const mdm_Image3D &imgWithDims)
 	errorImage_.setDimensions(imgWithDims);
 }
 
+MDM_API void mdm_ErrorTracker::resetErrorImage()
+{
+  errorImage_.reset();
+}
+
 //
 MDM_API void mdm_ErrorTracker::updateVoxel(const size_t voxelIndex, ErrorCode errCode)
 {

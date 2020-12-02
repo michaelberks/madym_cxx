@@ -44,7 +44,7 @@ public:
 	\see mdm_input_int
 	\see mdm_input_double
 	*/
-	mdm_Input(T_wrapped value, std::string k, std::string ks, std::string info) :
+  MDM_API mdm_Input(T_wrapped value, std::string k, std::string ks, std::string info) :
 		value_(value),
 		key_(k),
 		key_short_(ks),
@@ -62,26 +62,26 @@ public:
 	/*!
 	\return information text
 	*/
-	const char* info() const { return info_.c_str(); }
+  MDM_API const char* info() const { return info_.c_str(); }
 
 	//! Return the long-form version of the option key
 	/*!
 	\return long-form version of key (as C-string)
 	*/
-	const char* key() const { return key_.c_str(); }
+  MDM_API const char* key() const { return key_.c_str(); }
 
 	//! Return the short-form version of the option key
 	/*!
 	\return short-form version of key (as C-string)
 	*/
-	const char* key_short() const { return key_short_.c_str(); }
+  MDM_API const char* key_short() const { return key_short_.c_str(); }
 
 	//! Return the combined version of the option key
 	/*!
 	This is the long-form version, followed by a comma, then the short-form version, with no spaces
 	\return combined version of key (as C-string)
 	*/
-	const char* combined_key() const { return combined_key_.c_str(); }
+  MDM_API const char* combined_key() const { return combined_key_.c_str(); }
 
 	//! Return the value in its unwrapped form
 	/*!
@@ -102,16 +102,22 @@ public:
 	wrapped object, so that an mdm_Input<mdm_input_str>::value() returns
 	a (reference to a) mdm_input_str not the underlying std::string.
 
-	\return unwrapped value of option, will be standard library string or vector object
+	\return wrapped value of option
 	\see operator()
 	*/
 	MDM_API T_wrapped& value() { return value_; }
+
+  //! Return a const reference to the wrapped value
+  /*!
+  \return read-only wrapped value of option
+  */
+  MDM_API const T_wrapped& value() const { return value_; }
 
 	//! Set the option value
 	/*!
 	\param value this will be wrapped in the appropriate container class
 	*/
-	void set(const T_unwrapped &value) { value_ = T_wrapped(value); }
+  MDM_API void set(const T_unwrapped &value) { value_ = T_wrapped(value); }
 	
 
 private:
@@ -129,19 +135,19 @@ public:
 	static const std::string EMPTY_STR;
 
 	//! Default constructor
-	mdm_input_str();
-	
+  MDM_API mdm_input_str();
+
 	//! Constructor from a standard string
 	/*!
 	\param str set string value
 	*/
-	mdm_input_str(std::string str);
+  MDM_API mdm_input_str(std::string str);
 
 	//! Default destructor
-	~mdm_input_str();
+  MDM_API ~mdm_input_str();
 
-	const std::string& operator() () const;
-	
+  //! Operator to return option value as a string
+  MDM_API const std::string& operator() () const;
 
 private:
 	friend std::ostream & operator<<(std::ostream &os, const mdm_input_str& s);
@@ -154,21 +160,44 @@ class mdm_input_int_list {
 
 public:
 	//! Default constructor
-	mdm_input_int_list();
+  MDM_API mdm_input_int_list();
 
 	//! Constructor from a standard integer vector
 	/*!
 	\param list set integer vector value
 	*/
-	mdm_input_int_list(std::vector<int> list);
+  MDM_API mdm_input_int_list(std::vector<int> list);
+
+  //! Constructor from string
+  /*!
+  \param str string form used in config_file/cmd line option
+  */
+  MDM_API mdm_input_int_list(const std::string &str);
 
 	//! Default destructor
-	~mdm_input_int_list();
+  MDM_API ~mdm_input_int_list();
 
-	const std::vector<int>& operator() () const;
+  //! Operator to return option value as vector of ints
+  MDM_API const std::vector<int>& operator() () const;
+
+  //!Set value from string
+  /*!
+  \param str string form used in config_file/cmd line option
+  */
+  MDM_API void fromString(const std::string &str);
+
+  //!Return string format of list
+  /*!
+  \return string form used in config_file/cmd line option
+  */
+  MDM_API std::string toString() const;
 
 private:
-	friend std::ostream & operator<<(std::ostream &os, const mdm_input_int_list& list);
+	friend std::ostream & operator<<(std::ostream &os, const mdm_input_int_list& list)
+  {
+    os << list.toString();
+    return os;
+  }
 	std::vector<int> list_;
 };
 
@@ -177,21 +206,44 @@ class mdm_input_double_list {
 
 public:
 	//! Default constructor
-	mdm_input_double_list();
+  MDM_API mdm_input_double_list();
 
 	//! Constructor from a standard double vector
 	/*!
 	\param list set double vector value
 	*/
-	mdm_input_double_list(std::vector<double> list);
+  MDM_API mdm_input_double_list(std::vector<double> list);
+
+  //! Constructor from string
+  /*!
+  \param str string form used in config_file/cmd line option
+  */
+  MDM_API mdm_input_double_list(const std::string &str);
 
 	//! Default destructor
-	~mdm_input_double_list();
+  MDM_API ~mdm_input_double_list();
 	
-	const std::vector<double>& operator() () const;
+  //! Operator to return option value as vector of doubles
+  MDM_API const std::vector<double>& operator() () const;
 	
+  //!Set value from string
+  /*!
+  \param str string form used in config_file/cmd line option
+  */
+  MDM_API void fromString(const std::string &str);
+
+  //!Return string format of list
+  /*!
+  \return string form used in config_file/cmd line option
+  */
+  MDM_API std::string toString() const;
+
 private:
-	friend std::ostream & operator<<(std::ostream &os, const mdm_input_double_list& list);
+	friend std::ostream & operator<<(std::ostream &os, const mdm_input_double_list& list)
+  {
+    os << list.toString();
+    return os;
+  }
 	std::vector<double> list_;
 };
 
@@ -200,43 +252,66 @@ class mdm_input_string_list {
 
 public:
 	//! Default constructor
-	mdm_input_string_list();
+  MDM_API mdm_input_string_list();
 
 	//! Constructor from a standard string vector
 	/*!
 	\param list set string vector value
 	*/
-	mdm_input_string_list(std::vector<std::string> list);
+  MDM_API mdm_input_string_list(std::vector<std::string> list);
+
+  //! Constructor from string
+  /*!
+  \param str string form used in config_file/cmd line option
+  */
+  MDM_API mdm_input_string_list(const std::string &str);
 
 	//! Default destructor
-	~mdm_input_string_list();
+  MDM_API ~mdm_input_string_list();
 
-	const std::vector<std::string>& operator() () const;
+  //! Operator to return option value as vector of strings
+  MDM_API const std::vector<std::string>& operator() () const;
 	
+  //!Set value from string
+  /*!
+  \param str string form used in config_file/cmd line option
+  */
+  MDM_API void fromString(const std::string &str);
+
+  //!Return string format of list
+  /*!
+  \return string form used in config_file/cmd line option
+  */
+  MDM_API std::string toString() const;
+
 private:
-	friend std::ostream & operator<<(std::ostream &os, const mdm_input_string_list& list);
-	std::vector<std::string> list_;
+	friend std::ostream & operator<<(std::ostream &os, const mdm_input_string_list& list)
+  {
+    os << list.toString();
+    return os;
+  }
+  std::vector<std::string> list_;
 };
 
-/*! Input option for strings */
+//! Input option for strings
 typedef mdm_Input < mdm_input_string_list, std::vector<std::string> > mdm_input_strings;
 
-/*! Input option for integer lists */
+//! Input option for integer lists
 typedef mdm_Input < mdm_input_int_list, std::vector<int> > mdm_input_ints;
 
-/*! Input option for double lists */
+//! Input option for double lists
 typedef mdm_Input < mdm_input_double_list, std::vector<double> > mdm_input_doubles;
 
-/*! Input option for string lists */
+//! Input option for string lists
 typedef mdm_Input< mdm_input_str, std::string> mdm_input_string;
 
-/*! Input option for bools */
+//! Input option for bools
 typedef mdm_Input< bool, bool> mdm_input_bool;
 
-/*! Input option for ints */
+//! Input option for ints
 typedef mdm_Input< int, int> mdm_input_int;
 
-/*! Input option for doubles */
+//! Input option for doubles
 typedef mdm_Input< double, double> mdm_input_double;
 
 #endif

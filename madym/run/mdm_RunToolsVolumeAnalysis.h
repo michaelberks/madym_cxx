@@ -23,9 +23,7 @@ public:
 
 		
 	//! Constructor
-	/*!
-	*/
-	MDM_API mdm_RunToolsVolumeAnalysis(mdm_InputOptions &options, mdm_OptionsParser &options_parser);
+	MDM_API mdm_RunToolsVolumeAnalysis();
 		
 	//! Virtual destructor
 	/*!
@@ -59,7 +57,7 @@ protected:
 	//! Check if there are T1 signal inputs to load, and if so, load them
 	MDM_API void loadT1Inputs();
 
-  //
+  //! Map T1 from input images using method specified in options
   MDM_API void mapT1();
 
 	//! Write all output maps

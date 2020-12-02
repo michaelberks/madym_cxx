@@ -1,5 +1,5 @@
 /**
-*  @file    mdm_RunToolsDCEFite.cxx
+*  @file    mdm_RunToolsDCEFit.cxx
 *  @brief   Implementation of mdm_RunToolsDCEFit class
 *
 *  Original author MA Berks 24 Oct 2018
@@ -19,8 +19,7 @@
 namespace fs = boost::filesystem;
 
 //
-MDM_API mdm_RunToolsDCEFit::mdm_RunToolsDCEFit(mdm_InputOptions &options, mdm_OptionsParser &options_parser)
-	: mdm_RunTools(options, options_parser)
+MDM_API mdm_RunToolsDCEFit::mdm_RunToolsDCEFit()
 {
 }
 

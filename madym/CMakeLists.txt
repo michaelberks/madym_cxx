@@ -18,6 +18,30 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(opt)
 
+option( BUILD_TOOLS "Should the main madym executable tools be built?" YES )
+option( BUILD_QT_GUI "Should the madym GUI be built?" NO )
+
+if ( BUILD_QT_GUI )
+  #We find Qt bits here, because we need to link the program logger to Qt
+  find_package(Qt5Core)
+  find_package(Qt5Widgets)
+  find_package(Qt5Gui)
+
+  #Suppress annoying CMake warnings by setting these Qt related policies
+  cmake_policy(SET CMP0020 NEW)
+  cmake_policy(SET CMP0043 NEW)
+
+  #This allows us to use definition as compiler directive in src code
+  add_definitions(-DUSING_QT)
+
+  #Wrap the program logger header
+  QT5_WRAP_CPP( mdm_moc_files 
+	  mdm_ProgramLogger.h
+  )
+else ()
+  set(mdm_moc_files "")
+endif ()
+
 set(mdm_sources
 	mdm_RunTools.cxx				  mdm_RunTools.h
 	mdm_AIF.cxx						    mdm_AIF.h
@@ -74,7 +98,7 @@ set(mdm_t1_method_sources
 )
 
 add_library(mdm 
-	${mdm_sources} ${mdm_run_sources} ${mdm_dce_model_sources} ${mdm_t1_method_sources})
+	${mdm_sources} ${mdm_run_sources} ${mdm_dce_model_sources} ${mdm_t1_method_sources} ${mdm_moc_files})
 
 target_link_libraries( mdm
   mdm_opt
@@ -83,6 +107,9 @@ target_link_libraries( mdm
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${Boost_DATE_TIME_LIBRARY}
 )
+if ( BUILD_QT_GUI )
+  qt5_use_modules(mdm Core)
+endif()
 
 if ( MSVC )
 	target_link_libraries( mdm ws2_32 )
@@ -90,14 +117,7 @@ else ( MSVC )
 	target_link_libraries( mdm m)
 endif ( MSVC )
 
-install(TARGETS mdm
-  ARCHIVE DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
-  LIBRARY DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
-  RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
-  CONFIGURATIONS Release)
 
-option( BUILD_TOOLS "Should the main madym executable tools be built?" YES )
-option( BUILD_QT_GUI "Should the madym GUI be built?" NO )
 
 if ( BUILD_TOOLS )
 	subdirs(tools)
@@ -110,6 +130,12 @@ endif ()
 if ( BUILD_TESTING )
   subdirs(tests)
 endif ( BUILD_TESTING )
+
+install(TARGETS mdm
+  ARCHIVE DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
+  LIBRARY DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
+  RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
+  CONFIGURATIONS Release)
 
 #if ( BUILD_PYTHON )
 #	subdirs(python)

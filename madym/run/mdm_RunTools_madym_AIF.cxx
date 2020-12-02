@@ -23,11 +23,7 @@
 namespace fs = boost::filesystem;
 
 //
-MDM_API mdm_RunTools_madym_AIF::mdm_RunTools_madym_AIF(mdm_InputOptions &options_, mdm_OptionsParser &options_parser)
-	: 
-  mdm_RunToolsVolumeAnalysis(options_, options_parser),
-  mdm_RunToolsT1Fit(options_, options_parser),
-  mdm_RunTools(options_, options_parser)
+MDM_API mdm_RunTools_madym_AIF::mdm_RunTools_madym_AIF()
 {
 }
 
@@ -100,6 +96,9 @@ MDM_API void mdm_RunTools_madym_AIF::run()
   //Save an ROI if used
   fileManager_.saveROI(outputPath_.string(),
     volumeAnalysis_.MAP_NAME_ROI);
+
+  //Reset the volume analysis
+  volumeAnalysis_.reset();
 }
 
 //

@@ -174,11 +174,3 @@ MDM_API double mdm_DCEModel2CXM::checkParams()
 	errorCode_ = mdm_ErrorTracker::OK;
 	return 0;
 }
-
-MDM_API void mdm_DCEModel2CXM::resetRerun()
-{
-  //Reset selected parameters to their initial value then rerun the optimisation
-  std::vector<int> fixedParams = { 4 };
-  for (int i = 0; i < fixedParams.size(); i++)
-    pkParams_[fixedParams[i]] = pkInitParams_[fixedParams[i]];
-}

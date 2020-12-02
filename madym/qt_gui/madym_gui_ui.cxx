@@ -7,40 +7,37 @@
 #include "madym_gui_ui.h"
 
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
-#include <madym/run/mdm_RunTools_madym_T1.h>
-#include <madym/run/mdm_RunTools_madym_DCE.h>
-#include <madym/run/mdm_RunTools_madym_AIF.h>
+#include <madym/t1_methods/mdm_T1MethodGenerator.h>
 
+#include <madym/mdm_ProgramLogger.h>
 #include "madym_gui_model_configure.h"
 #include <iomanip>
 
-static const std::string DCE_ARGV = "madym_GUI-DCE_fit";
-static const std::string T1_ARGV = "madym_GUI-T1";
-static const std::string AIF_ARGV = "madym_GUI-AIF";
-static const std::string STATS_ARGV = "madym_GUI-stats";
+#include <QScrollBar>
+
 static const QString NONE_SELECTED = "<None selected>";
 //
 //: Constructor
 madym_gui_ui::madym_gui_ui(QWidget *parent)
 : QMainWindow(parent),
-  model_(NULL)
+  model_(NULL),
+  dataDir_("")
 {
 	// setup the UI
   ui.setupUi(this);
 
-	//Set up the radio button group to select the current camera
+	//Set up the radio button group to select DCE input type
 	inputTypeRadioGroup = new QButtonGroup(this);
   inputTypeRadioGroup->addButton(ui.inputTypeRadioButtonS, 0);
   inputTypeRadioGroup->addButton(ui.inputTypeRadioButtonC, 1);
   inputTypeRadioGroup->setExclusive(true);
-  //ui.activeCameraButton1->setChecked(true);
   QObject::connect( inputTypeRadioGroup, SIGNAL(buttonClicked( int )),
                     this, SLOT(change_input_type( int )) );
 
-  initialize_widget_values();
-
   initialize_processor_thread();
   connect_signals_to_slots();
+  ui.stackedWidget->setCurrentWidget(ui.homePage);
+  mdm_ProgramLogger::setQuiet(true);
 }
 
 //
@@ -58,6 +55,7 @@ void madym_gui_ui::closeEvent(QCloseEvent *ev)
   ev->accept();
 }
 
+/*//! Helper function to parse text into list of strings
 std::vector<std::string> parse_string_list(const QString &text)
 {
   QStringList textList = text.split(";");
@@ -68,6 +66,7 @@ std::vector<std::string> parse_string_list(const QString &text)
   return strings;
 }
 
+//! Helper function to convert list of strings into display text
 QString make_strings_text(const std::vector<std::string> &strings)
 {
 	QString text;
@@ -83,6 +82,7 @@ QString make_strings_text(const std::vector<std::string> &strings)
 	return text;
 }
 
+//! Helper function to parse text into list of doubles
 std::vector<double> parse_double_list(const QString &text)
 {
   QStringList textList = text.split(",");
@@ -93,6 +93,7 @@ std::vector<double> parse_double_list(const QString &text)
   return doubles;
 }
 
+//! Helper function to convert list of doubles into display text
 QString make_doubles_text(const std::vector<double> &doubles)
 {
 	QString text;
@@ -106,97 +107,11 @@ QString make_doubles_text(const std::vector<double> &doubles)
 	}	
 
 	return text;
-}
+}*/
 
 //-------------------------------------------------------------------------
 //:Menu file
 //-------------------------------------------------------------------------
-void madym_gui_ui::on_actionLoadConfigFile_triggered()
-{
-	//Open file select and get config filename
-	QString config_file = QFileDialog::getOpenFileName(this, tr("Select config file"),
-		"",
-		tr("Config files (*.txt *.cfg);;All files (*.*)"));
-
-	if (config_file.isEmpty())
-		return;
-
-	//Call input options to parse madym arguments, this will set all
-	//the current madym_options_ fields into the input options
-	//variable map and then check the config file	
-	madym_options_.configFile.set(config_file.toStdString());
-	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
-	if (madym_exe.parseInputs(DCE_ARGV))
-	{
-		QMessageBox msgBox;
-		msgBox.setIcon(QMessageBox::Warning);
-		msgBox.setText("Error loading config file");
-		msgBox.setInformativeText(tr("%1 could not be loaded.").arg(config_file));
-		msgBox.exec();
-		return;
-	}
-	else
-	{
-		QMessageBox msgBox;
-		msgBox.setIcon(QMessageBox::Information);
-		msgBox.setText("Config file loaded");
-		msgBox.setInformativeText(tr("Options successfully loaded from \n%1.").arg(config_file));
-		msgBox.exec();
-	}
-	//Finally update the widget values with the new options
-	initialize_widget_values();
-}
-void madym_gui_ui::on_actionSaveConfigFileDCE_triggered()
-{
-	QString config_file = QFileDialog::getSaveFileName(this, tr("Select config file"),
-		"",
-		tr("Config files (*.txt *.cfg);;All files (*.*)"));
-	
-	if (config_file.isEmpty())
-		return;
-
-	//Make sure options config file is empty, because when we call parse args
-	//we don't want to read a config file
-	madym_options_.configFile.set("");
-	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
-	madym_exe.parseInputs(DCE_ARGV);
-  madym_exe.saveConfigFile(config_file.toStdString());
-
-}
-void madym_gui_ui::on_actionSaveConfigFileT1_triggered()
-{
-	QString config_file = QFileDialog::getSaveFileName(this, tr("Select config file"),
-		"",
-		tr("Config files (*.txt *.cfg);;All files (*.*)"));
-
-	if (config_file.isEmpty())
-		return;
-
-	//Make sure options config file is empty, because when we call parse args
-	//we don't want to read a config file
-	madym_options_.configFile.set("");
-	mdm_RunTools_madym_T1 madym_exe(madym_options_, options_parser_);
-	madym_exe.parseInputs(T1_ARGV);
-  madym_exe.saveConfigFile(config_file.toStdString());
-
-}
-void madym_gui_ui::on_actionSaveConfigFileIF_triggered()
-{
-	QString config_file = QFileDialog::getSaveFileName(this, tr("Select config file"),
-		"",
-		tr("Config files (*.txt *.cfg);;All files (*.*)"));
-
-	if (config_file.isEmpty())
-		return;
-
-	//Make sure options config file is empty, because when we call parse args
-	//we don't want to read a config file
-	madym_options_.configFile.set("");
-	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
-	madym_exe.parseInputs(AIF_ARGV);
-  madym_exe.saveConfigFile(config_file.toStdString());
-
-}
 void madym_gui_ui::on_actionExit_triggered()
 {
 	close();
@@ -207,129 +122,129 @@ void madym_gui_ui::on_actionExit_triggered()
 //-------------------------------------------------------------------------
 void madym_gui_ui::on_computeT1Button_clicked()
 {
-  //First check the user has actually defineds that are required
-  if (madym_options_.outputDir().empty())
-  {
-    QMessageBox msgBox;
-    msgBox.setIcon(QMessageBox::Warning);
-    msgBox.setText("Output folder not selected");
-    msgBox.setInformativeText("You must select a folder in which the analysis output will be saved.");
-    msgBox.exec();
-    return;
-  }
-
-	//Make sure options config file is empty, because when we call parse args
-	//we don't want to read a config file
-	madym_options_.configFile.set("");
-	mdm_RunTools_madym_T1 madym_exe(madym_options_, options_parser_);
-	madym_exe.parseInputs(T1_ARGV);
-	int result = madym_exe.run_catch();
+  processor_.set_madym_exe(madym_gui_processor::RunType::T1);
+  runType_ = madym_gui_processor::RunType::T1;
+  initialize_widget_values();
+  ui.stackedWidget->setCurrentWidget(ui.runPage);
 }
 
 void madym_gui_ui::on_computeIFButton_clicked()
 {
-  //First check the user has actually defineds that are required
-  if (!ui.inputTypeRadioButtonC->isChecked() && !ui.inputTypeRadioButtonS->isChecked())
-  {
-    QMessageBox msgBox;
-    msgBox.setIcon(QMessageBox::Warning);
-    msgBox.setText("Input type not selected");
-    msgBox.setInformativeText("You must select input type as either signal or concentration.");
-    msgBox.exec();
-    return;
-  }
-  //First check the user has actually defineds that are required
-  if (madym_options_.outputDir().empty())
-  {
-    QMessageBox msgBox;
-    msgBox.setIcon(QMessageBox::Warning);
-    msgBox.setText("Output folder not selected");
-    msgBox.setInformativeText("You must select a folder in which the analysis output will be saved.");
-    msgBox.exec();
-    return;
-  }
-
-	//Make sure options config file is empty, because when we call parse args
-	//we don't want to read a config file
-	madym_options_.configFile.set("");
-
-	mdm_RunTools_madym_AIF madym_exe(madym_options_, options_parser_);
-	madym_exe.parseInputs(AIF_ARGV);
-	int result = madym_exe.run_catch();
-
+  processor_.set_madym_exe(madym_gui_processor::RunType::AIF);
+  runType_ = madym_gui_processor::RunType::AIF;
+  initialize_widget_values();
+  ui.stackedWidget->setCurrentWidget(ui.runPage);
 }
+
 void madym_gui_ui::on_fitModelButton_clicked()
 {
-  //First check the user has actually defineds that are required
-  if (!ui.inputTypeRadioButtonC->isChecked() && !ui.inputTypeRadioButtonS->isChecked())
-  {
-    QMessageBox msgBox;
-    msgBox.setIcon(QMessageBox::Warning);
-    msgBox.setText("Input type not selected");
-    msgBox.setInformativeText("You must select input type as either signal or concentration.");
-    msgBox.exec();
-    return;
-  }
-  //First check the user has actually defineds that are required
-  if (madym_options_.outputDir().empty())
-  {
-    QMessageBox msgBox;
-    msgBox.setIcon(QMessageBox::Warning);
-    msgBox.setText("Output folder not selected");
-    msgBox.setInformativeText("You must select a folder in which the analysis output will be saved.");
-    msgBox.exec();
-    return;
-  }
-
-	//Make sure options config file is empty, because when we call parse args
-	//we don't want to read a config file
-	madym_options_.configFile.set("");
-	mdm_RunTools_madym_DCE madym_exe(madym_options_, options_parser_);
-	madym_exe.parseInputs(DCE_ARGV);
-	int result = madym_exe.run_catch();
-}
-void madym_gui_ui::on_outputStatsButton_clicked()
-{
-
+  processor_.set_madym_exe(madym_gui_processor::RunType::DCE);
+  runType_ = madym_gui_processor::RunType::DCE;
+  initialize_widget_values();
+  ui.stackedWidget->setCurrentWidget(ui.runPage);
 }
 
 //-------------------------------------------------------------------------
-//:DCE data options
-void madym_gui_ui::on_dceInputLineEdit_textChanged(const QString &text)
+//:Buttons in run window
+void madym_gui_ui::on_loadConfigButton_clicked()
 {
-	madym_options_.dynDir.set(text.toStdString());
+  //Open file select and get config filename
+  QString config_file = QFileDialog::getOpenFileName(this, tr("Select config file"),
+    dataDir_,
+    tr("Config files (*.txt *.cfg);;All files (*.*)"));
+
+  if (config_file.isEmpty())
+    return;
+
+  //Call input options to parse madym arguments, this will set all
+  //the current processor_.madym_exe().options() fields into the input options
+  //variable map and then check the config file	
+  processor_.madym_exe().options().configFile.set(config_file.toStdString());
+  if (processor_.madym_exe().parseInputs(processor_.madym_exe().who()))
+  {
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setText("Error loading config file");
+    msgBox.setInformativeText(tr("%1 could not be loaded.").arg(config_file));
+    msgBox.exec();
+    return;
+  }
+  else
+  {
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Information);
+    msgBox.setText("Config file loaded");
+    msgBox.setInformativeText(tr("Options successfully loaded from \n%1.").arg(config_file));
+    msgBox.exec();
+  }
+  //Finally update the widget values with the new options
+  initialize_widget_values();
 }
-void madym_gui_ui::on_dceInputSelect_clicked()
+
+//
+void madym_gui_ui::on_saveConfigButton_clicked()
 {
-  QString selectedDir = QFileDialog::getExistingDirectory(this, tr("Choose DCE input folder"),
-    "",
+  QString config_file = QFileDialog::getSaveFileName(this, tr("Select config file"),
+    dataDir_,
+    tr("Config files (*.txt *.cfg);;All files (*.*)"));
+
+  if (config_file.isEmpty())
+    return;
+
+  //Make sure options config file is empty, because when we call parse args
+  //we don't want to read a config file
+  processor_.madym_exe().options().configFile.set("");
+  processor_.madym_exe().parseInputs(processor_.madym_exe().who());
+  processor_.madym_exe().saveConfigFile(config_file.toStdString());
+}
+
+//
+void madym_gui_ui::on_homeButton_clicked()
+{
+  ui.stackedWidget->setCurrentWidget(ui.homePage);
+}
+
+//
+void madym_gui_ui::on_runButton_clicked()
+{
+  //Check required inputs are set
+  if (!check_required_options())
+    return;
+
+  ui.controls->setEnabled(false);
+  emit start_processing();
+}
+
+//-------------------------------------------------------------------------
+//:General input options
+void madym_gui_ui::on_dataDirLineEdit_textChanged(const QString &text)
+{
+  dataDir_ = text;
+  processor_.madym_exe().options().dataDir.set(text.toStdString());
+}
+
+void madym_gui_ui::on_dataDirSelect_clicked()
+{
+  QString selectedDir = QFileDialog::getExistingDirectory(this, tr("Choose data folder"),
+    dataDir_,
     QFileDialog::ShowDirsOnly
     | QFileDialog::DontResolveSymlinks);
 
   if (selectedDir.isEmpty())
     return;
 
-  ui.dceInputLineEdit->setText(selectedDir);
-}
-void madym_gui_ui::on_dceNameLineEdit_textChanged(const QString &text)
-{
-	madym_options_.dynName.set(text.toStdString());
-}
-
-void madym_gui_ui::on_dceFormatLineEdit_textChanged(const QString &text)
-{
-	madym_options_.dynFormat.set(text.toStdString());
+  ui.dataDirLineEdit->setText(selectedDir);
 }
 
 void madym_gui_ui::on_roiPathLineEdit_textChanged(const QString &text)
 {
-	madym_options_.roiName.set(text.toStdString());
+  processor_.madym_exe().options().roiName.set(text.toStdString());
 }
 
 void madym_gui_ui::on_roiPathSelect_clicked()
 {
   QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select ROI mask"),
-    "",
+    dataDir_,
     tr("Mask files (*.hdr)"));
 
   if (selectedPath.isEmpty())
@@ -338,30 +253,82 @@ void madym_gui_ui::on_roiPathSelect_clicked()
   ui.roiPathLineEdit->setText(selectedPath);
 }
 
+void madym_gui_ui::on_errorTrackerLineEdit_textChanged(const QString &text)
+{
+  processor_.madym_exe().options().errorTrackerName.set(text.toStdString());
+}
+
+void madym_gui_ui::on_errorTrackerSelect_clicked()
+{
+  QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select error tracker"),
+    dataDir_,
+    tr("Mask files (*.hdr)"));
+
+  if (selectedPath.isEmpty())
+    return;
+
+  ui.errorTrackerLineEdit->setText(selectedPath);
+}
+
+//-------------------------------------------------------------------------
+//:DCE data options
+void madym_gui_ui::on_dceInputLineEdit_textChanged(const QString &text)
+{
+	processor_.madym_exe().options().dynDir.set(text.toStdString());
+}
+void madym_gui_ui::on_dceInputSelect_clicked()
+{
+  QString selectedDir = QFileDialog::getExistingDirectory(this, tr("Choose DCE input folder"),
+    dataDir_,
+    QFileDialog::ShowDirsOnly
+    | QFileDialog::DontResolveSymlinks);
+
+  if (selectedDir.isEmpty())
+    return;
+
+  ui.dceInputLineEdit->setText(selectedDir);
+}
+
+void madym_gui_ui::on_dceNameLineEdit_textChanged(const QString &text)
+{
+	processor_.madym_exe().options().dynName.set(text.toStdString());
+}
+
+void madym_gui_ui::on_dceFormatLineEdit_textChanged(const QString &text)
+{
+	processor_.madym_exe().options().dynFormat.set(text.toStdString());
+}
+
 void madym_gui_ui::on_nDynSpinBox_valueChanged(int value)
 {
-	madym_options_.nDyns.set(value);
+	processor_.madym_exe().options().nDyns.set(value);
 }
 
 void madym_gui_ui::on_injectionImageSpinBox_valueChanged(int value)
 {
-	madym_options_.injectionImage.set(value);
+	processor_.madym_exe().options().injectionImage.set(value);
 }
 
 //-------------------------------------------------------------------------
 //:T1 calculation options
 void madym_gui_ui::on_t1MethodComboBox_currentIndexChanged(const QString &text)
 {
-	madym_options_.T1method.set(text.toStdString());
+	processor_.madym_exe().options().T1method.set(text.toStdString());
 }
+
+//
 void madym_gui_ui::on_t1InputTextEdit_textChanged()
 {
-	madym_options_.T1inputNames.set(parse_string_list(ui.t1InputTextEdit->toPlainText()));
+  QString text = ui.t1InputTextEdit->toPlainText();
+  text.replace("\n", ",");
+  processor_.madym_exe().options().T1inputNames.value().fromString(text.toStdString());
 }
+
+//
 void madym_gui_ui::on_t1InputSelect_clicked()
 {
   QStringList selectedMaps = QFileDialog::getOpenFileNames(this, tr("Select input maps for baseline T1 calculation"),
-    "",
+    dataDir_,
     tr("Map files (*.hdr)"));
 
   if (selectedMaps.isEmpty())
@@ -369,13 +336,13 @@ void madym_gui_ui::on_t1InputSelect_clicked()
 
   QString maps = selectedMaps[0];
   for (int i = 1; i < selectedMaps.length(); i++)
-    maps.append(";").append(selectedMaps[i]);
+    maps.append("\n").append(selectedMaps[i]);
 
   ui.t1InputTextEdit->setText(maps);
 }
 void madym_gui_ui::on_t1ThresholdLineEdit_textChanged(const QString &text)
 {
-	madym_options_.T1noiseThresh.set(text.toDouble());
+	processor_.madym_exe().options().T1noiseThresh.set(text.toDouble());
 }
 
 //-------------------------------------------------------------------------
@@ -392,16 +359,18 @@ void madym_gui_ui::on_t1UsePrecomputedCheckBox_stateChanged(int state)
   ui.t1VolPathSelect->setEnabled(state);
   ui.s0VolLineEdit->setEnabled(state && !ui.s0UseRatioCheckBox->isChecked());
   ui.s0VolPathSelect->setEnabled(state && !ui.s0UseRatioCheckBox->isChecked());
+
+  ui.t1MapTab->setEnabled(!state && ui.inputTypeRadioButtonS->isChecked());
 }
 void madym_gui_ui::on_t1VolLineEdit_textChanged(const QString &text)
 {
-	madym_options_.T1Name.set(text.toStdString());
+	processor_.madym_exe().options().T1Name.set(text.toStdString());
 }
 
 void madym_gui_ui::on_t1VolPathSelect_clicked()
 {
   QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select baseline T1 map"),
-    "",
+    dataDir_,
     tr("Map files (*.hdr)"));
 
   if (selectedPath.isEmpty())
@@ -411,13 +380,13 @@ void madym_gui_ui::on_t1VolPathSelect_clicked()
 }
 void madym_gui_ui::on_s0VolLineEdit_textChanged(const QString &text)
 {
-	madym_options_.M0Name.set(text.toStdString());
+	processor_.madym_exe().options().M0Name.set(text.toStdString());
 }
 
 void madym_gui_ui::on_s0VolPathSelect_clicked()
 {
   QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select baseline M0 map"),
-    "",
+    dataDir_,
     tr("Map files (*.hdr)"));
 
   if (selectedPath.isEmpty())
@@ -428,31 +397,30 @@ void madym_gui_ui::on_s0VolPathSelect_clicked()
 
 void madym_gui_ui::on_r1LineEdit_textChanged(const QString &text)
 {
-	madym_options_.r1Const.set(text.toDouble());
+	processor_.madym_exe().options().r1Const.set(text.toDouble());
 }
  
 //-------------------------------------------------------------------------
 //:Logging options
 void madym_gui_ui::on_logNameLineEdit_textChanged(const QString &text)
 {
-	madym_options_.programLogName.set(text.toStdString());
+	processor_.madym_exe().options().programLogName.set(text.toStdString());
 }
-void madym_gui_ui::on_errorTrackerLineEdit_textChanged(const QString &text)
-{
-	madym_options_.errorTrackerName.set(text.toStdString());
-}
+
 void madym_gui_ui::on_auditNameLineEdit_textChanged(const QString &text)
 {
-	madym_options_.auditLogBaseName.set(text.toStdString());
+	processor_.madym_exe().options().auditLogBaseName.set(text.toStdString());
 }
+
 void madym_gui_ui::on_auditDirLineEdit_textChanged(const QString &text)
 {
-	madym_options_.auditLogDir.set(text.toStdString());
+	processor_.madym_exe().options().auditLogDir.set(text.toStdString());
 }
+
 void madym_gui_ui::on_auditDirSelect_clicked()
 {
   QString selectedDir = QFileDialog::getExistingDirectory(this, tr("Choose output folder"),
-    "",
+    dataDir_,
     QFileDialog::ShowDirsOnly
     | QFileDialog::DontResolveSymlinks);
 
@@ -464,39 +432,69 @@ void madym_gui_ui::on_auditDirSelect_clicked()
 
 //-------------------------------------------------------------------------
 //:AIF options
-void madym_gui_ui::on_populationAIFCheckbox_stateChanged(int state)
+void madym_gui_ui::on_AIFtypeComboBox_currentIndexChanged(const QString &text)
 {
-  ui.autoAIFPathLineEdit->setEnabled(!state);
-  ui.autoAIFPathSelect->setEnabled(!state);
+  auto type = mdm_AIF::typeFromString(text.toStdString());
+  processor_.madym_exe().options().aifType.set(type);
+  
+  ui.AIFfileLineEdit->setEnabled(type == mdm_AIF::AIF_FILE);
+  ui.AIFfileSelect->setEnabled(type == mdm_AIF::AIF_FILE);
+  ui.AIFmapLineEdit->setEnabled(type == mdm_AIF::AIF_MAP);
+  ui.AIFmapSelect->setEnabled(type == mdm_AIF::AIF_MAP);
+  ui.doseLineEdit->setEnabled(type == mdm_AIF::AIF_POP || type == mdm_AIF::AIF_STD);
 }
-void madym_gui_ui::on_autoAIFPathLineEdit_textChanged(const QString &text)
+
+void madym_gui_ui::on_AIFfileLineEdit_textChanged(const QString &text)
 {
-	madym_options_.aifName.set(text.toStdString());
+	processor_.madym_exe().options().aifName.set(text.toStdString());
 }
-void madym_gui_ui::on_autoAIFPathSelect_clicked()
+void madym_gui_ui::on_AIFfileSelect_clicked()
 {
   QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select AIF file"),
-    "",
+    dataDir_,
     tr("AIF files (*.txt)"));
 
   if (selectedPath.isEmpty())
     return;
 
-  ui.autoAIFPathLineEdit->setText(selectedPath);
+  ui.AIFfileLineEdit->setText(selectedPath);
 }
+
+//
+void madym_gui_ui::on_AIFmapLineEdit_textChanged(const QString &text)
+{
+  processor_.madym_exe().options().aifMap.set(text.toStdString());
+}
+
+//
+void madym_gui_ui::on_AIFmapSelect_clicked()
+{
+  QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select AIF map"),
+    dataDir_,
+    tr("AIF map files (*.hdr)"));
+
+  if (selectedPath.isEmpty())
+    return;
+
+  ui.AIFmapLineEdit->setText(selectedPath);
+}
+
+//
 void madym_gui_ui::on_populationPIFCheckbox_stateChanged(int state)
 {
   ui.autoPIFPathLineEdit->setEnabled(!state);
   ui.autoPIFPathSelect->setEnabled(!state);
 }
+
+//
 void madym_gui_ui::on_autoPIFPathLineEdit_textChanged(const QString &text)
 {
-	madym_options_.pifName.set(text.toStdString());
+	processor_.madym_exe().options().pifName.set(text.toStdString());
 }
 void madym_gui_ui::on_autoPIFPathSelect_clicked()
 {
   QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select PIF file"),
-    "",
+    dataDir_,
     tr("PIF files (*.txt)"));
 
   if (selectedPath.isEmpty())
@@ -507,23 +505,74 @@ void madym_gui_ui::on_autoPIFPathSelect_clicked()
 
 void madym_gui_ui::on_doseLineEdit_textChanged(const QString &text)
 {
-	madym_options_.dose.set(text.toDouble());
+	processor_.madym_exe().options().dose.set(text.toDouble());
 }
 void madym_gui_ui::on_hctLineEdit_textChanged(const QString &text)
 {
-	madym_options_.hct.set(text.toDouble());
+	processor_.madym_exe().options().hct.set(text.toDouble());
 }
+
+//---------------------------------------------------------------
+//AIF detection options
+void madym_gui_ui::on_xRangeLineEdit_textChanged(const QString &text)
+{
+  processor_.madym_exe().options().aifXrange.value().fromString(text.toStdString());
+}
+
+//
+void madym_gui_ui::on_yRangeLineEdit_textChanged(const QString &text)
+{
+  processor_.madym_exe().options().aifYrange.value().fromString(text.toStdString());
+}
+
+//
+void madym_gui_ui::on_slicesLineEdit_textChanged(const QString &text)
+{
+  processor_.madym_exe().options().aifSlices.value().fromString(text.toStdString());
+}
+
+//
+void madym_gui_ui::on_minT1lineEdit_textChanged(const QString &text)
+{
+  processor_.madym_exe().options().minT1Blood.set(text.toDouble());
+}
+
+//
+void madym_gui_ui::on_peakTimeLineEdit_textChanged(const QString &text)
+{
+  processor_.madym_exe().options().peakTime.set(text.toDouble());
+}
+
+//
+void madym_gui_ui::on_prebolusMinSpinBox_valueChanged(int value)
+{
+  processor_.madym_exe().options().prebolusMinImages.set(value);
+}
+
+//
+void madym_gui_ui::on_prebolusNoiseLineEdit_textChanged(const QString &text)
+{
+  processor_.madym_exe().options().prebolusNoise.set(text.toDouble());
+}
+
+//
+void madym_gui_ui::on_selectPctSpinBox_valueChanged(double value)
+{
+  processor_.madym_exe().options().selectPct.set(value);
+}
+
+//
 
 //-------------------------------------------------------------------------
 //:Output options
 void madym_gui_ui::on_outputDirLineEdit_textChanged(const QString &text)
 {
-	madym_options_.outputDir.set(text.toStdString());
+	processor_.madym_exe().options().outputDir.set(text.toStdString());
 }
 void madym_gui_ui::on_outputDirSelect_clicked()
 {
   QString outputDir = QFileDialog::getExistingDirectory(this, tr("Choose output folder"),
-    "",
+    dataDir_,
     QFileDialog::ShowDirsOnly
     | QFileDialog::DontResolveSymlinks);
 
@@ -534,16 +583,18 @@ void madym_gui_ui::on_outputDirSelect_clicked()
 }
 void madym_gui_ui::on_iaucTimesLineEdit_textChanged(const QString &text)
 {
-	madym_options_.IAUCTimes.set(parse_double_list(text));
+  processor_.madym_exe().options().IAUCTimes.value().fromString(text.toStdString());
 }
+
 void madym_gui_ui::on_initMapsLineEdit_textChanged(const QString &text)
 {
-	madym_options_.initMapsDir.set(text.toStdString());
+	processor_.madym_exe().options().initMapsDir.set(text.toStdString());
 }
+
 void madym_gui_ui::on_initMapsDirSelect_clicked()
 {
 	QString selectedDir = QFileDialog::getExistingDirectory(this, tr("Choose output folder"),
-		"",
+    dataDir_,
 		QFileDialog::ShowDirsOnly
 		| QFileDialog::DontResolveSymlinks);
 
@@ -554,19 +605,29 @@ void madym_gui_ui::on_initMapsDirSelect_clicked()
 }
 void madym_gui_ui::on_overwriteCheckBox_stateChanged(int state)
 {
-	madym_options_.overwrite.set(state);
+	processor_.madym_exe().options().overwrite.set(state);
 }
+
 void madym_gui_ui::on_outputCsCheckBox_stateChanged(int state)
 {
-	madym_options_.outputCt_sig.set(state);
+	processor_.madym_exe().options().outputCt_sig.set(state);
 }
+
 void madym_gui_ui::on_outputCmCheckBox_stateChanged(int state)
 {
-	madym_options_.outputCt_mod.set(state);
+	processor_.madym_exe().options().outputCt_mod.set(state);
 }
+
 void madym_gui_ui::on_sparseCheckBox_stateChanged(int state)
 {
-	madym_options_.sparseWrite.set(state);
+	processor_.madym_exe().options().sparseWrite.set(state);
+}
+
+void madym_gui_ui::on_logMessageReceived(QString msg)
+{
+  ui.cmdTextEdit->appendPlainText(msg);
+  auto sb = ui.cmdTextEdit->verticalScrollBar();
+  sb->setValue(sb->maximum());
 }
 
 //-------------------------------------------------------------------------
@@ -583,13 +644,13 @@ void madym_gui_ui::on_modelSelectComboBox_currentIndexChanged(const QString &tex
   model_ = mdm_DCEModelGenerator::createModel(aif,
     modelType, {},
 		{}, {}, {}, {}, {});
-	madym_options_.model.set(text.toStdString());
-  madym_options_.paramNames.set({});
-  madym_options_.initialParams.set({});
-  madym_options_.fixedParams.set({});
-  madym_options_.fixedValues.set({});
-	madym_options_.relativeLimitParams.set({});
-	madym_options_.relativeLimitValues.set({});
+	processor_.madym_exe().options().model.set(text.toStdString());
+  processor_.madym_exe().options().paramNames.set({});
+  processor_.madym_exe().options().initialParams.set({});
+  processor_.madym_exe().options().fixedParams.set({});
+  processor_.madym_exe().options().fixedValues.set({});
+	processor_.madym_exe().options().relativeLimitParams.set({});
+	processor_.madym_exe().options().relativeLimitValues.set({});
 }
 void madym_gui_ui::on_configureModelButton_clicked()
 {
@@ -611,40 +672,40 @@ void madym_gui_ui::on_configureModelButton_clicked()
   aif.setPIFType(mdm_AIF::PIF_TYPE::PIF_POP);
 	model_ = mdm_DCEModelGenerator::createModel(aif,
 		modelType,
-    madym_options_.paramNames(),
-    madym_options_.initialParams(), 
-		madym_options_.fixedParams(), madym_options_.fixedValues(),
-		madym_options_.relativeLimitParams(), madym_options_.relativeLimitValues());
+    processor_.madym_exe().options().paramNames(),
+    processor_.madym_exe().options().initialParams(), 
+		processor_.madym_exe().options().fixedParams(), processor_.madym_exe().options().fixedValues(),
+		processor_.madym_exe().options().relativeLimitParams(), processor_.madym_exe().options().relativeLimitValues());
 
-  madym_gui_model_configure optionsWindow(*model_, modelName, madym_options_, this);
+  madym_gui_model_configure optionsWindow(*model_, modelName, processor_.madym_exe().options(), this);
   const int response = optionsWindow.exec();
   /**/
 }
 void madym_gui_ui::on_firstImageSpinBox_valueChanged(int value)
 {
-	madym_options_.firstImage.set(value);
+	processor_.madym_exe().options().firstImage.set(value);
 }
 void madym_gui_ui::on_lastImageSpinBox_valueChanged(int value)
 {
-	madym_options_.lastImage.set(value);
+	processor_.madym_exe().options().lastImage.set(value);
 }
 void madym_gui_ui::on_temporalNoiseCheckBox_stateChanged(int state)
 {
-	madym_options_.dynNoise.set(state);
+	processor_.madym_exe().options().dynNoise.set(state);
 }
 void madym_gui_ui::on_optimiseFitCheckBox_stateChanged(int state)
 {
   ui.maxIterationsLineEdit->setEnabled(state);
-	madym_options_.noOptimise.set(!state);
+	processor_.madym_exe().options().noOptimise.set(!state);
 
 }
 void madym_gui_ui::on_testEnhancementCheckBox_stateChanged(int state)
 {
-	madym_options_.testEnhancement.set(state);
+	processor_.madym_exe().options().testEnhancement.set(state);
 }
 void madym_gui_ui::on_maxIterationsLineEdit_textChanged(const QString &text)
 {
-	madym_options_.maxIterations.set(text.toInt());
+	processor_.madym_exe().options().maxIterations.set(text.toInt());
 } 
 
 //-------------------------------------------------------------------------
@@ -652,7 +713,33 @@ void madym_gui_ui::on_maxIterationsLineEdit_textChanged(const QString &text)
 void madym_gui_ui::change_input_type(int type)
 {
 	//Type will be 0 if signal selected, 1 if concentration selected
-	madym_options_.inputCt.set(type);
+	processor_.madym_exe().options().inputCt.set(type);
+
+  ui.concentrationTab->setEnabled(!type);
+  ui.t1MapTab->setEnabled(!type && !ui.t1UsePrecomputedCheckBox->isChecked());
+  
+}
+
+//:
+void madym_gui_ui::on_processingFinished(int result)
+{
+  if (result)
+  {
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setText("Errors during processing, check run window.");
+    msgBox.setInformativeText("Errors during processing, check run window.");
+    msgBox.exec();
+  }
+  else
+  {
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Information);
+    msgBox.setText(tr("%1 completed successfully.").arg(processor_.madym_exe().who().c_str()));
+    msgBox.setInformativeText("Success!");
+    msgBox.exec();
+  }
+  ui.controls->setEnabled(true);
 }
 
 
@@ -674,7 +761,19 @@ void madym_gui_ui::initialize_processor_thread()
 //: Connect signals to slots (not surprisingly...)
 void madym_gui_ui::connect_signals_to_slots()
 {
+  //Main thread triggering processor thread
+  QObject::connect(this, SIGNAL(start_processing()),
+    &processor_, SLOT(start_processing()));
+
   // Signals that trigger slots in the main thread
+  QObject::connect(&processor_, SIGNAL(processing_finished(int)),
+    this, SLOT(on_processingFinished(int)));
+
+  //Connect program logger to log window
+  QObject::connect(&mdm_ProgramLogger::qLogger(), SIGNAL(log_message(QString)),
+    this, SLOT(on_logMessageReceived(QString)));
+
+  
 }
 
 #ifdef _WIN32
@@ -687,87 +786,291 @@ bool madym_gui_ui::winEvent(MSG * message, long * result)
 
 void madym_gui_ui::initialize_widget_values()
 {
+  auto &options = processor_.madym_exe().options();
 
-  //DCE input options
-	ui.inputTypeRadioButtonS->setChecked(!madym_options_.inputCt());
-  ui.inputTypeRadioButtonC->setChecked(madym_options_.inputCt());
-  ui.dceInputLineEdit->setText(madym_options_.dynDir().c_str());
-  ui.dceNameLineEdit->setText(madym_options_.dynName().c_str());
-  ui.dceFormatLineEdit->setText(madym_options_.dynFormat().c_str());
-	ui.nDynSpinBox->setValue(madym_options_.nDyns());
-	ui.injectionImageSpinBox->setValue(madym_options_.injectionImage());
-  ui.roiPathLineEdit->setText(madym_options_.roiName().c_str());
+  if (!dataDir_.isEmpty())
+    options.dataDir.set(dataDir_.toStdString());
 
-  //T1 calculation
-  //TODO: set-up T1 methods box method?
-  ui.t1MethodComboBox->addItem(madym_options_.T1method().c_str());
+  //General input options
+  ui.dataDirLineEdit->setText(options.dataDir().c_str());
+  ui.roiPathLineEdit->setText(options.roiName().c_str());
+  ui.errorTrackerLineEdit->setText(options.errorTrackerName().c_str());
+
+  //Configure tabs only visible for fitting DCE models
+  if (runType_ == madym_gui_processor::DCE)
+  {
+    //AIF options
+    if (ui.fittingTabWidget->indexOf(ui.vascularTab) < 0)
+      ui.fittingTabWidget->insertTab(0, ui.vascularTab, "Vascular input");
+
+    if (!options.aifMap().empty())
+    {
+      options.aifType.set(mdm_AIF::AIF_TYPE::AIF_MAP);
+      ui.AIFmapLineEdit->setText(options.aifMap().c_str());
+    }
+    else if (!options.aifName().empty())
+    {
+      options.aifType.set(mdm_AIF::AIF_TYPE::AIF_FILE);
+      ui.AIFfileLineEdit->setText(options.aifName().c_str());
+    }
+    initialize_AIF_options();
+
+    ui.populationPIFCheckbox->setChecked(options.pifName().empty());
+    ui.autoPIFPathLineEdit->setText(options.pifName().c_str());
+    ui.doseLineEdit->setText(QString::number(options.dose()));
+    ui.hctLineEdit->setText(QString::number(options.hct()));
+
+    //Model options
+    if (ui.fittingTabWidget->indexOf(ui.modelTab) < 0)
+      ui.fittingTabWidget->insertTab(0, ui.modelTab, "Model fitting");
+
+    initialize_model_options();
+
+    ui.firstImageSpinBox->setValue(options.firstImage());
+    ui.lastImageSpinBox->setValue(options.lastImage());
+    ui.temporalNoiseCheckBox->setChecked(options.dynNoise());
+    ui.optimiseFitCheckBox->setChecked(!options.noOptimise());
+    ui.testEnhancementCheckBox->setChecked(options.testEnhancement());
+    ui.maxIterationsLineEdit->setValidator(new QIntValidator(0, 10000, this));
+    ui.maxIterationsLineEdit->setText(QString::number(options.maxIterations()));
+    ui.initMapsLineEdit->setText(options.initMapsDir().c_str());
+
+    //Output options specific to DCE fits
+    ui.iaucLabel->show();
+    ui.outputCsCheckBox->show();
+    ui.outputCmCheckBox->show();
+    ui.iaucTimesLineEdit->show();
+    ui.outputCsCheckBox->setChecked(options.outputCt_sig());
+    ui.outputCmCheckBox->setChecked(options.outputCt_mod());
+
+    QString iaucTimes(options.IAUCTimes.value().toString().c_str());
+    ui.iaucTimesLineEdit->setText(iaucTimes.replace("[", "").replace("]", ""));
+
+    //Hide the AIF detection tab
+    auto idx = ui.fittingTabWidget->indexOf(ui.aifTab);
+    if (idx >= 0)
+      ui.fittingTabWidget->removeTab(idx);
+  }
+  else
+  {
+    ui.iaucLabel->hide();
+    ui.outputCsCheckBox->hide();
+    ui.outputCmCheckBox->hide();
+    ui.iaucTimesLineEdit->hide();
+  }
+
+  //Configure tabs only visible for AIF detection
+  if (runType_ == madym_gui_processor::AIF)
+  {
+    //AIF detection options
+    if (ui.fittingTabWidget->indexOf(ui.aifTab) < 0)
+      ui.fittingTabWidget->insertTab(0, ui.aifTab, "AIF detection");
+
+    QString xRange(options.aifXrange.value().toString().c_str());
+    ui.xRangeLineEdit->setText(xRange.replace("[", "").replace("]", ""));
+
+    QString yRange(options.aifYrange.value().toString().c_str());
+    ui.yRangeLineEdit->setText(yRange.replace("[", "").replace("]", ""));
+
+    QString slices(options.aifSlices.value().toString().c_str());
+    ui.slicesLineEdit->setText(slices.replace("[", "").replace("]", ""));
+
+    ui.minT1lineEdit->setValidator(new QDoubleValidator(0, 10000, 2, this));
+    ui.minT1lineEdit->setText(QString::number(options.minT1Blood()));
+    ui.peakTimeLineEdit->setValidator(new QDoubleValidator(0, 10, 3, this));
+    ui.peakTimeLineEdit->setText(QString::number(options.peakTime()));
+
+    ui.prebolusMinSpinBox->setRange(0, 100);
+    ui.prebolusMinSpinBox->setValue(options.prebolusMinImages());
+    ui.prebolusNoiseLineEdit->setValidator(new QDoubleValidator(0, 1000, 2, this));
+    ui.prebolusNoiseLineEdit->setText(QString::number(options.prebolusNoise()));
+
+    ui.selectPctSpinBox->setRange(0, 100);
+    ui.selectPctSpinBox->setValue(options.prebolusNoise());
+    //Hide the vascular input and model fitting tabs
+    auto idx = ui.fittingTabWidget->indexOf(ui.modelTab);
+    if (idx >= 0)
+      ui.fittingTabWidget->removeTab(idx);
+
+    idx = ui.fittingTabWidget->indexOf(ui.vascularTab);
+    if (idx >= 0)
+      ui.fittingTabWidget->removeTab(idx);
+  }
+
+  if (runType_ == madym_gui_processor::AIF || runType_ == madym_gui_processor::DCE)
+  {
+    //DCE input options
+    if (ui.inputTabWidget->indexOf(ui.dceTab) < 0)
+      ui.inputTabWidget->insertTab(0, ui.dceTab, "DCE data");
+
+    ui.inputTypeRadioButtonS->setChecked(!options.inputCt());
+    ui.inputTypeRadioButtonC->setChecked(options.inputCt());
+    ui.dceInputLineEdit->setText(options.dynDir().c_str());
+    ui.dceNameLineEdit->setText(options.dynName().c_str());
+    ui.dceFormatLineEdit->setText(options.dynFormat().c_str());
+    ui.nDynSpinBox->setValue(options.nDyns());
+    ui.injectionImageSpinBox->setValue(options.injectionImage());
+
+    //Signal to concentration - TODO constrain inputs and put units on number inputs
+    if (ui.inputTabWidget->indexOf(ui.concentrationTab) < 0)
+      ui.inputTabWidget->insertTab(1, ui.concentrationTab, "Signal to concentration");
+
+    ui.s0UseRatioCheckBox->setChecked(options.M0Ratio());
+    ui.t1VolLineEdit->setText(options.T1Name().c_str());
+    ui.t1UsePrecomputedCheckBox->setChecked(!options.T1Name().empty());
+    ui.s0VolLineEdit->setText(options.M0Name().c_str());
+    ui.t1VolLineEdit->setEnabled(ui.t1UsePrecomputedCheckBox->isChecked());
+    ui.t1VolPathSelect->setEnabled(ui.t1UsePrecomputedCheckBox->isChecked());
+    ui.s0VolLineEdit->setEnabled(!options.M0Ratio() &&
+      ui.t1UsePrecomputedCheckBox->isChecked());
+    ui.s0VolPathSelect->setEnabled(!options.M0Ratio() &&
+      ui.t1UsePrecomputedCheckBox->isChecked());
+    ui.r1LineEdit->setText(QString::number(options.r1Const()));
+
+    ui.fittingTabWidget->show();
+    ui.fittingTabWidget->setCurrentIndex(0);
+  }
+  else //T1 tool
+  {
+    //Hide DCE data, signal to concentration tabs
+    auto idx = ui.inputTabWidget->indexOf(ui.dceTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+
+    idx = ui.inputTabWidget->indexOf(ui.concentrationTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+
+    ui.fittingTabWidget->hide();
+  }
+  
+  //T1 calculation - visible for all tools
+  initialize_T1_options();
   ui.t1ThresholdLineEdit->setValidator(new QDoubleValidator(0, 10000, 2, this));
-  ui.t1ThresholdLineEdit->setText(QString::number(madym_options_.T1noiseThresh()));
-	ui.t1InputTextEdit->setText(make_strings_text(madym_options_.T1inputNames()));
+  ui.t1ThresholdLineEdit->setText(QString::number(options.T1noiseThresh()));
 
-  //Signal to concentration - TODO constrain inputs and put units on number inputs
-	ui.s0UseRatioCheckBox->setChecked(madym_options_.M0Ratio());
-	ui.t1VolLineEdit->setText(madym_options_.T1Name().c_str());
-	ui.t1UsePrecomputedCheckBox->setChecked(!madym_options_.T1Name().empty());
-	ui.s0VolLineEdit->setText(madym_options_.M0Name().c_str());
-	ui.t1VolLineEdit->setEnabled(ui.t1UsePrecomputedCheckBox->isChecked());
-	ui.t1VolPathSelect->setEnabled(ui.t1UsePrecomputedCheckBox->isChecked());
-	ui.s0VolLineEdit->setEnabled(!madym_options_.M0Ratio() &&
-		ui.t1UsePrecomputedCheckBox->isChecked());
-	ui.s0VolPathSelect->setEnabled(!madym_options_.M0Ratio() &&
-		ui.t1UsePrecomputedCheckBox->isChecked());
-  ui.r1LineEdit->setText(QString::number(madym_options_.r1Const()));
+  QString t1Inputs(options.T1inputNames.value().toString().c_str());
+  ui.t1InputTextEdit->setText(t1Inputs.replace("[", "").replace("]", "").replace(",","\n"));//
+  ui.inputTabWidget->setCurrentIndex(0);
+
+	//Ouput options - visible for all tools
+	ui.outputDirLineEdit->setText(options.outputDir().c_str());
+	ui.overwriteCheckBox->setChecked(options.overwrite());
+	ui.sparseCheckBox->setChecked(options.sparseWrite());
+
   
-	//AIF options
-	ui.populationAIFCheckbox->setChecked(madym_options_.aifName().empty());
-	ui.autoAIFPathLineEdit->setText(madym_options_.aifName().c_str());
-	ui.populationPIFCheckbox->setChecked(madym_options_.pifName().empty());
-	ui.autoPIFPathLineEdit->setText(madym_options_.pifName().c_str());
-	ui.doseLineEdit->setText(QString::number(madym_options_.dose()));
-	ui.hctLineEdit->setText(QString::number(madym_options_.hct()));
-  
-	//Ouput options
-	ui.outputDirLineEdit->setText(madym_options_.outputDir().c_str());
-	ui.overwriteCheckBox->setChecked(madym_options_.overwrite());
-	ui.outputCsCheckBox->setChecked(madym_options_.outputCt_sig());
-	ui.outputCmCheckBox->setChecked(madym_options_.outputCt_mod());
-	ui.sparseCheckBox->setChecked(madym_options_.sparseWrite());
-	ui.iaucTimesLineEdit->setText(make_doubles_text(madym_options_.IAUCTimes()));
 
-  //Logging options
-  ui.logNameLineEdit->setText(madym_options_.programLogName().c_str());
-  ui.errorTrackerLineEdit->setText(madym_options_.errorTrackerName().c_str());
-	ui.configLineEdit->setText(madym_options_.outputConfigFileName().c_str());
-  ui.auditNameLineEdit->setText(madym_options_.auditLogBaseName().c_str());
-  ui.auditDirLineEdit->setText(madym_options_.auditLogDir().c_str());
+  //Logging options - visible for all tools
+  ui.logNameLineEdit->setText(options.programLogName().c_str());
+  ui.configLineEdit->setText(options.outputConfigFileName().c_str());
+  ui.auditNameLineEdit->setText(options.auditLogBaseName().c_str());
+  ui.auditDirLineEdit->setText(options.auditLogDir().c_str());
+  ui.outputTabWidget->setCurrentIndex(0);
+}
 
-  //Model options
-  const std::vector<std::string> &models = mdm_DCEModelGenerator::implementedModels();
-	int selected_index = 0;
-	{
-		const QSignalBlocker blocker(ui.modelSelectComboBox);
-		// We use a signal blocker here to avoid trying to set an empty model
-		//if a config file is loaded an we update the widget values
-		ui.modelSelectComboBox->clear();
-		ui.modelSelectComboBox->addItem(NONE_SELECTED);
-		int index = 0;		
-		for (auto model : models)
-		{
-			ui.modelSelectComboBox->addItem(model.c_str());
-			index++;
-			if (model == madym_options_.model())
-				selected_index = 0;
-		}
-	}
-	ui.modelSelectComboBox->setCurrentIndex(selected_index);
-  
-  ui.firstImageSpinBox->setValue(madym_options_.firstImage());
-  ui.lastImageSpinBox->setValue(madym_options_.lastImage());
-  ui.temporalNoiseCheckBox->setChecked(madym_options_.dynNoise());
-  ui.optimiseFitCheckBox->setChecked(!madym_options_.noOptimise());
-  ui.testEnhancementCheckBox->setChecked(madym_options_.testEnhancement());
-  ui.maxIterationsLineEdit->setValidator(new QIntValidator(0, 10000, this));
-  ui.maxIterationsLineEdit->setText(QString::number(madym_options_.maxIterations()));
-	ui.initMapsLineEdit->setText(madym_options_.initMapsDir().c_str());
+//
+void madym_gui_ui::initialize_model_options()
+{
+  const auto &models = mdm_DCEModelGenerator::implementedModels();
+  int selected_index = 0;
+  bool matched = false;
+  {
+    const QSignalBlocker blocker(ui.modelSelectComboBox);
+    // We use a signal blocker here to avoid trying to set an empty model
+    //if a config file is loaded an we update the widget values
+    ui.modelSelectComboBox->clear();
+    for (auto model : models)
+    {
+      ui.modelSelectComboBox->addItem(model.c_str());
+      if (model == processor_.madym_exe().options().model())
+        matched = true;
+      else if (!matched)
+        selected_index++;
 
+    }
+    ui.modelSelectComboBox->addItem(NONE_SELECTED);
+  }
+  ui.modelSelectComboBox->setCurrentIndex(selected_index);
+}
+
+//
+void madym_gui_ui::initialize_T1_options()
+{
+  const auto &methods = mdm_T1MethodGenerator::implementedMethods();
+  int selected_index = 0;
+  bool matched = false;
+  {
+    const QSignalBlocker blocker(ui.t1MethodComboBox);
+    // We use a signal blocker here to avoid trying to set an empty model
+    //if a config file is loaded an we update the widget values
+    ui.t1MethodComboBox->clear();
+    for (auto method : methods)
+    {
+      ui.t1MethodComboBox->addItem(method.c_str()); 
+      if (method == processor_.madym_exe().options().T1method())
+        matched = true;
+      else if (!matched)
+        selected_index++;
+    }
+    ui.t1MethodComboBox->addItem(NONE_SELECTED);
+  }
+  ui.t1MethodComboBox->setCurrentIndex(selected_index);
+}
+
+//
+void madym_gui_ui::initialize_AIF_options()
+{
+  int selected_index = 0;
+  {
+    const QSignalBlocker blocker(ui.AIFtypeComboBox);
+    ui.AIFtypeComboBox->clear();
+    std::vector<mdm_AIF::AIF_TYPE> types = {
+      mdm_AIF::AIF_TYPE::AIF_POP,
+      mdm_AIF::AIF_TYPE::AIF_FILE,
+      mdm_AIF::AIF_TYPE::AIF_MAP,
+      mdm_AIF::AIF_TYPE::AIF_STD
+    };
+    bool matched = false;
+    for (const auto type : types)
+    {
+      ui.AIFtypeComboBox->addItem(mdm_AIF::typeToString(type).c_str());
+      if (type == processor_.madym_exe().options().aifType())
+        matched = true;
+      else if (!matched)
+        selected_index++;
+    }
+    ui.AIFtypeComboBox->addItem(NONE_SELECTED);
+  }
+  ui.AIFtypeComboBox->setCurrentIndex(selected_index);
+}
+
+bool madym_gui_ui::check_required_options()
+{
+  if (processor_.madym_exe().options().outputDir().empty())
+  {
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Warning);
+    msgBox.setText("Output folder not selected");
+    msgBox.setInformativeText("You must select a folder in which the analysis output will be saved.");
+    msgBox.exec();
+    return false;
+  }
+
+  switch (runType_)
+  {
+  case madym_gui_processor::RunType::T1:
+  {  
+    break;
+  }
+  case madym_gui_processor::RunType::AIF:
+  {
+    break;
+  }
+  case madym_gui_processor::RunType::DCE:
+  {
+    
+    break;
+  }
+  }
+  return true;
 }

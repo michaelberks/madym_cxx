@@ -3,13 +3,6 @@ project(madym_gui)
 # Add folder where .h files are created (from the .ui files) to the search path
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 
-find_package(Qt5Core)
-find_package(Qt5Widgets)
-
-#Suppress annoying CMake warnings by setting these Qt related policies
-cmake_policy(SET CMP0020 NEW)
-cmake_policy(SET CMP0043 NEW)
-
 # Convert these .ui files to .h
 QT5_WRAP_UI( madym_gui_ui_h_files
 	madym_gui.ui

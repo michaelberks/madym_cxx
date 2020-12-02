@@ -10,9 +10,8 @@ BOOST_AUTO_TEST_CASE(test_config) {
 	BOOST_TEST_MESSAGE("======= Testing generation of config files for madym tools =======");
 
 	std::string params_name = mdm_test_utils::temp_dir() + "/params.txt";
-	mdm_InputOptions options;
-	mdm_OptionsParser options_parser_write;
-	mdm_RunTools_madym_DCE madym_write(options, options_parser_write);
+	mdm_RunTools_madym_DCE madym_write;
+  auto &options = madym_write.options();
 
 	options.outputRoot.set("root/"); //str
 	options.outputCt_sig.set(true); //bool
@@ -26,12 +25,12 @@ BOOST_AUTO_TEST_CASE(test_config) {
 
 	BOOST_TEST_MESSAGE("Writing params file");
 	BOOST_CHECK(!madym_write.parseInputs("test_write"));
-	BOOST_CHECK(options_parser_write.to_file(params_name, options, madym_write.who()));
+	BOOST_CHECK_NO_THROW(madym_write.saveConfigFile(params_name));
 
-	mdm_InputOptions options_in;
+  mdm_RunTools_madym_DCE madym_read;
+	auto &options_in = madym_read.options();
 	options_in.configFile.set(params_name);
-	mdm_OptionsParser options_parser_read;
-	mdm_RunTools_madym_DCE madym_read(options_in, options_parser_read);
+	
 
 	BOOST_TEST_MESSAGE("Reading params file");
 	BOOST_CHECK(!madym_read.parseInputs("test_read"));

@@ -82,47 +82,47 @@ class mdm_Image3D
 			std::string key_;
 			double value_;
 		};
-		KeyPair flipAngle; ///> Flip-angle
-		KeyPair TR; ///> Repetition time in ms
-		KeyPair TE; ///> Echo time in ms
-		KeyPair B; ///> Magnitude field B-value
-		KeyPair TI; ///> T1 in ms
-		KeyPair TA; ///> TA
-		KeyPair ETL; ///> ETL
-		KeyPair Xmm; ///> X0
-		KeyPair Ymm; ///> Y0
-		KeyPair Zmm; ///> Z0
-		KeyPair rowDirCosX; ///> rowDirCosX
-		KeyPair rowDirCosY; ///> rowDirCosY
-		KeyPair rowDirCosZ; ///> rowDirCosZ
-		KeyPair colDirCosX; ///> colDirCosX
-		KeyPair colDirCosY; ///> colDirCosY
-		KeyPair colDirCosZ; ///> colDirCosZ
-		KeyPair noiseSigma; ///> Estimate of noise standard deviation
+		KeyPair flipAngle; //!< Flip-angle
+		KeyPair TR; //!< Repetition time in ms
+		KeyPair TE; //!< Echo time in ms
+		KeyPair B; //!< Magnitude field B-value
+		KeyPair TI; //!< T1 in ms
+		KeyPair TA; //!< TA
+		KeyPair ETL; //!< ETL
+		KeyPair Xmm; //!< X0
+		KeyPair Ymm; //!< Y0
+		KeyPair Zmm; //!< Z0
+		KeyPair rowDirCosX; //!< rowDirCosX
+		KeyPair rowDirCosY; //!< rowDirCosY
+		KeyPair rowDirCosZ; //!< rowDirCosZ
+		KeyPair colDirCosX; //!< colDirCosX
+		KeyPair colDirCosY; //!< colDirCosY
+		KeyPair colDirCosZ; //!< colDirCosZ
+		KeyPair noiseSigma; //!< Estimate of noise standard deviation
 
-		static const std::string ImageTypeKey;
-		static const std::string TimeStampKey;
+		static const std::string ImageTypeKey; //!< Key used for image type
+		static const std::string TimeStampKey; //!< Key used for timestamp
 	};
 
 	//! Enum of defined image types
 	/*!
 	*/
 	enum ImageType {
-		TYPE_UNDEFINED, ///> Unspecified type
-		TYPE_T1WTSPGR, ///> T1 weighted, spoiled gradient echo image
-		TYPE_T1BASELINE, ///> Baseline T1 map
-		TYPE_T1DYNAMIC, ///> Dynamic T1 map
-		TYPE_M0MAP, ///> M0 map
-		TYPE_CAMAP, ///> Contrast-agent concentration map
-		TYPE_DEGR, ///> Variable flip-angle map
-		TYPE_T2STARMAP, ///> T2* map
-		TYPE_DYNMEAN, ///> Temporal mean of dynamic images
-		TYPE_DWI, ///> Diffusion weighted-image
-		TYPE_ADCMAP, ///> Apparent diffusion coefficient (ADC) map
-		TYPE_ERRORMAP, ///> Error map
-		TYPE_AIFVOXELMAP, ///> Mask for selecting AIF
-		TYPE_KINETICMAP, ///> Tracer-kinetic model parameter map
-    TYPE_ROI ///> Region of interest mask
+		TYPE_UNDEFINED, //!< Unspecified type
+		TYPE_T1WTSPGR, //!< T1 weighted, spoiled gradient echo image
+		TYPE_T1BASELINE, //!< Baseline T1 map
+		TYPE_T1DYNAMIC, //!< Dynamic T1 map
+		TYPE_M0MAP, //!< M0 map
+		TYPE_CAMAP, //!< Contrast-agent concentration map
+		TYPE_DEGR, //!< Variable flip-angle map
+		TYPE_T2STARMAP, //!< T2* map
+		TYPE_DYNMEAN, //!< Temporal mean of dynamic images
+		TYPE_DWI, //!< Diffusion weighted-image
+		TYPE_ADCMAP, //!< Apparent diffusion coefficient (ADC) map
+		TYPE_ERRORMAP, //!< Error map
+		TYPE_AIFVOXELMAP, //!< Mask for selecting AIF
+		TYPE_KINETICMAP, //!< Tracer-kinetic model parameter map
+    TYPE_ROI //!< Region of interest mask
 	};
 	
 		
@@ -142,6 +142,9 @@ class mdm_Image3D
   {
     return numVoxels() > 0;
   }
+
+  //! Reset the image to empty
+  MDM_API void reset();
 
 	//! Read only access to the image data array
 	/*!
@@ -165,18 +168,18 @@ class mdm_Image3D
 
   //! Return value at specified voxel subscripts
   /*!
-  \param x, x-axis subscript. Must be >=0, < nX
-  \param y, y-axis subscript. Must be >=0, < nY
-  \param z, z-axis subscript. Must be >=0, < nZ
+  \param x x-axis subscript. Must be >=0, < nX
+  \param y y-axis subscript. Must be >=0, < nY
+  \param z z-axis subscript. Must be >=0, < nZ
   \return value at voxel subscript
   */
   MDM_API double voxel(size_t x, size_t y, size_t z) const;
 
   //! Set value at specified voxel subscripts
   /*!
-  \param x, x-axis subscript. Must be >=0, < nX
-  \param y, y-axis subscript. Must be >=0, < nY
-  \param z, z-axis subscript. Must be >=0, < nZ
+  \param x x-axis subscript. Must be >=0, < nX
+  \param y y-axis subscript. Must be >=0, < nY
+  \param z z-axis subscript. Must be >=0, < nZ
   \param value to set
   */
   MDM_API void setVoxel(size_t x, size_t y, size_t z, double value);
@@ -368,7 +371,6 @@ class mdm_Image3D
 	//! Helper function to reverse byte order of big/little endian data
 	/*!
 	\param data pointer to data to swap
-	\nBytes size of buffer to swap
 	*/
 	template <class T> MDM_API static void swapBytes(T& data);
 
@@ -406,13 +408,19 @@ private:
 	MetaData info_;
 };
 
+//! Custom exception class for specific case when image dimensions don't match
+/*!
+This should be thrown whenever there is an attempt to add a new image to an analysis
+that doesn't match the dimensions of already loaded images.
+*/
 class mdm_dimension_mismatch : virtual public mdm_exception {
 
 public:
   //! Constructor from standard string message
   /*!
   \param func name of throwing function
-  \param msg exception message displayed by what()
+  \param ref reference image that dimensions should match
+  \param img new image with mis-matched dimensions
   */
   mdm_dimension_mismatch(const char* func,
     const mdm_Image3D &ref, const mdm_Image3D &img) noexcept

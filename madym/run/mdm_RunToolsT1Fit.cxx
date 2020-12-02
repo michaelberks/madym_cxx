@@ -18,8 +18,7 @@
 namespace fs = boost::filesystem;
 
 //
-MDM_API mdm_RunToolsT1Fit::mdm_RunToolsT1Fit(mdm_InputOptions &options, mdm_OptionsParser &options_parser)
-	: mdm_RunTools(options, options_parser)
+MDM_API mdm_RunToolsT1Fit::mdm_RunToolsT1Fit()
 {
 }
 

@@ -21,11 +21,8 @@ public:
 		
 	//! Constructor
 	/*!
-	\param options set of analysis options
-	\param options_parser_ object for parsing input options
-	\return
 	*/
-	MDM_API mdm_RunTools_madym_T1(mdm_InputOptions &options, mdm_OptionsParser &options_parser_);
+	MDM_API mdm_RunTools_madym_T1();
 		
 	//! Default destructor
 	/*!

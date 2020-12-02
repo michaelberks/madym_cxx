@@ -1,5 +1,5 @@
 /*!
- *  @file    mdmDCEVolumeAnalysis.h
+ *  @file    mdm_VolumeAnalysis.h
  *  @brief   Manager class for DCE analysis, stores input images and output parameter maps
  *  @details More info...
  *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
@@ -27,34 +27,34 @@ public:
 	// Names of output maps
 
 	//! Base name of IAUC maps, appended with IAUC time
-	const static std::string   MAP_NAME_IAUC;
+	static const std::string   MAP_NAME_IAUC;
 
 	//! Name of model residuals maps
-	const static std::string   MAP_NAME_RESDIUALS;
+	static const std::string   MAP_NAME_RESDIUALS;
 
 	//! Name of enhancing map
-	const static std::string   MAP_NAME_ENHANCING;
+	static const std::string   MAP_NAME_ENHANCING;
 
 	//! Name of ROI mask
-	const static std::string   MAP_NAME_ROI;
+	static const std::string   MAP_NAME_ROI;
 
   //! Name of error tracker map
-  const static std::string   MAP_NAME_ERROR_TRACKER;
+  static const std::string   MAP_NAME_ERROR_TRACKER;
 
   //! Name of AIF map
-  const static std::string   MAP_NAME_AIF;
+  static const std::string   MAP_NAME_AIF;
 
 	//! Name of T1 map
-	const static std::string   MAP_NAME_T1;
+	static const std::string   MAP_NAME_T1;
 
 	//! Name of M0 map
-	const static std::string   MAP_NAME_M0;
+	static const std::string   MAP_NAME_M0;
 
 	//! Name of signal derived concentration - appended with volume number
-	const static std::string   MAP_NAME_CT_SIG;
+	static const std::string   MAP_NAME_CT_SIG;
 
 	//! Name of modelled concentration - appended with volume number
-	const static std::string   MAP_NAME_CT_MOD;
+	static const std::string   MAP_NAME_CT_MOD;
 
 	//! Default constructor
 	/*!
@@ -65,6 +65,9 @@ public:
 	/*!
 	*/
 	MDM_API ~mdm_VolumeAnalysis();
+
+  //! Reset all the maps to empty
+  MDM_API void reset();
 
 	//! Return reference to error tracker
 	/*!
@@ -99,7 +102,7 @@ public:
 
   //! Set AIF map
   /*!
-  \param map, dimensions must match those of dynamic series
+  \param map dimensions must match those of dynamic series
   */
   MDM_API void setAIFmap(const mdm_Image3D map);
 

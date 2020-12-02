@@ -1,15 +1,16 @@
+//! Abstract base class for implementing DCE tracer-kinetic models
 /*!
-*  @file    mdm_DCEModelBase.h
-*  @brief   Abstract base class for implementing DCE tracer-kinetic models
-*  @details All DCE models should sub-class this abstract class providing an
-*						an implementation of the following methods:
-*						- modelType
-*           - computeCtModel
-*						- checkParams
-*						See git repository wiki for details on configuring models
-*
-*  Original author MA Berks 24 Oct 2018
-*  (c) Copyright QBI, University of Manchester 2018
+\file    mdm_DCEModelBase.h
+
+All DCE models should sub-class this abstract class providing an implementation of the following methods:
+- #mdm_DCEModelBase::modelType
+- #mdm_DCEModelBase::computeCtModel
+- #mdm_DCEModelBase::checkParams
+						
+See git repository wiki for details on configuring models
+
+Original author MA Berks 24 Oct 2018
+(c) Copyright QBI, University of Manchester 2018
 */
 
 #ifndef MDM_DCEMODELBASE_HDR
@@ -242,28 +243,27 @@ public:
 protected:
 
   //VARIABLES USED BY ALL BASE CLASSES
-  //We may set these to be private with appropriate getters/setters later
-  std::vector<double>			CtModel_;			//DCE time series vector of fitted concentrations using model parameters
-  std::vector<double>			pkParams_;			//Array of all model parameters
-  std::vector<double>			pkParamsOpt_;		//Array parameters we're actually optimising
-  std::vector<double>			pkInitParams_;	//Array of initial values
-  std::vector<bool>				optParamFlags_; //Array of flags specifying variables that are fixed (flag=0) or to be optimised (flag=1)
-  std::vector<std::string>	pkParamNames_;	//Names of the parameters - must be in same order as params
+  std::vector<double> CtModel_; //!< Fitted concentration time-series using model parameters
+  std::vector<double> pkParams_; //!< All model parameters
+  std::vector<double> pkParamsOpt_; //!< Parameters we're actually optimising
+  std::vector<double> pkInitParams_; //!< Initial values
+  std::vector<bool> optParamFlags_; //!< Flags specifying variables that are fixed (flag=0) or to be optimised (flag=1)
+  std::vector<std::string>	pkParamNames_; //!< Names of the parameters
                                           
-  //Upper an lower bounds to use with optimiser
-  std::vector<double> lowerBounds_;
-  std::vector<double> upperBounds_;
-	std::vector<double> relativeBounds_;
-  std::vector<double> lowerBoundsOpt_;
-  std::vector<double> upperBoundsOpt_;
+  //Upper and lower bounds to use with optimiser
+  std::vector<double> lowerBounds_; //!< Lower bounds for all parameters
+  std::vector<double> upperBounds_; //!< Upper bounds for all parameters
+	std::vector<double> relativeBounds_; //!< Relative bounds for optimised parameters
+  std::vector<double> lowerBoundsOpt_; //!< Lower bounds for optimised parameters 
+  std::vector<double> upperBoundsOpt_; //!< Upper bounds for optimised parameters 
 
-  //Reference to AIF object set at initialization from global volume analysis
+  //! Reference to AIF object set at initialization from global volume analysis
   mdm_AIF &AIF_;
 
-	//Error code of the model
+	//! Error code of the model after fitting
 	mdm_ErrorTracker::ErrorCode errorCode_;
 
-	const double BAD_FIT_SSD; ///< Value returned for SSD for failed model fits
+	const double BAD_FIT_SSD; //!< Value returned for SSD for failed model fits
 
 private:
   //METHODS:
