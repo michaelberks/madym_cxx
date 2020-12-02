@@ -832,16 +832,15 @@ void madym_gui_ui::initialize_widget_values()
     if (ui.fittingTabWidget->indexOf(ui.vascularTab) < 0)
       ui.fittingTabWidget->insertTab(0, ui.vascularTab, "Vascular input");
 
+    ui.AIFmapLineEdit->setText(options.aifMap().c_str());
+    ui.AIFfileLineEdit->setText(options.aifName().c_str());
+
     if (!options.aifMap().empty())
-    {
       options.aifType.set(mdm_AIF::AIF_TYPE::AIF_MAP);
-      ui.AIFmapLineEdit->setText(options.aifMap().c_str());
-    }
-    else if (!options.aifName().empty())
-    {
+      
+    if (!options.aifName().empty())
       options.aifType.set(mdm_AIF::AIF_TYPE::AIF_FILE);
-      ui.AIFfileLineEdit->setText(options.aifName().c_str());
-    }
+      
     initialize_AIF_options();
 
     ui.populationPIFCheckbox->setChecked(options.pifName().empty());
@@ -916,7 +915,8 @@ void madym_gui_ui::initialize_widget_values()
     ui.prebolusNoiseLineEdit->setText(QString::number(options.prebolusNoise()));
 
     ui.selectPctSpinBox->setRange(0, 100);
-    ui.selectPctSpinBox->setValue(options.prebolusNoise());
+    ui.selectPctSpinBox->setValue(options.selectPct());
+
     //Hide the vascular input and model fitting tabs
     auto idx = ui.fittingTabWidget->indexOf(ui.modelTab);
     if (idx >= 0)

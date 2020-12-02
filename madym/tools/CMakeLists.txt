@@ -50,13 +50,6 @@ target_link_libraries( madym_AIF mdm)
 #target_link_libraries( dicom2analyze mdm)
 
 #-------------------------------------------------------------------
-# Standalone tool for computing summary statistics from Madym output
-#add_executable(trials_datastreams_calc_stats 
-#	trials_datastreams_calc_stats.cxx)
-#
-#target_link_libraries( trials_datastreams_calc_stats mdm)
-
-#-------------------------------------------------------------------
 if ( BUILD_TESTING )
 	subdirs(tests)
 endif ( BUILD_TESTING )
@@ -79,6 +72,11 @@ install(TARGETS madym_T1
 install(TARGETS madym_T1_lite 
   RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Tools
     CONFIGURATIONS Release)
+
+#Install example data and config scripts
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/examples" DESTINATION "${MADYM_DEPLOY_DIR}"
+		COMPONENT Examples
+		CONFIGURATIONS Release)
 
 #Only build the archive when we're not build the main GUI. If we build
 #the GUI, we make a proper installer package
