@@ -1,0 +1,19 @@
+#madym_T1
+#config = 
+#cwd = C:/isbe/code/manchester_qbi/public/madym_cxx/examples/test_dataset
+T1_method = VFA
+T1_noise = 0
+T1_vols = [vfa/FA_1.hdr,vfa/FA_2.hdr,vfa/FA_3.hdr]
+audit = AuditLog.txt
+audit_dir = audit_logs/
+config_out = config.txt
+err = ""
+no_audit = 1
+no_log = 0
+output = madym_output/T1
+output_root = ""
+overwrite = 1
+program_log = ProgramLog.txt
+quiet = 0
+roi = ""
+sparse = 0
