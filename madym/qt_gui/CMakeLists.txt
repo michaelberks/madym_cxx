@@ -70,6 +70,7 @@ if (BUILD_INSTALL)
     get_target_property(QMAKE_EXECUTABLE Qt5::qmake IMPORTED_LOCATION)
     get_filename_component(QT_BIN_DIR "${QMAKE_EXECUTABLE}" DIRECTORY)
     find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${QT_BIN_DIR}")
+    message(STATUS "Running ")
     set(GUI_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/madym_gui.exe")
 
     add_custom_command(TARGET madym_gui POST_BUILD
@@ -77,7 +78,7 @@ if (BUILD_INSTALL)
           env PATH="${QT_BIN_DIR}" "${WINDEPLOYQT_EXECUTABLE}" "${GUI_PATH}"
               --no-compiler-runtime
               --dir "${CMAKE_CURRENT_BINARY_DIR}/qt_deploy"
-      COMMENT "Deploying Qt..."
+      COMMENT "Running ${WINDEPLOYQT_EXECUTABLE} to get GUI dependencies..."
       CONFIGURATIONS Release
     )
 
@@ -115,8 +116,8 @@ if (BUILD_INSTALL)
   set(CPACK_COMPONENTS_ALL GUI Tools Libs Examples)
   set(CPACK_PACKAGE_VENDOR "University of Manchester")
   set(CPACK_PACKAGE_CONTACT "michael.berks@manchester.ac.uk")
-  #set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.txt")
-  #set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
+  set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/license.txt")
   set(CPACK_PACKAGE_INSTALL_DIRECTORY "Madym")
   set(CPACK_PACKAGE_EXECUTABLES "madym_gui" "Madym")
   set(CPACK_PACKAGE_VERSION_MAJOR "${MADYM_VERSION_MAJOR}")

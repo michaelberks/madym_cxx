@@ -78,7 +78,16 @@ list(GET VERSION_TEMP 1 MADYM_VERSION_MINOR)
 list(GET VERSION_TEMP 2 MADYM_VERSION_PATCH)
 string(REPLACE "v" "" MADYM_VERSION_MAJOR ${MADYM_VERSION_MAJOR})
 
-MESSAGE(STATUS "Madym version ${MADYM_VERSION_MAJOR}.${MADYM_VERSION_MINOR}.${MADYM_VERSION_PATCH}")
+message(STATUS "Madym version ${MADYM_VERSION_MAJOR}.${MADYM_VERSION_MINOR}.${MADYM_VERSION_PATCH}")
+set(QBI_WEBSITE "http://www.qbi-lab.org/" 
+  CACHE STRING "Address of QBI lab website")
+set(USER_WIKI 
+  "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/madym_gui" 
+  CACHE STRING "Address of user help wiki website")
+
+if(CMAKE_GENERATOR STREQUAL Xcode)
+  add_definitions(-DUSING_XCODE)
+endif()
 
 #---------------------------------------------------------------------------
 if ( DEFAULT_INSTALL_PREFIX)

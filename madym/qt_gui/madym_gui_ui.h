@@ -71,6 +71,8 @@ private slots:
 
 	// Menu file
 	void on_actionExit_triggered();
+  void on_actionAbout_triggered();
+  void on_actionUser_wiki_triggered();
 
 	//Main functions
 	void on_computeT1Button_clicked();
@@ -182,6 +184,7 @@ private: // Methods
   void initialize_model_options();
   void initialize_T1_options();
   void initialize_AIF_options();
+  void set_AIF_enabled();
   bool check_required_options();
 
 #ifdef _WIN32

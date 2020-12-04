@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1169</width>
-    <height>916</height>
+    <width>1182</width>
+    <height>677</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Madym</string>
@@ -18,8 +24,8 @@
     <normaloff>:/images/madym.ico</normaloff>:/images/madym.ico</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item>
+   <layout class="QGridLayout" name="gridLayout_9">
+    <item row="0" column="0">
      <widget class="QScrollArea" name="madymScrollArea">
       <property name="verticalScrollBarPolicy">
        <enum>Qt::ScrollBarAlwaysOn</enum>
@@ -35,8 +41,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1132</width>
-         <height>838</height>
+         <width>1156</width>
+         <height>944</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -180,6 +186,15 @@
                </color>
               </brush>
              </colorrole>
+             <colorrole role="PlaceholderText">
+              <brush brushstyle="NoBrush">
+               <color alpha="128">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
             </active>
             <inactive>
              <colorrole role="WindowText">
@@ -311,6 +326,15 @@
              <colorrole role="ToolTipText">
               <brush brushstyle="SolidPattern">
                <color alpha="255">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
+             <colorrole role="PlaceholderText">
+              <brush brushstyle="NoBrush">
+               <color alpha="128">
                 <red>0</red>
                 <green>0</green>
                 <blue>0</blue>
@@ -454,6 +478,15 @@
                </color>
               </brush>
              </colorrole>
+             <colorrole role="PlaceholderText">
+              <brush brushstyle="NoBrush">
+               <color alpha="128">
+                <red>0</red>
+                <green>0</green>
+                <blue>0</blue>
+               </color>
+              </brush>
+             </colorrole>
             </disabled>
            </palette>
           </property>
@@ -580,13 +613,20 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="runPage" native="true">
+          <widget class="QWidget" name="runPage">
            <layout class="QGridLayout" name="gridLayout_8">
+            <item row="0" column="0">
+             <widget class="QPlainTextEdit" name="cmdTextEdit">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="1" rowspan="2">
              <widget class="QFrame" name="controls">
               <property name="maximumSize">
                <size>
-                <width>500</width>
+                <width>600</width>
                 <height>16777215</height>
                </size>
               </property>
@@ -598,90 +638,220 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_2">
                <item>
-                <widget class="QGroupBox" name="groupBox">
-                 <property name="title">
-                  <string>General input</string>
+                <widget class="QTabWidget" name="outputTabWidget">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>0</height>
+                  </size>
                  </property>
-                 <layout class="QGridLayout" name="gridLayout_11">
-                  <item row="3" column="5">
-                   <widget class="QToolButton" name="errorTrackerSelect">
-                    <property name="text">
-                     <string>...</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="3">
-                   <widget class="QLineEdit" name="dataDirLineEdit"/>
-                  </item>
-                  <item row="2" column="5">
-                   <widget class="QToolButton" name="roiPathSelect">
-                    <property name="text">
-                     <string>...</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="5">
-                   <widget class="QToolButton" name="dataDirSelect">
-                    <property name="text">
-                     <string>...</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="0" colspan="2">
-                   <widget class="QLabel" name="label_28">
-                    <property name="text">
-                     <string>Error tracker:</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="3">
-                   <widget class="QLineEdit" name="roiPathLineEdit"/>
-                  </item>
-                  <item row="3" column="3">
-                   <widget class="QLineEdit" name="errorTrackerLineEdit"/>
-                  </item>
-                  <item row="0" column="0" colspan="2">
-                   <widget class="QLabel" name="imageBaseName_2">
-                    <property name="text">
-                     <string>Data folder:</string>
-                    </property>
-                    <property name="alignment">
-                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="0">
-                   <widget class="QLabel" name="label_19">
-                    <property name="text">
-                     <string>ROI:</string>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
+                 <property name="currentIndex">
+                  <number>0</number>
+                 </property>
+                 <widget class="QWidget" name="outputTab">
+                  <attribute name="title">
+                   <string>General options</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_11">
+                   <item row="1" column="4">
+                    <widget class="QToolButton" name="outputDirSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="4">
+                    <widget class="QToolButton" name="roiPathSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="4">
+                    <widget class="QToolButton" name="errorTrackerSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="imageBaseName_2">
+                     <property name="text">
+                      <string>Data folder:</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="4">
+                    <widget class="QToolButton" name="dataDirSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_19">
+                     <property name="text">
+                      <string>ROI:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <spacer name="verticalSpacer_7">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="4" column="0" colspan="2">
+                    <widget class="QCheckBox" name="overwriteCheckBox">
+                     <property name="text">
+                      <string>Overwrite existing output</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_28">
+                     <property name="text">
+                      <string>Error tracker:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_10">
+                     <property name="text">
+                      <string>Output folder:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1" colspan="3">
+                    <widget class="QLineEdit" name="errorTrackerLineEdit"/>
+                   </item>
+                   <item row="2" column="1" colspan="3">
+                    <widget class="QLineEdit" name="roiPathLineEdit">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1" colspan="3">
+                    <widget class="QLineEdit" name="outputDirLineEdit"/>
+                   </item>
+                   <item row="0" column="1" colspan="3">
+                    <widget class="QLineEdit" name="dataDirLineEdit"/>
+                   </item>
+                   <item row="4" column="2">
+                    <widget class="QCheckBox" name="sparseCheckBox">
+                     <property name="text">
+                      <string>Save data using sparse format</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="loggingTab">
+                  <attribute name="title">
+                   <string>Logging</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_10">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_30">
+                     <property name="text">
+                      <string>Log name:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="configLineEdit"/>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_27">
+                     <property name="text">
+                      <string>Audit name:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QLineEdit" name="auditNameLineEdit"/>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_31">
+                     <property name="text">
+                      <string>Audit folder:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="logNameLineEdit"/>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_29">
+                     <property name="text">
+                      <string>Config name:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="QLineEdit" name="auditDirLineEdit"/>
+                   </item>
+                   <item row="4" column="2">
+                    <widget class="QToolButton" name="auditDirSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <spacer name="verticalSpacer_5">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
                 </widget>
                </item>
                <item>
                 <widget class="QTabWidget" name="inputTabWidget">
                  <property name="currentIndex">
-                  <number>2</number>
+                  <number>0</number>
                  </property>
                  <widget class="QWidget" name="dceTab">
                   <attribute name="title">
                    <string>DCE data</string>
                   </attribute>
                   <layout class="QGridLayout" name="gridLayout_5">
-                   <item row="5" column="4">
-                    <widget class="QSpinBox" name="injectionImageSpinBox">
-                     <property name="minimum">
-                      <number>1</number>
-                     </property>
-                     <property name="maximum">
-                      <number>1000</number>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_22">
+                     <property name="text">
+                      <string>DCE volumes name:</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="4" column="1" colspan="4">
-                    <widget class="QLineEdit" name="dceFormatLineEdit"/>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_23">
+                     <property name="text">
+                      <string>DCE number format:</string>
+                     </property>
+                    </widget>
                    </item>
                    <item row="5" column="0">
                     <widget class="QLabel" name="label_24">
@@ -690,25 +860,25 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="3" column="1" colspan="4">
-                    <widget class="QLineEdit" name="dceNameLineEdit"/>
-                   </item>
-                   <item row="3" column="0">
-                    <widget class="QLabel" name="label_22">
+                   <item row="2" column="5">
+                    <widget class="QToolButton" name="dceInputSelect">
                      <property name="text">
-                      <string>DCE volumes name:</string>
+                      <string>...</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="1" colspan="4">
-                    <widget class="QLineEdit" name="dceInputLineEdit"/>
+                   <item row="5" column="1">
+                    <widget class="QSpinBox" name="nDynSpinBox"/>
                    </item>
-                   <item row="4" column="0">
-                    <widget class="QLabel" name="label_23">
+                   <item row="0" column="3">
+                    <widget class="QRadioButton" name="inputTypeRadioButtonC">
                      <property name="text">
-                      <string>DCE number format:</string>
+                      <string>Concentration</string>
                      </property>
                     </widget>
+                   </item>
+                   <item row="4" column="1" colspan="4">
+                    <widget class="QLineEdit" name="dceFormatLineEdit"/>
                    </item>
                    <item row="2" column="0">
                     <widget class="QLabel" name="imageBaseName">
@@ -727,27 +897,23 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="5" column="1">
-                    <widget class="QSpinBox" name="nDynSpinBox"/>
-                   </item>
-                   <item row="0" column="3">
-                    <widget class="QRadioButton" name="inputTypeRadioButtonC">
-                     <property name="text">
-                      <string>Concentration</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="5">
-                    <widget class="QToolButton" name="dceInputSelect">
-                     <property name="text">
-                      <string>...</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="0" column="0">
                     <widget class="QLabel" name="label_17">
                      <property name="text">
                       <string>Input type</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1" colspan="4">
+                    <widget class="QLineEdit" name="dceNameLineEdit"/>
+                   </item>
+                   <item row="5" column="4">
+                    <widget class="QSpinBox" name="injectionImageSpinBox">
+                     <property name="minimum">
+                      <number>1</number>
+                     </property>
+                     <property name="maximum">
+                      <number>1000</number>
                      </property>
                     </widget>
                    </item>
@@ -758,6 +924,22 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="2" column="1" colspan="4">
+                    <widget class="QLineEdit" name="dceInputLineEdit"/>
+                   </item>
+                   <item row="6" column="2">
+                    <spacer name="verticalSpacer">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
                   </layout>
                  </widget>
                  <widget class="QWidget" name="concentrationTab">
@@ -765,12 +947,18 @@
                    <string>Signal to concentration</string>
                   </attribute>
                   <layout class="QGridLayout" name="gridLayout_4">
-                   <item row="0" column="0" colspan="2">
-                    <widget class="QCheckBox" name="s0UseRatioCheckBox">
-                     <property name="text">
-                      <string>Use ratio method</string>
+                   <item row="6" column="0">
+                    <spacer name="verticalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
                      </property>
-                    </widget>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
                    </item>
                    <item row="3" column="2">
                     <widget class="QToolButton" name="s0VolPathSelect">
@@ -830,42 +1018,39 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="0" colspan="2">
+                   <item row="5" column="0">
+                    <widget class="QLabel" name="iaucLabel">
+                     <property name="text">
+                      <string>IAUC times:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <widget class="QLineEdit" name="iaucTimesLineEdit"/>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QCheckBox" name="s0UseRatioCheckBox">
+                     <property name="text">
+                      <string>Use ratio method</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
                     <widget class="QCheckBox" name="t1UsePrecomputedCheckBox">
                      <property name="text">
                       <string>Use pre-computed T1</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="5" column="0">
-                    <spacer name="verticalSpacer_3">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
                   </layout>
                  </widget>
-                 <widget class="QWidget" name="t1MapTab" native="true">
+                 <widget class="QWidget" name="t1MapTab">
                   <attribute name="title">
                    <string>T1 mapping</string>
                   </attribute>
                   <layout class="QGridLayout" name="gridLayout_6">
                    <item row="2" column="1">
                     <widget class="QLineEdit" name="t1ThresholdLineEdit"/>
-                   </item>
-                   <item row="1" column="2">
-                    <widget class="QToolButton" name="t1InputSelect">
-                     <property name="text">
-                      <string>...</string>
-                     </property>
-                    </widget>
                    </item>
                    <item row="0" column="0">
                     <widget class="QLabel" name="label_4">
@@ -907,6 +1092,26 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="3" column="1">
+                    <spacer name="verticalSpacer_9">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QToolButton" name="t1InputSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
                   </layout>
                  </widget>
                 </widget>
@@ -914,22 +1119,43 @@
                <item>
                 <widget class="QTabWidget" name="fittingTabWidget">
                  <property name="currentIndex">
-                  <number>1</number>
+                  <number>0</number>
                  </property>
-                 <widget class="QWidget" name="modelTab" native="true">
+                 <widget class="QWidget" name="modelTab">
                   <attribute name="title">
                    <string>Model fitting</string>
                   </attribute>
                   <layout class="QGridLayout" name="gridLayout">
-                   <item row="11" column="0">
-                    <widget class="QLabel" name="label_26">
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_20">
                      <property name="text">
-                      <string>Initial maps folder:</string>
+                      <string>First image:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QLabel" name="label_21">
+                     <property name="text">
+                      <string>Last image:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="12" column="0">
+                    <widget class="QLabel" name="label_36">
+                     <property name="text">
+                      <string>Target residuals:</string>
                      </property>
                     </widget>
                    </item>
                    <item row="2" column="1">
                     <widget class="QSpinBox" name="firstImageSpinBox">
+                     <property name="maximum">
+                      <number>1000</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="3">
+                    <widget class="QSpinBox" name="lastImageSpinBox">
                      <property name="maximum">
                       <number>1000</number>
                      </property>
@@ -948,72 +1174,6 @@
                      </property>
                     </spacer>
                    </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="label_20">
-                     <property name="text">
-                      <string>First image:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="10" column="0">
-                    <widget class="QLabel" name="label_16">
-                     <property name="text">
-                      <string>Max iterations:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_15">
-                     <property name="text">
-                      <string>Tracer kinetic model:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1" colspan="2">
-                    <widget class="QComboBox" name="modelSelectComboBox"/>
-                   </item>
-                   <item row="1" column="0" colspan="4">
-                    <widget class="QPushButton" name="configureModelButton">
-                     <property name="text">
-                      <string>Configure model</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="2">
-                    <widget class="QLabel" name="label_21">
-                     <property name="text">
-                      <string>Last image:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="6" column="0" colspan="2">
-                    <widget class="QCheckBox" name="temporalNoiseCheckBox">
-                     <property name="text">
-                      <string>Use temporally varying noise</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="6" column="2">
-                    <widget class="QCheckBox" name="optimiseFitCheckBox">
-                     <property name="text">
-                      <string>Optimise fit</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="3">
-                    <widget class="QSpinBox" name="lastImageSpinBox">
-                     <property name="maximum">
-                      <number>1000</number>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="6" column="3">
-                    <widget class="QCheckBox" name="testEnhancementCheckBox">
-                     <property name="text">
-                      <string>Test enhancement</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="11" column="4">
                     <widget class="QToolButton" name="initMapsDirSelect">
                      <property name="sizePolicy">
@@ -1027,24 +1187,97 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="11" column="1" colspan="3">
-                    <widget class="QLineEdit" name="initMapsLineEdit"/>
-                   </item>
-                   <item row="10" column="1" colspan="3">
-                    <widget class="QLineEdit" name="maxIterationsLineEdit"/>
-                   </item>
-                   <item row="12" column="0">
-                    <widget class="QLabel" name="label_36">
+                   <item row="11" column="0">
+                    <widget class="QLabel" name="label_26">
                      <property name="text">
-                      <string>Target residuals:</string>
+                      <string>Initial maps folder:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="3">
+                    <widget class="QCheckBox" name="testEnhancementCheckBox">
+                     <property name="text">
+                      <string>Test enhancement</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0" colspan="4">
+                    <widget class="QPushButton" name="configureModelButton">
+                     <property name="text">
+                      <string>Configure model</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="7" column="0" colspan="2">
+                    <widget class="QCheckBox" name="outputCsCheckBox">
+                     <property name="text">
+                      <string>Output signal-derived C(t)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="7" column="2" colspan="2">
+                    <widget class="QCheckBox" name="outputCmCheckBox">
+                     <property name="text">
+                      <string>Output model-estimated C(t)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="0" colspan="2">
+                    <widget class="QCheckBox" name="temporalNoiseCheckBox">
+                     <property name="text">
+                      <string>Use temporally varying noise</string>
                      </property>
                     </widget>
                    </item>
                    <item row="12" column="1" colspan="3">
-                    <widget class="QLineEdit" name="residualsLineEdit"/>
+                    <widget class="QLineEdit" name="residualsLineEdit">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="10" column="1" colspan="3">
+                    <widget class="QLineEdit" name="maxIterationsLineEdit"/>
+                   </item>
+                   <item row="11" column="1" colspan="3">
+                    <widget class="QLineEdit" name="initMapsLineEdit">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="10" column="0">
+                    <widget class="QLabel" name="label_16">
+                     <property name="text">
+                      <string>Max iterations:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="2">
+                    <widget class="QCheckBox" name="optimiseFitCheckBox">
+                     <property name="text">
+                      <string>Optimise fit</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0" colspan="2">
+                    <widget class="QLabel" name="label_15">
+                     <property name="text">
+                      <string>Tracer kinetic model:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QComboBox" name="modelSelectComboBox"/>
                    </item>
                    <item row="12" column="4">
-                    <widget class="QPushButton" name="residualsSelect">
+                    <widget class="QToolButton" name="residualsSelect">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Ignored" vsizetype="Fixed">
                        <horstretch>0</horstretch>
@@ -1075,7 +1308,7 @@
                          <bool>true</bool>
                         </property>
                         <property name="text">
-                         <string>Use population PIF (secondary input function):</string>
+                         <string>Use population PIF</string>
                         </property>
                        </widget>
                       </item>
@@ -1208,37 +1441,28 @@
                    <string>AIF detection</string>
                   </attribute>
                   <layout class="QGridLayout" name="gridLayout_12">
-                   <item row="0" column="0">
+                   <item row="1" column="0">
                     <widget class="QLabel" name="label_12">
                      <property name="text">
                       <string>X-range:</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="0" column="1" colspan="4">
-                    <widget class="QLineEdit" name="xRangeLineEdit"/>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_18">
+                     <property name="text">
+                      <string>Minimum T1:</string>
+                     </property>
+                    </widget>
                    </item>
-                   <item row="1" column="0">
+                   <item row="1" column="5">
                     <widget class="QLabel" name="label_35">
                      <property name="text">
                       <string>Y-range:</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="1" colspan="4">
-                    <widget class="QLineEdit" name="yRangeLineEdit"/>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="label_14">
-                     <property name="text">
-                      <string>Slices:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1" colspan="4">
-                    <widget class="QLineEdit" name="slicesLineEdit"/>
-                   </item>
-                   <item row="5" column="0" colspan="5">
+                   <item row="6" column="0" colspan="7">
                     <widget class="QGroupBox" name="groupBox_2">
                      <property name="title">
                       <string>Prebolus noise estimation:</string>
@@ -1264,193 +1488,73 @@
                       <item>
                        <widget class="QLineEdit" name="prebolusNoiseLineEdit"/>
                       </item>
+                      <item>
+                       <spacer name="horizontalSpacer_3">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>40</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
                      </layout>
                     </widget>
                    </item>
-                   <item row="3" column="0">
-                    <widget class="QLabel" name="label_18">
-                     <property name="text">
-                      <string>Minimum T1:</string>
-                     </property>
-                    </widget>
+                   <item row="1" column="6">
+                    <widget class="QLineEdit" name="yRangeLineEdit"/>
                    </item>
-                   <item row="3" column="1" colspan="4">
-                    <widget class="QLineEdit" name="minT1lineEdit"/>
-                   </item>
-                   <item row="4" column="0">
+                   <item row="4" column="5">
                     <widget class="QLabel" name="label_34">
                      <property name="text">
                       <string>Peak time window:</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="4" column="1" colspan="4">
+                   <item row="4" column="6">
                     <widget class="QLineEdit" name="peakTimeLineEdit"/>
                    </item>
-                   <item row="6" column="0">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_14">
+                     <property name="text">
+                      <string>Slices:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="8" column="1">
+                    <spacer name="verticalSpacer_10">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="7" column="0" colspan="2">
                     <widget class="QLabel" name="label_33">
                      <property name="text">
-                      <string>% of candidates:</string>
+                      <string>% of candidate voxels used:</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="6" column="1">
+                   <item row="7" column="3">
                     <widget class="QDoubleSpinBox" name="selectPctSpinBox"/>
                    </item>
-                  </layout>
-                 </widget>
-                </widget>
-               </item>
-               <item>
-                <widget class="QTabWidget" name="outputTabWidget">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>100</height>
-                  </size>
-                 </property>
-                 <property name="currentIndex">
-                  <number>0</number>
-                 </property>
-                 <widget class="QWidget" name="outputTab" native="true">
-                  <attribute name="title">
-                   <string>Ouput</string>
-                  </attribute>
-                  <layout class="QGridLayout" name="gridLayout_9">
-                   <item row="0" column="1">
-                    <widget class="QLineEdit" name="outputDirLineEdit"/>
+                   <item row="0" column="1" colspan="3">
+                    <widget class="QLineEdit" name="slicesLineEdit"/>
                    </item>
-                   <item row="5" column="0">
-                    <widget class="QLabel" name="iaucLabel">
-                     <property name="text">
-                      <string>IAUC times:</string>
-                     </property>
-                    </widget>
+                   <item row="1" column="1" colspan="3">
+                    <widget class="QLineEdit" name="xRangeLineEdit"/>
                    </item>
-                   <item row="5" column="1">
-                    <widget class="QLineEdit" name="iaucTimesLineEdit"/>
-                   </item>
-                   <item row="0" column="2">
-                    <widget class="QToolButton" name="outputDirSelect">
-                     <property name="text">
-                      <string>...</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_10">
-                     <property name="text">
-                      <string>Output folder:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="6" column="0">
-                    <spacer name="verticalSpacer_7">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QCheckBox" name="outputCsCheckBox">
-                     <property name="text">
-                      <string>Output signal-derived C(t)</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QCheckBox" name="outputCmCheckBox">
-                     <property name="text">
-                      <string>Output model-estimated C(t)</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QCheckBox" name="sparseCheckBox">
-                     <property name="text">
-                      <string>Save data using sparse format</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QCheckBox" name="overwriteCheckBox">
-                     <property name="text">
-                      <string>Overwrite existing output</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                 <widget class="QWidget" name="loggingTab">
-                  <attribute name="title">
-                   <string>Logging</string>
-                  </attribute>
-                  <layout class="QGridLayout" name="gridLayout_10">
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_30">
-                     <property name="text">
-                      <string>Log name:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QLineEdit" name="configLineEdit"/>
-                   </item>
-                   <item row="3" column="0">
-                    <widget class="QLabel" name="label_27">
-                     <property name="text">
-                      <string>Audit name:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="1">
-                    <widget class="QLineEdit" name="auditNameLineEdit"/>
-                   </item>
-                   <item row="4" column="0">
-                    <widget class="QLabel" name="label_31">
-                     <property name="text">
-                      <string>Audit folder:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QLineEdit" name="logNameLineEdit"/>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="label_29">
-                     <property name="text">
-                      <string>Config name:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="1">
-                    <widget class="QLineEdit" name="auditDirLineEdit"/>
-                   </item>
-                   <item row="4" column="2">
-                    <widget class="QToolButton" name="auditDirSelect">
-                     <property name="text">
-                      <string>...</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="1">
-                    <spacer name="verticalSpacer_5">
-                     <property name="orientation">
-                      <enum>Qt::Vertical</enum>
-                     </property>
-                     <property name="sizeHint" stdset="0">
-                      <size>
-                       <width>20</width>
-                       <height>40</height>
-                      </size>
-                     </property>
-                    </spacer>
+                   <item row="4" column="1" colspan="3">
+                    <widget class="QLineEdit" name="minT1lineEdit"/>
                    </item>
                   </layout>
                  </widget>
@@ -1525,13 +1629,6 @@
               </layout>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QPlainTextEdit" name="cmdTextEdit">
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
            </layout>
           </widget>
          </widget>
@@ -1547,8 +1644,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1169</width>
-     <height>21</height>
+     <width>1182</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

@@ -6,6 +6,8 @@
 #define GIT_TAG "@GIT_TAG@"
 #define MDM_VERSION GIT_TAG
 #define MDM_TEST_CALIBRATION_DIR "@CMAKE_BINARY_DIR@/calibration_data/"
+#define MDM_QBI_WEBSITE "@QBI_WEBSITE@"
+#define MDM_USER_WIKI "@USER_WIKI@"
 
 #if _WIN32
 
@@ -15,8 +17,18 @@
 #define MDM_EXE_DIR "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@/Release/"
 #endif
 
+#elif USING_XCODE
+
+#if _DEBUG
+#define MDM_EXE_DIR "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@/Debug/"
 #else
+#define MDM_EXE_DIR "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@/Release/"
+#endif
+
+#else
+
 #define MDM_EXE_DIR "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@/"
+
 #endif
 
 
