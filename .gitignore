@@ -1,5 +1,4 @@
-build/*
-builds/*
+build*
 .DS_Store
 examples/test_dataset/madym*
 ~*

@@ -91,7 +91,7 @@ set(MADYM_DEPLOY_DIR "madym-${MADYM_VERSION}")
 # Configure RPATH settings, see https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}")
+set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 #---------------------------------------------------------------------------
@@ -107,6 +107,9 @@ file(COPY
 
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} )
+
+#Run the installation parts of the make lists
+option( BUILD_INSTALL "Should the install targets be built?" NO )
 
 option( BUILD_TESTING "Should the tests be built?" YES )
 

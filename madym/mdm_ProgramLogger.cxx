@@ -208,11 +208,13 @@ MDM_API bool mdm_ProgramLogger::logAuditMessage(const std::string &message)
 }
 DISABLE_WARNING_POP
 
+#ifdef USING_QT
 //
 MDM_API mdm_QProgramLogger& mdm_ProgramLogger::qLogger()
 {
   return qLogger_;
 }
+#endif
 
 //****************************************************************************
 // Private
