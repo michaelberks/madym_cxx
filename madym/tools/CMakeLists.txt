@@ -6,6 +6,16 @@
 
 project(madym_tools)
 
+if (BUILD_INSTALL)
+  if (APPLE)
+    if ( BUILD_QT_GUI )
+      set(CMAKE_INSTALL_RPATH "@loader_path/madym_gui.app/Contents/Frameworks")
+    else()
+      set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+    endif()
+  endif()
+endif()
+
 #-------------------------------------------------------------------
 # Main madym analysis tool applied to whole image volumes
 add_executable(madym_DCE 
@@ -57,71 +67,103 @@ endif ( BUILD_TESTING )
 #--------------------------------------------------------------------------------
 # Now the installation stuff below
 #--------------------------------------------------------------------------------
+if (BUILD_INSTALL)
 
-#set(CPACK_ARCHIVE_FILE_NAME "madym_${MADYM_VERSION}-${CMAKE_GENERATOR}") this should work but docs are wrong: cmake bug
+  if (APPLE)
+    set(APPLE_CODESIGN_ID "" CACHE STRING 
+      "Apple developer ID for certificate used to code sign Apple targets")
+  endif()
+  #set(CPACK_ARCHIVE_FILE_NAME "madym_${MADYM_VERSION}-${CMAKE_GENERATOR}") this should work but docs are wrong: cmake bug
 
-install(TARGETS madym_DCE 
-  RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Tools
-    CONFIGURATIONS Release)
-install(TARGETS madym_DCE_lite 
-  RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Tools
-    CONFIGURATIONS Release)
-install(TARGETS madym_T1 
-  RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Tools
-    CONFIGURATIONS Release)
-install(TARGETS madym_T1_lite 
-  RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Tools
-    CONFIGURATIONS Release)
+  install(TARGETS madym_DCE 
+    RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT Tools
+      CONFIGURATIONS Release)
+  install(TARGETS madym_DCE_lite 
+    RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT Tools
+      CONFIGURATIONS Release)
+  install(TARGETS madym_T1 
+    RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT Tools
+      CONFIGURATIONS Release)
+  install(TARGETS madym_T1_lite 
+    RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT Tools
+      CONFIGURATIONS Release)
+  install(TARGETS madym_AIF 
+    RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT Tools
+      CONFIGURATIONS Release)
 
-#Install example data and config scripts
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/examples" DESTINATION "${MADYM_DEPLOY_DIR}"
-		COMPONENT Examples
-		CONFIGURATIONS Release)
+  #Install example data and config scripts
+  install(DIRECTORY "${CMAKE_SOURCE_DIR}/examples" DESTINATION "${MADYM_DEPLOY_DIR}"
+      USE_SOURCE_PERMISSIONS
+      COMPONENT Examples
+      CONFIGURATIONS Release)
 
-#Only build the archive when we're not build the main GUI. If we build
-#the GUI, we make a proper installer package
+  #Only build the archive when we're not build the main GUI. If we build
+  #the GUI, we make a proper installer package
 
-if (NOT BUILD_QT_GUI)
-  set(CPACK_PACKAGE_FILE_NAME "madym_${MADYM_VERSION}-${CMAKE_GENERATOR}")
-  set(CPACK_ARCHIVE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
-    
-  #Windows
-  if (WIN32)
-    message(STATUS "Set generator to zip for ${CPACK_ARCHIVE_FILE_NAME}")
-    set(CPACK_GENERATOR "ZIP")
+  if (NOT BUILD_QT_GUI)
 
-    #We need to include boost dlls for windows
-    set(APPS "\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/madym_DCE.exe")
-    set(DIRS 
-      "${Boost_LIBRARY_DIR_RELEASE}")
+    set(CPACK_PACKAGE_FILE_NAME "madym_${MADYM_VERSION}-${CMAKE_GENERATOR}")
+    set(CPACK_ARCHIVE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
+      
+    #Windows
+    if (WIN32)
+      message(STATUS "Set generator to zip for ${CPACK_ARCHIVE_FILE_NAME}")
+      set(CPACK_GENERATOR "ZIP")
 
-    install(CODE "
-        include(BundleUtilities)
-        fixup_bundle(\"${APPS}\" \"\" \"${DIRS}\")
-        " 
+      #We need to include boost dlls for windows
+      set(APPS "\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/madym_DCE.exe")
+      set(DIRS 
+        "${Boost_LIBRARY_DIR_RELEASE}")
+
+      install(CODE "
+          include(BundleUtilities)
+          fixup_bundle(\"${APPS}\" \"\" \"${DIRS}\")
+          " 
+          COMPONENT Tools
+          CONFIGURATIONS Release)
+
+    #Apple
+    elseif(APPLE)
+      
+      #Sign the tools on Apple
+      install(CODE
+        "execute_process(COMMAND codesign -s 
+          ${APPLE_CODESIGN_ID}
+          \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DCE )"
+        "execute_process(COMMAND codesign -s 
+          ${APPLE_CODESIGN_ID}
+          \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DCE_lite )"
+        "execute_process(COMMAND codesign -s 
+          ${APPLE_CODESIGN_ID}
+          \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_T1 )"
+        "execute_process(COMMAND codesign -s 
+          ${APPLE_CODESIGN_ID}
+          \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_T1_lite )"
+        "execute_process(COMMAND codesign -s 
+          ${APPLE_CODESIGN_ID}
+          \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_AIF )"
         COMPONENT Tools
         CONFIGURATIONS Release)
+      
+      message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")
+      set(CPACK_GENERATOR "TGZ")
 
-  #Apple
-  elseif(APPLE)
-    message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")
-    set(CPACK_GENERATOR "TGZ")
+    #Unix
+    elseif(UNIX)
+      message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")
+      set(CPACK_GENERATOR "TGZ")
 
-  #Unix
-  elseif(UNIX)
-    message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")
-    set(CPACK_GENERATOR "TGZ")
+    endif ()
 
-  endif ()
+    set(CPACK_SOURCE_IGNORE_FILES
+      \\.git/
+      build/
+      ".*~$"
+    )
 
-  set(CPACK_SOURCE_IGNORE_FILES
-    \\.git/
-    build/
-    ".*~$"
-  )
+    set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+    set(CPACK_VERBATIM_VARIABLES YES)
+    include(CPack)
 
-  set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
-  set(CPACK_VERBATIM_VARIABLES YES)
-  include(CPack)
-
+  endif()
 endif()

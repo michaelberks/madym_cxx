@@ -111,13 +111,23 @@ if ( BUILD_QT_GUI )
   qt5_use_modules(mdm Core)
 endif()
 
+if (BUILD_INSTALL)
+  if ( BUILD_QT_GUI )
+    set(CMAKE_INSTALL_RPATH "@loader_path/madym_gui.app/Contents/Frameworks")
+  endif()
+
+  install(TARGETS mdm
+    ARCHIVE DESTINATION "${MADYM_DEPLOY_DIR}/lib" COMPONENT Libs
+    LIBRARY DESTINATION "${MADYM_DEPLOY_DIR}/lib" COMPONENT Libs
+    RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT Libs
+    CONFIGURATIONS Release) 
+endif()
+
 if ( MSVC )
 	target_link_libraries( mdm ws2_32 )
 else ( MSVC )
 	target_link_libraries( mdm m)
 endif ( MSVC )
-
-
 
 if ( BUILD_TOOLS )
 	subdirs(tools)
@@ -130,12 +140,6 @@ endif ()
 if ( BUILD_TESTING )
   subdirs(tests)
 endif ( BUILD_TESTING )
-
-install(TARGETS mdm
-  ARCHIVE DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
-  LIBRARY DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
-  RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}" COMPONENT Libs
-  CONFIGURATIONS Release)
 
 #if ( BUILD_PYTHON )
 #	subdirs(python)
