@@ -112,10 +112,6 @@ if ( BUILD_QT_GUI )
 endif()
 
 if (BUILD_INSTALL)
-  if ( BUILD_QT_GUI )
-    set(CMAKE_INSTALL_RPATH "@loader_path/madym_gui.app/Contents/Frameworks")
-  endif()
-
   install(TARGETS mdm
     ARCHIVE DESTINATION "${MADYM_DEPLOY_DIR}/lib" COMPONENT Libs
     LIBRARY DESTINATION "${MADYM_DEPLOY_DIR}/lib" COMPONENT Libs

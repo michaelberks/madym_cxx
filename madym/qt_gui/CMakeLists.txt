@@ -207,6 +207,21 @@ if (BUILD_INSTALL)
       COMPONENT Tools
       CONFIGURATIONS Release)
 
+    install(CODE
+      "message(STATUS \"Copying libs in framework \")
+      execute_process(COMMAND ls 
+          \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app/Contents/Frameworks)"
+      CONFIGURATIONS Release)   
+
+    install(
+      DIRECTORY 
+      ${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app/Contents/Frameworks/
+      DESTINATION ${MADYM_DEPLOY_DIR}/lib
+        CONFIGURATIONS Release
+        PATTERN Qt* EXCLUDE
+        PATTERN lib*.dylib
+    )
+
     set(CPACK_ARCHIVE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
     message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")
     set(CPACK_GENERATOR "DragNDrop;TGZ")

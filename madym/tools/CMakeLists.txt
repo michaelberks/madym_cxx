@@ -6,16 +6,6 @@
 
 project(madym_tools)
 
-if (BUILD_INSTALL)
-  if (APPLE)
-    if ( BUILD_QT_GUI )
-      set(CMAKE_INSTALL_RPATH "@loader_path/madym_gui.app/Contents/Frameworks")
-    else()
-      set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
-    endif()
-  endif()
-endif()
-
 #-------------------------------------------------------------------
 # Main madym analysis tool applied to whole image volumes
 add_executable(madym_DCE 
