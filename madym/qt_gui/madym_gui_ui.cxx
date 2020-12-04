@@ -10,10 +10,12 @@
 #include <madym/t1_methods/mdm_T1MethodGenerator.h>
 
 #include <madym/mdm_ProgramLogger.h>
+#include <mdm_version.h>
 #include "madym_gui_model_configure.h"
 #include <iomanip>
 
 #include <QScrollBar>
+#include <QDesktopServices>
 
 static const QString NONE_SELECTED = "<None selected>";
 //
@@ -55,59 +57,6 @@ void madym_gui_ui::closeEvent(QCloseEvent *ev)
   ev->accept();
 }
 
-/*//! Helper function to parse text into list of strings
-std::vector<std::string> parse_string_list(const QString &text)
-{
-  QStringList textList = text.split(";");
-  std::vector<std::string> strings;
-  foreach(QString str, textList) {
-		strings.push_back(str.toStdString());
-  }
-  return strings;
-}
-
-//! Helper function to convert list of strings into display text
-QString make_strings_text(const std::vector<std::string> &strings)
-{
-	QString text;
-	if (strings.empty())
-		text = "";
-	else
-	{
-		text = strings[0].c_str();
-
-		for (int it = 1; it < strings.size(); it++)
-			text.append(";").append(strings[it].c_str());
-	}
-	return text;
-}
-
-//! Helper function to parse text into list of doubles
-std::vector<double> parse_double_list(const QString &text)
-{
-  QStringList textList = text.split(",");
-  std::vector<double> doubles;
-  foreach(QString str, textList) {
-		doubles.push_back(str.toDouble());
-  }
-  return doubles;
-}
-
-//! Helper function to convert list of doubles into display text
-QString make_doubles_text(const std::vector<double> &doubles)
-{
-	QString text;
-	if (doubles.empty())
-		text = "";
-	else
-	{
-		text = QString::number(doubles[0]);
-		for (int it = 1; it < doubles.size(); it++)
-			text.append(",").append(QString::number(doubles[it]));
-	}	
-
-	return text;
-}*/
 
 //-------------------------------------------------------------------------
 //:Menu file
@@ -115,6 +64,27 @@ QString make_doubles_text(const std::vector<double> &doubles)
 void madym_gui_ui::on_actionExit_triggered()
 {
 	close();
+}
+
+void madym_gui_ui::on_actionAbout_triggered()
+{
+  QMessageBox msgBox;
+  msgBox.setTextFormat(Qt::RichText);   //this is what makes the links clickable
+  msgBox.setText(tr(
+    "Madym Version %1.<br/>"
+    "Author: Michael Berks<br/>"
+    "Copyright: The University of Manchester<br/>"
+    "<a href='%2'>%2</a>")
+    .arg(MDM_VERSION)
+    .arg(MDM_QBI_WEBSITE));
+  msgBox.setWindowTitle("About Madym");
+  msgBox.setIcon(QMessageBox::Information);
+  msgBox.exec();
+}
+
+void madym_gui_ui::on_actionUser_wiki_triggered()
+{
+  QDesktopServices::openUrl(QUrl(MDM_USER_WIKI));
 }
 
 //-------------------------------------------------------------------------
@@ -352,6 +322,8 @@ void madym_gui_ui::on_s0UseRatioCheckBox_stateChanged(int state)
 {
   ui.s0VolLineEdit->setEnabled(!state && ui.t1UsePrecomputedCheckBox->isChecked());
   ui.s0VolPathSelect->setEnabled(!state && ui.t1UsePrecomputedCheckBox->isChecked());
+  if (state)
+    ui.t1VolLineEdit->setText("");
 }
 void madym_gui_ui::on_t1UsePrecomputedCheckBox_stateChanged(int state)
 {
@@ -365,6 +337,7 @@ void madym_gui_ui::on_t1UsePrecomputedCheckBox_stateChanged(int state)
 void madym_gui_ui::on_t1VolLineEdit_textChanged(const QString &text)
 {
 	processor_.madym_exe().options().T1Name.set(text.toStdString());
+  ui.t1UsePrecomputedCheckBox->setChecked(!text.isEmpty());
 }
 
 void madym_gui_ui::on_t1VolPathSelect_clicked()
@@ -436,12 +409,7 @@ void madym_gui_ui::on_AIFtypeComboBox_currentIndexChanged(const QString &text)
 {
   auto type = mdm_AIF::typeFromString(text.toStdString());
   processor_.madym_exe().options().aifType.set(type);
-  
-  ui.AIFfileLineEdit->setEnabled(type == mdm_AIF::AIF_FILE);
-  ui.AIFfileSelect->setEnabled(type == mdm_AIF::AIF_FILE);
-  ui.AIFmapLineEdit->setEnabled(type == mdm_AIF::AIF_MAP);
-  ui.AIFmapSelect->setEnabled(type == mdm_AIF::AIF_MAP);
-  ui.doseLineEdit->setEnabled(type == mdm_AIF::AIF_POP || type == mdm_AIF::AIF_STD);
+  set_AIF_enabled();
 }
 
 void madym_gui_ui::on_AIFfileLineEdit_textChanged(const QString &text)
@@ -866,8 +834,6 @@ void madym_gui_ui::initialize_widget_values()
 
     //Output options specific to DCE fits
     ui.iaucLabel->show();
-    ui.outputCsCheckBox->show();
-    ui.outputCmCheckBox->show();
     ui.iaucTimesLineEdit->show();
     ui.outputCsCheckBox->setChecked(options.outputCt_sig());
     ui.outputCmCheckBox->setChecked(options.outputCt_mod());
@@ -879,13 +845,6 @@ void madym_gui_ui::initialize_widget_values()
     auto idx = ui.fittingTabWidget->indexOf(ui.aifTab);
     if (idx >= 0)
       ui.fittingTabWidget->removeTab(idx);
-  }
-  else
-  {
-    ui.iaucLabel->hide();
-    ui.outputCsCheckBox->hide();
-    ui.outputCmCheckBox->hide();
-    ui.iaucTimesLineEdit->hide();
   }
 
   //Configure tabs only visible for AIF detection
@@ -925,6 +884,10 @@ void madym_gui_ui::initialize_widget_values()
     idx = ui.fittingTabWidget->indexOf(ui.vascularTab);
     if (idx >= 0)
       ui.fittingTabWidget->removeTab(idx);
+
+    //Hide the IAUC options from the S(t) to C(t) tab
+    ui.iaucLabel->hide();
+    ui.iaucTimesLineEdit->hide();
   }
 
   if (runType_ == madym_gui_processor::AIF || runType_ == madym_gui_processor::DCE)
@@ -987,8 +950,6 @@ void madym_gui_ui::initialize_widget_values()
 	ui.outputDirLineEdit->setText(options.outputDir().c_str());
 	ui.overwriteCheckBox->setChecked(options.overwrite());
 	ui.sparseCheckBox->setChecked(options.sparseWrite());
-
-  
 
   //Logging options - visible for all tools
   ui.logNameLineEdit->setText(options.programLogName().c_str());
@@ -1072,6 +1033,17 @@ void madym_gui_ui::initialize_AIF_options()
     ui.AIFtypeComboBox->addItem(NONE_SELECTED);
   }
   ui.AIFtypeComboBox->setCurrentIndex(selected_index);
+  set_AIF_enabled();
+}
+
+void madym_gui_ui::set_AIF_enabled()
+{
+  auto type = processor_.madym_exe().options().aifType();
+  ui.AIFfileLineEdit->setEnabled(type == mdm_AIF::AIF_FILE);
+  ui.AIFfileSelect->setEnabled(type == mdm_AIF::AIF_FILE);
+  ui.AIFmapLineEdit->setEnabled(type == mdm_AIF::AIF_MAP);
+  ui.AIFmapSelect->setEnabled(type == mdm_AIF::AIF_MAP);
+  ui.doseLineEdit->setEnabled(type == mdm_AIF::AIF_POP || type == mdm_AIF::AIF_STD);
 }
 
 bool madym_gui_ui::check_required_options()

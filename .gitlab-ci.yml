@@ -30,7 +30,7 @@ build:
     - echo "This job builds madym in debug configuration for testing"
     - mkdir -p build
     - cd build
-    - cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_QT_GUI=ON ..
+    - cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_QT_GUI=OFF ..
     - make
     - echo "Madym version is $(bin/madym_DCE -v)"
   cache:

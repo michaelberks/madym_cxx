@@ -1,0 +1,4 @@
+# Madym
+Madym is a C++ toolkit for quantative DCE-MRI analysis developed in the [QBI Lab](http://qbi-lab.org/) at the University of Manchester. It comprises a set of command line tools and a graphical user-interface based on an extendable C++ library. It is cross-platform, and requires few external libraries to build from source. Pre-built binaries for Windows, MacOS and Linux are available on request. We have also developed complementary interfaces in Matlab and python, that allow the flexibility of developing in those scripting languages, while allowing C++ to do the heavy-duty computational work of tracer-kinetic model fitting.
+
+For details on building and using Madym, please follow the links below. If you have any queries please contact [Michael Berks](michael.berks@manchester.ac.uk) or use the issue tracker.
