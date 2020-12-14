@@ -10,12 +10,6 @@ if ( BUILD_SHARED_LIBS )
 	add_definitions(-DMDM_BUILD_SHARED )
 endif ( BUILD_SHARED_LIBS )
 
-add_definitions(-DBOOST_ALL_DYN_LINK )
-find_package(Boost COMPONENTS system filesystem program_options date_time REQUIRED)
-
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
 add_subdirectory(opt)
 
 option( BUILD_TOOLS "Should the main madym executable tools be built?" YES )
@@ -41,6 +35,12 @@ if ( BUILD_QT_GUI )
 else ()
   set(mdm_moc_files "")
 endif ()
+
+add_definitions(-DBOOST_ALL_DYN_LINK )
+find_package(Boost COMPONENTS system filesystem program_options date_time REQUIRED)
+
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(mdm_sources
 	mdm_RunTools.cxx				  mdm_RunTools.h
@@ -102,10 +102,10 @@ add_library(mdm
 
 target_link_libraries( mdm
   mdm_opt
-  ${Boost_FILESYSTEM_LIBRARY}
-  ${Boost_SYSTEM_LIBRARY}
-  ${Boost_PROGRAM_OPTIONS_LIBRARY}
-  ${Boost_DATE_TIME_LIBRARY}
+  Boost::filesystem
+  Boost::system
+  Boost::program_options
+  Boost::date_time
 )
 if ( BUILD_QT_GUI )
   qt5_use_modules(mdm Core)

@@ -97,7 +97,7 @@ if (BUILD_INSTALL)
     #then the Qt deploy tool will do the relative rpath replacement 
     set_target_properties(madym_gui
       PROPERTIES
-      INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib"
+      INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib;${BOOST_LIBRARY_DIRS}"
       XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES
       CONFIGURATIONS Release)
     
@@ -187,6 +187,45 @@ if (BUILD_INSTALL)
       COMPONENT GUI
       CONFIGURATIONS Release)
 
+    # Transfer the value of ${MY_DEPENDENCY_PATHS} into the install script
+    install(CODE "
+      set(LIB_PATH \"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}\")
+      set(RUN_PATH \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\")
+      set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
+      set(GUI_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app\")
+      "
+      COMPONENT Tools
+      CONFIGURATIONS Release)
+
+    install(CODE [[
+      file(GET_RUNTIME_DEPENDENCIES
+        EXECUTABLES ${RUN_PATH}/madym_DCE
+        RESOLVED_DEPENDENCIES_VAR _r_deps
+        UNRESOLVED_DEPENDENCIES_VAR _u_deps)
+      foreach(_file ${_r_deps})
+        file(INSTALL
+          DESTINATION ${LIB_DEST}
+          TYPE SHARED_LIBRARY
+          FILES "${_file}"
+        )
+      endforeach()
+      list(LENGTH _u_deps _u_length)
+      if("${_u_length}" GREATER 0)
+        message(WARNING "Unresolved dependencies detected!")
+      endif()
+      ]]
+      COMPONENT Tools
+      CONFIGURATIONS Release)
+
+    install(CODE [[
+      file(INSTALL
+          DESTINATION ${LIB_DEST}
+          FILES ${GUI_DEST}/Contents/Frameworks/QtCore.framework
+      )
+      ]]
+      COMPONENT Tools
+      CONFIGURATIONS Release)
+
     install(CODE
       "message(STATUS \"Code-signing cmd line tools using ID ${APPLE_CODESIGN_ID}\")
       execute_process(COMMAND codesign -s 
@@ -205,26 +244,11 @@ if (BUILD_INSTALL)
         ${APPLE_CODESIGN_ID}
         \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_AIF )"
       COMPONENT Tools
-      CONFIGURATIONS Release)
-
-    install(CODE
-      "message(STATUS \"Copying libs in framework \")
-      execute_process(COMMAND ls 
-          \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app/Contents/Frameworks)"
-      CONFIGURATIONS Release)   
-
-    install(
-      DIRECTORY 
-      ${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app/Contents/Frameworks/
-      DESTINATION ${MADYM_DEPLOY_DIR}/lib
-        CONFIGURATIONS Release
-        PATTERN Qt* EXCLUDE
-        PATTERN lib*.dylib
-    )
+      CONFIGURATIONS Release)  
 
     set(CPACK_ARCHIVE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
     message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")
-    set(CPACK_GENERATOR "DragNDrop;TGZ")
+    set(CPACK_GENERATOR "DragNDrop")
     set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/images/madym.icns")
     set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_CURRENT_SOURCE_DIR}/images/madym.icns")
 
