@@ -99,7 +99,7 @@ MDM_API void mdm_FileManager::loadParameterMaps(const std::string &paramDir,
     for (int i = 0; i < paramNames.size(); i++)
       params.push_back(i);
   else
-    for (auto i : params)
+    for (auto i : initMapParams)
       params.push_back(i-1); //Need -1 because user indexing starts at 1
 
   for (auto i : params)
