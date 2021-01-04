@@ -599,6 +599,12 @@ void madym_gui_ui::on_residualsSelect_clicked()
 }
 
 //
+void madym_gui_ui::on_clearLogButton_clicked()
+{
+  ui.cmdTextEdit->clear();
+}
+
+//
 void madym_gui_ui::on_overwriteCheckBox_stateChanged(int state)
 {
 	processor_.madym_exe().options().overwrite.set(state);
@@ -845,6 +851,10 @@ void madym_gui_ui::initialize_widget_values()
     auto idx = ui.fittingTabWidget->indexOf(ui.aifTab);
     if (idx >= 0)
       ui.fittingTabWidget->removeTab(idx);
+
+    //Set the tool label and run button text
+    ui.runButton->setText("Run DCE model fitting");
+    ui.toolLabel->setText("DCE model fitting");
   }
 
   //Configure tabs only visible for AIF detection
@@ -888,6 +898,10 @@ void madym_gui_ui::initialize_widget_values()
     //Hide the IAUC options from the S(t) to C(t) tab
     ui.iaucLabel->hide();
     ui.iaucTimesLineEdit->hide();
+
+    //Set the tool label and run button text
+    ui.runButton->setText("Run AIF detection");
+    ui.toolLabel->setText("AIF detection");
   }
 
   if (runType_ == madym_gui_processor::AIF || runType_ == madym_gui_processor::DCE)
@@ -935,6 +949,10 @@ void madym_gui_ui::initialize_widget_values()
       ui.inputTabWidget->removeTab(idx);
 
     ui.fittingTabWidget->hide();
+
+    //Set the tool label and run button text
+    ui.runButton->setText("Run T1 mapping");
+    ui.toolLabel->setText("T1 mapping");
   }
   
   //T1 calculation - visible for all tools

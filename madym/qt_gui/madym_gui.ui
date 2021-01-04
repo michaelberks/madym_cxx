@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1182</width>
-    <height>677</height>
+    <height>838</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -41,8 +41,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1156</width>
-         <height>944</height>
+         <width>1145</width>
+         <height>764</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -186,15 +186,6 @@
                </color>
               </brush>
              </colorrole>
-             <colorrole role="PlaceholderText">
-              <brush brushstyle="NoBrush">
-               <color alpha="128">
-                <red>0</red>
-                <green>0</green>
-                <blue>0</blue>
-               </color>
-              </brush>
-             </colorrole>
             </active>
             <inactive>
              <colorrole role="WindowText">
@@ -326,15 +317,6 @@
              <colorrole role="ToolTipText">
               <brush brushstyle="SolidPattern">
                <color alpha="255">
-                <red>0</red>
-                <green>0</green>
-                <blue>0</blue>
-               </color>
-              </brush>
-             </colorrole>
-             <colorrole role="PlaceholderText">
-              <brush brushstyle="NoBrush">
-               <color alpha="128">
                 <red>0</red>
                 <green>0</green>
                 <blue>0</blue>
@@ -478,15 +460,6 @@
                </color>
               </brush>
              </colorrole>
-             <colorrole role="PlaceholderText">
-              <brush brushstyle="NoBrush">
-               <color alpha="128">
-                <red>0</red>
-                <green>0</green>
-                <blue>0</blue>
-               </color>
-              </brush>
-             </colorrole>
             </disabled>
            </palette>
           </property>
@@ -616,13 +589,24 @@
           <widget class="QWidget" name="runPage">
            <layout class="QGridLayout" name="gridLayout_8">
             <item row="0" column="0">
-             <widget class="QPlainTextEdit" name="cmdTextEdit">
-              <property name="readOnly">
-               <bool>true</bool>
+             <widget class="QLabel" name="toolLabel">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>T1 mapping</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1" rowspan="2">
+            <item row="0" column="1" rowspan="3">
              <widget class="QFrame" name="controls">
               <property name="maximumSize">
                <size>
@@ -1629,6 +1613,26 @@
               </layout>
              </widget>
             </item>
+            <item row="1" column="0">
+             <widget class="QPlainTextEdit" name="cmdTextEdit">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QPushButton" name="clearLogButton">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Clear log window</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </widget>
@@ -1645,7 +1649,7 @@
      <x>0</x>
      <y>0</y>
      <width>1182</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
