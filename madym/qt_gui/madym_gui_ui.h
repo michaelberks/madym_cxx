@@ -167,7 +167,8 @@ private slots:
   void on_residualsLineEdit_textChanged(const QString &text);
   void on_residualsSelect_clicked();
 
-  //AIF detection
+  //Log window
+  void on_clearLogButton_clicked();
 
   //: Other slots
   void on_logMessageReceived(QString msg);
