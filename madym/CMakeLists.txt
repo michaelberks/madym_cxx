@@ -42,10 +42,12 @@ find_package(Boost COMPONENTS system filesystem program_options date_time REQUIR
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
+find_package(ZLIB)
+add_definitions(-DHAVE_ZLIB)
+
 set(mdm_sources
 	mdm_RunTools.cxx				  mdm_RunTools.h
 	mdm_AIF.cxx						    mdm_AIF.h
-	mdm_AnalyzeFormat.cxx			mdm_AnalyzeFormat.h
 	mdm_ErrorTracker.cxx			mdm_ErrorTracker.h			
 		
 	mdm_DCEVoxel.cxx				  mdm_DCEVoxel.h
@@ -66,6 +68,19 @@ set(mdm_sources
   mdm_exception.h
 	mdm_api.h
 )
+set(mdm_io_sources
+  image_io/mdm_ImageDatatypes.h
+  image_io/mdm_ImageIO.cxx image_io/mdm_ImageIO.h
+  image_io/analyze/mdm_AnalyzeFormat.cxx image_io/analyze/mdm_AnalyzeFormat.h
+  image_io/xtr/mdm_XtrFormat.cxx image_io/xtr/mdm_XtrFormat.h
+  image_io/nifti/mdm_NiftiFormat.cxx image_io/nifti/mdm_NiftiFormat.h
+  image_io/nifti/mdm_NiftiFormatAscii.cxx  image_io/nifti/mdm_NiftiFormatTransforms.cxx 
+  image_io/nifti/znzlib.cpp image_io/nifti/znzlib.h
+  image_io/nifti/nifti_swaps.h
+	image_io/nifti/nifti1.h
+  image_io/nifti/nifti2.h   
+)
+
 set(mdm_run_sources
   run/mdm_RunToolsDCEFit.cxx			run/mdm_RunToolsDCEFit.h
   run/mdm_RunToolsT1Fit.cxx				run/mdm_RunToolsT1Fit.h
@@ -98,7 +113,12 @@ set(mdm_t1_method_sources
 )
 
 add_library(mdm 
-	${mdm_sources} ${mdm_run_sources} ${mdm_dce_model_sources} ${mdm_t1_method_sources} ${mdm_moc_files})
+	${mdm_sources} 
+  ${mdm_io_sources}
+  ${mdm_run_sources} 
+  ${mdm_dce_model_sources} 
+  ${mdm_t1_method_sources} 
+  ${mdm_moc_files})
 
 target_link_libraries( mdm
   mdm_opt
@@ -106,6 +126,7 @@ target_link_libraries( mdm
   Boost::system
   Boost::program_options
   Boost::date_time
+  ZLIB::ZLIB
 )
 if ( BUILD_QT_GUI )
   qt5_use_modules(mdm Core)

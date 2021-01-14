@@ -11,7 +11,8 @@
 
 #include "mdm_VolumeAnalysis.h"
 #include "mdm_ParamSummaryStats.h"
-#include "mdm_AnalyzeFormat.h"
+#include <madym/image_io/mdm_ImageDatatypes.h>
+#include <madym/image_io/mdm_ImageIO.h>
 
 //!   Manager class for reading input and writing ouput of volume-wise model analysis
 /*!
@@ -161,12 +162,19 @@ public:
 	*/
 	MDM_API void setSaveCtModelMaps(bool flag);
 
-	//! Set flag to write out in sparse format
-	/*!
-	\param flag if true, writes out images using sparse format
-	\see mdm_AnalyzeFormat
-	*/
-	MDM_API void setSparseWrite(bool flag);
+  //! Set image format for reading
+  /*!
+  \param fmt image format, must match one of the valid format options, otherwise throws exception
+  \see mdm_ImageIO
+  */
+  MDM_API void setImageReadFormat(const std::string &fmt);
+
+  //! Set image format for writing output
+  /*!
+  \param fmt image format, must match one of the valid format options, otherwise throws exception
+  \see mdm_ImageIO
+  */
+  MDM_API void setImageWriteFormat(const std::string &fmt);
 
 protected:
 
@@ -184,7 +192,7 @@ private:
 
 	void saveOutputMap(const std::string &mapName, const mdm_Image3D &img, 
 		const std::string &outputDir, bool writeXtr = false,
-    const mdm_AnalyzeFormat::Data_type format = mdm_AnalyzeFormat::DT_FLOAT);
+    const mdm_ImageDatatypes::DataType format = mdm_ImageDatatypes::DT_FLOAT);
 
   void saveMapsSummaryStats(const std::string &roiName, mdm_ParamSummaryStats &stats);
 
@@ -199,7 +207,8 @@ private:
 
 	bool writeCtDataMaps_;
   bool writeCtModelMaps_;
-	bool sparseWrite_;
+  mdm_ImageIO::ImageFormat imageWriteFormat_;
+  mdm_ImageIO::ImageFormat imageReadFormat_;
 };
 
 #endif /* MDM_FILELOAD_HDR */

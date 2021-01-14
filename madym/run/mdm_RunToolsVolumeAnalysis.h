@@ -33,6 +33,9 @@ public:
 protected:
 	//Methods:
 
+  //! Set-up general file manager options
+  void setFileManagerParams();
+
 	//! Load error map
 	/*!
 	1. Create path to error map from user options

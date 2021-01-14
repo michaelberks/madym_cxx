@@ -181,9 +181,14 @@ struct mdm_InputOptions {
 	mdm_input_bool overwrite = mdm_input_bool(
 		false, "overwrite", "",
 		"Flag to overwrite existing analysis in output dir, default false"); //!< See initial value
-	mdm_input_bool sparseWrite = mdm_input_bool(
-		false, "sparse", "",
-		"Flag to write output in sparse Analyze format"); //!< See initial value
+
+  //Image format options
+  mdm_input_string imageReadFormat = mdm_input_string(
+    mdm_input_str("NIFTI"), "img_fmt_r", "",
+    "Image format for reading input"); //!< See initial value
+  mdm_input_string imageWriteFormat = mdm_input_string(
+    mdm_input_str("NIFTI"), "img_fmt_w", "",
+    "Image format for writing output"); //!< See initial value
 
 	//Logging options
   mdm_input_bool noLog = mdm_input_bool(

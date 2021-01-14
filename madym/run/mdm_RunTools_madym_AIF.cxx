@@ -146,7 +146,10 @@ MDM_API int mdm_RunTools_madym_AIF::parseInputs(int argc, const char *argv[])
   options_parser_.add_option(config_options, options_.outputRoot);
   options_parser_.add_option(config_options, options_.outputDir);
   options_parser_.add_option(config_options, options_.overwrite);
-  options_parser_.add_option(config_options, options_.sparseWrite);
+
+  //Image format options
+  options_parser_.add_option(config_options, options_.imageReadFormat);
+  options_parser_.add_option(config_options, options_.imageWriteFormat);
 
   //Logging options_
   options_parser_.add_option(config_options, options_.noLog);
@@ -187,14 +190,6 @@ void mdm_RunTools_madym_AIF::checkRequiredInputs()
 
   if (options_.aifSlices().empty() && options_.aifMap().empty())
     throw mdm_exception(__func__, "You must specify either --aif_slices or --aif_map");
-}
-
-//
-void mdm_RunTools_madym_AIF::setFileManagerParams()
-{
-  fileManager_.setSaveCtDataMaps(options_.outputCt_sig());
-  fileManager_.setSaveCtModelMaps(options_.outputCt_mod());
-  fileManager_.setSparseWrite(options_.sparseWrite());
 }
 
 //

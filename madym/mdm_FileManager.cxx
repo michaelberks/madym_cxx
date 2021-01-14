@@ -20,6 +20,7 @@ namespace fs = boost::filesystem;
 
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/mdm_exception.h>
+#include <madym/image_io/xtr/mdm_XtrFormat.h>
 
 const int mdm_FileManager::MAX_DYN_IMAGES = 1024;
 
@@ -28,7 +29,8 @@ MDM_API mdm_FileManager::mdm_FileManager(mdm_VolumeAnalysis &volumeAnalysis)
 	volumeAnalysis_(volumeAnalysis),
 	writeCtDataMaps_(false),
   writeCtModelMaps_(false),
-	sparseWrite_(false)
+  imageWriteFormat_(mdm_ImageIO::ImageFormat::NIFTI),
+  imageReadFormat_(mdm_ImageIO::ImageFormat::NIFTI)
 {
 }
 
@@ -40,7 +42,7 @@ MDM_API void mdm_FileManager::loadROI(const std::string &path)
 {
 	// Read in ROI image volume
   try {
-    mdm_Image3D ROI = mdm_AnalyzeFormat::readImage3D(path, false);
+    mdm_Image3D ROI = mdm_ImageIO::readImage3D(imageReadFormat_,path, false);
     ROI.setType(mdm_Image3D::ImageType::TYPE_ROI);
     volumeAnalysis_.setROI(ROI);
   }
@@ -59,7 +61,7 @@ MDM_API void mdm_FileManager::loadROI(const std::string &path)
 MDM_API void mdm_FileManager::saveROI(const std::string &outputDir, const std::string &name)
 {
  if (volumeAnalysis_.ROI())
-    saveOutputMap(name, volumeAnalysis_.ROI(), outputDir, false, mdm_AnalyzeFormat::DT_UNSIGNED_CHAR);
+    saveOutputMap(name, volumeAnalysis_.ROI(), outputDir, false, mdm_ImageDatatypes::DT_UNSIGNED_CHAR);
 }
 
 //
@@ -67,7 +69,7 @@ MDM_API void mdm_FileManager::loadAIFmap(const std::string &path)
 {
   try {
     // Read in AIF map image volume
-    mdm_Image3D AIFmap = mdm_AnalyzeFormat::readImage3D(path, false);
+    mdm_Image3D AIFmap = mdm_ImageIO::readImage3D(imageReadFormat_,path, false);
     AIFmap.setType(mdm_Image3D::ImageType::TYPE_ROI);
     volumeAnalysis_.setAIFmap(AIFmap);
   }
@@ -107,7 +109,7 @@ MDM_API void mdm_FileManager::loadParameterMaps(const std::string &paramDir,
     std::string paramName = paramDir + "/" + paramNames[i];
 
     try {
-      mdm_Image3D paramMap = mdm_AnalyzeFormat::readImage3D(paramName, false);
+      mdm_Image3D paramMap = mdm_ImageIO::readImage3D(imageReadFormat_,paramName, false);
       paramMap.setType(mdm_Image3D::ImageType::TYPE_KINETICMAP);
       volumeAnalysis_.setDCEMap(paramNames[i], paramMap);
     }
@@ -129,7 +131,7 @@ MDM_API void mdm_FileManager::loadModelResiduals(const std::string &path)
 {
   try {
     // Read in AIF map image volume
-    mdm_Image3D residuals = mdm_AnalyzeFormat::readImage3D(path, false);
+    mdm_Image3D residuals = mdm_ImageIO::readImage3D(imageReadFormat_,path, false);
     residuals.setType(mdm_Image3D::ImageType::TYPE_KINETICMAP);
     volumeAnalysis_.setDCEMap(mdm_VolumeAnalysis::MAP_NAME_RESDIUALS, residuals);
   }
@@ -237,7 +239,7 @@ MDM_API void mdm_FileManager::loadErrorTracker(const std::string &errorPath)
 {
   // Read in ROI image volume
   try {
-    mdm_Image3D errorMap = mdm_AnalyzeFormat::readImage3D(errorPath, false);
+    mdm_Image3D errorMap = mdm_ImageIO::readImage3D(imageReadFormat_,errorPath, false);
     errorMap.setType(mdm_Image3D::ImageType::TYPE_ERRORMAP);
 
     volumeAnalysis_.errorTracker().setErrorImage(errorMap);
@@ -256,7 +258,7 @@ MDM_API void mdm_FileManager::loadErrorTracker(const std::string &errorPath)
 MDM_API void mdm_FileManager::saveErrorTracker(const std::string &outputDir, const std::string &name)
 {
   saveOutputMap(name, volumeAnalysis_.errorTracker().errorImage(), outputDir, false,
-    mdm_AnalyzeFormat::DT_SIGNED_INT);
+    mdm_ImageDatatypes::DT_SIGNED_INT);
 }
 
 /*Does what is says on the tin*/
@@ -275,7 +277,7 @@ MDM_API void mdm_FileManager::loadT1MappingInputImages(const std::vector<std::st
 MDM_API void mdm_FileManager::loadT1Map(const std::string &T1path)
 {
   try {
-    mdm_Image3D T1_map = mdm_AnalyzeFormat::readImage3D(T1path, false);
+    mdm_Image3D T1_map = mdm_ImageIO::readImage3D(imageReadFormat_,T1path, false);
     T1_map.setType(mdm_Image3D::ImageType::TYPE_T1BASELINE);
 
     //If image successfully read, add it to the T1 mapper object
@@ -295,7 +297,7 @@ MDM_API void mdm_FileManager::loadT1Map(const std::string &T1path)
 MDM_API void mdm_FileManager::loadM0Map(const std::string &M0path)
 {
   try {
-    mdm_Image3D M0_map = mdm_AnalyzeFormat::readImage3D(M0path, false);
+    mdm_Image3D M0_map = mdm_ImageIO::readImage3D(imageReadFormat_,M0path, false);
     M0_map.setType(mdm_Image3D::ImageType::TYPE_M0MAP);
     
     //If image successfully read, add it to the T1 mapper object
@@ -353,7 +355,7 @@ MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 		std::string dynPath;
 		makeSequenceFilename(dynBasePath, dynPrefix, nDyn, dynPath, indexPattern);
 
-		if (!boost::filesystem::exists(dynPath))
+		if (!mdm_ImageIO::filesExist(imageReadFormat_, dynPath, false))
 		{
 			//If nDyns was set, we expect to load in that many images, so error and return false
 			//if any of them don't exist
@@ -368,7 +370,7 @@ MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 		else
 		{
       try {
-        mdm_Image3D img = mdm_AnalyzeFormat::readImage3D(dynPath, true);
+        mdm_Image3D img = mdm_ImageIO::readImage3D(imageReadFormat_,dynPath, true);
         img.setType(mdm_Image3D::ImageType::TYPE_T1DYNAMIC);
 
         //If successfully loaded, add image to the volume analysis
@@ -431,7 +433,7 @@ MDM_API void mdm_FileManager::loadCtDataMaps(const std::string &CtBasePath,
 		std::string CtPath;
 		makeSequenceFilename(CtBasePath, CtPrefix, nCt, CtPath, indexPattern);
 
-		if (!boost::filesystem::exists(CtPath))
+		if (!mdm_ImageIO::filesExist(imageReadFormat_, CtPath, false))
 		{
 			//If nDyns was set, we expect to load in that many images, so error and return false
 			//if any of them don't exist
@@ -445,7 +447,7 @@ MDM_API void mdm_FileManager::loadCtDataMaps(const std::string &CtBasePath,
 		else
 		{
       try {
-        mdm_Image3D img = mdm_AnalyzeFormat::readImage3D(CtPath, true);
+        mdm_Image3D img = mdm_ImageIO::readImage3D(imageReadFormat_,CtPath, true);
         img.setType(mdm_Image3D::ImageType::TYPE_CAMAP);
 
         //If successfully loaded, add image to the volume analysis
@@ -475,9 +477,16 @@ MDM_API void mdm_FileManager::setSaveCtModelMaps(bool b)
   writeCtModelMaps_ = b;
 }
 
-MDM_API void mdm_FileManager::setSparseWrite(bool b)
+//
+MDM_API void mdm_FileManager::setImageReadFormat(const std::string &fmt)
 {
-  sparseWrite_ = b;
+  imageReadFormat_ = mdm_ImageIO::formatFromString(fmt);
+}
+
+//
+MDM_API void mdm_FileManager::setImageWriteFormat(const std::string &fmt)
+{
+  imageWriteFormat_ = mdm_ImageIO::formatFromString(fmt);
 }
 
 //---------------------------------------------------------------------------
@@ -487,7 +496,7 @@ MDM_API void mdm_FileManager::setSparseWrite(bool b)
 void mdm_FileManager::loadT1InputImage(const std::string& filePath, int nVFA)
 {
   try {
-    mdm_Image3D img = mdm_AnalyzeFormat::readImage3D(filePath, true);
+    mdm_Image3D img = mdm_ImageIO::readImage3D(imageReadFormat_,filePath, true);
     img.setType(mdm_Image3D::ImageType::TYPE_T1WTSPGR);
 
     //If image successfully read, add it to the T1 mapper object
@@ -513,16 +522,18 @@ void mdm_FileManager::saveOutputMap(
 
 void mdm_FileManager::saveOutputMap(const std::string &mapName, const mdm_Image3D &img, 
   const std::string &outputDir, bool writeXtr/* = true*/,
-  const mdm_AnalyzeFormat::Data_type format /*= mdm_AnalyzeFormat::DT_FLOAT*/)
+  const mdm_ImageDatatypes::DataType format /*= mdm_ImageDatatypes::DT_FLOAT*/)
 {
 	std::string saveName = outputDir + "/" + mapName;
 
-	mdm_AnalyzeFormat::XTR_type xtr = (writeXtr ? mdm_AnalyzeFormat::XTR_type::NEW_XTR : mdm_AnalyzeFormat::XTR_type::NO_XTR);
+  mdm_XtrFormat::XTR_type xtr = (writeXtr ? 
+    mdm_XtrFormat::XTR_type::NEW_XTR : 
+    mdm_XtrFormat::XTR_type::NO_XTR);
 
 
   try {
-    mdm_AnalyzeFormat::writeImage3D(saveName, img,
-      format, xtr, sparseWrite_);
+    mdm_ImageIO::writeImage3D(imageWriteFormat_, saveName, img,
+      format, xtr);
   }
   catch (mdm_exception &e)
   {
@@ -578,7 +589,7 @@ void mdm_FileManager::makeSequenceFilename(const std::string &path, const std::s
 	const int fileNumber, std::string &filePath, const std::string &fileNumberFormat)
 {
 	auto formattedFilenumber = boost::format(fileNumberFormat.c_str()) % fileNumber;
-	auto imageName = boost::format("%1%%2%.img") % prefix % formattedFilenumber;
+	auto imageName = boost::format("%1%%2%") % prefix % formattedFilenumber;
 	filePath = (fs::path(path) / imageName.str()).string();
 }
 

@@ -65,8 +65,6 @@ private:
   //Methods:
   void checkRequiredInputs();
 
-  void setFileManagerParams();
-
   void setVolumeAnalysisParams();
 
   //! Compute AIF automatically from sequence of dynamic images

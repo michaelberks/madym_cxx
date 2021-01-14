@@ -116,6 +116,10 @@ private slots:
   void on_s0VolPathSelect_clicked();
 	void on_r1LineEdit_textChanged(const QString &text);
 
+  //Image format options
+  void on_imageReadComboBox_currentIndexChanged(const QString &text);
+  void on_imageWriteComboBox_currentIndexChanged(const QString &text);
+
   //Logging options
   void on_logNameLineEdit_textChanged(const QString &text);
   void on_auditNameLineEdit_textChanged(const QString &text);
@@ -151,7 +155,6 @@ private slots:
 	void on_overwriteCheckBox_stateChanged(int state);
 	void on_outputCsCheckBox_stateChanged(int state);
 	void on_outputCmCheckBox_stateChanged(int state);
-	void on_sparseCheckBox_stateChanged(int state);
 
   //Model fitting
   void on_modelSelectComboBox_currentIndexChanged(const QString &text);
@@ -185,6 +188,7 @@ private: // Methods
   void initialize_model_options();
   void initialize_T1_options();
   void initialize_AIF_options();
+  void initialize_image_format_options(QComboBox &b);
   void set_AIF_enabled();
   bool check_required_options();
 
