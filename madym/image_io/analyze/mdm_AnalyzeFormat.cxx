@@ -42,10 +42,10 @@ MDM_API mdm_Image3D mdm_AnalyzeFormat::readImage3D(const std::string &fileName,
   std::string imgFileName = baseName + ".img";
   std::string xtrFileName = baseName + ".xtr";
 
-  bool  xtrExistsFlag = true;
-  if (!filesExist(baseName, xtrExistsFlag))
-    throw mdm_exception(__func__, "Missing Analyze file " + baseName + ".hdr / img");
+  bool  xtrExistsFlag = boost::filesystem::exists(xtrFileName);
 
+  if (!filesExist(baseName, false))
+    throw mdm_exception(__func__, "Missing Analyze file " + baseName + ".hdr / img");
 
   // Files seem to exist, so let's start reading them ...
   readAnalyzeHdr(hdrFileName, hdr);
@@ -127,7 +127,7 @@ MDM_API mdm_Image3D mdm_AnalyzeFormat::readImage3D(const std::string &fileName,
   if (load_xtr)
   {
     if (xtrExistsFlag)
-      readAnalyzeXtr(xtrFileName, img);
+      mdm_XtrFormat::readAnalyzeXtr(xtrFileName, img);
     else
       throw mdm_exception(__func__, "No xtr file matching " + hdrFileName);
   }
@@ -136,11 +136,13 @@ MDM_API mdm_Image3D mdm_AnalyzeFormat::readImage3D(const std::string &fileName,
 }
 
 //
-MDM_API void mdm_AnalyzeFormat::writeImage3D(const std::string &baseName,
+MDM_API void mdm_AnalyzeFormat::writeImage3D(const std::string &fileName,
 	const mdm_Image3D &img,
-	const Data_type dataTypeFlag, const XTR_type xtrTypeFlag,
+	const mdm_ImageDatatypes::DataType dataTypeFlag, const mdm_XtrFormat::XTR_type xtrTypeFlag,
 	bool sparse)
 {
+  auto baseName = stripAnalyzeExtension(fileName);
+
   if (baseName.empty())
     throw mdm_exception(__func__, "Basename for writing image must not be empty");
 
@@ -161,114 +163,55 @@ MDM_API void mdm_AnalyzeFormat::writeImage3D(const std::string &baseName,
 	//Write analyze now takes care of different output types
 	writeAnalyzeImg(baseName, img, dataTypeFlag, sparse);
 
-	// Write *.xtr files only if info has been set (default values are all NaN)
-	// But ignore TE for now ... GAB 5 June 2007
-	if (xtrTypeFlag != NO_XTR)
-	  writeAnalyzeXtr(baseName, img, xtrTypeFlag);
+	// Write *.xtr file
+	if (xtrTypeFlag != mdm_XtrFormat::NO_XTR)
+    mdm_XtrFormat::writeAnalyzeXtr(baseName, img, xtrTypeFlag);
 
 }
 
 //
-MDM_API std::string mdm_AnalyzeFormat::stripAnalyzeExtension(const std::string & fileName)
+bool mdm_AnalyzeFormat::filesExist(const std::string & fileName,
+  bool warn)
 {
 
-	assert(!fileName.empty());
+  assert(!fileName.empty());
 
-	return (boost::filesystem::path(fileName).parent_path() /
-		boost::filesystem::path(fileName).stem()).string();
+  auto baseName = stripAnalyzeExtension(fileName);
+
+  std::string hdrName = baseName + ".hdr";
+  if (!boost::filesystem::exists(hdrName))
+  {
+    if (warn)
+      mdm_ProgramLogger::logProgramWarning(
+        __func__, hdrName + " does not exist");
+    return false;
+  }
+
+
+  std::string imgName = baseName + ".img";
+  if (!boost::filesystem::exists(imgName))
+  {
+    if (warn)
+      mdm_ProgramLogger::logProgramWarning(
+        __func__, imgName + " does not exist");
+    return false;
+  }
+
+  return true;
 }
-
-//
-MDM_API bool mdm_AnalyzeFormat::filesExist(const std::string & baseName, bool &xtrExistsFlag,
-	bool warn)
-{
-
-	assert(!baseName.empty());
-	xtrExistsFlag = false;
-
-	std::string fileName = baseName + ".hdr";
-	if (!boost::filesystem::exists(fileName))
-	{
-		if (warn)
-			mdm_ProgramLogger::logProgramWarning(
-				__func__, fileName + " does not exist");
-		return false;
-	}
-
-
-	fileName = baseName + ".img";
-	if (!boost::filesystem::exists(fileName))
-	{
-		if (warn)
-			mdm_ProgramLogger::logProgramWarning(
-        __func__, fileName + " does not exist");
-		return false;
-	}
-
-	fileName = baseName + ".xtr";
-	if (!boost::filesystem::exists(fileName))
-	{
-		xtrExistsFlag = false;
-	}
-	else
-		xtrExistsFlag = true;
-
-	return true;
-}
-
 
 //**********************************************************************
 //Private 
 //**********************************************************************
 //
-void mdm_AnalyzeFormat::writeNewXtr(std::ofstream &xtrFileStream,
-	const mdm_Image3D &img)
-{
-  img.metaDataToStream(xtrFileStream);
-}
 
 //
-void mdm_AnalyzeFormat::writeOldXtr(std::ofstream &xtrFileStream,
-	const mdm_Image3D &img)
+std::string mdm_AnalyzeFormat::stripAnalyzeExtension(const std::string & fileName)
 {
-  /* Convert and write values from extra info to file */
-	double timeStamp = img.timeStamp();
-  int hrs  = (int) (timeStamp / 10000);
-  int mins = (int) ((timeStamp - ((double) hrs * 10000.0)) / 100);
-  double secs = timeStamp - ((double) hrs * 10000.0) - ((double) mins * 100.0);
 
-  /* TEST FOR WRITE ERRORS */
-	xtrFileStream << "voxel dimensions" << ":\t" 
-		<< img.info().Xmm.value() << " " 
-		<< img.info().Ymm.value() << " "
-		<< img.info().Zmm.value() << std::endl;
-	xtrFileStream << "flip angle" << ":\t" << img.info().flipAngle.value() << std::endl;
-	xtrFileStream << "TR" << ":\t" << img.info().TR.value() << std::endl;
-	xtrFileStream << "timestamp" << ":\t" << hrs << " " << mins << " " << secs << " " << timeStamp << std::endl;
-}
-
-//
-void mdm_AnalyzeFormat::writeAnalyzeXtr(const std::string &baseName,
-                      const mdm_Image3D &img,
-                      const XTR_type typeFlag)
-{
-  std::string xtrFileName = baseName + ".xtr";
-
-  // Open Analyze header file stream for reading
-	std::ofstream xtrFileStream(xtrFileName.c_str(), std::ios::out);
-  if (!xtrFileStream)
-    throw mdm_exception(__func__, "Can't open Analyze extra info file" +  xtrFileName);
-
-  // Write values to extra info file
-  if (typeFlag == OLD_XTR)
-		mdm_AnalyzeFormat::writeOldXtr(xtrFileStream, img);
-  else
-		mdm_AnalyzeFormat::writeNewXtr(xtrFileStream, img);
-
-	xtrFileStream.close();
-  if (xtrFileStream.is_open())
-    throw mdm_exception(__func__, "Failed to close Analyze extra info file " + xtrFileName);
-    
+  assert(!fileName.empty());
+  auto p = boost::filesystem::path(fileName).replace_extension();
+  return p.string();
 }
 
 //
@@ -299,7 +242,7 @@ void mdm_AnalyzeFormat::writeAnalyzeHdr(const std::string &baseName,
 //
 void mdm_AnalyzeFormat::writeAnalyzeImg(const std::string &baseName,
 	const mdm_Image3D& img,
-	const Data_type typeFlag,
+	const mdm_ImageDatatypes::DataType typeFlag,
 	bool sparse)
 {
   
@@ -315,19 +258,19 @@ void mdm_AnalyzeFormat::writeAnalyzeImg(const std::string &baseName,
 	//of images toBinaryStream function
   switch (typeFlag)
   {
-	case DT_UNSIGNED_CHAR:
+  case mdm_ImageDatatypes::DT_UNSIGNED_CHAR:
 		img.toBinaryStream<char>(imgFileStream, sparse);
 		break;
-	case DT_SIGNED_SHORT:
+	case mdm_ImageDatatypes::DT_SIGNED_SHORT:
 		img.toBinaryStream<short>(imgFileStream, sparse);
     break;
-  case DT_SIGNED_INT:
+  case mdm_ImageDatatypes::DT_SIGNED_INT:
 		img.toBinaryStream<int>(imgFileStream, sparse);
     break;
-  case DT_FLOAT:
+  case mdm_ImageDatatypes::DT_FLOAT:
 		img.toBinaryStream<float>(imgFileStream, sparse);
     break;
-	case DT_DOUBLE:
+	case mdm_ImageDatatypes::DT_DOUBLE:
 		img.toBinaryStream<double>(imgFileStream, sparse);
 		break;
   default:
@@ -368,24 +311,24 @@ void mdm_AnalyzeFormat::readAnalyzeImg(const std::string &imgFileName,
   {
     switch (datatype)
     {
-    case DT_UNSIGNED_CHAR:
+    case mdm_ImageDatatypes::DT_UNSIGNED_CHAR:
       img.fromBinaryStream<char>(imgFileStream,
         sparse, swapFlag);
       break;
 
-    case DT_SIGNED_SHORT:
+    case mdm_ImageDatatypes::DT_SIGNED_SHORT:
       img.fromBinaryStream<short>(imgFileStream,
         sparse, swapFlag);
       break;
-    case DT_SIGNED_INT:
+    case mdm_ImageDatatypes::DT_SIGNED_INT:
       img.fromBinaryStream<int>(imgFileStream,
         sparse, swapFlag);
       break;
-    case DT_FLOAT:
+    case mdm_ImageDatatypes::DT_FLOAT:
       img.fromBinaryStream<float>(imgFileStream,
         sparse, swapFlag);
       break;
-    case DT_DOUBLE:
+    case mdm_ImageDatatypes::DT_DOUBLE:
       img.fromBinaryStream<double>(imgFileStream,
         sparse, swapFlag);
       break;
@@ -428,57 +371,6 @@ void mdm_AnalyzeFormat::readAnalyzeHdr(const std::string &hdrFileName,
 }
 
 //
-void mdm_AnalyzeFormat::readOldXtr(std::ifstream &xtrFileStream,
-	mdm_Image3D &img)
-{
-	/* Read values from extra info file */
-	img.setMetaDataFromStreamOld(xtrFileStream);
-
-}
-
-//
-void mdm_AnalyzeFormat::readNewXtr(std::ifstream &xtrFileStream,
-	mdm_Image3D &img)
-{
-	std::vector<std::string> keys;
-	std::vector<double> values;
-
-	/* Read values from extra info file */
-	/* TEST FOR READ ERRORS */
-	img.setMetaDataFromStream(xtrFileStream);
-}
-
-//
-void mdm_AnalyzeFormat::readAnalyzeXtr(const std::string &xtrFileName,
-	mdm_Image3D &img)
-{
-
-
-	std::string firstString;
-	
-	std::ifstream xtrFileStream(xtrFileName, std::ios::in);
-	/* Open Analyze header file stream for reading */
-	if (!xtrFileStream.is_open())
-    throw mdm_exception(__func__, "Can't open Analyze extra info file " + xtrFileName);
-
-	/* Read values from extra info file */
-	xtrFileStream >> firstString;
-	xtrFileStream.seekg(0);
-	if ((firstString == "voxel") || (firstString == "Voxel"))
-	{
-		readOldXtr(xtrFileStream, img);
-	}
-	else
-	{
-		readNewXtr(xtrFileStream, img);
-	}
-
-	xtrFileStream.close();
-	if (xtrFileStream.is_open())
-    throw mdm_exception(__func__, "Failed to close Analyze extra info file " + xtrFileName);
-}
-
-//
 //----------------------------------------------------------------------------
 void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(AnalyzeHdr &hdr,
 	const mdm_Image3D &img,
@@ -505,24 +397,24 @@ void  mdm_AnalyzeFormat::setHdrFieldsFromImage3D(AnalyzeHdr &hdr,
 	hdr.dimensions_.pixdim[3] = (float)img.info().Zmm.value();
 	switch (typeFlag)
 	{
-	case DT_UNSIGNED_CHAR:
-		hdr.dimensions_.datatype = (short)DT_UNSIGNED_CHAR;
+	case mdm_ImageDatatypes::DT_UNSIGNED_CHAR:
+		hdr.dimensions_.datatype = (short)mdm_ImageDatatypes::DT_UNSIGNED_CHAR;
 		hdr.dimensions_.bitpix = (short) sizeof(char) * 8;
 		break;
-	case DT_SIGNED_SHORT:
-		hdr.dimensions_.datatype = (short)DT_SIGNED_SHORT;
+	case mdm_ImageDatatypes::DT_SIGNED_SHORT:
+		hdr.dimensions_.datatype = (short)mdm_ImageDatatypes::DT_SIGNED_SHORT;
 		hdr.dimensions_.bitpix = (short) sizeof(short) * 8;
 		break;
-	case DT_SIGNED_INT:
-		hdr.dimensions_.datatype = (short)DT_SIGNED_INT;
+	case mdm_ImageDatatypes::DT_SIGNED_INT:
+		hdr.dimensions_.datatype = (short)mdm_ImageDatatypes::DT_SIGNED_INT;
 		hdr.dimensions_.bitpix = (short) sizeof(int) * 8;
 		break;
-	case DT_FLOAT:
-		hdr.dimensions_.datatype = (short)DT_FLOAT;
+	case mdm_ImageDatatypes::DT_FLOAT:
+		hdr.dimensions_.datatype = (short)mdm_ImageDatatypes::DT_FLOAT;
 		hdr.dimensions_.bitpix = (short) sizeof(float) * 8;
 		break;
-	case DT_DOUBLE:
-		hdr.dimensions_.datatype = (short)DT_DOUBLE;
+	case mdm_ImageDatatypes::DT_DOUBLE:
+		hdr.dimensions_.datatype = (short)mdm_ImageDatatypes::DT_DOUBLE;
 		hdr.dimensions_.bitpix = (short) sizeof(double) * 8;
 		break;
 	default:
@@ -564,7 +456,7 @@ void  mdm_AnalyzeFormat::hdrBlankInit(AnalyzeHdr &hdr)
 		el = '\0';
 
 	hdr.dimensions_.unused1 = (short)0;
-	hdr.dimensions_.datatype = (short)DT_UNKNOWN;
+	hdr.dimensions_.datatype = (short)mdm_ImageDatatypes::DT_UNKNOWN;
 	hdr.dimensions_.bitpix = (short)0;
 	hdr.dimensions_.dim_un0 = (short)0;
 	for (auto &el : hdr.dimensions_.pixdim)

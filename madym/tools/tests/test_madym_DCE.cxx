@@ -8,7 +8,7 @@
 #include <madym/mdm_AIF.h>
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
 #include <madym/run/mdm_RunTools_madym_DCE.h>
-#include <madym/mdm_AnalyzeFormat.h>
+#include <madym/image_io/mdm_ImageIO.h>
 #include <madym/mdm_Image3D.h>
 #include <madym/mdm_ParamSummaryStats.h>
 #include <cmath>
@@ -20,14 +20,15 @@ void check_output(
 	const std::string& Ct_output_dir,
 	const std::vector<double> &trueParams,
 	const std::vector<double> IAUCTimes,
-	const std::vector<double> IAUCVals)
+	const std::vector<double> IAUCVals,
+  mdm_ImageIO::ImageFormat imageFormat)
 {
   double tol = 0.1;
 
   //Even with empty model, these should be created
-  mdm_Image3D model_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "residuals.hdr", false);
-  mdm_Image3D error_codes = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "error_tracker.hdr", false);
-  mdm_Image3D enhancing = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "enhVox.hdr", false);
+  mdm_Image3D model_fit = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "residuals", false);
+  mdm_Image3D error_codes = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "error_tracker", false);
+  mdm_Image3D enhancing = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "enhVox", false);
 
   //Check error codes and enhancing
   BOOST_TEST_MESSAGE("No error code");
@@ -38,10 +39,10 @@ void check_output(
   if (!trueParams.empty())
   {
     //Load in the parameter img vols and extract the single voxel from each
-    mdm_Image3D ktrans_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "Ktrans.hdr", false);
-    mdm_Image3D ve_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "v_e.hdr", false);
-    mdm_Image3D vp_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "v_p.hdr", false);
-    mdm_Image3D tau_fit = mdm_AnalyzeFormat::readImage3D(Ct_output_dir + "tau_a.hdr", false);
+    mdm_Image3D ktrans_fit = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "Ktrans", false);
+    mdm_Image3D ve_fit = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "v_e", false);
+    mdm_Image3D vp_fit = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "v_p", false);
+    mdm_Image3D tau_fit = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "tau_a", false);
 
     //Check the model parameters have fitted correctly
     BOOST_TEST_MESSAGE(boost::format("Fitted ktrans (%1.2f, %2.2f)")
@@ -78,8 +79,8 @@ void check_output(
 	//Check IAUC
 	for (auto i = 0; i < IAUCTimes.size(); i++)
 	{
-		std::string iauc_name = Ct_output_dir + "IAUC" + std::to_string((int)IAUCTimes[i]) + ".hdr";
-		mdm_Image3D iauc = mdm_AnalyzeFormat::readImage3D(iauc_name, false);
+		std::string iauc_name = Ct_output_dir + "IAUC" + std::to_string((int)IAUCTimes[i]);
+		mdm_Image3D iauc = mdm_ImageIO::readImage3D(imageFormat, iauc_name, false);
 		BOOST_TEST_MESSAGE("Fitted IAUC" + std::to_string((int)IAUCTimes[i]));
 		BOOST_CHECK_CLOSE(iauc.voxel(0), IAUCVals[i], tol);
 	}
@@ -93,7 +94,7 @@ void check_output(
 
 BOOST_AUTO_TEST_SUITE(test_mdm_tools)
 
-BOOST_AUTO_TEST_CASE(test_madym) {
+BOOST_AUTO_TEST_CASE(test_madym_DCE) {
 	BOOST_TEST_MESSAGE("======= Testing tool: madym_DCE =======");
 	//Need to generate a dataset of analyze images. To do this, load in calibration
 	//data
@@ -171,7 +172,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		Ct_img.setVoxel(0, Ct[i_t]);
 
 		mdm_AnalyzeFormat::writeImage3D(Ct_name, Ct_img, 
-			mdm_AnalyzeFormat::DT_FLOAT, mdm_AnalyzeFormat::NEW_XTR, false);
+			mdm_ImageDatatypes::DT_FLOAT, mdm_XtrFormat::NEW_XTR, false);
 
 		if (!i_t)
 			BOOST_TEST_MESSAGE("Saved 1st dynamic image " << Ct_name);
@@ -200,6 +201,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		madym_options.hct.set(hct);
 		madym_options.IAUCTimes.set(IAUCTimes);
 		madym_options.inputCt.set(true);
+    madym_options.imageWriteFormat.set("ANALYZE");
 		madym_options.overwrite.set(true);
     madym_options.noAudit.set(true);
 		
@@ -210,7 +212,9 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		check_output(Ct_output_dir,
 			trueParams,
 			IAUCTimes,
-			IAUCVals);
+			IAUCVals,
+      mdm_ImageIO::ImageFormat::ANALYZE
+    );
 	}
 
 	//-------------------------------------------------------------------------------
@@ -229,7 +233,9 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 			<< " -D " << dose
 			<< " -H " << hct
 			<< " -I " << IAUC_str
-			<< " --Ct --overwrite "
+			<< " --Ct"
+      << " --img_fmt_w " << "ANALYZE"
+      << " --overwrite"
       << " --no_audit";
 
 		BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
@@ -249,7 +255,8 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		check_output(Ct_output_dir,
 			trueParams,
 			IAUCTimes,
-			IAUCVals);
+			IAUCVals,
+      mdm_ImageIO::ImageFormat::ANALYZE);
 	}
 
 	//-------------------------------------------------------------------------------
@@ -270,7 +277,8 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		madym_options.hct.set(hct);
 		madym_options.IAUCTimes.set({});
 		madym_options.inputCt.set(true);
-		madym_options.overwrite.set(true);
+    madym_options.imageWriteFormat.set("ANALYZE");
+    madym_options.overwrite.set(true);
     madym_options.noAudit.set(true);
 
 		madym_exe.parseInputs("test_madym_DCE_noI");
@@ -280,11 +288,12 @@ BOOST_AUTO_TEST_CASE(test_madym) {
 		check_output(Ct_output_dir,
 			trueParams,
 			{},
-			{});
+			{},
+      mdm_ImageIO::ImageFormat::ANALYZE);
 	}
 
   //-------------------------------------------------------------------------------
-  // 3) Using a run tools object with empty model
+  // 4) Using a run tools object with empty model
   //-------------------------------------------------------------------------------
   {
     std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct4/";
@@ -301,6 +310,7 @@ BOOST_AUTO_TEST_CASE(test_madym) {
     madym_options.hct.set(hct);
     madym_options.IAUCTimes.set(IAUCTimes);
     madym_options.inputCt.set(true);
+    madym_options.imageWriteFormat.set("ANALYZE");
     madym_options.overwrite.set(true);
     madym_options.noAudit.set(true);
 
@@ -311,7 +321,43 @@ BOOST_AUTO_TEST_CASE(test_madym) {
     check_output(Ct_output_dir,
       {},
       IAUCTimes,
-      IAUCVals);
+      IAUCVals,
+      mdm_ImageIO::ImageFormat::ANALYZE);
+  }
+
+  //-------------------------------------------------------------------------------
+  // 5) Using NIFTI as image format
+  //-------------------------------------------------------------------------------
+  {
+    std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct1/";
+    mdm_RunTools_madym_DCE madym_exe;
+    auto &madym_options = madym_exe.options();
+
+    madym_options.model.set("ETM");
+    madym_options.outputDir.set(Ct_output_dir);
+    madym_options.dynDir.set(dyn_dir);
+    madym_options.dynName.set("Ct_");
+    madym_options.dynFormat.set("%02u");
+    madym_options.nDyns.set(nTimes);
+    madym_options.injectionImage.set(injectionImage);
+    madym_options.dose.set(dose);
+    madym_options.hct.set(hct);
+    madym_options.IAUCTimes.set(IAUCTimes);
+    madym_options.inputCt.set(true);
+    madym_options.imageWriteFormat.set("NIFTI");
+    madym_options.overwrite.set(true);
+    madym_options.noAudit.set(true);
+
+    madym_exe.parseInputs("test_madym_DCE");
+    int result = madym_exe.run_catch();
+
+    BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
+    check_output(Ct_output_dir,
+      trueParams,
+      IAUCTimes,
+      IAUCVals,
+      mdm_ImageIO::ImageFormat::NIFTI
+    );
   }
 
 	//---------------------------------------------------------------------------

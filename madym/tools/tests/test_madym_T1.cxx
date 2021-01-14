@@ -3,7 +3,8 @@
 #include <madym/tests/mdm_test_utils.h>
 
 #include <madym/t1_methods/mdm_T1FitterVFA.h>
-#include <madym/mdm_AnalyzeFormat.h>
+#include <madym/image_io/nifti/mdm_NiftiFormat.h>
+#include <madym/image_io/xtr/mdm_XtrFormat.h>
 #include <madym/mdm_Image3D.h>
 #include <mdm_version.h>
 
@@ -11,7 +12,7 @@ namespace fs = boost::filesystem;
 
 BOOST_AUTO_TEST_SUITE(test_mdm_tools)
 
-BOOST_AUTO_TEST_CASE(test_calculate_T1) {
+BOOST_AUTO_TEST_CASE(test_madym_T1) {
 	BOOST_TEST_MESSAGE("======= Testing tool: madym T1 =======");
 
 	//Generate some signals from sample FA, TR, T1 and S0 values
@@ -39,8 +40,8 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1) {
 
 		FA_names[i_fa] = FA_dir + "FA_" + std::to_string((int)FAs[i_fa]);
 
-		mdm_AnalyzeFormat::writeImage3D(FA_names[i_fa], FA_img,
-			mdm_AnalyzeFormat::DT_FLOAT, mdm_AnalyzeFormat::NEW_XTR, false);
+		mdm_NiftiFormat::writeImage3D(FA_names[i_fa], FA_img,
+			mdm_ImageDatatypes::DT_FLOAT, mdm_XtrFormat::NEW_XTR, false);
 	}
 
 	//Call calculate_T1 to fit T1 and S0
@@ -69,8 +70,8 @@ BOOST_AUTO_TEST_CASE(test_calculate_T1) {
 	BOOST_CHECK_MESSAGE(!error, "Error returned from madym_T1 tool");
 
 	//Load in the parameter img vols and extract the single voxel from each
-	mdm_Image3D T1_fit = mdm_AnalyzeFormat::readImage3D(T1_output_dir + "T1.hdr", false);
-	mdm_Image3D M0_fit = mdm_AnalyzeFormat::readImage3D(T1_output_dir + "M0.hdr", false);
+	mdm_Image3D T1_fit = mdm_NiftiFormat::readImage3D(T1_output_dir + "T1", false);
+	mdm_Image3D M0_fit = mdm_NiftiFormat::readImage3D(T1_output_dir + "M0", false);
 
 	//Check the model parameters have fitted correctly
 	double tol = 0.1;

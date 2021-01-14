@@ -23,12 +23,21 @@ MDM_API mdm_RunToolsVolumeAnalysis::mdm_RunToolsVolumeAnalysis()
 {
 }
 
-
+//
 MDM_API mdm_RunToolsVolumeAnalysis::~mdm_RunToolsVolumeAnalysis()
 {
 
 }
 
+//
+//! Set-up general file manager options
+void mdm_RunToolsVolumeAnalysis::setFileManagerParams()
+{
+  fileManager_.setImageReadFormat(options_.imageReadFormat());
+  fileManager_.setImageWriteFormat(options_.imageWriteFormat());
+}
+
+//
 MDM_API void mdm_RunToolsVolumeAnalysis::loadErrorTracker()
 {
   if (!options_.errorTrackerName().empty())
@@ -38,6 +47,7 @@ MDM_API void mdm_RunToolsVolumeAnalysis::loadErrorTracker()
   }
 }
 
+//
 MDM_API void mdm_RunToolsVolumeAnalysis::loadROI()
 {
 	if (!options_.roiName().empty())

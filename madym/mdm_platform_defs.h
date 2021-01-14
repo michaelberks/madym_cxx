@@ -33,6 +33,7 @@
 //Original includes on *nix systems - wherever one of the below headers was included include this file instead
 #include <unistd.h>
 #include <sys/param.h>
+#include <sys/stat.h>
 #include <ifaddrs.h>
 #include <float.h>
 #define PLATFORM_USER "USER"

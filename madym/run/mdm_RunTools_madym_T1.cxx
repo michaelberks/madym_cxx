@@ -35,6 +35,9 @@ MDM_API void mdm_RunTools_madym_T1::run()
   //Set curent working dir
   set_up_cwd();
 
+  //Set file manager options
+  setFileManagerParams();
+
 	//Parse T1 method from string, will abort if method type not recognised
 	auto methodType = parseMethod(options_.T1method());
 
@@ -91,8 +94,11 @@ MDM_API int mdm_RunTools_madym_T1::parseInputs(int argc, const char *argv[])
 		//General output options_
 	options_parser_.add_option(config_options, options_.outputRoot);
 	options_parser_.add_option(config_options, options_.outputDir);
-	options_parser_.add_option(config_options, options_.sparseWrite);
 	options_parser_.add_option(config_options, options_.overwrite);
+
+  //Image format options
+  options_parser_.add_option(config_options, options_.imageReadFormat);
+  options_parser_.add_option(config_options, options_.imageWriteFormat);
 
 		//Logging options_
   options_parser_.add_option(config_options, options_.noLog);

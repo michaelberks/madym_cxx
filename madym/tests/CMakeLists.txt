@@ -18,6 +18,7 @@ add_executable( test_mdm
   test_image3D.cxx
   test_boost.cxx
   test_analyze.cxx
+  test_nifti.cxx
   test_T1.cxx
   test_AIF.cxx
   test_DCE_models.cxx

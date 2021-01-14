@@ -8,6 +8,7 @@
 
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
 #include <madym/t1_methods/mdm_T1MethodGenerator.h>
+#include <madym/image_io/mdm_ImageIO.h>
 
 #include <madym/mdm_ProgramLogger.h>
 #include <mdm_version.h>
@@ -372,6 +373,18 @@ void madym_gui_ui::on_r1LineEdit_textChanged(const QString &text)
 {
 	processor_.madym_exe().options().r1Const.set(text.toDouble());
 }
+
+//-------------------------------------------------------------------------
+//:Image format options
+void madym_gui_ui::on_imageReadComboBox_currentIndexChanged(const QString &text)
+{
+  processor_.madym_exe().options().imageReadFormat.set(text.toStdString());
+}
+
+void madym_gui_ui::on_imageWriteComboBox_currentIndexChanged(const QString &text)
+{
+  processor_.madym_exe().options().imageWriteFormat.set(text.toStdString());
+}
  
 //-------------------------------------------------------------------------
 //:Logging options
@@ -619,11 +632,6 @@ void madym_gui_ui::on_outputCsCheckBox_stateChanged(int state)
 void madym_gui_ui::on_outputCmCheckBox_stateChanged(int state)
 {
 	processor_.madym_exe().options().outputCt_mod.set(state);
-}
-
-void madym_gui_ui::on_sparseCheckBox_stateChanged(int state)
-{
-	processor_.madym_exe().options().sparseWrite.set(state);
 }
 
 void madym_gui_ui::on_logMessageReceived(QString msg)
@@ -964,10 +972,13 @@ void madym_gui_ui::initialize_widget_values()
   ui.t1InputTextEdit->setText(t1Inputs.replace("[", "").replace("]", "").replace(",","\n"));//
   ui.inputTabWidget->setCurrentIndex(0);
 
+  //Image format options
+  initialize_image_format_options(*ui.imageReadComboBox);
+  initialize_image_format_options(*ui.imageWriteComboBox);
+
 	//Ouput options - visible for all tools
 	ui.outputDirLineEdit->setText(options.outputDir().c_str());
 	ui.overwriteCheckBox->setChecked(options.overwrite());
-	ui.sparseCheckBox->setChecked(options.sparseWrite());
 
   //Logging options - visible for all tools
   ui.logNameLineEdit->setText(options.programLogName().c_str());
@@ -1052,6 +1063,30 @@ void madym_gui_ui::initialize_AIF_options()
   }
   ui.AIFtypeComboBox->setCurrentIndex(selected_index);
   set_AIF_enabled();
+}
+
+//
+void madym_gui_ui::initialize_image_format_options(QComboBox &b)
+{
+  const auto &formats = mdm_ImageIO::validFormats();
+  int selected_index = 0;
+  bool matched = false;
+  {
+    const QSignalBlocker blocker(&b);
+    // We use a signal blocker here to avoid trying to set an empty model
+    //if a config file is loaded an we update the widget values
+    b.clear();
+    for (auto format : formats)
+    {
+      b.addItem(format.c_str());
+      if (format == processor_.madym_exe().options().imageReadFormat())
+        matched = true;
+      else if (!matched)
+        selected_index++;
+    }
+    b.addItem(NONE_SELECTED);
+  }
+  b.setCurrentIndex(selected_index);
 }
 
 void madym_gui_ui::set_AIF_enabled()

@@ -183,7 +183,10 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.outputRoot);
 	options_parser_.add_option(config_options, options_.outputDir);
 	options_parser_.add_option(config_options, options_.overwrite);
-	options_parser_.add_option(config_options, options_.sparseWrite);
+
+  //Image format options
+  options_parser_.add_option(config_options, options_.imageReadFormat);
+  options_parser_.add_option(config_options, options_.imageWriteFormat);
 
 		//Logging options_
   options_parser_.add_option(config_options, options_.noLog);
@@ -228,9 +231,13 @@ void mdm_RunTools_madym_DCE::checkRequiredInputs()
 
 void mdm_RunTools_madym_DCE::setFileManagerParams()
 {
+  //Call the base class method to set general options
+  mdm_RunToolsVolumeAnalysis::setFileManagerParams();
+
+  //Add the DCE fit specific options
 	fileManager_.setSaveCtDataMaps(options_.outputCt_sig());
 	fileManager_.setSaveCtModelMaps(options_.outputCt_mod());
-	fileManager_.setSparseWrite(options_.sparseWrite());
+	
 }
 
 void mdm_RunTools_madym_DCE::setAIFParams()
