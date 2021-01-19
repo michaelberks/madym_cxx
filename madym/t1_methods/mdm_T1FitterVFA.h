@@ -21,13 +21,9 @@ public:
 	/*!
 	\param FAs vector of variable flip-angles in radians
 	\param TR repetition time in ms
+  \param usingB1 flag if using B1 correction
 	*/
-	MDM_API mdm_T1FitterVFA(const std::vector<double> &FAs, const double TR);
-
-	//! Default constructor
-	/*!
-	*/
-	MDM_API mdm_T1FitterVFA();
+	MDM_API mdm_T1FitterVFA(const std::vector<double> &FAs, const double TR, const bool usingB1);
 
 	//! Default denstructor
 	/*!
@@ -46,6 +42,20 @@ public:
 	*/
 	MDM_API void setTR(const double TR);
 
+  //! Set B1
+  /*!
+  \param B1 B1 value
+  */
+  MDM_API void setB1(const double B1);
+
+  //! Set inputs that vary on per voxel basis from which T1 will be estimated
+  /*!
+  If using B1 correction, inputs should be an nFA + 1 element vector, with signals in the first
+  nFA elements and the B1 correction at the end. Otherwise an nFA element vector signals.
+  \param inputs vector of signals (and B1 correction) from which T1 will be estimated
+  */
+  MDM_API void setInputs(const std::vector<double> &inputs);
+
 	//! Perform T1 fit using variable flip-angle method
 	/*!
 	\param T1value reference to hold computed T1
@@ -63,20 +73,6 @@ public:
 	*/
 	MDM_API virtual bool setInputsFromStream(std::istream& ifs,
 		const int nSignals);
-
-	//! Set any fixed scanner settings required to estimate T1
-	/*!
-	VFA requires knowing TR. This should be passed in as the only element of settings.
-	\param settings vector of length 1, with TR (in ms) as the single element.
-	*/
-	MDM_API void setFixedScannerSettings(const std::vector<double> &settings);
-
-	//! Set any variable scanner settings required to estimate T1
-	/*!
-	This is used to pass in the variable flip-angles, which should be a single
-	vector of length nSignals.
-	*/
-	MDM_API void setVariableScannerSettings(const std::vector<double> &settings);
 
 	//! Return minimum inputs required, must be implemented by derived subclass
 	/*
@@ -121,8 +117,9 @@ private:
 	void initFAs();
 
 	std::vector<double> FAs_;
-	double TR_;
-	double delta_;
+  double TR_;
+	double B1_;
+  bool usingB1_;
 
 	//Convenient to cache these when FAs set
 	int nFAs_;

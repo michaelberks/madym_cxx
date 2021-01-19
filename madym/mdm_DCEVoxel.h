@@ -59,10 +59,11 @@ public:
   \param r1Const relaxivity constant of contrast-agent
   \param M0 baseline magnetisation constant
   \param timepoint0 first time-point to use in pre-bolus noise estimation (default 0)
+  \param B1 B1 correction factor
 	*/
 	MDM_API void computeCtFromSignal(
     const double T1, const double FA, const double TR, const double r1Const,
-    const double M0, size_t timepoint0 = 0);
+    const double M0, const double B1 = 1, size_t timepoint0 = 0);
 
 	//! Compute IAUC values at selected times
 	/*!
@@ -122,11 +123,11 @@ private:
 
   //
   double computeT1DynPBM(const double st, const double s_pbm, 
-    const double T1, const double FA, const double TR, int &errorCode);
+    const double T1, const double cosFA, const double sinFA, const double TR, int &errorCode);
 
   //
   double computeT1DynM0(const double st, const double M0, 
-    const double FA, const double TR, int &errorCode);
+    const double cosFA, const double sinFA, const double TR, int &errorCode);
 
   //
 	std::vector<double> computeIAUC(const std::vector<double> &times);

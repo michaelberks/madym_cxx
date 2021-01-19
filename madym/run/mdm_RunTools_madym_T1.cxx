@@ -38,12 +38,6 @@ MDM_API void mdm_RunTools_madym_T1::run()
   //Set file manager options
   setFileManagerParams();
 
-	//Parse T1 method from string, will abort if method type not recognised
-	auto methodType = parseMethod(options_.T1method());
-
-	//Check number of signal inputs, will abort if too many/too few
-	checkNumInputs(methodType, (int)options_.T1inputNames().size());
-
 	//Create output folder/check overwrite
 	set_up_output_folder();
 
@@ -56,13 +50,8 @@ MDM_API void mdm_RunTools_madym_T1::run()
 	//Load ROI
 	loadROI();
 
-	//Load T1 inputs
-	loadT1Inputs();
-
-	//FA images loaded, try computing T1 and M0 maps
-	volumeAnalysis_.T1Mapper().setMethod(methodType);
-	volumeAnalysis_.T1Mapper().setNoiseThreshold(options_.T1noiseThresh());
-	volumeAnalysis_.T1Mapper().mapT1();
+  //Map T1
+  mapT1();
 
 	//Write output
 	writeOutput();
@@ -90,6 +79,8 @@ MDM_API int mdm_RunTools_madym_T1::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.T1method);
 	options_parser_.add_option(config_options, options_.T1inputNames);
 	options_parser_.add_option(config_options, options_.T1noiseThresh);
+  options_parser_.add_option(config_options, options_.B1Scaling);
+  options_parser_.add_option(config_options, options_.B1Name);
 
 		//General output options_
 	options_parser_.add_option(config_options, options_.outputRoot);

@@ -19,6 +19,9 @@
 #include <QDesktopServices>
 
 static const QString NONE_SELECTED = "<None selected>";
+static const QString IMAGE_FILE_FILTER =
+  "NIFTI images (*.nii *.hdr *.nii.gz *.hdr.gz);;Analyze images (*.hdr);;All files (*.*)";
+
 //
 //: Constructor
 madym_gui_ui::madym_gui_ui(QWidget *parent)
@@ -216,7 +219,7 @@ void madym_gui_ui::on_roiPathSelect_clicked()
 {
   QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select ROI mask"),
     dataDir_,
-    tr("Mask files (*.hdr)"));
+    IMAGE_FILE_FILTER);
 
   if (selectedPath.isEmpty())
     return;
@@ -233,7 +236,7 @@ void madym_gui_ui::on_errorTrackerSelect_clicked()
 {
   QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select error tracker"),
     dataDir_,
-    tr("Mask files (*.hdr)"));
+    IMAGE_FILE_FILTER);
 
   if (selectedPath.isEmpty())
     return;
@@ -285,6 +288,7 @@ void madym_gui_ui::on_injectionImageSpinBox_valueChanged(int value)
 void madym_gui_ui::on_t1MethodComboBox_currentIndexChanged(const QString &text)
 {
 	processor_.madym_exe().options().T1method.set(text.toStdString());
+  makeB1Consistent(text.toStdString() == mdm_T1MethodGenerator::toString(mdm_T1MethodGenerator::VFA_B1));
 }
 
 //
@@ -300,7 +304,7 @@ void madym_gui_ui::on_t1InputSelect_clicked()
 {
   QStringList selectedMaps = QFileDialog::getOpenFileNames(this, tr("Select input maps for baseline T1 calculation"),
     dataDir_,
-    tr("Map files (*.hdr)"));
+    IMAGE_FILE_FILTER);
 
   if (selectedMaps.isEmpty())
     return;
@@ -311,67 +315,116 @@ void madym_gui_ui::on_t1InputSelect_clicked()
 
   ui.t1InputTextEdit->setText(maps);
 }
+
 void madym_gui_ui::on_t1ThresholdLineEdit_textChanged(const QString &text)
 {
 	processor_.madym_exe().options().T1noiseThresh.set(text.toDouble());
 }
 
+void madym_gui_ui::on_b1MapLineEdit2_textChanged(const QString &text)
+{
+  on_b1MapLineEdit_textChanged(text);
+}
+
+void madym_gui_ui::on_b1MapPathSelect2_clicked()
+{
+  on_b1MapPathSelect_clicked();
+}
+
+void madym_gui_ui::on_b1ScalingSpinBox2_valueChanged(double value)
+{
+  processor_.madym_exe().options().B1Scaling.set(value);
+  QSignalBlocker(ui.b1ScalingSpinBox);
+  ui.b1ScalingSpinBox->setValue(value);
+}
+
 //-------------------------------------------------------------------------
 //:Signal to concentration_options
 
-void madym_gui_ui::on_s0UseRatioCheckBox_stateChanged(int state)
+void madym_gui_ui::on_m0RatioCheckBox_stateChanged(int state)
 {
-  ui.s0VolLineEdit->setEnabled(!state && ui.t1UsePrecomputedCheckBox->isChecked());
-  ui.s0VolPathSelect->setEnabled(!state && ui.t1UsePrecomputedCheckBox->isChecked());
+  ui.m0MapLineEdit->setEnabled(!state && ui.t1UsePrecomputedCheckBox->isChecked());
+  ui.m0MapPathSelect->setEnabled(!state && ui.t1UsePrecomputedCheckBox->isChecked());
   if (state)
-    ui.t1VolLineEdit->setText("");
+    ui.t1MapLineEdit->setText("");
+  processor_.madym_exe().options().M0Ratio.set(state);
 }
 void madym_gui_ui::on_t1UsePrecomputedCheckBox_stateChanged(int state)
 {
-  ui.t1VolLineEdit->setEnabled(state);
-  ui.t1VolPathSelect->setEnabled(state);
-  ui.s0VolLineEdit->setEnabled(state && !ui.s0UseRatioCheckBox->isChecked());
-  ui.s0VolPathSelect->setEnabled(state && !ui.s0UseRatioCheckBox->isChecked());
+  ui.t1MapLineEdit->setEnabled(state);
+  ui.t1MapPathSelect->setEnabled(state);
+  ui.m0MapLineEdit->setEnabled(state && !ui.m0RatioCheckBox->isChecked());
+  ui.m0MapPathSelect->setEnabled(state && !ui.m0RatioCheckBox->isChecked());
 
   ui.t1MapTab->setEnabled(!state && ui.inputTypeRadioButtonS->isChecked());
 }
-void madym_gui_ui::on_t1VolLineEdit_textChanged(const QString &text)
+void madym_gui_ui::on_t1MapLineEdit_textChanged(const QString &text)
 {
 	processor_.madym_exe().options().T1Name.set(text.toStdString());
   ui.t1UsePrecomputedCheckBox->setChecked(!text.isEmpty());
 }
 
-void madym_gui_ui::on_t1VolPathSelect_clicked()
+void madym_gui_ui::on_t1MapPathSelect_clicked()
 {
   QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select baseline T1 map"),
     dataDir_,
-    tr("Map files (*.hdr)"));
+    IMAGE_FILE_FILTER);
 
   if (selectedPath.isEmpty())
     return;
 
-  ui.t1VolLineEdit->setText(selectedPath);
+  ui.t1MapLineEdit->setText(selectedPath);
 }
-void madym_gui_ui::on_s0VolLineEdit_textChanged(const QString &text)
+void madym_gui_ui::on_m0MapLineEdit_textChanged(const QString &text)
 {
 	processor_.madym_exe().options().M0Name.set(text.toStdString());
 }
 
-void madym_gui_ui::on_s0VolPathSelect_clicked()
+void madym_gui_ui::on_m0MapPathSelect_clicked()
 {
   QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select baseline M0 map"),
     dataDir_,
-    tr("Map files (*.hdr)"));
+    IMAGE_FILE_FILTER);
 
   if (selectedPath.isEmpty())
     return;
 
-  ui.s0VolLineEdit->setText(selectedPath);
+  ui.m0MapLineEdit->setText(selectedPath);
 }
 
 void madym_gui_ui::on_r1LineEdit_textChanged(const QString &text)
 {
 	processor_.madym_exe().options().r1Const.set(text.toDouble());
+}
+
+void madym_gui_ui::on_b1CorrectionCheckBox_stateChanged(int state)
+{
+ makeB1Consistent(state);
+}
+
+void madym_gui_ui::on_b1MapLineEdit_textChanged(const QString &text)
+{
+  setB1Name(text);
+  makeB1Consistent(!text.isEmpty());
+}
+
+void madym_gui_ui::on_b1MapPathSelect_clicked()
+{
+  QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select B1 correction map"),
+    dataDir_,
+    IMAGE_FILE_FILTER);
+
+  if (selectedPath.isEmpty())
+    return;
+
+  ui.b1MapLineEdit->setText(selectedPath); //This will trigger setB1Name and makeB1Consistent
+}
+
+void madym_gui_ui::on_b1ScalingSpinBox_valueChanged(double value)
+{
+  processor_.madym_exe().options().B1Scaling.set(value);
+  QSignalBlocker(ui.b1ScalingSpinBox2);
+  ui.b1ScalingSpinBox2->setValue(value);
 }
 
 //-------------------------------------------------------------------------
@@ -452,7 +505,7 @@ void madym_gui_ui::on_AIFmapSelect_clicked()
 {
   QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select AIF map"),
     dataDir_,
-    tr("AIF map files (*.hdr)"));
+    IMAGE_FILE_FILTER);
 
   if (selectedPath.isEmpty())
     return;
@@ -603,7 +656,7 @@ void madym_gui_ui::on_residualsSelect_clicked()
 {
   QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select residuals map"),
     dataDir_,
-    tr("Residuals map files (*.hdr)"));
+    IMAGE_FILE_FILTER);
 
   if (selectedPath.isEmpty())
     return;
@@ -930,17 +983,19 @@ void madym_gui_ui::initialize_widget_values()
     if (ui.inputTabWidget->indexOf(ui.concentrationTab) < 0)
       ui.inputTabWidget->insertTab(1, ui.concentrationTab, "Signal to concentration");
 
-    ui.s0UseRatioCheckBox->setChecked(options.M0Ratio());
-    ui.t1VolLineEdit->setText(options.T1Name().c_str());
+    ui.m0RatioCheckBox->setChecked(options.M0Ratio());
+    ui.t1MapLineEdit->setText(options.T1Name().c_str());
     ui.t1UsePrecomputedCheckBox->setChecked(!options.T1Name().empty());
-    ui.s0VolLineEdit->setText(options.M0Name().c_str());
-    ui.t1VolLineEdit->setEnabled(ui.t1UsePrecomputedCheckBox->isChecked());
-    ui.t1VolPathSelect->setEnabled(ui.t1UsePrecomputedCheckBox->isChecked());
-    ui.s0VolLineEdit->setEnabled(!options.M0Ratio() &&
+    ui.m0MapLineEdit->setText(options.M0Name().c_str());
+    ui.t1MapLineEdit->setEnabled(ui.t1UsePrecomputedCheckBox->isChecked());
+    ui.t1MapPathSelect->setEnabled(ui.t1UsePrecomputedCheckBox->isChecked());
+    ui.m0MapLineEdit->setEnabled(!options.M0Ratio() &&
       ui.t1UsePrecomputedCheckBox->isChecked());
-    ui.s0VolPathSelect->setEnabled(!options.M0Ratio() &&
+    ui.m0MapPathSelect->setEnabled(!options.M0Ratio() &&
       ui.t1UsePrecomputedCheckBox->isChecked());
     ui.r1LineEdit->setText(QString::number(options.r1Const()));
+
+    //B1 options are set via the T1 tab initially
 
     ui.fittingTabWidget->show();
     ui.fittingTabWidget->setCurrentIndex(0);
@@ -971,6 +1026,13 @@ void madym_gui_ui::initialize_widget_values()
   QString t1Inputs(options.T1inputNames.value().toString().c_str());
   ui.t1InputTextEdit->setText(t1Inputs.replace("[", "").replace("]", "").replace(",","\n"));//
   ui.inputTabWidget->setCurrentIndex(0);
+
+  //Set B1 options
+  makeB1Consistent(
+    options.B1Correction() ||
+    options.T1method() == mdm_T1MethodGenerator::toString(mdm_T1MethodGenerator::VFA_B1)
+  );
+  ui.b1ScalingSpinBox->setValue(options.B1Scaling()); //Also sets spinbox in T1 mapping tab
 
   //Image format options
   initialize_image_format_options(*ui.imageReadComboBox);
@@ -1128,4 +1190,50 @@ bool madym_gui_ui::check_required_options()
   }
   }
   return true;
+}
+
+void madym_gui_ui::setB1Name(const QString &text)
+{
+  processor_.madym_exe().options().B1Name.set(text.toStdString());
+}
+
+void madym_gui_ui::makeB1Consistent(bool useB1)
+{
+  auto & options = processor_.madym_exe().options();
+  const auto vfaB1 = mdm_T1MethodGenerator::toString(mdm_T1MethodGenerator::VFA_B1);
+  const auto vfa = mdm_T1MethodGenerator::toString(mdm_T1MethodGenerator::VFA);
+
+  //Use signal blocker so we can set GUI elements without triggering callbacks
+  QSignalBlocker(ui.t1MethodComboBox);
+  QSignalBlocker(ui.b1CorrectionCheckBox);
+  QSignalBlocker(ui.b1MapLineEdit);
+  QSignalBlocker(ui.b1MapLineEdit2);
+
+  //Set options B1 flag
+  options.B1Correction.set(useB1);
+  ui.b1CorrectionCheckBox->setChecked(useB1);
+
+  //Now make sure T1 method is correct - if using B1, method should be VFA_B1
+  //If it was VFA_B1 and useB1 switched off. Set to VFA
+  if (options.T1method() == vfaB1 && !useB1)
+    options.T1method.set(vfa);
+    
+  if (options.T1method() != vfaB1 && useB1)
+    options.T1method.set(vfaB1);
+    
+
+  //Now make sure GUI elements match
+  ui.b1CorrectionCheckBox->setChecked(options.B1Correction());
+  if (options.T1method() != ui.t1MethodComboBox->currentText().toStdString())
+    ui.t1MethodComboBox->setCurrentText(options.T1method().c_str());
+  ui.b1MapLineEdit->setText(options.B1Name().c_str());
+  ui.b1MapLineEdit2->setText(options.B1Name().c_str());
+
+  //Finally, make sure everything is correctly enabled
+  ui.b1MapLineEdit->setEnabled(options.B1Correction());
+  ui.b1MapLineEdit2->setEnabled(options.B1Correction());
+  ui.b1MapPathSelect->setEnabled(options.B1Correction());
+  ui.b1MapPathSelect2->setEnabled(options.B1Correction());
+  ui.b1ScalingSpinBox->setEnabled(options.B1Correction());
+  ui.b1ScalingSpinBox2->setEnabled(options.B1Correction());
 }

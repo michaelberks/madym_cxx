@@ -29,24 +29,12 @@ MDM_API mdm_RunToolsT1Fit::~mdm_RunToolsT1Fit()
 }
 
 //
-mdm_T1MethodGenerator::T1Methods mdm_RunToolsT1Fit::parseMethod(const std::string &method)
-{
-	auto methodType = mdm_T1MethodGenerator::ParseMethodName(
-		options_.T1method());
-
-	if (methodType == mdm_T1MethodGenerator::UNDEFINED)
-    throw mdm_exception(__func__, "T1 method not recognised");
-
-	return methodType;
-}
-
-//
 void mdm_RunToolsT1Fit::checkNumInputs(mdm_T1MethodGenerator::T1Methods methodType, 
   const int& numInputs)
 {
 	//This is a bit rubbish - instantiating a whole new object just to get
 	//some limits returned. But we want limits defined by the derived T1 method class,
-	//but want to check these to parse user input before the actual fitting objects
+	//and want to check these to parse user input before the actual fitting objects
 	//get created.
 	auto T1fitter = mdm_T1MethodGenerator::createFitter(methodType, options_);
 

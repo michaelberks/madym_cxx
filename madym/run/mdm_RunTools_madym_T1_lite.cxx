@@ -46,7 +46,7 @@ MDM_API void mdm_RunTools_madym_T1_lite::run()
   set_up_cwd();
 
 	//Parse T1 method from string, will abort if method type not recognised
-	auto methodType = parseMethod(options_.T1method());
+	auto methodType = mdm_T1MethodGenerator::parseMethodName(options_.T1method(), options_.B1Correction());
 
 	//Instantiate T1 fitter of desired type
 	auto T1Fitter = mdm_T1MethodGenerator::createFitter(methodType, options_);
@@ -115,6 +115,7 @@ MDM_API int mdm_RunTools_madym_T1_lite::parseInputs(int argc, const char *argv[]
 	options_parser_.add_option(config_options, options_.T1method);
 	options_parser_.add_option(config_options, options_.FA);
 	options_parser_.add_option(config_options, options_.TR);
+  options_parser_.add_option(config_options, options_.B1Correction);
 	options_parser_.add_option(config_options, options_.T1noiseThresh);
 	options_parser_.add_option(config_options, options_.nT1Inputs);
 	options_parser_.add_option(config_options, options_.outputDir);

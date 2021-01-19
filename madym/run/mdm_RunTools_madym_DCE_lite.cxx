@@ -162,6 +162,7 @@ MDM_API void mdm_RunTools_madym_DCE_lite::run()
 	double d;
 	double T1 = 0.0;
 	double M0 = 0.0;
+  double B1 = 1.0;
 	int col_counter = 0;
 	int row_counter = 0;
 
@@ -171,6 +172,9 @@ MDM_API void mdm_RunTools_madym_DCE_lite::run()
 		col_length++;
 		if (!options_.M0Ratio())
 			col_length++;
+
+    if (options_.B1Correction())
+      col_length++;
 	}
 
   //Create a fitter
@@ -208,6 +212,7 @@ MDM_API void mdm_RunTools_madym_DCE_lite::run()
         options_.inputCt(),
 				T1, 
         M0,
+        B1,
 				options_.r1Const(),
 				options_.TR(),
 				options_.FA(),
@@ -233,6 +238,9 @@ MDM_API void mdm_RunTools_madym_DCE_lite::run()
 
 			else if (col_counter == options_.nDyns() + 1)
 				M0 = d;
+
+      else if (col_counter == options_.nDyns() + 2)
+        B1 = d;
 
 			else //col_counter < nDyns()
 				timeSeries[col_counter] = d;
@@ -276,6 +284,8 @@ MDM_API int mdm_RunTools_madym_DCE_lite::parseInputs(int argc, const char *argv[
 	options_parser_.add_option(config_options, options_.r1Const);
 	options_parser_.add_option(config_options, options_.FA);
 	options_parser_.add_option(config_options, options_.TR);
+  options_parser_.add_option(config_options, options_.B1Scaling);
+  options_parser_.add_option(config_options, options_.B1Correction);
 
 		//AIF options_
 	options_parser_.add_option(config_options, options_.aifName);
@@ -333,6 +343,7 @@ void mdm_RunTools_madym_DCE_lite::fit_series(
   const bool &inputCt,
   const double &T1,
   const double &M0,
+  const double &B1,
   const double &r1,
   const double &TR,
   const double & FA,
@@ -363,7 +374,7 @@ void mdm_RunTools_madym_DCE_lite::fit_series(
 
   //Convert signal
   if (!inputCt)
-    vox.computeCtFromSignal(T1, FA, TR, r1, M0, fitter.timepoint0());
+    vox.computeCtFromSignal(T1, FA, TR, r1, M0, B1, fitter.timepoint0());
 
   //Compute IAUC
   vox.computeIAUC();

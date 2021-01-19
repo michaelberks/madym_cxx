@@ -39,9 +39,10 @@ const std::string mdm_VolumeAnalysis::MAP_NAME_CT_MOD = "Ct_mod";
 
 MDM_API mdm_VolumeAnalysis::mdm_VolumeAnalysis()
 	:
-	T1_mapper_(errorTracker_, ROI_),
+	T1Mapper_(errorTracker_, ROI_),
 	testEnhancement_(false),
 	useM0Ratio_(true),
+  useB1correction_(false),
   outputCt_sig_(false),
   outputCt_mod_(false),
   useNoise_(false),
@@ -74,7 +75,7 @@ MDM_API void mdm_VolumeAnalysis::reset()
   noiseVar_.clear();
   dynamicMetaData_.reset();
 
-  T1_mapper_.reset();
+  T1Mapper_.reset();
   errorTracker_.resetErrorImage();
 
   /* Images for inputs and output */
@@ -94,13 +95,13 @@ MDM_API mdm_ErrorTracker& mdm_VolumeAnalysis::errorTracker()
 //
 MDM_API mdm_T1Mapper& mdm_VolumeAnalysis::T1Mapper()
 {
-	return T1_mapper_;
+	return T1Mapper_;
 }
 
 //
 MDM_API const mdm_T1Mapper& mdm_VolumeAnalysis::T1Mapper() const
 {
-  return T1_mapper_;
+  return T1Mapper_;
 }
 
 //
@@ -476,6 +477,12 @@ MDM_API void mdm_VolumeAnalysis::setM0Ratio(bool flag)
 }
 
 //
+MDM_API void mdm_VolumeAnalysis::setB1correction(bool flag)
+{
+  useB1correction_ = flag;
+}
+
+//
 MDM_API void mdm_VolumeAnalysis::setComputeCt(bool flag)
 {
 	computeCt_ = flag;
@@ -665,11 +672,12 @@ mdm_DCEVoxel mdm_VolumeAnalysis::setUpVoxel(size_t voxelIndex) const
     auto TR = dynamicMetaData_->TR.value();
     auto FA = dynamicMetaData_->flipAngle.value();
     
-    auto T1 = T1_mapper_.T1(voxelIndex);
-    auto M0 = useM0Ratio_ ? 0.0 : T1_mapper_.M0(voxelIndex);
+    auto T1 = T1Mapper_.T1(voxelIndex);
+    auto M0 = useM0Ratio_ ? 0.0 : T1Mapper_.M0(voxelIndex);
+    auto B1 = useB1correction_ ? 1.0 : T1Mapper_.B1(voxelIndex);
 
     //Convert signal (if already C(t) does nothing so can call regardless)
-    vox.computeCtFromSignal(T1, FA, TR, r1Const_, M0, firstImage_);
+    vox.computeCtFromSignal(T1, FA, TR, r1Const_, M0, B1, firstImage_);
   }
     
   return vox;
@@ -858,7 +866,7 @@ void  mdm_VolumeAnalysis::fitModel(
   for(const auto voxelIndex : selectedVoxels)
   {
     //If compute Ct from signal, skip voxels with invalid T1    
-    if (computeCt_ && T1_mapper_.T1(voxelIndex) < 0.0)
+    if (computeCt_ && T1Mapper_.T1(voxelIndex) < 0.0)
       continue;
     
     //Check if we've got parameter maps with values to initialise each voxel

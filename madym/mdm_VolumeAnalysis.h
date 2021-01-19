@@ -254,6 +254,12 @@ public:
 	*/
 	MDM_API void setM0Ratio(bool flag);
 
+  //! Set use B1 correction flag
+  /*!
+  \param flag true if using B1 correction to FAs, false if using supplied M0 map
+  */
+  MDM_API void setB1correction(bool flag);
+
 	//! Set flag to compute C(t) from signal
 	/*!
 	\param flag true if input is signal to convert to contrast-agent concentration. False if C(t) directly supplied.
@@ -440,7 +446,7 @@ private:
   std::unique_ptr<mdm_Image3D::MetaData> dynamicMetaData_;
   int prebolusImage_;
 
-	mdm_T1Mapper T1_mapper_;
+	mdm_T1Mapper T1Mapper_;
 	mdm_ErrorTracker errorTracker_;
 
 	/* Images for inputs and output */
@@ -461,6 +467,9 @@ private:
 
 	//Flag to check if we're using ratio method for converting to concentration
 	bool useM0Ratio_;
+
+  //Flag to check if we're using B1 correction for converting to concentration
+  bool useB1correction_;
 
 	//Flag to see if we need to compute concentration
 	bool computeCt_;

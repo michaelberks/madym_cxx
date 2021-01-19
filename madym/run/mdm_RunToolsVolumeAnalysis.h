@@ -60,6 +60,9 @@ protected:
 	//! Check if there are T1 signal inputs to load, and if so, load them
 	MDM_API void loadT1Inputs();
 
+  //! Load B1 correction map
+  MDM_API void loadB1(bool required);
+
   //! Map T1 from input images using method specified in options
   MDM_API void mapT1();
 

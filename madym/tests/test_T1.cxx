@@ -50,8 +50,8 @@ BOOST_AUTO_TEST_CASE(test_T1) {
 
 	//Next fit the signals to recover M0 and T1
 	double T1fit, M0fit;
-	mdm_T1FitterVFA T1Calculator(FAs, TR);
-	T1Calculator.setInputSignals(signalsCalibration);
+	mdm_T1FitterVFA T1Calculator(FAs, TR, false);
+	T1Calculator.setInputs(signalsCalibration);
 	int errCode = T1Calculator.fitT1(T1fit, M0fit);
 	BOOST_CHECK_MESSAGE(!errCode, "T1 fit returned error " << errCode);
 
@@ -59,6 +59,22 @@ BOOST_AUTO_TEST_CASE(test_T1) {
 	BOOST_CHECK_CLOSE(T1fit, T1, 0.01);
 	BOOST_TEST_MESSAGE("Testing fitted M0 match");
 	BOOST_CHECK_CLOSE(M0fit, M0, 0.01);
+
+  //Repeat the test using B1 correction
+  double B1 = 0.9;
+  for (auto &fa : FAs)
+    fa /= B1;
+  signalsCalibration.push_back(B1);
+
+  mdm_T1FitterVFA T1CalculatorB1(FAs, TR, true);
+  T1CalculatorB1.setInputs(signalsCalibration);
+  errCode = T1CalculatorB1.fitT1(T1fit, M0fit);
+  BOOST_CHECK_MESSAGE(!errCode, "T1 fit returned error " << errCode);
+
+  BOOST_TEST_MESSAGE("Testing fitted T1 match using B1 correction");
+  BOOST_CHECK_CLOSE(T1fit, T1, 0.01);
+  BOOST_TEST_MESSAGE("Testing fitted M0 match using B1 correction");
+  BOOST_CHECK_CLOSE(M0fit, M0, 0.01);
 }
 
 BOOST_AUTO_TEST_SUITE_END() //
