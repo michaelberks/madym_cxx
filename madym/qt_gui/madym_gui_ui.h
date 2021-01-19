@@ -106,15 +106,22 @@ private slots:
   void on_t1InputTextEdit_textChanged();
   void on_t1InputSelect_clicked();
   void on_t1ThresholdLineEdit_textChanged(const QString &text);
+  void on_b1MapLineEdit2_textChanged(const QString &text);
+  void on_b1MapPathSelect2_clicked();
+  void on_b1ScalingSpinBox2_valueChanged(double value);
 
   //Signal to concentration_options
-  void on_s0UseRatioCheckBox_stateChanged(int state);
+  void on_m0RatioCheckBox_stateChanged(int state);
   void on_t1UsePrecomputedCheckBox_stateChanged(int state);
-  void on_t1VolLineEdit_textChanged(const QString &text);
-  void on_t1VolPathSelect_clicked();
-  void on_s0VolLineEdit_textChanged(const QString &text);
-  void on_s0VolPathSelect_clicked();
+  void on_t1MapLineEdit_textChanged(const QString &text);
+  void on_t1MapPathSelect_clicked();
+  void on_m0MapLineEdit_textChanged(const QString &text);
+  void on_m0MapPathSelect_clicked();
 	void on_r1LineEdit_textChanged(const QString &text);
+  void on_b1CorrectionCheckBox_stateChanged(int state);
+  void on_b1MapLineEdit_textChanged(const QString &text);
+  void on_b1MapPathSelect_clicked();
+  void on_b1ScalingSpinBox_valueChanged(double value);
 
   //Image format options
   void on_imageReadComboBox_currentIndexChanged(const QString &text);
@@ -191,6 +198,8 @@ private: // Methods
   void initialize_image_format_options(QComboBox &b);
   void set_AIF_enabled();
   bool check_required_options();
+  void setB1Name(const QString &text);
+  void makeB1Consistent(bool useB1);
 
 #ifdef _WIN32
 	bool winEvent(MSG * message, long * result);

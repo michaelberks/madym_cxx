@@ -101,6 +101,9 @@ MDM_API void mdm_RunTools_madym_DCE::run()
 			mapT1();
 	}
 
+  //Load B1 map
+  loadB1(options_.B1Correction());
+
 	//Load the AIF/PIF from file if filename given - must do this *after* 
 	//loading either dynamic signals or concentration maps
 	loadAIF();
@@ -141,12 +144,15 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.T1method);
 	options_parser_.add_option(config_options, options_.T1inputNames);
 	options_parser_.add_option(config_options, options_.T1noiseThresh);
+  options_parser_.add_option(config_options, options_.B1Scaling);
+  options_parser_.add_option(config_options, options_.B1Name);
 
-		//Signal to concentration options_
+	//Signal to concentration options_
 	options_parser_.add_option(config_options, options_.M0Ratio);
 	options_parser_.add_option(config_options, options_.T1Name);
 	options_parser_.add_option(config_options, options_.M0Name);
 	options_parser_.add_option(config_options, options_.r1Const);
+  options_parser_.add_option(config_options, options_.B1Correction);
 
 		//AIF options_
   options_parser_.add_option(config_options, options_.aifName);
@@ -256,7 +262,6 @@ void mdm_RunTools_madym_DCE::setVolumeAnalysisParams()
   volumeAnalysis_.setPrebolusImage(options_.injectionImage());
 	volumeAnalysis_.setTestEnhancement(options_.testEnhancement());
 	volumeAnalysis_.setUseNoise(options_.dynNoise());
-	volumeAnalysis_.setM0Ratio(options_.M0Ratio());
 	if (options_.firstImage() > 0)
 		volumeAnalysis_.setFirstImage(options_.firstImage() - 1);
 	if (options_.lastImage() > 0)

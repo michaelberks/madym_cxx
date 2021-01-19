@@ -32,11 +32,11 @@ public:
 	//! Default destructor
 	MDM_API virtual ~mdm_T1FitterBase();
 
-	//! Set signals from which T1 will be estimated
+	//! Set inputs that vary on per voxel basis from which T1 will be estimated
 	/*!
 	\param sigs vector of signals from which T1 will be estimated
 	*/
-	MDM_API void setInputSignals(const std::vector<double> &sigs);
+	MDM_API virtual void setInputs(const std::vector<double> &sigs) = 0;
 
   //! Fit T1 at a single voxel.
 	/*!
@@ -57,30 +57,6 @@ public:
 	*/
 	MDM_API virtual bool setInputsFromStream(std::istream& ifs, 
 		const int nSignals) = 0;
-
-	//! Set any fixed scanner settings required to estimate T1
-	/*!
-	All sub-classes must implement this method.
-
-	Different T1 estimation methods may require knowledge of different scanner settings.
-	This abstract method takes a vector<double> as input. It is up to the derived sub-class
-	implementations to define how they extract data from this container.
-
-	\param settings vector of fixed scanner settings (eg TR for VFA)
-	*/
-	MDM_API virtual void setFixedScannerSettings(const std::vector<double> &settings) = 0;
-
-	//! Set any variable scanner settings required to estimate T1
-	/*!
-	All sub-classes must implement this method.
-
-	Different T1 estimation methods may require knowledge of different scanner settings.
-	This abstract method takes a vector<double> as input. It is up to the derived sub-class
-	implementations to define how they extract data from this container.
-
-	\param settings vector of variable scanner settings (eg FAs for VFA)
-	*/
-	MDM_API virtual void setVariableScannerSettings(const std::vector<double> &settings) = 0;
 
 	//! Return minimum inputs required, must be implemented by derived subclass
 	/*

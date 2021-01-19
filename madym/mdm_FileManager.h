@@ -58,6 +58,13 @@ public:
 	*/
 	MDM_API void loadM0Map(const std::string &M0path);
 
+  //! Load B1 correction map
+  /*!
+  \param B1path filepath to B1 correction image
+  \param B1Scaling scaling applied to B1 correction
+  */
+  MDM_API void loadB1Map(const std::string &B1path, const double B1Scaling);
+
 	//! Load DCE time-series signal volumes
 	/*!
 	DCE time-series volumes are loaded by pattern matching a base file name with the series index 1,...,nDyns

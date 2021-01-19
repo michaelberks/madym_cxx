@@ -75,6 +75,9 @@ MDM_API void mdm_RunTools_madym_AIF::run()
     //mapping T1 from input signal volumes
     mapT1();
 
+  //See if B1 correction map to load
+  loadB1(options_.B1Correction());
+
   //Load AIF map
   if (!options_.aifMap().empty())
   {
@@ -124,12 +127,15 @@ MDM_API int mdm_RunTools_madym_AIF::parseInputs(int argc, const char *argv[])
   options_parser_.add_option(config_options, options_.T1method);
   options_parser_.add_option(config_options, options_.T1inputNames);
   options_parser_.add_option(config_options, options_.T1noiseThresh);
+  options_parser_.add_option(config_options, options_.B1Scaling);
+  options_parser_.add_option(config_options, options_.B1Name);
 
 	//Signal to concentration options_
   options_parser_.add_option(config_options, options_.M0Ratio);
   options_parser_.add_option(config_options, options_.T1Name);
   options_parser_.add_option(config_options, options_.M0Name);
   options_parser_.add_option(config_options, options_.r1Const);
+  options_parser_.add_option(config_options, options_.B1Correction);
 
   //AIF auto options
   options_parser_.add_option(config_options, options_.aifMap);
@@ -198,7 +204,6 @@ void mdm_RunTools_madym_AIF::setVolumeAnalysisParams()
   volumeAnalysis_.setComputeCt(!options_.inputCt());
   volumeAnalysis_.setPrebolusImage(options_.injectionImage());
   volumeAnalysis_.setR1Const(options_.r1Const());
-  volumeAnalysis_.setM0Ratio(options_.M0Ratio());
 }
 
 //

@@ -29,15 +29,7 @@ public:
 	MDM_API virtual ~mdm_RunToolsT1Fit();
 
 protected:
-	//Methods:
-	//! Parse string from user input option for T1 method
-	/*!
-	Currently only VFA implemented
-	\param method name returned from user input option
-	\return method enum type, UNSPECIFIED if method name not recognised
-	*/
-	mdm_T1MethodGenerator::T1Methods parseMethod(const std::string &method);
-
+	
 	//! Check there are a valid number of signal inputs for a given T1 method
 	/*!
   Throws mdm_exception if number of inputs not valid

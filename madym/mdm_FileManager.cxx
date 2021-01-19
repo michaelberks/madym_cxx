@@ -314,6 +314,30 @@ MDM_API void mdm_FileManager::loadM0Map(const std::string &M0path)
 }
 
 //
+MDM_API void mdm_FileManager::loadB1Map(const std::string &B1path, const double B1Scaling)
+{
+  try {
+    mdm_Image3D B1_map = mdm_ImageIO::readImage3D(imageReadFormat_, B1path, false);
+    B1_map.setType(mdm_Image3D::ImageType::TYPE_B1MAP);
+
+    //Scale if necessary
+    if (B1Scaling && B1Scaling != 1)
+      B1_map *= B1Scaling;
+
+    //If image successfully read, add it to the T1 mapper object
+    volumeAnalysis_.T1Mapper().setB1(B1_map); 
+  }
+  catch (mdm_exception &e)
+  {
+    e.append("Error loading B1 map");
+    throw;
+  }
+
+  mdm_ProgramLogger::logProgramMessage(
+    "Successfully read B1 map from " + B1path);
+}
+
+//
 MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 	const std::string &dynPrefix, int nDyns, const std::string &indexPattern)
 {

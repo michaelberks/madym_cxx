@@ -701,6 +701,82 @@ MDM_API size_t mdm_Image3D::sub2ind(size_t x, size_t y, size_t z) const
   return x + (y * nX_) + (z * nX_ * nY_);
 }
 
+//
+MDM_API mdm_Image3D& mdm_Image3D::operator+=(const mdm_Image3D& rhs)
+{
+  if (!dimensionsMatch(rhs))
+    throw mdm_dimension_mismatch(__func__, *this, rhs);
+
+  size_t v2 = 0;
+  for (auto & v : this->data_)
+    v += rhs.voxel(v2++);
+}
+
+//
+MDM_API mdm_Image3D& mdm_Image3D::operator+=(const double d)
+{
+  for (auto & v : this->data_)
+    v += d;
+  return *this;
+}
+
+//
+MDM_API mdm_Image3D& mdm_Image3D::operator*=(const mdm_Image3D& rhs)
+{
+  if (!dimensionsMatch(rhs))
+    throw mdm_dimension_mismatch(__func__, *this, rhs);
+
+  size_t v2 = 0;
+  for (auto & v : this->data_)
+    v *= rhs.voxel(v2++);
+}
+
+//
+MDM_API mdm_Image3D& mdm_Image3D::operator*=(const double d)
+{
+  for (auto & v : this->data_)
+    v *= d;
+  return *this;
+}
+
+//
+MDM_API mdm_Image3D& mdm_Image3D::operator-=(const mdm_Image3D& rhs)
+{
+  if (!dimensionsMatch(rhs))
+    throw mdm_dimension_mismatch(__func__, *this, rhs);
+
+  size_t v2 = 0;
+  for (auto & v : this->data_)
+    v -= rhs.voxel(v2++);
+}
+
+//
+MDM_API mdm_Image3D& mdm_Image3D::operator-=(const double d)
+{
+  for (auto & v : this->data_)
+    v -= d;
+  return *this;
+}
+
+//
+MDM_API mdm_Image3D& mdm_Image3D::operator/=(const mdm_Image3D& rhs)
+{
+  if (!dimensionsMatch(rhs))
+    throw mdm_dimension_mismatch(__func__, *this, rhs);
+
+  size_t v2 = 0;
+  for (auto & v : this->data_)
+    v /= rhs.voxel(v2++);
+}
+
+//
+MDM_API mdm_Image3D& mdm_Image3D::operator/=(const double d)
+{
+  for (auto & v : this->data_)
+    v /= d;
+  return *this;
+}
+
 //**************************************************************************
 // Private functions
 //**************************************************************************

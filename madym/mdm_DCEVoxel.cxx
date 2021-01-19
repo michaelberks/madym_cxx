@@ -49,7 +49,7 @@ MDM_API mdm_DCEVoxel::~mdm_DCEVoxel()
 //
 MDM_API void mdm_DCEVoxel::computeCtFromSignal(
   const double T1, const double FA, const double TR, const double r1Const,
-  const double M0, size_t timepoint0)
+  const double M0, const double B1, size_t timepoint0)
 {
   //Only apply if we have signal data to convert
   const auto &nTimes = StData().size();
@@ -93,15 +93,20 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal(
     }  
   }
  
+  //Precompute cos and sin FA, corrected by B1 value
+  const auto PI = acos(-1.0);
+  double sinFA = sin(B1 *FA * PI / 180);
+  double cosFA = cos(B1 *FA * PI / 180);
+
   //Compute R1 and hence signal at each time point
   for (size_t k = 0; k < nTimes; k++)
   {
     double R1value;
     int errorCode;
     if (M0)
-      R1value = computeT1DynM0(StData_[k], M0, FA, TR, errorCode);
+      R1value = computeT1DynM0(StData_[k], M0, cosFA, sinFA, TR, errorCode);
     else
-      R1value = computeT1DynPBM(StData_[k], meanPrebolusSignal, T1, FA, TR, errorCode);
+      R1value = computeT1DynPBM(StData_[k], meanPrebolusSignal, T1, cosFA, sinFA, TR, errorCode);
            
     CtData_[k] = (R1value - 1.0 / T1) / r1Const_ms;
 
@@ -116,7 +121,7 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal(
 
 //
 double mdm_DCEVoxel::computeT1DynPBM(const double st, const double meanPrebolusSignal, 
-  const double T1, const double FA, const double TR, int &errorCode)
+  const double T1, const double cosFA, const double sinFA, const double TR, int &errorCode)
 {
   //  Yes, it looks horrible and over-complicated.  I don't care.
   //  Too many div by zeros to account for, and a log zero to boot
@@ -127,17 +132,13 @@ double mdm_DCEVoxel::computeT1DynPBM(const double st, const double meanPrebolusS
   auto expTR_T10 = exp(-TR / T1);
   auto S1_M0 = st / meanPrebolusSignal;
 
-  const auto PI = acos(-1.0);
-  double sinfa = sin(FA * PI / 180);
-  double cosfa = cos(FA * PI / 180);
-
-  auto denominator = 1.0 - cosfa * expTR_T10;
+  auto denominator = 1.0 - cosFA * expTR_T10;
   if (std::abs(denominator) < T1_TOLERANCE)
     errorCode = -2;
 
   auto fraction1 = (1.0 - expTR_T10) / denominator;
 
-  denominator = 1.0 - S1_M0 * cosfa * fraction1;
+  denominator = 1.0 - S1_M0 * cosFA * fraction1;
   if (std::abs(denominator) < T1_TOLERANCE)
     errorCode = -3;
 
@@ -145,8 +146,7 @@ double mdm_DCEVoxel::computeT1DynPBM(const double st, const double meanPrebolusS
   if (std::abs(fraction2) < T1_TOLERANCE)
     errorCode = -3;
 
-  auto logF2 = log(fraction2);
-  auto  R1_t = logF2 / -TR;
+  auto  R1_t = log(fraction2) / -TR;
   if (R1_t < 0.0)
     errorCode = -4;
   else if (1.0 / R1_t > DYN_T1_MAX)
@@ -157,15 +157,11 @@ double mdm_DCEVoxel::computeT1DynPBM(const double st, const double meanPrebolusS
 
 //
 double mdm_DCEVoxel::computeT1DynM0(const double st, const double M0,
-  const double FA, const double TR, int &errorCode)
+  const double cosFA, const double sinFA, const double TR, int &errorCode)
 {
-  const auto PI = acos(-1.0);
-  auto sinfa = sin(FA * PI / 180);
-  auto cosfa = cos(FA * PI / 180);
-
   errorCode = 0;
-  auto num = M0 * sinfa - st;
-  auto denom = M0 * sinfa - st * cosfa;
+  auto num = M0 * sinFA - st;
+  auto denom = M0 * sinFA - st * cosFA;
   auto R1_t = -log(num / denom) / TR;
 
   if (std::abs(num) < T1_TOLERANCE)

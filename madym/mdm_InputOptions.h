@@ -59,6 +59,12 @@ struct mdm_InputOptions {
 	mdm_input_int nT1Inputs = mdm_input_int(
 		0, "n_T1", "",
 		"Number of input signals for baseline T1 mapping"); //!< See initial value
+  mdm_input_string B1Name = mdm_input_string(
+    mdm_input_str(""), "B1", "",
+    "Path to B1 correction map"); //!< See initial value
+  mdm_input_double B1Scaling = mdm_input_double(
+    1000.0, "B1_scaling", "",
+    "Scaling value appplied to B1 map"); //!< See initial value
 
 	//Signal to concentration options
 	mdm_input_bool M0Ratio = mdm_input_bool(
@@ -72,6 +78,9 @@ struct mdm_InputOptions {
 		"Path to precomputed M0 map"); //!< See initial value
 	mdm_input_double r1Const = mdm_input_double(
 		3.4, "r1", "", "Relaxivity constant of concentration in tissue"); //!< See initial value
+  mdm_input_bool B1Correction = mdm_input_bool(
+    false, "B1_correction", "",
+    "Flag to use B1 correction on FA values to scale signal instead of precomputed M0"); //!< See initial value
 
 	//AIF options
   mdm_input_int aifType = mdm_input_int(

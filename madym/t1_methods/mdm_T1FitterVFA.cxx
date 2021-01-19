@@ -22,12 +22,13 @@
 const double mdm_T1FitterVFA::PI = acos(-1.0);
 
 //
-MDM_API mdm_T1FitterVFA::mdm_T1FitterVFA(const std::vector<double> &FAs, const double TR)
-	:
-	mdm_T1FitterBase(),
-	delta_(1.0),
-	FAs_(FAs),
-	TR_(TR)
+MDM_API mdm_T1FitterVFA::mdm_T1FitterVFA(const std::vector<double> &FAs, const double TR, const bool usingB1)
+  :
+  mdm_T1FitterBase(),
+  B1_(1.0),
+  FAs_(FAs),
+  TR_(TR),
+  usingB1_(usingB1)
 {
 	if (!FAs.empty())
 		initFAs();
@@ -35,13 +36,6 @@ MDM_API mdm_T1FitterVFA::mdm_T1FitterVFA(const std::vector<double> &FAs, const d
 
 //
 MDM_API mdm_T1FitterVFA::~mdm_T1FitterVFA()
-{
-
-}
-
-//
-MDM_API mdm_T1FitterVFA::mdm_T1FitterVFA()
-	: mdm_T1FitterVFA({}, 0)
 {
 
 }
@@ -59,11 +53,48 @@ MDM_API void mdm_T1FitterVFA::setTR(const double TR)
 	TR_ = TR;
 }
 
+//
+MDM_API void mdm_T1FitterVFA::setB1(const double B1)
+{
+  B1_ = B1;
+}
+
+//
+MDM_API void mdm_T1FitterVFA::setInputs(const std::vector<double> &inputs)
+{
+  if (inputs.size() < minimumInputs())
+    throw mdm_exception(__func__, "Fewer input signals (" + std::to_string(inputs.size()) +
+      ") than minimum required (" + std::to_string(minimumInputs()) + ")");
+
+  if (inputs.size() > maximumInputs())
+    throw mdm_exception(__func__, "More input signals (" + std::to_string(inputs.size()) +
+      ") than maximum allowed (" + std::to_string(maximumInputs()) + ")");
+
+  if (usingB1_)
+  {
+    //First n-1 inputs are signals
+    auto n = inputs.size();
+    signals_.clear();
+    for (size_t i = 0; i < n - 1; i++)
+      signals_.push_back(inputs[i]);
+
+    //Last input is B1
+    B1_ = inputs.back();
+
+    //Reinitialise cos and sin FA given new B1 correction value
+    initFAs();
+  }
+  else
+    //Inputs are just signals
+    signals_ = inputs;
+}
+
+//
 MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 	double &T1value, double &M0value)
 {
 	if (signals_.size() != nFAs_)
-    throw mdm_exception(__func__, "NUmber of signals (" + std::to_string(signals_.size()) +
+    throw mdm_exception(__func__, "Number of signals (" + std::to_string(signals_.size()) +
       ") does not match number of FAs (" + std::to_string(nFAs_) + ")");
 
 	//
@@ -124,24 +155,11 @@ MDM_API bool mdm_T1FitterVFA::setInputsFromStream(std::istream& ifs,
 	for (auto &si : signals_)
 		ifs >> si;
 
+  if (usingB1_)
+    ifs >> B1_;
+
 	initFAs();
 	return true;
-}
-
-//
-MDM_API void mdm_T1FitterVFA::setFixedScannerSettings(const std::vector<double> &settings)
-{
-  if (settings.size() != 1)
-    throw mdm_exception(__func__, "Input settings has incorrect size (" + std::to_string(settings.size()) +
-      "), exactly 1 fixed setting (TR) should be supplied for VFA mapping");
-	setTR(settings[0]);
-}
-
-//
-MDM_API void mdm_T1FitterVFA::setVariableScannerSettings(const std::vector<double> &settings)
-{
-	//Would be nice to assert size match to signals, but don't know if signals have been set yet?
-	setFAs(settings);
 }
 
 //
@@ -227,7 +245,7 @@ void mdm_T1FitterVFA::initFAs()
 	sinFAs_.resize(nFAs_);
 	for (int i = 0; i < nFAs_; i++)
 	{
-		cosFAs_[i] = std::cos(delta_*FAs_[i]);
-		sinFAs_[i] = std::sin(delta_*FAs_[i]);
+		cosFAs_[i] = std::cos(B1_*FAs_[i]);
+		sinFAs_[i] = std::sin(B1_*FAs_[i]);
 	}
 }

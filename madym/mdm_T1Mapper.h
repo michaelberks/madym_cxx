@@ -68,6 +68,12 @@ public:
 	*/
 	MDM_API void setM0(mdm_Image3D M0);
 
+  //! Add a B1 correction map
+  /*!
+  \param B1 map loaded to correct FAs for inhomogeniety
+  */
+  MDM_API void setB1(mdm_Image3D B1);
+
 	//! Return read-only reference to input images
 	/*!
 	\return read-only reference to input images
@@ -94,6 +100,12 @@ public:
 	*/
 	MDM_API const mdm_Image3D& M0() const;
 
+  //! Return read-only reference to B1 map
+  /*!
+  \return read-only reference to B1 map
+  */
+  MDM_API const mdm_Image3D& B1() const;
+
 	//! Return T1 value at specified voxel
 	/*!
 	\param voxel index, must be >=0 and < T1Map_.numVoxels()
@@ -107,6 +119,13 @@ public:
 	\return T1 value at voxel
 	*/
 	MDM_API double M0(size_t voxel) const;
+
+  //! Return B1 value at specified voxel
+  /*!
+  \param voxel index, must be >=0 and < T1Map_.numVoxels()
+  \return T1 value at voxel
+  */
+  MDM_API double B1(size_t voxel) const;
 
 	//! Set T1 and M0 to zero specified voxel
 	/*!
@@ -165,6 +184,9 @@ private:
 
 	// Output image maps
 	mdm_Image3D T1_, M0_;
+
+  //B1 correction map
+  mdm_Image3D B1_;
 
 	//Reference to an error image. If we don't pass one as a constructor to the class
 	// a default empty image will be used

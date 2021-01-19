@@ -104,6 +104,7 @@ void mdm_RunToolsVolumeAnalysis::loadT1()
     fileManager_.loadM0Map(M0Path.string());
 
   }
+  volumeAnalysis_.setM0Ratio(options_.M0Ratio());
 }
 
 //
@@ -116,6 +117,30 @@ MDM_API void mdm_RunToolsVolumeAnalysis::loadT1Inputs()
 	fileManager_.loadT1MappingInputImages(T1inputPaths);
 }
 
+//! Load B1 correction map
+MDM_API void mdm_RunToolsVolumeAnalysis::loadB1(bool required)
+{
+  //May already have been loaded in Map T1, in which case just return
+  if (volumeAnalysis_.T1Mapper().B1())
+    return;
+
+  if (required)
+  {
+
+    if (options_.B1Name().empty())
+      throw mdm_exception(__func__, "If using B1 correction, a path to a B1 map must be set");
+
+    //Otherwise load M0 and return
+    fs::path B1Path = fs::absolute(options_.B1Name());
+    fileManager_.loadB1Map(B1Path.string(), options_.B1Scaling());
+  }
+  else if (!options_.B1Name().empty())
+    mdm_ProgramLogger::logProgramWarning(__func__,
+      "B1 map supplied, B1Correction is not set and T1 method is not VFA_B1. Map will be ignored in T1 fitting");
+
+  volumeAnalysis_.setB1correction(required);
+}
+
 //
 void mdm_RunToolsVolumeAnalysis::mapT1()
 {
@@ -124,13 +149,17 @@ void mdm_RunToolsVolumeAnalysis::mapT1()
     throw mdm_exception(__func__, "input map names (option --T1_vols) must be provided");
 
   //Parse T1 method from string, will abort if method type not recognised
-  auto methodType = parseMethod(options_.T1method());
+  auto methodType = mdm_T1MethodGenerator::parseMethodName(
+    options_.T1method(), options_.B1Correction());
 
   //Check number of signal inputs, will abort if too many/too few
   checkNumInputs(methodType, (int)options_.T1inputNames().size());
 
   //Load T1 inputs
   loadT1Inputs();
+
+  //See if B1 correction map to load
+  loadB1(methodType == mdm_T1MethodGenerator::VFA_B1);
 
   //FA images loaded, try computing T1 and M0 maps
   volumeAnalysis_.T1Mapper().setMethod(methodType);

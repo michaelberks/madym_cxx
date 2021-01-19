@@ -62,6 +62,13 @@ MDM_API void mdm_T1Mapper::setM0(mdm_Image3D M0)
 }
 
 //
+MDM_API void mdm_T1Mapper::setB1(mdm_Image3D B1)
+{
+  checkOrSetDimension(B1);
+  B1_ = B1;
+}
+
+//
 MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 {
 	//
@@ -80,6 +87,7 @@ MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 	M0_.setType(mdm_Image3D::ImageType::TYPE_M0MAP);
 
   bool useROI = (bool)ROI_;
+  bool useB1_ = (bool)B1_ && method == mdm_T1MethodGenerator::VFA_B1;
 
 	int numFitted = 0;
 	int numErrors = 0;
@@ -97,9 +105,13 @@ MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 		//TODO - MB, why only check the first signal?				
 		if (signal[0] > noiseThreshold_)
 		{
+      //If using B1 correction, add this to the inputs
+      if (useB1_)
+        signal.push_back(B1_.voxel(voxelIndex));
+
 			//Compute T1 and M0
 			double T1, M0;
-			T1Fitter->setInputSignals(signal);
+			T1Fitter->setInputs(signal);
 			errCode = T1Fitter->fitT1(T1, M0);
 
 			//Check for errors
@@ -169,6 +181,12 @@ MDM_API const mdm_Image3D& mdm_T1Mapper::M0() const
 }
 
 //
+MDM_API const mdm_Image3D& mdm_T1Mapper::B1() const
+{
+  return B1_;
+}
+
+//
 MDM_API double mdm_T1Mapper::T1(size_t voxel) const
 {
 	return T1_.voxel(voxel);
@@ -178,6 +196,12 @@ MDM_API double mdm_T1Mapper::T1(size_t voxel) const
 MDM_API double mdm_T1Mapper::M0(size_t voxel) const
 {
 	return M0_.voxel(voxel);
+}
+
+//
+MDM_API double mdm_T1Mapper::B1(size_t voxel) const
+{
+  return B1_.voxel(voxel);
 }
 
 //

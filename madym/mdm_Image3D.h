@@ -113,6 +113,7 @@ class mdm_Image3D
 		TYPE_T1BASELINE, //!< Baseline T1 map
 		TYPE_T1DYNAMIC, //!< Dynamic T1 map
 		TYPE_M0MAP, //!< M0 map
+    TYPE_B1MAP, //!< B1 correction map
 		TYPE_CAMAP, //!< Contrast-agent concentration map
 		TYPE_DEGR, //!< Variable flip-angle map
 		TYPE_T2STARMAP, //!< T2* map
@@ -382,6 +383,54 @@ class mdm_Image3D
   \return voxel index
   */
 	MDM_API size_t sub2ind(size_t x, size_t y, size_t z) const;
+
+  //!Adding an image
+  /*!
+  \param rhs voxels of rhs are added elementwise to this. Dimensions must match
+  */
+  MDM_API mdm_Image3D& operator+=(const mdm_Image3D& rhs);
+
+  //!Adding a scalar
+  /*!
+  \param d added to each voxel value
+  */
+  MDM_API mdm_Image3D& operator+=(const double d);
+
+  //!Multiplying by an image
+  /*!
+  \param rhs voxels in this are scaled elementwise by voxels of rhs. Dimensions must match
+  */
+  MDM_API mdm_Image3D& operator*=(const mdm_Image3D& rhs);
+
+  //!Multiplying by a scalar
+  /*!
+  \param d added to each voxel value
+  */
+  MDM_API mdm_Image3D& operator*=(const double d);
+
+  //!Subtracting an image
+  /*!
+  \param rhs voxels of rhs are subtracted elementwise from this. Dimensions must match
+  */
+  MDM_API mdm_Image3D& operator-=(const mdm_Image3D& rhs);
+
+  //!Subtracting an image
+  /*!
+  \param d subtracted from each voxel value
+  */
+  MDM_API mdm_Image3D& operator-=(const double d);
+
+  //!Dividing by an image
+  /*!
+  \param rhs voxels in this are scaled elementwise by voxels of rhs. Dimensions must match
+  */
+  MDM_API mdm_Image3D& operator/=(const mdm_Image3D& rhs);
+
+  //!Dividing by a scalar
+  /*!
+  \param d added to each voxel value
+  */
+  MDM_API mdm_Image3D& operator/=(const double d);
 
 private:
 	/*!
