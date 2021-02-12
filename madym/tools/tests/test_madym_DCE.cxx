@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
 		madym_options.outputDir.set(Ct_output_dir);
 		madym_options.dynDir.set(dyn_dir);
 		madym_options.dynName.set("Ct_");
-		madym_options.dynFormat.set("%02u");
+		madym_options.sequenceFormat.set("%02u");
 		madym_options.nDyns.set(nTimes);
 		madym_options.injectionImage.set(injectionImage);
 		madym_options.dose.set(dose);
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
 			<< " -m ETM"
 			<< " -o " << Ct_output_dir
 			<< " --dyn " << dyn_dir << "Ct_"
-			<< " --dyn_name_format " << "%02u"
+			<< " --sequence_format " << "%02u"
 			<< " -n " << nTimes
 			<< " -i " << injectionImage
 			<< " -D " << dose
@@ -269,7 +269,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
 		madym_options.model.set("ETM");
 		madym_options.outputDir.set(Ct_output_dir);
 		madym_options.dynDir.set(dyn_dir);
-		madym_options.dynFormat.set("%02u");
+		madym_options.sequenceFormat.set("%02u");
 		madym_options.dynName.set("Ct_");
 		madym_options.nDyns.set(nTimes);
 		madym_options.injectionImage.set(injectionImage);
@@ -302,7 +302,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
     madym_options.model.set("NONE");
     madym_options.outputDir.set(Ct_output_dir);
     madym_options.dynDir.set(dyn_dir);
-    madym_options.dynFormat.set("%02u");
+    madym_options.sequenceFormat.set("%02u");
     madym_options.dynName.set("Ct_");
     madym_options.nDyns.set(nTimes);
     madym_options.injectionImage.set(injectionImage);
@@ -337,7 +337,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
     madym_options.outputDir.set(Ct_output_dir);
     madym_options.dynDir.set(dyn_dir);
     madym_options.dynName.set("Ct_");
-    madym_options.dynFormat.set("%02u");
+    madym_options.sequenceFormat.set("%02u");
     madym_options.nDyns.set(nTimes);
     madym_options.injectionImage.set(injectionImage);
     madym_options.dose.set(dose);

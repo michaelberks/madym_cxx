@@ -44,10 +44,19 @@ target_link_libraries( madym_AIF mdm)
 
 #-------------------------------------------------------------------
 # Standalone tool for converting raw dicom images to analyze format volumes
-#add_executable(dicom2analyze 
-#	dicom2analyze.cxx)
-#
-#target_link_libraries( dicom2analyze mdm)
+if (BUILD_WITH_DCMTK)
+  add_executable(madym_DicomConvert 
+	  madym_DicomConvert.cxx)
+
+  target_link_libraries( madym_DicomConvert mdm)
+endif()
+
+#-------------------------------------------------------------------
+# Standalone tool for making xtr files
+add_executable(madym_MakeXtr 
+	madym_MakeXtr.cxx)
+
+target_link_libraries( madym_MakeXtr mdm)
 
 #-------------------------------------------------------------------
 if ( BUILD_TESTING )

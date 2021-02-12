@@ -9,18 +9,46 @@
 
 #include "mdm_ImageIO.h"
 #include <madym/image_io/nifti/mdm_NiftiFormat.h>
+#include <madym/image_io/dicom/mdm_DicomFormat.h>
+
+MDM_API std::string mdm_ImageIO::toString(ImageFormat fmt)
+{
+  switch (fmt)
+  {
+  case ANALYZE: return "ANALYZE";
+  case ANALYZE_SPARSE: return "ANALYZE_SP";
+  case NIFTI: return "NIFTI";
+  case NIFTI_GZ: return "NIFTI_GZ";
+  case DICOM: return "DICOM";
+  default:
+    throw mdm_exception(__func__, "Unknown format option " + fmt);
+  }
+}
+
+MDM_API const std::vector<std::string> mdm_ImageIO::validFormats()
+{
+  return {
+    toString(ANALYZE),
+    toString(ANALYZE_SPARSE),
+    toString(NIFTI),
+    toString(NIFTI_GZ),
+    toString(DICOM)
+  };
+}
 
  //
 MDM_API mdm_ImageIO::ImageFormat mdm_ImageIO::formatFromString(const std::string& fmt)
 {
-  if (fmt == "ANALYZE")
+  if (fmt == toString(ANALYZE))
     return ANALYZE;
-  if (fmt == "ANALYZE_SP")
+  if (fmt == toString(ANALYZE_SPARSE))
     return ANALYZE_SPARSE;
-  else if (fmt == "NIFTI")
+  else if (fmt == toString(NIFTI))
     return NIFTI;
-  else if (fmt == "NIFTI_GZ")
+  else if (fmt == toString(NIFTI_GZ))
     return NIFTI_GZ;
+  else if (fmt == toString(DICOM))
+    return DICOM;
   else
     throw mdm_exception(__func__, "Unknown format option " + fmt);
 }
@@ -41,6 +69,9 @@ MDM_API mdm_Image3D mdm_ImageIO::readImage3D(ImageFormat imgFormat,
     ; //Fall through to use nifti
   case ImageFormat::NIFTI_GZ:
     return mdm_NiftiFormat::readImage3D(fileName, load_xtr);
+
+  case DICOM:
+    return mdm_DicomFormat::readImage3D(fileName, load_xtr);
 
   case ImageFormat::UNKNOWN:
     ; //Fall through to error
@@ -75,6 +106,9 @@ MDM_API void mdm_ImageIO::writeImage3D(ImageFormat imgFormat,
     mdm_NiftiFormat::writeImage3D(baseName, img, dataTypeFlag, xtrTypeFlag, true);
     break;
 
+  case DICOM:
+    return mdm_DicomFormat::writeImage3D(baseName, img, dataTypeFlag, xtrTypeFlag, true);
+
   case ImageFormat::UNKNOWN:
     ; //Fall through to error
 
@@ -98,6 +132,9 @@ MDM_API bool mdm_ImageIO::filesExist(ImageFormat imgFormat,
     ; //Fall through to use nifti
   case ImageFormat::NIFTI_GZ:
     return mdm_NiftiFormat::filesExist(baseName, warn);
+
+  case DICOM:
+    return mdm_DicomFormat::filesExist(baseName, warn);
 
   case ImageFormat::UNKNOWN:
     ; //Fall through to error

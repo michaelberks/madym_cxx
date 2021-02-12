@@ -270,7 +270,7 @@ void madym_gui_ui::on_dceNameLineEdit_textChanged(const QString &text)
 
 void madym_gui_ui::on_dceFormatLineEdit_textChanged(const QString &text)
 {
-	processor_.madym_exe().options().dynFormat.set(text.toStdString());
+	processor_.madym_exe().options().sequenceFormat.set(text.toStdString());
 }
 
 void madym_gui_ui::on_nDynSpinBox_valueChanged(int value)
@@ -975,7 +975,7 @@ void madym_gui_ui::initialize_widget_values()
     ui.inputTypeRadioButtonC->setChecked(options.inputCt());
     ui.dceInputLineEdit->setText(options.dynDir().c_str());
     ui.dceNameLineEdit->setText(options.dynName().c_str());
-    ui.dceFormatLineEdit->setText(options.dynFormat().c_str());
+    ui.dceFormatLineEdit->setText(options.sequenceFormat().c_str());
     ui.nDynSpinBox->setValue(options.nDyns());
     ui.injectionImageSpinBox->setValue(options.injectionImage());
 

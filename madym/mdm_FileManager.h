@@ -191,8 +191,8 @@ private:
 
 	void loadT1InputImage(const std::string& filePath, int nVFA);
 
-	void makeSequenceFilename(const std::string &path, const std::string &prefix,
-		const int fileNumber, std::string &filePath, const std::string &fileNumberFormat);
+  std::string makeSequenceFilename(const std::string &path, const std::string &prefix,
+		const int fileNumber, const std::string &fileNumberFormat);
 	
 	void saveOutputMap(const std::string &mapName, 
 		const std::string &outputDir, bool writeXtr = false);

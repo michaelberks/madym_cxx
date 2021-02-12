@@ -30,14 +30,16 @@ struct mdm_InputOptions {
 	mdm_input_string dynDir = mdm_input_string(
 		mdm_input_str(""), "dyn_dir", "",
 		"Folder containing dynamic volumes, can be left empty if already included in option --dyn"); //!< See initial value
-	mdm_input_string dynFormat = mdm_input_string(
-		mdm_input_str("%01u"), "dyn_name_format", "",
-		"Number format for suffix specifying temporal index of dynamic volumes"); //!< See initial value
 	mdm_input_int nDyns = mdm_input_int(
 		0, "n_dyns", "n",
 		"Number of DCE volumes, if 0 uses all images matching file pattern"); //!< See initial value
 	mdm_input_int injectionImage = mdm_input_int(
 		8, "inj", "i", "Injection image"); //!< See initial value
+
+  //Generic namin conventions
+  mdm_input_string sequenceFormat = mdm_input_string(
+    mdm_input_str("%01u"), "sequence_format", "",
+    "Number format for suffix specifying temporal index of volumes in a sequence"); //!< See initial value
 
 	//ROI options
 	mdm_input_string roiName = mdm_input_string(
@@ -50,6 +52,9 @@ struct mdm_InputOptions {
 	mdm_input_string T1method = mdm_input_string(
 		mdm_input_str("VFA"), "T1_method", "T",
 		"Method used for baseline T1 mapping"); //!< See initial value
+  mdm_input_string T1Dir = mdm_input_string(
+    mdm_input_str(""), "T1_dir", "",
+    "Folder containing T1 input volumes, can be left empty if already included in option --T1_vols"); //!< See initial value
 	mdm_input_strings T1inputNames = mdm_input_strings(
 		mdm_input_string_list(std::vector<std::string>{}), "T1_vols", "",
 		"Filepaths to input signal volumes (eg from variable flip angles)"); //!< See initial value
@@ -198,6 +203,8 @@ struct mdm_InputOptions {
   mdm_input_string imageWriteFormat = mdm_input_string(
     mdm_input_str("NIFTI"), "img_fmt_w", "",
     "Image format for writing output"); //!< See initial value
+  mdm_input_int imageDataType = mdm_input_int(
+    16, "img_dt_type", "", "Data type of output images - see Analyze format type specifiers"); //!< See initial value
 
 	//Logging options
   mdm_input_bool noLog = mdm_input_bool(
@@ -237,10 +244,89 @@ struct mdm_InputOptions {
 		mdm_input_str(""), "data", "", "Input data filename, see notes for options"); //!< See initial value
 	mdm_input_double FA = mdm_input_double(
 		0, "FA", "", "FA of dynamic series"); //!< See initial value
+  mdm_input_doubles VFAs = mdm_input_doubles(
+    mdm_input_double_list(std::vector<double>{}), "VFAs", "", "FA of dynamic series"); //!< See initial value
 	mdm_input_double TR = mdm_input_double(
 		0, "TR", "", "TR of dynamic series"); //!< See initial value
 	mdm_input_string outputName = mdm_input_string(
 		mdm_input_str("madym_analysis.dat"), "output_name", "O", "Name of output data file"); //!< See initial value
+
+  //Dicom options - data locations
+  mdm_input_string dicomDir = mdm_input_string(
+    mdm_input_str(""), "dicom_dir", "",
+    "Folder containing DICOM data"); //!< See initial value
+  mdm_input_string dicomSeriesFile = mdm_input_string(
+    mdm_input_str("DCM_series"), "dicom_series", "", 
+    "Filename to/from which dicom series data is written/read"); //!< See initial value
+  
+  mdm_input_ints T1inputSeries = mdm_input_ints(
+    mdm_input_int_list(std::vector<int>{}), "T1_series", "",
+    "Indices of the dicom series for each T1 input"); //!< See initial value
+  mdm_input_int dynSeries = mdm_input_int(
+    0, "dyn_series", "",
+    "Index of the dicom series for the dynamic DCE time-series"); //!< See initial value
+  mdm_input_string dicomFileFilter = mdm_input_string(
+    mdm_input_str(""), "dicom_filter", "",
+    "File filter for dicom sort (eg IM_)"); //!< See initial value
+
+  //Dicom options -flags
+  mdm_input_bool dicomSort = mdm_input_bool(
+    false, "sort", "",
+    "Sort the files in Dicom dir into separate series, writing out the series information"); //!< See initial value
+  mdm_input_bool makeT1Inputs = mdm_input_bool(
+    false, "make_t1", "",
+    "Make T1 input images from dicom series"); //!< See initial value
+  mdm_input_bool makeDyn = mdm_input_bool(
+    false, "make_dyn", "",
+    "Make dynamic images from dynamic series"); //!< See initial value
+  mdm_input_bool makeT1Means = mdm_input_bool(
+    false, "make_t1_means", "",
+    "Make mean of each set of T1 input repeats"); //!< See initial value
+  mdm_input_bool makeDynMean = mdm_input_bool(
+    false, "make_dyn_mean", "",
+    "Make temporal mean of dynamic images"); //!< See initial value
+  mdm_input_bool flipX = mdm_input_bool(
+    false, "flip_x", "",
+    "Flip dicom slices horizontally before copying into 3D image volume"); //!< See initial value
+  mdm_input_bool flipY = mdm_input_bool(
+    true, "flip_y", "",
+    "Flip dicom slices vertically before copying into 3D image volume"); //!< See initial value
+
+  //Dicom options - scaling
+  mdm_input_string autoScaleTag = mdm_input_string(
+    mdm_input_str("0x2005,0x100e"), 
+    "scale_tag", "",
+    "Dicom tag key (group,element) for rescale slope, in hexideciaml form - for Philips this is (0x2005, 0x100e)"); //!< See initial value
+  mdm_input_string autoOffsetTag = mdm_input_string(
+    mdm_input_str("0x2005,0x100d"),
+    "offset_tag", "",
+    "Dicom tag key (group,element) for rescale intercept, in hexideciaml form - for Philips this is (0x2005, 0x100d)"); //!< See initial value
+
+  mdm_input_double dicomScale = mdm_input_double(
+    1.0, "dicom_scale", "", "Additional scaling factor applied to the dicom data");
+  mdm_input_double dicomOffset = mdm_input_double(
+    0, "dicom_offset", "", "Additional offset factor applied to the dicom data");
+
+  //DICOM -acquisition time
+  mdm_input_strings dynTimeTag = mdm_input_strings(
+    mdm_input_string_list(std::vector<std::string>{}),
+    "acquisition_time_tag", "",
+    "Dicom tag key (group,element) for acquisition time, if empty uses DCM_AcquisitionTime"); //!< See initial value
+  mdm_input_double temporalResolution = mdm_input_double(
+    0, "temp_res", "", 
+    "Time in seconds between volumes in the DCE sequence, used to fill acquisition time not set in dynTimeTag");
+
+  //DICOM - naming
+  mdm_input_string repeatPrefix = mdm_input_string(
+    mdm_input_str("rpt_"),
+    "repeat_prefix", "",
+    "Prefix of image name for repeats in DICOM series, appended with sequence_format index and stored in series name folder"); //!< See initial value
+
+  mdm_input_string meanSuffix = mdm_input_string(
+    mdm_input_str("_mean"),
+    "mean_suffix", "",
+    "Suffix of image name for mean of repeats in DICOM series, appended to series name"); //!< See initial value
+
 
 };
 

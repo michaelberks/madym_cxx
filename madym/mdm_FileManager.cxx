@@ -189,19 +189,25 @@ MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir)
 	if (writeCtDataMaps_)
 	{
 		const std::string &ctSigPrefix = volumeAnalysis_.MAP_NAME_CT_SIG;
+    auto ctOutputDir = fs::path(outputDir) / ctSigPrefix;
+    fs::create_directories(ctOutputDir);
+
 		for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
 		{
 			std::string ctName = ctSigPrefix + std::to_string(i + 1);
-			saveOutputMap(ctName, volumeAnalysis_.CtDataMap(i), outputDir, true);
+			saveOutputMap(ctName, volumeAnalysis_.CtDataMap(i), ctOutputDir.string(), true);
 		}
 	}
   if (writeCtModelMaps_)
   {
     const std::string &ctModPrefix = volumeAnalysis_.MAP_NAME_CT_MOD;
+    auto ctOutputDir = fs::path(outputDir) / ctModPrefix;
+    fs::create_directories(ctOutputDir);
+
     for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
     {
       std::string cmodName = ctModPrefix + std::to_string(i + 1);
-      saveOutputMap(cmodName, volumeAnalysis_.CtModelMap(i), outputDir, false);
+      saveOutputMap(cmodName, volumeAnalysis_.CtModelMap(i), ctOutputDir.string(), false);
     }
   }
 }
@@ -376,8 +382,7 @@ MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 
 		nDyn++;
 
-		std::string dynPath;
-		makeSequenceFilename(dynBasePath, dynPrefix, nDyn, dynPath, indexPattern);
+		std::string dynPath = makeSequenceFilename(dynBasePath, dynPrefix, nDyn, indexPattern);
 
 		if (!mdm_ImageIO::filesExist(imageReadFormat_, dynPath, false))
 		{
@@ -454,8 +459,7 @@ MDM_API void mdm_FileManager::loadCtDataMaps(const std::string &CtBasePath,
 		nCt++;
 
 		/* This sets various globals (see function header comment) */
-		std::string CtPath;
-		makeSequenceFilename(CtBasePath, CtPrefix, nCt, CtPath, indexPattern);
+		std::string CtPath = makeSequenceFilename(CtBasePath, CtPrefix, nCt, indexPattern);
 
 		if (!mdm_ImageIO::filesExist(imageReadFormat_, CtPath, false))
 		{
@@ -609,11 +613,11 @@ void mdm_FileManager::saveMapSummaryStats(const std::string &mapName, const mdm_
 }
 
 //
-void mdm_FileManager::makeSequenceFilename(const std::string &path, const std::string &prefix,
-	const int fileNumber, std::string &filePath, const std::string &fileNumberFormat)
+std::string mdm_FileManager::makeSequenceFilename(const std::string &path, const std::string &prefix,
+	const int fileNumber, const std::string &fileNumberFormat)
 {
 	auto formattedFilenumber = boost::format(fileNumberFormat.c_str()) % fileNumber;
 	auto imageName = boost::format("%1%%2%") % prefix % formattedFilenumber;
-	filePath = (fs::path(path) / imageName.str()).string();
+	return (fs::path(path) / imageName.str()).string();
 }
 
