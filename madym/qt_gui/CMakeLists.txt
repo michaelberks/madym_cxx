@@ -95,9 +95,11 @@ if (BUILD_INSTALL)
 
     #Override global rpath properties - hardcode to the original libs
     #then the Qt deploy tool will do the relative rpath replacement 
+    message(STATUS "Setting gui RPATH to ${Boost_LIBRARY_DIRS};${ZLIB_LIBRARY_DIR};${DCMTK_LIBRARY_DIR}")
     set_target_properties(madym_gui
       PROPERTIES
-      INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib;${BOOST_LIBRARY_DIRS}"
+      INSTALL_RPATH 
+      "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib;${Boost_LIBRARY_DIRS};${ZLIB_LIBRARY_DIR};${DCMTK_LIBRARY_DIR}"
       XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES
       CONFIGURATIONS Release)
     
@@ -197,9 +199,23 @@ if (BUILD_INSTALL)
       COMPONENT Tools
       CONFIGURATIONS Release)
 
+    if (BUILD_WITH_DCMTK)
+      install(CODE "
+      set(MADYM_EXE \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_DicomConvert\")
+      "
+      COMPONENT Tools
+      CONFIGURATIONS Release)
+    else()
+      install(CODE "
+      set(MADYM_EXE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_DCE)
+      "
+      COMPONENT Tools
+      CONFIGURATIONS Release)
+    endif()
     install(CODE [[
+      message(STATUS "Getting dependencies for ${MADYM_EXE}")
       file(GET_RUNTIME_DEPENDENCIES
-        EXECUTABLES ${RUN_PATH}/madym_DCE
+        EXECUTABLES ${MADYM_EXE}
         RESOLVED_DEPENDENCIES_VAR _r_deps
         UNRESOLVED_DEPENDENCIES_VAR _u_deps)
       foreach(_file ${_r_deps})
@@ -242,9 +258,21 @@ if (BUILD_INSTALL)
         \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_T1_lite )
       execute_process(COMMAND codesign -s 
         ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_AIF )"
+        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_AIF )
+      execute_process(COMMAND codesign -s 
+        ${APPLE_CODESIGN_ID}
+        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_MakeXtr )"
       COMPONENT Tools
       CONFIGURATIONS Release)  
+
+    if (BUILD_WITH_DCMTK)
+      install(CODE
+      "execute_process(COMMAND codesign -s 
+        ${APPLE_CODESIGN_ID}
+        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DicomConvert )"
+      COMPONENT Tools
+      CONFIGURATIONS Release)  
+    endif()
 
     set(CPACK_ARCHIVE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
     message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")
