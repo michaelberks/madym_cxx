@@ -89,6 +89,14 @@ if (BUILD_INSTALL)
   install(TARGETS madym_AIF 
     RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT Tools
       CONFIGURATIONS Release)
+  install(TARGETS madym_MakeXtr 
+      RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT Tools
+        CONFIGURATIONS Release)
+  if (BUILD_WITH_DCMTK)
+    install(TARGETS madym_DicomConvert 
+      RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT Tools
+      CONFIGURATIONS Release)
+  endif()
 
   #Install example data and config scripts
   install(DIRECTORY "${CMAKE_SOURCE_DIR}/examples" DESTINATION "${MADYM_DEPLOY_DIR}"
