@@ -1,5 +1,5 @@
 build*
-.DS_Store
+*.DS_Store
 examples/test_dataset/madym*
 ~*
 *.bak

@@ -219,9 +219,10 @@ if (BUILD_INSTALL)
       file(GET_RUNTIME_DEPENDENCIES
         EXECUTABLES ${MADYM_EXE}
         RESOLVED_DEPENDENCIES_VAR _r_deps
-        UNRESOLVED_DEPENDENCIES_VAR _u_deps)
+        UNRESOLVED_DEPENDENCIES_VAR _u_deps
+	PRE_EXCLUDE_REGEXES "(^/System/.*$)" )
       foreach(_file ${_r_deps})
-        file(INSTALL
+	file(INSTALL
           DESTINATION ${LIB_DEST}
           TYPE SHARED_LIBRARY
           FILES "${_file}"
