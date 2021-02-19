@@ -9,7 +9,10 @@
 
 #include "mdm_ImageIO.h"
 #include <madym/image_io/nifti/mdm_NiftiFormat.h>
-#include <madym/image_io/dicom/mdm_DicomFormat.h>
+
+#ifdef USING_DCMTK
+  #include <madym/image_io/dicom/mdm_DicomFormat.h>
+#endif
 
 MDM_API std::string mdm_ImageIO::toString(ImageFormat fmt)
 {
@@ -71,7 +74,11 @@ MDM_API mdm_Image3D mdm_ImageIO::readImage3D(ImageFormat imgFormat,
     return mdm_NiftiFormat::readImage3D(fileName, load_xtr);
 
   case DICOM:
+#ifdef USING_DCMTK
     return mdm_DicomFormat::readImage3D(fileName, load_xtr);
+#else
+    throw mdm_exception(__func__, "Unable to read DICOM image: this version of madym has been built without DICOM support ");
+#endif
 
   case ImageFormat::UNKNOWN:
     ; //Fall through to error
@@ -107,7 +114,11 @@ MDM_API void mdm_ImageIO::writeImage3D(ImageFormat imgFormat,
     break;
 
   case DICOM:
+#ifdef USING_DCMTK
     return mdm_DicomFormat::writeImage3D(baseName, img, dataTypeFlag, xtrTypeFlag, true);
+#else
+    throw mdm_exception(__func__, "Unable to write DICOM image: this version of madym has been built without DICOM support ");
+#endif  
 
   case ImageFormat::UNKNOWN:
     ; //Fall through to error
@@ -134,7 +145,12 @@ MDM_API bool mdm_ImageIO::filesExist(ImageFormat imgFormat,
     return mdm_NiftiFormat::filesExist(baseName, warn);
 
   case DICOM:
+#ifdef USING_DCMTK
     return mdm_DicomFormat::filesExist(baseName, warn);
+#else
+    throw mdm_exception(__func__, "This version of madym has been built without DICOM support ");
+#endif  
+    
 
   case ImageFormat::UNKNOWN:
     ; //Fall through to error

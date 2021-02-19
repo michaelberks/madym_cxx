@@ -89,8 +89,7 @@ set(mdm_io_sources
   image_io/nifti/znzlib.cpp image_io/nifti/znzlib.h
   image_io/nifti/nifti_swaps.h
 	image_io/nifti/nifti1.h
-  image_io/nifti/nifti2.h 
-  image_io/dicom/mdm_DicomFormat.cxx image_io/dicom/mdm_DicomFormat.h   
+  image_io/nifti/nifti2.h  
 )
 
 set(mdm_run_sources
@@ -102,7 +101,6 @@ set(mdm_run_sources
   run/mdm_RunTools_madym_T1.cxx			run/mdm_RunTools_madym_T1.h
   run/mdm_RunTools_madym_T1_lite.cxx	run/mdm_RunTools_madym_T1_lite.h
   run/mdm_RunTools_madym_AIF.cxx		run/mdm_RunTools_madym_AIF.h
-  run/mdm_RunTools_madym_DicomConvert.cxx run/mdm_RunTools_madym_DicomConvert.h
   run/mdm_RunTools_madym_MakeXtr.cxx run/mdm_RunTools_madym_MakeXtr.h
 )
 set(mdm_dce_model_sources
@@ -125,6 +123,15 @@ set(mdm_t1_method_sources
 	t1_methods/mdm_T1FitterBase.cxx			t1_methods/mdm_T1FitterBase.h
 	t1_methods/mdm_T1FitterVFA.cxx			t1_methods/mdm_T1FitterVFA.h
 )
+
+if (BUILD_WITH_DCMTK)
+  set(mdm_io_sources ${mdm_io_sources} 
+    image_io/dicom/mdm_DicomFormat.cxx image_io/dicom/mdm_DicomFormat.h
+  )
+  set(mdm_run_sources ${mdm_run_sources} 
+    run/mdm_RunTools_madym_DicomConvert.cxx run/mdm_RunTools_madym_DicomConvert.h
+  )
+endif()
 
 add_library(mdm 
 	${mdm_sources} 

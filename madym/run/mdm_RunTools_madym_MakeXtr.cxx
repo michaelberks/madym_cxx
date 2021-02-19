@@ -12,7 +12,6 @@
 
 #include "mdm_RunTools_madym_MakeXtr.h"
 
-#include <madym/image_io/dicom/mdm_DicomFormat.h>
 #include <madym/image_io/xtr/mdm_XtrFormat.h>
 #include <madym/image_io/mdm_ImageIO.h>
 #include <madym/mdm_Image3D.h>
@@ -28,8 +27,6 @@
 
 #include <algorithm>
 #include <numeric>
-
-#include <dcmtk/dcmdata/dctagkey.h>
 
 
 namespace fs = boost::filesystem;

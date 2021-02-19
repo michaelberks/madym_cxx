@@ -5,13 +5,10 @@
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 */
 
-#ifndef mdm_RunTools_madym_MakeXtr_HDR
-#define MDM_RUNTOOLS_MADYM_DICOM_CONVERT_HDR
+#ifndef MDM_RUNTOOLS_MADYM_MAKEXTR_HDR
+#define MDM_RUNTOOLS_MADYM_MAKEXTR_HDR
 #include "mdm_api.h"
 #include <madym/mdm_RunTools.h>
-
-#include <dcmtk/dcmimgle/dcmimage.h>
-#include <dcmtk/dcmdata/dctk.h> 
 
 //! Class to run the lite version of the DCE analysis tool
 /*!
