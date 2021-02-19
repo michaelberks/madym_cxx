@@ -49,6 +49,11 @@ if (BUILD_WITH_ZLIB)
   list(GET ZLIB_LIBRARIES -1 LIB0)
   get_filename_component(ZLIB_LIBRARY_DIR ${LIB0} DIRECTORY)
   message(STATUS "Zlib library ${LIB0} is in ${ZLIB_LIBRARY_DIR}")
+
+  if ( WIN32 )
+     set(ZLIB_BIN_DIR "" CACHE STRING 
+      "Directory where ZLIB dlls are installed")
+  endif()
 endif()
 
 option( BUILD_WITH_DCMTK "Include support for DICOM images?" NO )
@@ -57,7 +62,7 @@ if (BUILD_WITH_DCMTK)
   include_directories(${DCMTK_INCLUDE_DIRS})
   add_definitions(-DUSING_DCMTK)
   set(DCMTK_LIBRARY_DIR "" CACHE STRING 
-      "Directory where DCMTK libraries installed")
+      "Directory where DCMTK libraries are installed")
 endif()
 
 

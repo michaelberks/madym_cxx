@@ -137,10 +137,12 @@ if (BUILD_INSTALL)
         CONFIGURATIONS Release)
 
     #Install boost dependencies using fixup bundle
+    set(DIRS ${Boost_LIBRARY_DIR_RELEASE} ${ZLIB_LIBRARY_DIR} ${ZLIB_BIN_DIR} ${DCMTK_LIBRARY_DIR})
+    message("Fixup bundle search paths: ${DIRS}")
     install(CODE "
       include(BundleUtilities)
       fixup_bundle(\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.exe 
-      \"\" \"${Boost_LIBRARY_DIR_RELEASE}\") 
+      \"\" \"${DIRS}\") 
       " 
       COMPONENT GUI
       CONFIGURATIONS Release)
