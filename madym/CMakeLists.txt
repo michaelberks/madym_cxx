@@ -46,7 +46,9 @@ option( BUILD_WITH_ZLIB "Include zlib to allow compressed NIFTI format (*.gz)?" 
 if (BUILD_WITH_ZLIB)
   find_package(ZLIB)
   add_definitions(-DHAVE_ZLIB)
-  get_filename_component(ZLIB_LIBRARY_DIR ${ZLIB_LIBRARIES} DIRECTORY)
+  list(GET ZLIB_LIBRARIES -1 LIB0)
+  get_filename_component(ZLIB_LIBRARY_DIR ${LIB0} DIRECTORY)
+  message(STATUS "Zlib library ${LIB0} is in ${ZLIB_LIBRARY_DIR}")
 endif()
 
 option( BUILD_WITH_DCMTK "Include support for DICOM images?" NO )
