@@ -12,7 +12,7 @@
 MDM_API mdm_Image3D mdm_DicomFormat::readImage3D(const std::string& fileName,
   bool loadXtr)
 {
-  DicomImage *image = new DicomImage(fileName.c_str());
+  /*DicomImage *image = new DicomImage(fileName.c_str());
   if (image != NULL)
   {
     if (image->getStatus() == EIS_Normal)
@@ -20,17 +20,18 @@ MDM_API mdm_Image3D mdm_DicomFormat::readImage3D(const std::string& fileName,
       if (image->isMonochrome())
       {
         image->setMinMaxWindow();
-        Uint8 *pixelData = (Uint8 *)(image->getOutputData(8 /* bits */));
+        Uint8 *pixelData = (Uint8 *)(image->getOutputData(8));
         if (pixelData != NULL)
         {
-          /* do something useful with the pixel data */
+          // do something useful with the pixel data
         }
       }
     }
     else
       mdm_exception(__func__, "Error: cannot load DICOM image (" + std::string(DicomImage::getString(image->getStatus())) + ")");
   }
-  delete image;
+  delete image;*/
+  throw mdm_exception(__func__, "DICOM writing is not yet supported");
   mdm_Image3D img;
   return img;
 }
@@ -43,7 +44,7 @@ MDM_API void mdm_DicomFormat::writeImage3D(const std::string & fileName,
   const mdm_XtrFormat::XTR_type xtrTypeFlag,
   bool compress)
 {
-  mdm_exception(__func__, "DICOM writing is not yet supported");
+  throw mdm_exception(__func__, "DICOM writing is not yet supported");
 
   /*char uid[100];
   const Uint8 *pixelData;
