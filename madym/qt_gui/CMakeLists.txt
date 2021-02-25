@@ -82,6 +82,16 @@ if (BUILD_INSTALL)
       CONFIGURATIONS Release
     )
 
+    #set(GUI_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/madym_gui.exe")
+    #add_custom_command(TARGET madym_gui POST_BUILD
+    #  COMMAND "${CMAKE_COMMAND}" -E
+    #      env PATH="${QT_BIN_DIR}" "${WINDEPLOYQT_EXECUTABLE}" "${GUI_PATH}"
+    #          --no-compiler-runtime
+    #          --dir "${CMAKE_CURRENT_BINARY_DIR}/qt_deploy_d"
+    #  COMMENT "Running ${WINDEPLOYQT_EXECUTABLE} to get GUI dependencies..."
+    #  CONFIGURATIONS Debug
+    #)
+
   elseif ( APPLE )
     #Configure mac bundle
     set(MACOSX_BUNDLE_BUNDLE_NAME "madym_gui")
@@ -159,6 +169,7 @@ if (BUILD_INSTALL)
     set(CPACK_NSIS_INSTALLED_ICON_NAME "${MADYM_DEPLOY_DIR}\\\\bin\\\\madym_gui.exe")
     set(CPACK_NSIS_EXECUTABLES_DIRECTORY "${MADYM_DEPLOY_DIR}\\\\bin")
     set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
+    set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS " ExecWait 'setx MADYM_ROOT \\\"$INSTDIR\\\\${MADYM_DEPLOY_DIR}\\\\bin\\\"'")
     set(CPACK_NSIS_HELP_LINK "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/madym_gui")
     set(CPACK_NSIS_URL_INFO_ABOUT "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/madym_gui")
     set(CPACK_NSIS_CONTACT "michael.berks@manchester.ac.uk")

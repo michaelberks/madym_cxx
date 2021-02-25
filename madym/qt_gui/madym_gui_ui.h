@@ -228,6 +228,9 @@ private: // Variables
   //Cache data directory
   QString dataDir_;
 
+  //Cache config dir
+  QString configDir_;
+
 };
 
 #endif // madym_gui_ui_H
