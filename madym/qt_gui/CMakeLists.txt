@@ -193,6 +193,7 @@ if (BUILD_INSTALL)
 
     # Transfer the value of ${MY_DEPENDENCY_PATHS} into the install script
     install(CODE "
+      set(_id ${APPLE_CODESIGN_ID})
       set(LIB_PATH \"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}\")
       set(RUN_PATH \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\")
       set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
@@ -220,9 +221,10 @@ if (BUILD_INSTALL)
         EXECUTABLES ${MADYM_EXE}
         RESOLVED_DEPENDENCIES_VAR _r_deps
         UNRESOLVED_DEPENDENCIES_VAR _u_deps
-	PRE_EXCLUDE_REGEXES "(^/System/.*$)" )
+	      PRE_EXCLUDE_REGEXES "(^/System/.*$)" )
       foreach(_file ${_r_deps})
-	file(INSTALL
+
+	      file(INSTALL
           DESTINATION ${LIB_DEST}
           TYPE SHARED_LIBRARY
           FILES "${_file}"
@@ -267,6 +269,20 @@ if (BUILD_INSTALL)
         \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_MakeXtr )"
       COMPONENT Tools
       CONFIGURATIONS Release)  
+
+    install(CODE [[
+      file(GLOB_RECURSE lib_files
+        LIST_DIRECTORIES false
+        "${LIB_DEST}/*")
+      foreach(lib_file ${lib_files})
+        execute_process(COMMAND codesign --force -s 
+          ${_id}
+          ${lib_file} )
+      endforeach()
+      
+     ]]
+     COMPONENT Tools
+     CONFIGURATIONS Release)
 
     if (BUILD_WITH_DCMTK)
       install(CODE
