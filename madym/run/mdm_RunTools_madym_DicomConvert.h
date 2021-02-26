@@ -99,6 +99,10 @@ private:
   void sortDicomDir();
 
   //
+  void makeSingleVol(
+    const std::vector<dcmSeriesInfo> &seriesInfo);
+
+  //
   void makeT1InputVols(
     const std::vector<dcmSeriesInfo> &seriesInfo);
 

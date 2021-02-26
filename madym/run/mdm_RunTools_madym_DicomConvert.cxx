@@ -75,6 +75,9 @@ MDM_API void mdm_RunTools_madym_DicomConvert::run()
 
   if (options_.makeDyn())
     makeDynamicVols(seriesInfo_);
+
+  if (options_.makeSingle())
+    makeSingleVol(seriesInfo_);
 }
 
 //
@@ -117,10 +120,13 @@ MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *a
   options_parser_.add_option(config_options, options_.makeT1Inputs);
   options_parser_.add_option(config_options, options_.T1inputSeries);
   options_parser_.add_option(config_options, options_.makeDyn);
+  options_parser_.add_option(config_options, options_.makeSingle);
   options_parser_.add_option(config_options, options_.dynSeries);
+  options_parser_.add_option(config_options, options_.singleSeries);
   options_parser_.add_option(config_options, options_.makeT1Means);
   options_parser_.add_option(config_options, options_.makeDynMean);
   options_parser_.add_option(config_options, options_.dicomFileFilter);
+  options_parser_.add_option(config_options, options_.volumeName);
 
   //Dicom options - scaling
   options_parser_.add_option(config_options, options_.autoScaleTag);
@@ -877,6 +883,39 @@ double mdm_RunTools_madym_DicomConvert::getDynamicTime(DcmFileFormat &fileformat
   }
 
   return dynTime;
+}
+
+//---------------------------------------------------------------------
+void mdm_RunTools_madym_DicomConvert::makeSingleVol(
+  const std::vector<dcmSeriesInfo> &seriesInfo)
+{
+  const auto &index = options_.singleSeries() - 1;
+  if (index < 0 || index >= seriesInfo.size())
+    throw mdm_exception(__func__,
+      boost::format("Dicom series index (%1%) must be >= 0 and < %2%")
+      % index % seriesInfo.size());
+
+  checkAutoScaling();
+
+  const auto& series = seriesInfo[index];
+
+  //Check this sequence was validly sorted
+  if (!series.sortValid)
+    throw mdm_exception(__func__, boost::format(
+      "Series %1% was not sorted properly. Check the series log files"
+    ) % series.name);
+
+  auto img = loadDicomImage(series, 0, false);
+
+  //Get write format from options
+  auto imageWriteFormat = mdm_ImageIO::formatFromString(options_.imageWriteFormat());
+  auto imageDatatype = static_cast<mdm_ImageDatatypes::DataType>(options_.imageDataType());
+
+  auto volumeName = outputPath_ / options_.volumeName();
+  
+  mdm_ImageIO::writeImage3D(imageWriteFormat,
+    volumeName.string(), img, imageDatatype, mdm_XtrFormat::NEW_XTR);
+  mdm_ProgramLogger::logProgramMessage("Created 3D image " + volumeName.string());
 }
 
 //---------------------------------------------------------------------

@@ -265,9 +265,15 @@ struct mdm_InputOptions {
   mdm_input_int dynSeries = mdm_input_int(
     0, "dyn_series", "",
     "Index of the dicom series for the dynamic DCE time-series"); //!< See initial value
+  mdm_input_int singleSeries = mdm_input_int(
+    0, "single_series", "",
+    "Index of the dicom series for converting a generic single volume"); //!< See initial value
   mdm_input_string dicomFileFilter = mdm_input_string(
     mdm_input_str(""), "dicom_filter", "",
     "File filter for dicom sort (eg IM_)"); //!< See initial value
+  mdm_input_string volumeName = mdm_input_string(
+    mdm_input_str(""), "vol_name", "",
+    "Output filename for converting a single dicom volume"); //!< See initial value
 
   //Dicom options -flags
   mdm_input_bool dicomSort = mdm_input_bool(
@@ -276,6 +282,9 @@ struct mdm_InputOptions {
   mdm_input_bool makeT1Inputs = mdm_input_bool(
     false, "make_t1", "",
     "Make T1 input images from dicom series"); //!< See initial value
+  mdm_input_bool makeSingle = mdm_input_bool(
+    false, "make_single", "",
+    "Make single 3D image from dicom series"); //!< See initial value
   mdm_input_bool makeDyn = mdm_input_bool(
     false, "make_dyn", "",
     "Make dynamic images from dynamic series"); //!< See initial value
