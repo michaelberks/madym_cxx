@@ -115,6 +115,25 @@ MDM_API void mdm_Image3D::setVoxel(size_t x, size_t y, size_t z, double value)
 }
 
 //
+MDM_API void mdm_Image3D::setSlice(size_t z, std::vector<double> values)
+{
+  if (z >= nZ_)
+    throw mdm_exception(__func__, boost::format(
+      "Attempting to access slice index %1% when there are only %2% slices")
+      % z % nZ_);
+
+  if (values.size() != nX_ * nY_)
+    throw mdm_exception(__func__,
+      boost::format(
+        "Invalid insert size: number of insert values = %1%, does not match slice size %2%x%3% = %4%")
+      % values.size() % nX_ % nY_ % (nX_*nY_));
+
+  size_t offset = nX_ * nY_*z;
+
+  std::copy(values.begin(), values.end(), data_.begin() + offset);
+}
+
+//
 MDM_API void mdm_Image3D::setType(ImageType newType)
 {
 	
@@ -215,11 +234,7 @@ MDM_API void mdm_Image3D::setTimeStampFromSecs(const double timeInSecs)
 {
 	// Convert time in seconds into the xtr timestamp format
 	//hhmmss.msecs represented as a single decimal number
-
-	double hh = std::floor(timeInSecs / (3600));
-	double mm = std::floor((timeInSecs - 3600 * hh) / 60);
-	double ss = timeInSecs - 3600 * hh - 60 * mm;
-	timeStamp_ = 10000 * hh + 100 * mm + ss;
+	timeStamp_ = secsToTimestamp(timeInSecs);
 }
 
 //
@@ -231,15 +246,28 @@ MDM_API double mdm_Image3D::timeStamp() const
 //
 MDM_API double mdm_Image3D::minutesFromTimeStamp() const
 {
-	int hours = (int)(timeStamp_ / 10000);
-	int minutes = (int)(timeStamp_ - 10000 * hours) / 100;
-	double seconds = (timeStamp_
-		- 10000 * hours
-		- 100 * minutes);
-	double timeInSecs = double(hours) * 60 * 60
-		+ double(minutes) * 60
-		+ seconds;
-	return timeInSecs / 60.0; //time in minutes as used as standard throughout DCE analysis
+	return timestampToSecs(timeStamp_) / 60.0; //time in minutes as used as standard throughout DCE analysis
+}
+
+MDM_API double mdm_Image3D::secsToTimestamp(const double secs)
+{
+  double hh = std::floor(secs / (3600));
+  double mm = std::floor((secs - 3600 * hh) / 60);
+  double ss = secs - 3600 * hh - 60 * mm;
+  return 10000 * hh + 100 * mm + ss;
+}
+
+MDM_API double mdm_Image3D::timestampToSecs(const double timestamp)
+{
+  int hours = (int)(timestamp / 10000);
+  int minutes = (int)(timestamp - 10000 * hours) / 100;
+  double seconds = (timestamp
+    - 10000 * hours
+    - 100 * minutes);
+  double timeInSecs = double(hours) * 60 * 60
+    + double(minutes) * 60
+    + seconds;
+  return timeInSecs;
 }
 
 //
@@ -447,7 +475,7 @@ MDM_API void mdm_Image3D::metaDataToStream(std::ostream &ofs) const
 {
 	//Write the time stamp
 	ofs << info_.TimeStampKey << "\t"
-		<< std::fixed << std::setw(11) << std::setprecision(6) << timeStamp() << std::endl;
+		<< std::fixed << std::setw(13) << std::setfill('0') << std::setprecision(6) << timeStamp() << std::endl;
 
 	//Write the image type
 	ofs << info_.ImageTypeKey << "\t" << type() << std::endl;
@@ -710,6 +738,7 @@ MDM_API mdm_Image3D& mdm_Image3D::operator+=(const mdm_Image3D& rhs)
   size_t v2 = 0;
   for (auto & v : this->data_)
     v += rhs.voxel(v2++);
+  return *this;
 }
 
 //
@@ -729,6 +758,7 @@ MDM_API mdm_Image3D& mdm_Image3D::operator*=(const mdm_Image3D& rhs)
   size_t v2 = 0;
   for (auto & v : this->data_)
     v *= rhs.voxel(v2++);
+  return *this;
 }
 
 //
@@ -748,6 +778,7 @@ MDM_API mdm_Image3D& mdm_Image3D::operator-=(const mdm_Image3D& rhs)
   size_t v2 = 0;
   for (auto & v : this->data_)
     v -= rhs.voxel(v2++);
+  return *this;
 }
 
 //
@@ -767,6 +798,7 @@ MDM_API mdm_Image3D& mdm_Image3D::operator/=(const mdm_Image3D& rhs)
   size_t v2 = 0;
   for (auto & v : this->data_)
     v /= rhs.voxel(v2++);
+  return *this;
 }
 
 //

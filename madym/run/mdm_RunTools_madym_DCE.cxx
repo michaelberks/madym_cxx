@@ -134,7 +134,7 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.inputCt);
 	options_parser_.add_option(config_options, options_.dynName);
 	options_parser_.add_option(config_options, options_.dynDir);
-	options_parser_.add_option(config_options, options_.dynFormat);
+	options_parser_.add_option(config_options, options_.sequenceFormat);
 	options_parser_.add_option(config_options, options_.nDyns);
 	options_parser_.add_option(config_options, options_.injectionImage);
   options_parser_.add_option(config_options, options_.roiName);

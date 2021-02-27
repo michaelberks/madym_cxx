@@ -674,7 +674,7 @@ mdm_DCEVoxel mdm_VolumeAnalysis::setUpVoxel(size_t voxelIndex) const
     
     auto T1 = T1Mapper_.T1(voxelIndex);
     auto M0 = useM0Ratio_ ? 0.0 : T1Mapper_.M0(voxelIndex);
-    auto B1 = useB1correction_ ? 1.0 : T1Mapper_.B1(voxelIndex);
+    auto B1 = useB1correction_ ? T1Mapper_.B1(voxelIndex) : 1.0;
 
     //Convert signal (if already C(t) does nothing so can call regardless)
     vox.computeCtFromSignal(T1, FA, TR, r1Const_, M0, B1, firstImage_);

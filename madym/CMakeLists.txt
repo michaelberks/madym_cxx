@@ -42,8 +42,29 @@ find_package(Boost COMPONENTS system filesystem program_options date_time REQUIR
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-find_package(ZLIB)
-add_definitions(-DHAVE_ZLIB)
+option( BUILD_WITH_ZLIB "Include zlib to allow compressed NIFTI format (*.gz)?" NO )
+if (BUILD_WITH_ZLIB)
+  find_package(ZLIB)
+  add_definitions(-DHAVE_ZLIB)
+  list(GET ZLIB_LIBRARIES -1 LIB0)
+  get_filename_component(ZLIB_LIBRARY_DIR ${LIB0} DIRECTORY)
+  message(STATUS "Zlib library ${LIB0} is in ${ZLIB_LIBRARY_DIR}")
+
+  if ( WIN32 )
+     set(ZLIB_BIN_DIR "" CACHE STRING 
+      "Directory where ZLIB dlls are installed")
+  endif()
+endif()
+
+option( BUILD_WITH_DCMTK "Include support for DICOM images?" NO )
+if (BUILD_WITH_DCMTK)
+  find_package(DCMTK NO_MODULE REQUIRED)
+  include_directories(${DCMTK_INCLUDE_DIRS})
+  add_definitions(-DUSING_DCMTK)
+  set(DCMTK_LIBRARY_DIR "" CACHE STRING 
+      "Directory where DCMTK libraries are installed")
+endif()
+
 
 set(mdm_sources
 	mdm_RunTools.cxx				  mdm_RunTools.h
@@ -78,7 +99,7 @@ set(mdm_io_sources
   image_io/nifti/znzlib.cpp image_io/nifti/znzlib.h
   image_io/nifti/nifti_swaps.h
 	image_io/nifti/nifti1.h
-  image_io/nifti/nifti2.h   
+  image_io/nifti/nifti2.h  
 )
 
 set(mdm_run_sources
@@ -90,6 +111,7 @@ set(mdm_run_sources
   run/mdm_RunTools_madym_T1.cxx			run/mdm_RunTools_madym_T1.h
   run/mdm_RunTools_madym_T1_lite.cxx	run/mdm_RunTools_madym_T1_lite.h
   run/mdm_RunTools_madym_AIF.cxx		run/mdm_RunTools_madym_AIF.h
+  run/mdm_RunTools_madym_MakeXtr.cxx run/mdm_RunTools_madym_MakeXtr.h
 )
 set(mdm_dce_model_sources
   #Models
@@ -112,6 +134,15 @@ set(mdm_t1_method_sources
 	t1_methods/mdm_T1FitterVFA.cxx			t1_methods/mdm_T1FitterVFA.h
 )
 
+if (BUILD_WITH_DCMTK)
+  set(mdm_io_sources ${mdm_io_sources} 
+    image_io/dicom/mdm_DicomFormat.cxx image_io/dicom/mdm_DicomFormat.h
+  )
+  set(mdm_run_sources ${mdm_run_sources} 
+    run/mdm_RunTools_madym_DicomConvert.cxx run/mdm_RunTools_madym_DicomConvert.h
+  )
+endif()
+
 add_library(mdm 
 	${mdm_sources} 
   ${mdm_io_sources}
@@ -126,8 +157,15 @@ target_link_libraries( mdm
   Boost::system
   Boost::program_options
   Boost::date_time
-  ZLIB::ZLIB
 )
+if (BUILD_WITH_ZLIB)
+  target_link_libraries( mdm ZLIB::ZLIB)
+endif()
+
+if (BUILD_WITH_DCMTK)
+  target_link_libraries( mdm ${DCMTK_LIBRARIES})
+endif()
+
 if ( BUILD_QT_GUI )
   qt5_use_modules(mdm Core)
 endif()

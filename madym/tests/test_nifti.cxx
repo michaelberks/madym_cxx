@@ -116,6 +116,7 @@ BOOST_AUTO_TEST_CASE(test_nifti) {
   //-----------------------------------------------------------------
   // Now repeat the tests for sparse writing/reading
   //-----------------------------------------------------------------
+#ifdef HAVE_ZLIB
   compress = true;
 
   //unsigned char (uint8) format
@@ -138,6 +139,7 @@ BOOST_AUTO_TEST_CASE(test_nifti) {
 
   //Double format - real data
   test_nifti_io(img_real, mdm_ImageDatatypes::DT_DOUBLE, compress);
+#endif
 }
 
 BOOST_AUTO_TEST_SUITE_END() //

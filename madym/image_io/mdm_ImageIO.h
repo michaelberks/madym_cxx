@@ -32,21 +32,24 @@ public:
     ANALYZE_SPARSE = 1, ///< Custom sparse version of Analyze 7.5 format, images are stored as .hdr/.img pairs, with only non-zero voxel values+indices stored in .img
     NIFTI = 2, ///< NIFTI 2 format, images are stored as .nii
     NIFTI_GZ = 3, ///< NIFTI 2 format zlib compressed, images are stored as .nii.gz
+    DICOM = 4, ///< DICOM format, as implemented using DCMTK library
   };
+
+  //! Convert ImageFormat enum value to string
+  /*!
+  Throws exception if enum not in range
+  \param    fmt		must match one of the valid formats
+  \return   format as string
+  \see validFormats
+  \see ImageFormat
+  */
+  MDM_API static std::string toString(ImageFormat fmt);
 
   //! Returns list of valid formats
   /*!
   \return List of implemented model names
   */
-  MDM_API static const std::vector<std::string> validFormats()
-  {
-    return {
-  "ANALYZE",
-  "ANALYZE_SP",
-  "NIFTI",
-  "NIFTI_GZ"
-    };
-  }
+  MDM_API static const std::vector<std::string> validFormats();
 
   //! Convert string to ImageFormat enum value
   /*!

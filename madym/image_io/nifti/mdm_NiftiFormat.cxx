@@ -10,6 +10,7 @@
 #include "mdm_NiftiFormat.h"
 #include "nifti_swaps.h"
 
+#include <iostream>
 #include <cstdio>
 #include <cassert>
 #include <iomanip>

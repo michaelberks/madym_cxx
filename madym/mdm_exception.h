@@ -68,7 +68,7 @@ public:
    append(msg.str());
   }
 
-private:
+protected:
   //! Exception message displayed by what()
   std::string err;
 

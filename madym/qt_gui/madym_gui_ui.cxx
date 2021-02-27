@@ -44,6 +44,13 @@ madym_gui_ui::madym_gui_ui(QWidget *parent)
   connect_signals_to_slots();
   ui.stackedWidget->setCurrentWidget(ui.homePage);
   mdm_ProgramLogger::setQuiet(true);
+
+  //See if config dir and data are set
+  if (const char* env_c = std::getenv("MADYM_CONFIG_DIR"))
+    configDir_ = QString(env_c);
+
+  if (const char* env_d = std::getenv("MADYM_DATA_DIR"))
+    dataDir_ = QString(env_d);
 }
 
 //
@@ -124,7 +131,7 @@ void madym_gui_ui::on_loadConfigButton_clicked()
 {
   //Open file select and get config filename
   QString config_file = QFileDialog::getOpenFileName(this, tr("Select config file"),
-    dataDir_,
+    configDir_.isEmpty() ? dataDir_ : configDir_,
     tr("Config files (*.txt *.cfg);;All files (*.*)"));
 
   if (config_file.isEmpty())
@@ -159,7 +166,7 @@ void madym_gui_ui::on_loadConfigButton_clicked()
 void madym_gui_ui::on_saveConfigButton_clicked()
 {
   QString config_file = QFileDialog::getSaveFileName(this, tr("Select config file"),
-    dataDir_,
+    configDir_.isEmpty() ? dataDir_ : configDir_,
     tr("Config files (*.txt *.cfg);;All files (*.*)"));
 
   if (config_file.isEmpty())
@@ -270,7 +277,7 @@ void madym_gui_ui::on_dceNameLineEdit_textChanged(const QString &text)
 
 void madym_gui_ui::on_dceFormatLineEdit_textChanged(const QString &text)
 {
-	processor_.madym_exe().options().dynFormat.set(text.toStdString());
+	processor_.madym_exe().options().sequenceFormat.set(text.toStdString());
 }
 
 void madym_gui_ui::on_nDynSpinBox_valueChanged(int value)
@@ -975,7 +982,7 @@ void madym_gui_ui::initialize_widget_values()
     ui.inputTypeRadioButtonC->setChecked(options.inputCt());
     ui.dceInputLineEdit->setText(options.dynDir().c_str());
     ui.dceNameLineEdit->setText(options.dynName().c_str());
-    ui.dceFormatLineEdit->setText(options.dynFormat().c_str());
+    ui.dceFormatLineEdit->setText(options.sequenceFormat().c_str());
     ui.nDynSpinBox->setValue(options.nDyns());
     ui.injectionImageSpinBox->setValue(options.injectionImage());
 

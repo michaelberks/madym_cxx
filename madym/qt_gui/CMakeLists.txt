@@ -82,6 +82,16 @@ if (BUILD_INSTALL)
       CONFIGURATIONS Release
     )
 
+    #set(GUI_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/madym_gui.exe")
+    #add_custom_command(TARGET madym_gui POST_BUILD
+    #  COMMAND "${CMAKE_COMMAND}" -E
+    #      env PATH="${QT_BIN_DIR}" "${WINDEPLOYQT_EXECUTABLE}" "${GUI_PATH}"
+    #          --no-compiler-runtime
+    #          --dir "${CMAKE_CURRENT_BINARY_DIR}/qt_deploy_d"
+    #  COMMENT "Running ${WINDEPLOYQT_EXECUTABLE} to get GUI dependencies..."
+    #  CONFIGURATIONS Debug
+    #)
+
   elseif ( APPLE )
     #Configure mac bundle
     set(MACOSX_BUNDLE_BUNDLE_NAME "madym_gui")
@@ -95,9 +105,11 @@ if (BUILD_INSTALL)
 
     #Override global rpath properties - hardcode to the original libs
     #then the Qt deploy tool will do the relative rpath replacement 
+    message(STATUS "Setting gui RPATH to ${Boost_LIBRARY_DIRS};${ZLIB_LIBRARY_DIR};${DCMTK_LIBRARY_DIR}")
     set_target_properties(madym_gui
       PROPERTIES
-      INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib;${BOOST_LIBRARY_DIRS}"
+      INSTALL_RPATH 
+      "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib;${Boost_LIBRARY_DIRS};${ZLIB_LIBRARY_DIR};${DCMTK_LIBRARY_DIR}"
       XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES
       CONFIGURATIONS Release)
     
@@ -135,10 +147,12 @@ if (BUILD_INSTALL)
         CONFIGURATIONS Release)
 
     #Install boost dependencies using fixup bundle
+    set(DIRS ${Boost_LIBRARY_DIR_RELEASE} ${ZLIB_LIBRARY_DIR} ${ZLIB_BIN_DIR} ${DCMTK_LIBRARY_DIR})
+    message("Fixup bundle search paths: ${DIRS}")
     install(CODE "
       include(BundleUtilities)
       fixup_bundle(\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.exe 
-      \"\" \"${Boost_LIBRARY_DIR_RELEASE}\") 
+      \"\" \"${DIRS}\") 
       " 
       COMPONENT GUI
       CONFIGURATIONS Release)
@@ -155,6 +169,7 @@ if (BUILD_INSTALL)
     set(CPACK_NSIS_INSTALLED_ICON_NAME "${MADYM_DEPLOY_DIR}\\\\bin\\\\madym_gui.exe")
     set(CPACK_NSIS_EXECUTABLES_DIRECTORY "${MADYM_DEPLOY_DIR}\\\\bin")
     set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
+    set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS " ExecWait 'setx MADYM_ROOT \\\"$INSTDIR\\\\${MADYM_DEPLOY_DIR}\\\\bin\\\"'")
     set(CPACK_NSIS_HELP_LINK "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/madym_gui")
     set(CPACK_NSIS_URL_INFO_ABOUT "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/madym_gui")
     set(CPACK_NSIS_CONTACT "michael.berks@manchester.ac.uk")
@@ -189,6 +204,7 @@ if (BUILD_INSTALL)
 
     # Transfer the value of ${MY_DEPENDENCY_PATHS} into the install script
     install(CODE "
+      set(_id ${APPLE_CODESIGN_ID})
       set(LIB_PATH \"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}\")
       set(RUN_PATH \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\")
       set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
@@ -197,13 +213,29 @@ if (BUILD_INSTALL)
       COMPONENT Tools
       CONFIGURATIONS Release)
 
+    if (BUILD_WITH_DCMTK)
+      install(CODE "
+      set(MADYM_EXE \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_DicomConvert\")
+      "
+      COMPONENT Tools
+      CONFIGURATIONS Release)
+    else()
+      install(CODE "
+      set(MADYM_EXE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_DCE)
+      "
+      COMPONENT Tools
+      CONFIGURATIONS Release)
+    endif()
     install(CODE [[
+      message(STATUS "Getting dependencies for ${MADYM_EXE}")
       file(GET_RUNTIME_DEPENDENCIES
-        EXECUTABLES ${RUN_PATH}/madym_DCE
+        EXECUTABLES ${MADYM_EXE}
         RESOLVED_DEPENDENCIES_VAR _r_deps
-        UNRESOLVED_DEPENDENCIES_VAR _u_deps)
+        UNRESOLVED_DEPENDENCIES_VAR _u_deps
+	      PRE_EXCLUDE_REGEXES "(^/System/.*$)" )
       foreach(_file ${_r_deps})
-        file(INSTALL
+
+	      file(INSTALL
           DESTINATION ${LIB_DEST}
           TYPE SHARED_LIBRARY
           FILES "${_file}"
@@ -242,9 +274,35 @@ if (BUILD_INSTALL)
         \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_T1_lite )
       execute_process(COMMAND codesign -s 
         ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_AIF )"
+        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_AIF )
+      execute_process(COMMAND codesign -s 
+        ${APPLE_CODESIGN_ID}
+        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_MakeXtr )"
       COMPONENT Tools
       CONFIGURATIONS Release)  
+
+    install(CODE [[
+      file(GLOB_RECURSE lib_files
+        LIST_DIRECTORIES false
+        "${LIB_DEST}/*")
+      foreach(lib_file ${lib_files})
+        execute_process(COMMAND codesign --force -s 
+          ${_id}
+          ${lib_file} )
+      endforeach()
+      
+     ]]
+     COMPONENT Tools
+     CONFIGURATIONS Release)
+
+    if (BUILD_WITH_DCMTK)
+      install(CODE
+      "execute_process(COMMAND codesign -s 
+        ${APPLE_CODESIGN_ID}
+        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DicomConvert )"
+      COMPONENT Tools
+      CONFIGURATIONS Release)  
+    endif()
 
     set(CPACK_ARCHIVE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
     message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")

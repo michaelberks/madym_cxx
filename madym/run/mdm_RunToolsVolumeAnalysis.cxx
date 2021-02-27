@@ -69,7 +69,7 @@ void mdm_RunToolsVolumeAnalysis::loadSt()
     throw mdm_exception(__func__, "paths and/or prefix to dynamic images not set");
 
   //Load the dynamic images
-  fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns(), options_.dynFormat());
+  fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns(), options_.sequenceFormat());
 
 }
 
@@ -82,13 +82,13 @@ void mdm_RunToolsVolumeAnalysis::loadCt()
   if (CtBasePath.empty() && CtPrefix.empty())
     throw mdm_exception(__func__, "Ct flag set to true, but paths and/or prefix to Ct maps not set");
 
-  fileManager_.loadCtDataMaps(CtBasePath, CtPrefix, options_.nDyns(), options_.dynFormat());
+  fileManager_.loadCtDataMaps(CtBasePath, CtPrefix, options_.nDyns(), options_.sequenceFormat());
 }
 
 //
 void mdm_RunToolsVolumeAnalysis::loadT1()
 {
-  fs::path T1Path = fs::absolute(options_.T1Name());
+  fs::path T1Path = fs::absolute(fs::path(options_.T1Dir()) / options_.T1Name());
   fileManager_.loadT1Map(T1Path.string());
 
   //Now check for cases 2 and 3, if useBaselineM0 is true
@@ -100,7 +100,7 @@ void mdm_RunToolsVolumeAnalysis::loadT1()
       throw mdm_exception(__func__, "If M0_ratio is false, path to M0 map must be set");
 
     //Otherwise load M0 and return
-    fs::path M0Path = fs::absolute(options_.M0Name());
+    fs::path M0Path = fs::absolute(fs::path(options_.T1Dir()) / options_.M0Name());
     fileManager_.loadM0Map(M0Path.string());
 
   }
@@ -112,7 +112,7 @@ MDM_API void mdm_RunToolsVolumeAnalysis::loadT1Inputs()
 {
 	std::vector<std::string> T1inputPaths(0);
 	for (std::string mapName : options_.T1inputNames())
-		T1inputPaths.push_back(fs::absolute(mapName).string());
+		T1inputPaths.push_back(fs::absolute(fs::path(options_.T1Dir()) / mapName).string());
 
 	fileManager_.loadT1MappingInputImages(T1inputPaths);
 }

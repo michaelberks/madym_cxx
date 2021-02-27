@@ -86,7 +86,7 @@ class mdm_Image3D
 		KeyPair TR; //!< Repetition time in ms
 		KeyPair TE; //!< Echo time in ms
 		KeyPair B; //!< Magnitude field B-value
-		KeyPair TI; //!< T1 in ms
+		KeyPair TI; //!< Inversion time in ms
 		KeyPair TA; //!< TA
 		KeyPair ETL; //!< ETL
 		KeyPair Xmm; //!< X0
@@ -185,6 +185,13 @@ class mdm_Image3D
   */
   MDM_API void setVoxel(size_t x, size_t y, size_t z, double value);
 
+  //! Set all the values in a slice
+  /*!
+  \param z slice to insert
+  \param values voxel values to insert, must have size n_x *n_z or exception thrown
+  */
+  MDM_API void setSlice(size_t z, std::vector<double> values);
+
 	//! Set image type
 	/*!
 	\param type
@@ -277,6 +284,20 @@ class mdm_Image3D
 	\return accumulated minutes since midnight in time stamp
 	*/
 	MDM_API double minutesFromTimeStamp() const;
+
+  //! Static function to convert time in cumulative seconds since midnight, to a timestamp hhmmss.msecs
+  /*!
+  \param secs cumulative time in seconds
+  \return timestamp as hhmmss.msecs
+  */
+  MDM_API static double secsToTimestamp(const double secs);
+
+  //! Static function to convert a timestamp to time in cumulative seconds since midnight
+  /*!
+  \param timestamp in hhmmss.msecs format
+  \return secs cumulative time in seconds
+  */
+  MDM_API static double timestampToSecs(const double timestamp);
 
 	//! Return image meta data
 	/*!
