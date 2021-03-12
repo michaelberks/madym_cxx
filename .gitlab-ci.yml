@@ -30,7 +30,16 @@ build:
     - echo "This job builds madym in debug configuration for testing"
     - mkdir -p build
     - cd build
-    - cmake -DCMAKE_BUILD_TYPE=Debug -DBUILD_QT_GUI=OFF ..
+    - cmake .. \
+        -DCMAKE_BUILD_TYPE=Debug \
+        -D BUILD_DOCUMENTATION=OFF \
+        -D BUILD_INSTALL=OFF \
+        -D BUILD_QT_GUI=ON \
+        -D BUILD_SHARED_LIBS=ON \
+        -D BUILD_TESTING=ON \
+        -D BUILD_TOOLS=ON \
+        -D BUILD_WITH_DCMTK=ON \
+        -D BUILD_WITH_ZLIB=ON
     - make
     - echo "Madym version is $(bin/madym_DCE -v)"
   cache:
@@ -63,7 +72,15 @@ build_dist:
     - echo "This job builds madym in release configuration for distribution"
     - mkdir dist
     - cd dist
-    - cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_QT_GUI=ON ..
+    - cmake .. \
+        -D BUILD_DOCUMENTATION=OFF \
+        -D BUILD_INSTALL=OFF \
+        -D BUILD_QT_GUI=ON \
+        -D BUILD_SHARED_LIBS=ON \
+        -D BUILD_TESTING=ON \
+        -D BUILD_TOOLS=ON \
+        -D BUILD_WITH_DCMTK=ON \
+        -D BUILD_WITH_ZLIB=ON
     - make
   artifacts:
     paths:
