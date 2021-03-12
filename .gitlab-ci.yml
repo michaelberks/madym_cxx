@@ -30,8 +30,9 @@ build:
     - echo "This job builds madym in debug configuration for testing"
     - mkdir -p build
     - cd build
-    - echo $CXX
     - cmake \
+        -D CMAKE_C_COMPILER=$CC \
+        -D CMAKE_CXX_COMPILER=$CXX \
         -D CMAKE_BUILD_TYPE=Debug \
         -D BUILD_DOCUMENTATION=OFF \
         -D BUILD_INSTALL=OFF \
@@ -75,6 +76,8 @@ build_dist:
     - mkdir dist
     - cd dist
     - cmake \
+        -D CMAKE_C_COMPILER=$CC \
+        -D CMAKE_CXX_COMPILER=$CXX \
         -D CMAKE_BUILD_TYPE=Release \
         -D BUILD_DOCUMENTATION=OFF \
         -D BUILD_INSTALL=OFF \
