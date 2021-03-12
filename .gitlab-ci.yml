@@ -28,8 +28,7 @@ build:
   stage: build
   script:
     - echo "This job builds madym in debug configuration for testing"
-    - mkdir -p ../build
-    - cd ../build
+    - mkdir -p build
     - cmake \
         -D CMAKE_BUILD_TYPE=Debug \
         -D BUILD_DOCUMENTATION=OFF \
@@ -40,16 +39,18 @@ build:
         -D BUILD_TOOLS=ON \
         -D BUILD_WITH_DCMTK=ON \
         -D BUILD_WITH_ZLIB=ON \
-        -S ../madym_cxx
+        -S madym_cxx
+        -B build
+    - cd build
     - make
     - echo "Madym version is $(bin/madym_DCE -v)"
   cache:
     key: ${CI_BUILD_REF_NAME}
     paths:
-      - ../build/
+      - build/
   artifacts:
     paths:
-    - ../build/
+    - build/
     expire_in: 1 week
   only:
     - master
