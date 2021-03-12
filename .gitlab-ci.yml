@@ -30,6 +30,7 @@ build:
     - echo "This job builds madym in debug configuration for testing"
     - mkdir -p build
     - cd build
+    - echo $CXX
     - cmake \
         -D CMAKE_BUILD_TYPE=Debug \
         -D BUILD_DOCUMENTATION=OFF \
