@@ -73,6 +73,7 @@ build_dist:
     - mkdir dist
     - cd dist
     - cmake .. \
+        -DCMAKE_BUILD_TYPE=Release \
         -D BUILD_DOCUMENTATION=OFF \
         -D BUILD_INSTALL=OFF \
         -D BUILD_QT_GUI=ON \
