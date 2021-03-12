@@ -111,7 +111,21 @@ if (BUILD_INSTALL)
 
     set(CPACK_PACKAGE_FILE_NAME "madym_${MADYM_VERSION}-${CMAKE_GENERATOR}")
     set(CPACK_ARCHIVE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
-      
+
+    #Cpack options common to all systems
+    set(CPACK_PACKAGE_NAME "Madym")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Madym DCE-MRI analysis tools")
+    set(CPACK_COMPONENTS_ALL GUI Tools Libs Examples)
+    set(CPACK_PACKAGE_VENDOR "University of Manchester")
+    set(CPACK_PACKAGE_CONTACT "michael.berks@manchester.ac.uk")
+    set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.md")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/license.txt")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "Madym")
+    set(CPACK_PACKAGE_EXECUTABLES "madym_gui" "Madym")
+    set(CPACK_PACKAGE_VERSION_MAJOR "${MADYM_VERSION_MAJOR}")
+    set(CPACK_PACKAGE_VERSION_MINOR "${MADYM_VERSION_MINOR}")
+    set(CPACK_PACKAGE_VERSION_PATCH "${MADYM_VERSION_PATCH}")
+
     #Windows
     if (WIN32)
       message(STATUS "Set generator to zip for ${CPACK_ARCHIVE_FILE_NAME}")
@@ -157,8 +171,66 @@ if (BUILD_INSTALL)
 
     #Unix
     elseif(UNIX)
-      message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")
-      set(CPACK_GENERATOR "TGZ")
+      install(CODE "
+        set(LIB_PATH \"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}\")
+        set(RUN_PATH \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\")
+        set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
+        "
+        COMPONENT Tools
+        CONFIGURATIONS Release)
+
+      if (BUILD_WITH_DCMTK)
+        install(CODE "
+        set(MADYM_EXE \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_DicomConvert\")
+        "
+        COMPONENT Tools
+        CONFIGURATIONS Release)
+      else()
+        install(CODE "
+        set(MADYM_EXE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_DCE)
+        "
+        COMPONENT Tools
+        CONFIGURATIONS Release)
+      endif()
+      install(CODE [[
+        message(STATUS "Getting dependencies for ${MADYM_EXE}")
+        file(GET_RUNTIME_DEPENDENCIES
+          EXECUTABLES ${MADYM_EXE}
+          RESOLVED_DEPENDENCIES_VAR _r_deps
+          UNRESOLVED_DEPENDENCIES_VAR _u_deps
+          PRE_EXCLUDE_REGEXES "(^/lib/.*$)" 
+          POST_EXCLUDE_REGEXES "(^/lib/.*$)")
+        foreach(_file ${_r_deps})          
+          file(INSTALL
+            DESTINATION ${LIB_DEST}
+            TYPE SHARED_LIBRARY
+            FILES "${_file}"
+          )
+          get_filename_component(_resolvedFile "${_file}" REALPATH)
+          if (NOT "${_file}" STREQUAL "${_resolvedFile}")
+            file(INSTALL
+              DESTINATION ${LIB_DEST}
+              TYPE SHARED_LIBRARY
+              FILES "${_resolvedFile}"
+            )
+          endif()
+        endforeach()
+        list(LENGTH _u_deps _u_length)
+        if("${_u_length}" GREATER 0)
+          message(WARNING "Unresolved dependencies detected!")
+        endif()
+        ]]
+        COMPONENT Tools
+        CONFIGURATIONS Release)
+
+      message(STATUS "Set generator to deb;tgz for ${CPACK_ARCHIVE_FILE_NAME}")
+      set(CPACK_GENERATOR "DEB;TGZ")
+      set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/images/madym.png")
+      set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+      set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Michael Berks")
+      set(CPACK_DEBIAN_FILE_NAME "madym_${MADYM_VERSION}.deb")
+      set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/madym_gui")
+      set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Madym debian package")
 
     endif ()
 

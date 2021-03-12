@@ -70,7 +70,7 @@ if (BUILD_INSTALL)
     get_target_property(QMAKE_EXECUTABLE Qt5::qmake IMPORTED_LOCATION)
     get_filename_component(QT_BIN_DIR "${QMAKE_EXECUTABLE}" DIRECTORY)
     find_program(WINDEPLOYQT_EXECUTABLE windeployqt HINTS "${QT_BIN_DIR}")
-    message(STATUS "Running ")
+    
     set(GUI_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/madym_gui.exe")
 
     add_custom_command(TARGET madym_gui POST_BUILD
@@ -112,6 +112,26 @@ if (BUILD_INSTALL)
       "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib;${Boost_LIBRARY_DIRS};${ZLIB_LIBRARY_DIR};${DCMTK_LIBRARY_DIR}"
       XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES
       CONFIGURATIONS Release)
+
+  elseif( UNIX )
+
+    get_target_property(QMAKE_EXECUTABLE Qt5::qmake IMPORTED_LOCATION)
+    set(GUI_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_gui")
+
+    add_custom_command(TARGET madym_gui POST_BUILD
+      COMMAND "cqtdeployer" 
+            -bin "${GUI_PATH}"
+            -qmake "${QMAKE_EXECUTABLE}"
+            -targetDir "${CMAKE_BINARY_DIR}/qt_deploy"
+            -name "madym-${MADYM_VERSION}"
+      COMMENT "Running ${cqtdeployer} to get GUI dependencies..."
+      CONFIGURATIONS Release
+    )
+    add_custom_command(TARGET madym_gui POST_BUILD
+      COMMAND rm "${CMAKE_BINARY_DIR}/qt_deploy/bin/madym_gui"
+      COMMENT "Removing unwanted binary, we just want the libraries and Qt plugins..."
+      CONFIGURATIONS Release
+    )
     
   endif()
 
@@ -312,11 +332,67 @@ if (BUILD_INSTALL)
 
   #Unix
   elseif ( UNIX )
+
+  install(CODE "
+  set(LIB_PATH \"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}\")
+  set(RUN_PATH \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\")
+  set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
+  "
+  COMPONENT Tools
+  CONFIGURATIONS Release)
+
+    install(CODE "
+      set(MADYM_EXE \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_gui\")
+      "
+      COMPONENT Tools
+      CONFIGURATIONS Release)
+    
+    install(CODE [[
+      message(STATUS "Getting dependencies for ${MADYM_EXE}")
+      file(GET_RUNTIME_DEPENDENCIES
+        EXECUTABLES ${MADYM_EXE}
+        RESOLVED_DEPENDENCIES_VAR _r_deps
+        UNRESOLVED_DEPENDENCIES_VAR _u_deps
+        PRE_EXCLUDE_REGEXES "(^/lib/.*$)" 
+        POST_EXCLUDE_REGEXES "(^/lib/.*$)")
+      foreach(_file ${_r_deps})          
+        file(INSTALL
+          DESTINATION ${LIB_DEST}
+          TYPE SHARED_LIBRARY
+          FILES "${_file}"
+        )
+        get_filename_component(_resolvedFile "${_file}" REALPATH)
+        if (NOT "${_file}" STREQUAL "${_resolvedFile}")
+          file(INSTALL
+            DESTINATION ${LIB_DEST}
+            TYPE SHARED_LIBRARY
+            FILES "${_resolvedFile}"
+          )
+        endif()
+      endforeach()
+      list(LENGTH _u_deps _u_length)
+      if("${_u_length}" GREATER 0)
+        message(WARNING "Unresolved dependencies detected!")
+      endif()
+      ]]
+      COMPONENT Tools
+      CONFIGURATIONS Release)
+
+    install(DIRECTORY "${CMAKE_BINARY_DIR}/qt_deploy/" DESTINATION "${MADYM_DEPLOY_DIR}"
+      USE_SOURCE_PERMISSIONS
+      COMPONENT GUI
+      CONFIGURATIONS Release)
+
     set(CPACK_ARCHIVE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
-    message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")
+    message(STATUS "Set generator to deb;tgz for ${CPACK_ARCHIVE_FILE_NAME}")
     set(CPACK_GENERATOR "DEB;TGZ")
     set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/images/madym.png")
     set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS_PRIVATE_DIRS "${LIB_DEST}")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Michael Berks")
+    set(CPACK_DEBIAN_FILE_NAME "madym_${MADYM_VERSION}.deb")
+    set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/madym_gui")
+    set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Madym debian package")
 
   endif()
 
