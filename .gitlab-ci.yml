@@ -39,7 +39,7 @@ build:
         -D BUILD_TOOLS=ON \
         -D BUILD_WITH_DCMTK=ON \
         -D BUILD_WITH_ZLIB=ON \
-        -S madym_cxx
+        -S ../madym_cxx
         -B build
     - cd build
     - make
