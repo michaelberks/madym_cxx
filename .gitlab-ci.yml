@@ -28,11 +28,9 @@ build:
   stage: build
   script:
     - echo "This job builds madym in debug configuration for testing"
-    - mkdir -p build
-    - cd build
+    - mkdir -p ../build
+    - cd ../build
     - cmake \
-        -D CMAKE_C_COMPILER=$CC \
-        -D CMAKE_CXX_COMPILER=$CXX \
         -D CMAKE_BUILD_TYPE=Debug \
         -D BUILD_DOCUMENTATION=OFF \
         -D BUILD_INSTALL=OFF \
@@ -42,16 +40,16 @@ build:
         -D BUILD_TOOLS=ON \
         -D BUILD_WITH_DCMTK=ON \
         -D BUILD_WITH_ZLIB=ON \
-        -S ..
+        -S ../madym_cxx
     - make
     - echo "Madym version is $(bin/madym_DCE -v)"
   cache:
     key: ${CI_BUILD_REF_NAME}
     paths:
-      - build/
+      - ../build/
   artifacts:
     paths:
-    - build/
+    - ../build/
     expire_in: 1 week
   only:
     - master
@@ -73,8 +71,8 @@ build_dist:
   stage: build_dist
   script:
     - echo "This job builds madym in release configuration for distribution"
-    - mkdir dist
-    - cd dist
+    - mkdir ../dist
+    - cd ../dist
     - cmake \
         -D CMAKE_C_COMPILER=$CC \
         -D CMAKE_CXX_COMPILER=$CXX \
@@ -87,11 +85,11 @@ build_dist:
         -D BUILD_TOOLS=ON \
         -D BUILD_WITH_DCMTK=ON \
         -D BUILD_WITH_ZLIB=ON \
-        -S ..
+        -S ../madym_cxx
     - make
   artifacts:
     paths:
-      - dist/
+      - ../dist/
   only:
   - /^[0-9]+-[0-9]+-release$/
 
@@ -99,7 +97,7 @@ test_dist:
   stage: test_dist
   script:
     - echo "This job tests madym in release configuration for distribution"
-    - cd dist
+    - cd ../dist
     - ctest --verbose
   only:
     - /^[0-9]+-[0-9]+-release$/
@@ -108,7 +106,7 @@ deploy:
   stage: deploy
   script: 
     - echo "Make intall and package"
-    - cd dist
+    - cd ../dist
     - make install
     - make package
   artifacts:
