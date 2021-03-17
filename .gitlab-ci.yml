@@ -1,5 +1,5 @@
 # Use our docker with boost built
-image: registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx
+image: registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/madym_depends
 
 stages:
   - fetch-version
