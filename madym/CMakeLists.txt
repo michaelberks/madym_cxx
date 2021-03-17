@@ -126,6 +126,7 @@ set(mdm_dce_model_sources
   dce_models/mdm_DCEModelDIBEM.cxx		dce_models/mdm_DCEModelDIBEM.h
   dce_models/mdm_DCEModelDIBEM_Fp.cxx	dce_models/mdm_DCEModelDIBEM_Fp.h
   dce_models/mdm_DCEModelDISCM.cxx		dce_models/mdm_DCEModelDISCM.h
+  dce_models/mdm_DCEModelPatlak.cxx		dce_models/mdm_DCEModelPatlak.h
 )
 
 set(mdm_t1_method_sources

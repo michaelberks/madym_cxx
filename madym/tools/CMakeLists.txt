@@ -71,6 +71,10 @@ if (BUILD_INSTALL)
   if (APPLE)
     set(APPLE_CODESIGN_ID "" CACHE STRING 
       "Apple developer ID for certificate used to code sign Apple targets")
+
+      install(PROGRAMS "${CMAKE_BINARY_DIR}/generated/madym_setup.sh" DESTINATION "${MADYM_DEPLOY_DIR}"
+        COMPONENT Tools
+        CONFIGURATIONS Release)
   endif()
   #set(CPACK_ARCHIVE_FILE_NAME "madym_${MADYM_VERSION}-${CMAKE_GENERATOR}") this should work but docs are wrong: cmake bug
 

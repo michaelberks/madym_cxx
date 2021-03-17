@@ -24,6 +24,7 @@
 #include <madym/dce_models/mdm_DCEModelDI2CXM.h>
 #include <madym/dce_models/mdm_DCEModelDIBEM.h>
 #include <madym/dce_models/mdm_DCEModelDIBEM_Fp.h>
+#include <madym/dce_models/mdm_DCEModelPatlak.h>
 
 //!Header only class to generate specific instances of DCE models
 /*! 
@@ -55,7 +56,8 @@ public:
 		CXM,
 		DI2CXM,
 		DIBEM,
-		DIBEM_FP
+		DIBEM_FP,
+		PATLAK
 	};
 
 	/**
@@ -72,6 +74,7 @@ public:
 	"DI2CXM",
 	"AUEM",
 	"DIBEM",
+	"PATLAK",
 	"TOFTS",
   "NONE"
 		};
@@ -113,6 +116,9 @@ public:
 
 		else if (modelName == "DIBEM_FP")
 			return DIBEM_FP;
+
+		else if (modelName == "PATLAK")
+			return PATLAK;
 
 		else
 			return UNDEFINED;
@@ -219,6 +225,14 @@ public:
 		case DIBEM_FP:
 		{
 			return std::make_shared < mdm_DCEModelDIBEM_Fp>(AIF, paramNames, initialParams,
+				fixedParams, fixedValues,
+				relativeLimitParams, relativeLimitValues);
+
+		}
+
+		case PATLAK:
+		{
+			return std::make_shared < mdm_DCEModelPatlak>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues,
 				relativeLimitParams, relativeLimitValues);
 
