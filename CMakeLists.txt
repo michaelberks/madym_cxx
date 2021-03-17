@@ -103,7 +103,10 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 if (APPLE)
-  
+  configure_file(
+    ${CMAKE_SOURCE_DIR}/scripts/madym_setup.sh.in
+    ${CMAKE_BINARY_DIR}/generated/madym_setup.sh
+  )
   set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
 else()
   #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -114,6 +117,14 @@ endif()
 configure_file(
   ${CMAKE_SOURCE_DIR}/mdm_version.h.in
   ${CMAKE_BINARY_DIR}/generated/mdm_version.h
+)
+configure_file(
+  ${CMAKE_SOURCE_DIR}/scripts/postinst.in
+  ${CMAKE_BINARY_DIR}/generated/postinst
+)
+configure_file(
+  ${CMAKE_SOURCE_DIR}/scripts/prerm.in
+  ${CMAKE_BINARY_DIR}/generated/prerm
 )
 include_directories(${CMAKE_BINARY_DIR}/generated)
 

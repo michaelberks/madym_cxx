@@ -284,7 +284,6 @@ MDM_API int mdm_RunTools_madym_DCE_lite::parseInputs(int argc, const char *argv[
 	options_parser_.add_option(config_options, options_.r1Const);
 	options_parser_.add_option(config_options, options_.FA);
 	options_parser_.add_option(config_options, options_.TR);
-  options_parser_.add_option(config_options, options_.B1Scaling);
   options_parser_.add_option(config_options, options_.B1Correction);
 
 		//AIF options_

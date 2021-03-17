@@ -260,6 +260,16 @@ if (BUILD_INSTALL)
           TYPE SHARED_LIBRARY
           FILES "${_file}"
         )
+
+        get_filename_component(_resolvedFile "${_file}" REALPATH)
+        if (NOT "${_file}" STREQUAL "${_resolvedFile}")
+          file(INSTALL
+            DESTINATION ${LIB_DEST}
+            TYPE SHARED_LIBRARY
+            FILES "${_resolvedFile}"
+          )
+        endif()
+        
       endforeach()
       list(LENGTH _u_deps _u_length)
       if("${_u_length}" GREATER 0)
@@ -393,6 +403,10 @@ if (BUILD_INSTALL)
     set(CPACK_DEBIAN_FILE_NAME "madym_${MADYM_VERSION}.deb")
     set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/madym_gui")
     set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Madym debian package")
+    set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA 
+      "${CMAKE_BINARY_DIR}/generated/postinst" 
+      "${CMAKE_BINARY_DIR}/generated/madym_config.sh" 
+      "${CMAKE_BINARY_DIR}/generated/prerm")
 
   endif()
 
