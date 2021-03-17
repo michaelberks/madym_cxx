@@ -1,5 +1,5 @@
 /**@(#)Functions to read/write DICOM image files
-       These functions are a modified version of the 
+       These functions are a modified version of the
        ACR-NEMA ones
 */
 
@@ -7,6 +7,7 @@
 
 #include <madym/mdm_exception.h>
 #include <dcmtk/dcmimgle/dcmimage.h>
+#include <boost/algorithm/string.hpp>
 
 //
 MDM_API mdm_Image3D mdm_DicomFormat::readImage3D(const std::string& fileName,
@@ -31,7 +32,7 @@ MDM_API mdm_Image3D mdm_DicomFormat::readImage3D(const std::string& fileName,
       mdm_exception(__func__, "Error: cannot load DICOM image (" + std::string(DicomImage::getString(image->getStatus())) + ")");
   }
   delete image;*/
-  throw mdm_exception(__func__, "DICOM writing is not yet supported");
+  throw mdm_exception(__func__, "DICOM reading is not yet supported");
   mdm_Image3D img;
   return img;
 }
@@ -55,7 +56,7 @@ MDM_API void mdm_DicomFormat::writeImage3D(const std::string & fileName,
   dataset->putAndInsertString(DCM_SOPClassUID, UID_SecondaryCaptureImageStorage);
   dataset->putAndInsertString(DCM_SOPInstanceUID, dcmGenerateUniqueIdentifier(uid, SITE_INSTANCE_UID_ROOT));
   dataset->putAndInsertString(DCM_PatientName, "Doe^John");
- 
+
   dataset->putAndInsertUint8Array(DCM_PixelData, pixelData, pixelLength);
   OFCondition status = fileformat.saveFile("test.dcm", EXS_LittleEndianExplicit);
   if (status.bad())
@@ -131,11 +132,44 @@ MDM_API mdm_Image3D mdm_DicomFormat::loadImageFromDicomSlices(
 }
 
 //
+union ulf
+{
+  long int l;
+  float f;
+};
+
 MDM_API double mdm_DicomFormat::getNumericField(DcmFileFormat &fileformat, const DcmTagKey & key)
 {
   OFString value;
-  if (fileformat.getDataset()->findAndGetOFString(key, value).good())
+  if (fileformat.getDataset()->findAndGetOFStringArray(key, value).good())
+  {
+    std::string hex(value.c_str());
+    std::string hex_endian;
+    if (boost::algorithm::contains(hex, "\\"))
+    {
+      bool little_endian = true;
+      if (little_endian)
+      {
+        std::vector<std::string> hex_parts;
+        boost::split(hex_parts, hex, boost::is_any_of("\\"));
+        for (size_t i = 0; i < hex_parts.size(); i++)
+          hex_endian += hex_parts[hex_parts.size() - 1 - i];
+      }
+      else
+      {
+        hex_endian = hex;
+        boost::erase_all(hex_endian, "\\");
+      }
+      ulf u;
+      u.l = strtol(hex_endian.c_str(), (char**)NULL, 16);//hex.c_str()
+
+      return u.f;
+    }
+
     return std::stod(value.c_str());
+
+  }
+
   else
     throw mdm_DicomMissingFieldException(__func__, key);
 }
