@@ -4,6 +4,7 @@
 #include <madym/mdm_AIF.h>
 #include <madym/dce_models/mdm_DCEModelGenerator.h>
 #include <madym/t1_methods/mdm_T1FitterVFA.h>
+#include <madym/t1_methods/mdm_T1FitterIR.h>
 #include "mdm_test_utils.h"
 
 void write_series_to_binary(const std::string filename, 
@@ -117,123 +118,163 @@ int main(int argc, char *argv[])
 		outputDir = std::string(argv[1]);
 
 	//Create dynamic times vector
-	int nTimes = 100;
-	std::vector<double> dynTimes(nTimes);
-	for (int i_t = 0; i_t < nTimes; i_t++)
-		dynTimes[i_t] = 5 * double(i_t) / 60;
+  {
+    int nTimes = 100;
+    std::vector<double> dynTimes(nTimes);
+    for (int i_t = 0; i_t < nTimes; i_t++)
+      dynTimes[i_t] = 5 * double(i_t) / 60;
 
-	//Write it out to a binary file
-	std::string timesFileName(outputDir + "dyn_times.dat");
-	std::ofstream timesFileStream(timesFileName, std::ios::out | std::ios::binary);
-	timesFileStream.write(reinterpret_cast<const char*>(
-		&nTimes), sizeof(int));
-	timesFileStream.write(reinterpret_cast<const char*>(
-		&dynTimes[0]), sizeof(double)*nTimes);
-	timesFileStream.close();
-	std::cout << "Wrote dynamic times to binary calibration file" << std::endl;
+    //Write it out to a binary file
+    std::string timesFileName(outputDir + "dyn_times.dat");
+    std::ofstream timesFileStream(timesFileName, std::ios::out | std::ios::binary);
+    timesFileStream.write(reinterpret_cast<const char*>(
+      &nTimes), sizeof(int));
+    timesFileStream.write(reinterpret_cast<const char*>(
+      &dynTimes[0]), sizeof(double)*nTimes);
+    timesFileStream.close();
+    std::cout << "Wrote dynamic times to binary calibration file" << std::endl;
 
-	//Create population AIF
-	int injectionImage = 8;
-	double hct = 0.42;
-	double dose = 0.1;
-	mdm_AIF AIF;
-	AIF.setAIFType(mdm_AIF::AIF_POP);
-	AIF.setPrebolus(injectionImage);
-	AIF.setHct(hct);
-	AIF.setDose(dose);
-	AIF.setAIFTimes(dynTimes);
-	AIF.resample_AIF( 0);
-	std::vector<double> aifVals = AIF.AIF();
+    //Create population AIF
+    int injectionImage = 8;
+    double hct = 0.42;
+    double dose = 0.1;
+    mdm_AIF AIF;
+    AIF.setAIFType(mdm_AIF::AIF_POP);
+    AIF.setPrebolus(injectionImage);
+    AIF.setHct(hct);
+    AIF.setDose(dose);
+    AIF.setAIFTimes(dynTimes);
+    AIF.resample_AIF(0);
+    std::vector<double> aifVals = AIF.AIF();
 
-	//Write it out to binary file
-	std::string aifFileName(outputDir + "aif.dat");
-	std::ofstream aifFileStream(aifFileName, std::ios::out | std::ios::binary);
-	aifFileStream.write(reinterpret_cast<const char*>(
-		&injectionImage), sizeof(int));
-	aifFileStream.write(reinterpret_cast<const char*>(
-		&hct), sizeof(double));
-	aifFileStream.write(reinterpret_cast<const char*>(
-		&dose), sizeof(double));
-	aifFileStream.write(reinterpret_cast<const char*>(
-		&aifVals[0]), sizeof(double)*nTimes);
-	aifFileStream.close();
-	std::cout << "Wrote AIF to binary calibration file" << std::endl;
+    //Write it out to binary file
+    std::string aifFileName(outputDir + "aif.dat");
+    std::ofstream aifFileStream(aifFileName, std::ios::out | std::ios::binary);
+    aifFileStream.write(reinterpret_cast<const char*>(
+      &injectionImage), sizeof(int));
+    aifFileStream.write(reinterpret_cast<const char*>(
+      &hct), sizeof(double));
+    aifFileStream.write(reinterpret_cast<const char*>(
+      &dose), sizeof(double));
+    aifFileStream.write(reinterpret_cast<const char*>(
+      &aifVals[0]), sizeof(double)*nTimes);
+    aifFileStream.close();
+    std::cout << "Wrote AIF to binary calibration file" << std::endl;
 
-	//Write out PIF too
-	AIF.setPIFType(mdm_AIF::PIF_POP);
-	AIF.resample_PIF( 0);
-	std::vector<double> pifVals = AIF.PIF();
-	std::string pifFileName(outputDir + "pif.dat");
-	std::ofstream pifFileStream(pifFileName, std::ios::out | std::ios::binary);
-	pifFileStream.write(reinterpret_cast<const char*>(
-		&pifVals[0]), sizeof(double)*pifVals.size());
-	pifFileStream.close();
-	std::cout << "Wrote PIF to binary calibration file" << std::endl;
+    //Write out PIF too
+    AIF.setPIFType(mdm_AIF::PIF_POP);
+    AIF.resample_PIF(0);
+    std::vector<double> pifVals = AIF.PIF();
+    std::string pifFileName(outputDir + "pif.dat");
+    std::ofstream pifFileStream(pifFileName, std::ios::out | std::ios::binary);
+    pifFileStream.write(reinterpret_cast<const char*>(
+      &pifVals[0]), sizeof(double)*pifVals.size());
+    pifFileStream.close();
+    std::cout << "Wrote PIF to binary calibration file" << std::endl;
 
-	//Create model concentrations for each model type
-	make_model_time_series(
-		outputDir,
-		"ETM",
-		{ 0.25, 0.2, 0.1, 0.1 },
-		AIF, true);
-	make_model_time_series(
-		outputDir,
-		"DIETM",
-		{ 0.25, 0.2, 0.1, 0.8, 0.1, 0.0 },
-		AIF, false);
-	make_model_time_series(
-		outputDir,
-		"AUEM",
-		{ 0.6, 0.2, 0.2, 0.1, 0.2, 0.1, 0.0 },
-		AIF, false);
-	make_model_time_series(
-		outputDir,
-		"DISCM",
-		{ 0.6, 1.0, 0.2,  0.1, 0.0 },
-		AIF, false);
-	make_model_time_series(
-		outputDir,
-		"2CXM",
-		{ 0.6, 0.2, 0.2, 0.2, 0.1 },
-		AIF, false);
-	make_model_time_series(
-		outputDir,
-		"DI2CXM",
-		{ 0.6, 0.2, 0.2, 0.2, 0.8, 0.1, 0.0 },
-		AIF, false);
-	make_model_time_series(
-		outputDir,
-		"DIBEM",
-		{ 0.2, 0.2, 0.5, 4.0, 0.5, 0.1, 0.0 },
-		AIF, false);
+    //Create model concentrations for each model type
+    make_model_time_series(
+      outputDir,
+      "ETM",
+      { 0.25, 0.2, 0.1, 0.1 },
+      AIF, true);
+    make_model_time_series(
+      outputDir,
+      "DIETM",
+      { 0.25, 0.2, 0.1, 0.8, 0.1, 0.0 },
+      AIF, false);
+    make_model_time_series(
+      outputDir,
+      "AUEM",
+      { 0.6, 0.2, 0.2, 0.1, 0.2, 0.1, 0.0 },
+      AIF, false);
+    make_model_time_series(
+      outputDir,
+      "DISCM",
+      { 0.6, 1.0, 0.2,  0.1, 0.0 },
+      AIF, false);
+    make_model_time_series(
+      outputDir,
+      "2CXM",
+      { 0.6, 0.2, 0.2, 0.2, 0.1 },
+      AIF, false);
+    make_model_time_series(
+      outputDir,
+      "DI2CXM",
+      { 0.6, 0.2, 0.2, 0.2, 0.8, 0.1, 0.0 },
+      AIF, false);
+    make_model_time_series(
+      outputDir,
+      "DIBEM",
+      { 0.2, 0.2, 0.5, 4.0, 0.5, 0.1, 0.0 },
+      AIF, false);
+    make_model_time_series(
+      outputDir,
+      "PATLAK",
+      { 0.25, 0.1, 0.1 },
+      AIF, false);
+  }
 
-	//Create signals from T1 and S0
-	const auto PI = acos(-1.0);
-	std::vector<double> FAs = { PI*2.0/180, PI*10.0 / 180, PI*18.0 / 180 };
-	int nFAs = (int)FAs.size();
-	double T1 = 1500;
-	double S0 = 1000;
-	double TR = 3.5;
-	std::vector<double> signals(nFAs);
-	for (int i = 0; i < nFAs; i++)
-		signals[i] = mdm_T1FitterVFA::T1toSignal(T1, S0, FAs[i], TR);
+	//Create signals from T1 and M0 for VFA
+  {
+    const auto PI = acos(-1.0);
+    std::vector<double> FAs = { PI*2.0 / 180, PI*10.0 / 180, PI*18.0 / 180 };
+    int nFAs = (int)FAs.size();
+    double T1 = 1500;
+    double M0 = 1000;
+    double TR = 3.5;
+    std::vector<double> signals(nFAs);
+    for (int i = 0; i < nFAs; i++)
+      signals[i] = mdm_T1FitterVFA::T1toSignal(T1, M0, FAs[i], TR);
 
-	std::string T1FileName(outputDir + "T1.dat");
-	std::ofstream T1FileStream(T1FileName, std::ios::out | std::ios::binary);
-	T1FileStream.write(reinterpret_cast<const char*>(
-		&nFAs), sizeof(int));
-	T1FileStream.write(reinterpret_cast<const char*>(
-		&FAs[0]), sizeof(double)*nFAs);
-	T1FileStream.write(reinterpret_cast<const char*>(
-		&signals[0]), sizeof(double)*nFAs);
+    std::string T1FileName(outputDir + "T1.dat");
+    std::ofstream T1FileStream(T1FileName, std::ios::out | std::ios::binary);
+    T1FileStream.write(reinterpret_cast<const char*>(
+      &nFAs), sizeof(int));
+    T1FileStream.write(reinterpret_cast<const char*>(
+      &FAs[0]), sizeof(double)*nFAs);
+    T1FileStream.write(reinterpret_cast<const char*>(
+      &signals[0]), sizeof(double)*nFAs);
 
-	T1FileStream.write(reinterpret_cast<const char*>(
-		&T1), sizeof(double));
-	T1FileStream.write(reinterpret_cast<const char*>(
-		&S0), sizeof(double));
-	T1FileStream.write(reinterpret_cast<const char*>(
-		&TR), sizeof(double));
+    T1FileStream.write(reinterpret_cast<const char*>(
+      &T1), sizeof(double));
+    T1FileStream.write(reinterpret_cast<const char*>(
+      &M0), sizeof(double));
+    T1FileStream.write(reinterpret_cast<const char*>(
+      &TR), sizeof(double));
 
-	T1FileStream.close();
-	std::cout << "Wrote T1 data to binary calibration file" << std::endl;
+    T1FileStream.close();
+    std::cout << "Wrote T1 data to binary calibration file" << std::endl;
+  }
+
+  //Create signals from T1 and M0 for inversion reovery
+  {
+    std::vector<double> TIs = { 50, 300, 800, 1000, 2000, 4000 };
+    int nTIs = (int)TIs.size();
+    double T1 = 800;
+    double M0 = 1000;
+    double TR = 1e5;
+    std::vector<double> signals(nTIs);
+    for (int i = 0; i < nTIs; i++)
+      signals[i] = mdm_T1FitterIR::T1toSignal(T1, M0, TIs[i], TR);
+
+    std::string T1FileName(outputDir + "T1_IR.dat");
+    std::ofstream T1FileStream(T1FileName, std::ios::out | std::ios::binary);
+    T1FileStream.write(reinterpret_cast<const char*>(
+      &nTIs), sizeof(int));
+    T1FileStream.write(reinterpret_cast<const char*>(
+      &TIs[0]), sizeof(double)*nTIs);
+    T1FileStream.write(reinterpret_cast<const char*>(
+      &signals[0]), sizeof(double)*nTIs);
+
+    T1FileStream.write(reinterpret_cast<const char*>(
+      &T1), sizeof(double));
+    T1FileStream.write(reinterpret_cast<const char*>(
+      &M0), sizeof(double));
+    T1FileStream.write(reinterpret_cast<const char*>(
+      &TR), sizeof(double));
+
+    T1FileStream.close();
+    std::cout << "Wrote T1 data to binary calibration file" << std::endl;
+  }
 }

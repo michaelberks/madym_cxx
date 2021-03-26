@@ -107,6 +107,9 @@ BOOST_AUTO_TEST_CASE(test_DCE_models) {
 	test_model_time_series(
 		"DIBEM",
 		AIF);
+  test_model_time_series(
+    "PATLAK",
+    AIF);
 }
 
 BOOST_AUTO_TEST_SUITE_END() //

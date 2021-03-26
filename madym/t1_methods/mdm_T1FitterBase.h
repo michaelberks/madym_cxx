@@ -1,7 +1,7 @@
 /*!
 *  @file    mdm_T1FitterBase.h
 //!   Abstract base class for estimating T1 (and M0) in a single voxel
-*  @details Currently only variable flip angle method supported
+*  @details Currently variable flip angle and inversion recovery methods supported
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 */
 

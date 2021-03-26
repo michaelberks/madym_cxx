@@ -18,6 +18,7 @@
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/t1_methods/mdm_T1FitterBase.h>
 #include <madym/t1_methods/mdm_T1FitterVFA.h>
+#include <madym/t1_methods/mdm_T1FitterIR.h>
 
 //!Header only class to generate specific instances of DCE models
 /*! 
@@ -42,7 +43,7 @@ public:
 		UNDEFINED, ///> Method not recognised
 		VFA, ///> Variable flip-angle method
     VFA_B1, ///> Variable flip-angle method B1 corrected
-		//IR ///> Inversion recovery method
+		IR ///> Inversion recovery method
 	};
 
   //! Returns list of implemented model names
@@ -53,7 +54,8 @@ public:
 	{
 		return {
 	    toString(VFA),
-      toString(VFA_B1)
+      toString(VFA_B1),
+      toString(IR)
 		};
 	}
 
@@ -68,6 +70,7 @@ public:
     {
     case VFA: return "VFA";
     case VFA_B1: return "VFA_B1";
+    case IR: return "IR";
     default:
       throw mdm_exception(__func__, "T1 method " + std::to_string(methodType) + " not valid");
     }
@@ -93,8 +96,10 @@ public:
 			
     if (method == toString(VFA_B1))
       return VFA_B1;
-		//else if (method == "IR")
-		//	return IR;
+		
+    else if (method == toString(IR))
+			return IR;
+
 		else
 			throw mdm_exception(__func__, "T1 method " + method + " not recognised");
 	}
@@ -138,6 +143,16 @@ public:
 
       return std::make_unique<mdm_T1FitterVFA>(FAs, TR, true);
     }
+    case IR:
+    {
+      std::vector<double> TIs;
+      for (auto img : inputImages)
+        TIs.push_back(img.info().TI.value());
+
+      double TR = inputImages[0].info().TR.value();
+
+      return std::make_unique<mdm_T1FitterIR>(TIs, TR);
+    }
 		default:
       throw mdm_exception(__func__, "T1 method " + std::to_string(methodType) + " not valid");
 		}
@@ -167,6 +182,12 @@ public:
     {
       std::vector<double> empty;
       auto T1Fitter = std::make_unique<mdm_T1FitterVFA>(empty, options.TR(), true);
+      return T1Fitter;
+    }
+    case IR:
+    {
+      std::vector<double> empty;
+      auto T1Fitter = std::make_unique<mdm_T1FitterIR>(empty, options.TR());
       return T1Fitter;
     }
 		default:

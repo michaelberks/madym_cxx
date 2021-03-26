@@ -44,7 +44,7 @@ MDM_API void mdm_T1Mapper::reset()
 MDM_API void mdm_T1Mapper::addInputImage(mdm_Image3D img)
 {
   checkOrSetDimension(img);
-	inputImages_.push_back(img);
+	inputImages_.push_back(img); 
 }
 
 //
@@ -223,13 +223,23 @@ MDM_API void  mdm_T1Mapper::setMethod(mdm_T1MethodGenerator::T1Methods method)
 	method_ = method;
 }
 
+//
 MDM_API double  mdm_T1Mapper::noiseThreshold() const
 {
 	return noiseThreshold_;
 }
+
+//
 MDM_API void  mdm_T1Mapper::setNoiseThreshold(double t)
 {
 	noiseThreshold_ = t;
+}
+
+//
+MDM_API void  mdm_T1Mapper::overrideTR(double TR)
+{
+  for (auto &img : inputImages_)
+    img.info().TR.setValue(TR);
 }
 //******************************************************************
 //Private methods
