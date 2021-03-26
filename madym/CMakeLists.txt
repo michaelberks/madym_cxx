@@ -133,6 +133,7 @@ set(mdm_t1_method_sources
 	t1_methods/mdm_T1MethodGenerator.h
 	t1_methods/mdm_T1FitterBase.cxx			t1_methods/mdm_T1FitterBase.h
 	t1_methods/mdm_T1FitterVFA.cxx			t1_methods/mdm_T1FitterVFA.h
+  t1_methods/mdm_T1FitterIR.cxx			t1_methods/mdm_T1FitterIR.h
 )
 
 if (BUILD_WITH_DCMTK)

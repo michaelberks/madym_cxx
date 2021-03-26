@@ -113,8 +113,8 @@ MDM_API void mdm_RunToolsVolumeAnalysis::loadT1Inputs()
 	std::vector<std::string> T1inputPaths(0);
 	for (std::string mapName : options_.T1inputNames())
 		T1inputPaths.push_back(fs::absolute(fs::path(options_.T1Dir()) / mapName).string());
-
-	fileManager_.loadT1MappingInputImages(T1inputPaths);
+  
+  fileManager_.loadT1MappingInputImages(T1inputPaths);
 }
 
 //! Load B1 correction map
@@ -160,6 +160,10 @@ void mdm_RunToolsVolumeAnalysis::mapT1()
 
   //See if B1 correction map to load
   loadB1(methodType == mdm_T1MethodGenerator::VFA_B1);
+
+  //For inversion recovery, override TR
+  if (methodType == mdm_T1MethodGenerator::IR)
+    volumeAnalysis_.T1Mapper().overrideTR(options_.TR());
 
   //FA images loaded, try computing T1 and M0 maps
   volumeAnalysis_.T1Mapper().setMethod(methodType);

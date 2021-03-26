@@ -181,5 +181,8 @@ BOOST_AUTO_TEST_CASE(test_DCE_fit) {
 	test_model_time_fit(
 		"DIBEM", {7},
 		AIF, 0.5, 0.0005);
+  test_model_time_fit(
+    "PATLAK", {},
+    AIF, 0.5, 0.0005);
 }
 BOOST_AUTO_TEST_SUITE_END() //

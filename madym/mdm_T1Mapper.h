@@ -161,6 +161,13 @@ public:
 	*/
 	MDM_API void  setNoiseThreshold(double t);
 
+  //! Override TR in input images
+  /*!
+  If zero passed as input, sets TR from first image
+  \param TR recovery time
+  */
+  MDM_API void  overrideTR(double TR);
+
 protected:
 
 private:

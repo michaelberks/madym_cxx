@@ -189,7 +189,7 @@ private:
 
 	/*METHODS*/
 
-	void loadT1InputImage(const std::string& filePath, int nVFA);
+	void loadT1InputImage(const std::string& filePath, int inputIdx);
 
   std::string makeSequenceFilename(const std::string &path, const std::string &prefix,
 		const int fileNumber, const std::string &fileNumberFormat);

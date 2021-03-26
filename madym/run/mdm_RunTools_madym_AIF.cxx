@@ -129,6 +129,7 @@ MDM_API int mdm_RunTools_madym_AIF::parseInputs(int argc, const char *argv[])
   options_parser_.add_option(config_options, options_.T1noiseThresh);
   options_parser_.add_option(config_options, options_.B1Scaling);
   options_parser_.add_option(config_options, options_.B1Name);
+  options_parser_.add_option(config_options, options_.TR);
 
 	//Signal to concentration options_
   options_parser_.add_option(config_options, options_.M0Ratio);

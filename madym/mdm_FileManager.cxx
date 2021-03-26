@@ -521,7 +521,7 @@ MDM_API void mdm_FileManager::setImageWriteFormat(const std::string &fmt)
 //Private functions
 //---------------------------------------------------------------------------
 
-void mdm_FileManager::loadT1InputImage(const std::string& filePath, int nVFA)
+void mdm_FileManager::loadT1InputImage(const std::string& filePath, int inputIdx)
 {
   try {
     mdm_Image3D img = mdm_ImageIO::readImage3D(imageReadFormat_,filePath, true);
@@ -537,7 +537,7 @@ void mdm_FileManager::loadT1InputImage(const std::string& filePath, int nVFA)
   }
 
 	mdm_ProgramLogger::logProgramMessage(
-		"Successfully read T1 input image " + std::to_string(nVFA) + " from " + filePath);
+		"Successfully read T1 input image " + std::to_string(inputIdx) + " from " + filePath);
 }
 
 void mdm_FileManager::saveOutputMap(
