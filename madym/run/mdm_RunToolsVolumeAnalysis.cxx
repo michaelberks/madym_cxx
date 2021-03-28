@@ -163,7 +163,7 @@ void mdm_RunToolsVolumeAnalysis::mapT1()
 
   //For inversion recovery, override TR
   if (methodType == mdm_T1MethodGenerator::IR)
-    volumeAnalysis_.T1Mapper().overrideTR(options_.TR());
+    volumeAnalysis_.T1Mapper().overrideTR(options_.TR() ? options_.TR() : 1e5);
 
   //FA images loaded, try computing T1 and M0 maps
   volumeAnalysis_.T1Mapper().setMethod(methodType);
