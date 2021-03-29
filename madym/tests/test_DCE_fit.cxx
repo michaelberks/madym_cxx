@@ -89,7 +89,8 @@ void test_model_time_fit(
 		CtCalibration,
 		AIF.prebolus(),
     AIF.AIFTimes(),
-    IAUCTimes);
+    IAUCTimes,
+		false);
   vox.testEnhancing();
 	fitter.initialiseModelFit(vox.CtData());
   fitter.fitModel(vox.status());

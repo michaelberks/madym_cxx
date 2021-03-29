@@ -165,6 +165,9 @@ struct mdm_InputOptions {
 	mdm_input_doubles IAUCTimes = mdm_input_doubles(
 		mdm_input_double_list(std::vector<double>{ 60.0,90.0,120.0 }), "iauc", "I",
 		"Times (in s, post-bolus injection) at which to compute IAUC"); //!< See initial value
+	mdm_input_bool IAUCAtPeak = mdm_input_bool(
+		false, "iauc_peak", "",
+		"Flag to compute IAUC at peak signal"); //!< See initial value
 
   //AIF detection
   mdm_input_ints aifSlices = mdm_input_ints(

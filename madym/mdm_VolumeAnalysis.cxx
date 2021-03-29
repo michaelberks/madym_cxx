@@ -56,7 +56,7 @@ MDM_API mdm_VolumeAnalysis::mdm_VolumeAnalysis()
 	maxIterations_(0),
   model_(NULL)
 {
-	setIAUCtimes({ 60.0, 90.0, 120.0 }, true);
+	setIAUCtimes({ 60.0, 90.0, 120.0 }, true, false);
 }
 
 MDM_API mdm_VolumeAnalysis::~mdm_VolumeAnalysis()
@@ -501,7 +501,8 @@ MDM_API void mdm_VolumeAnalysis::setOutputCtMod(bool flag)
 }
 
 //
-MDM_API void mdm_VolumeAnalysis::setIAUCtimes(const std::vector<double> &times, bool convertToMins)
+MDM_API void mdm_VolumeAnalysis::setIAUCtimes(
+  const std::vector<double> &times, bool convertToMins, bool IAUCAtPeak)
 {
 	IAUCTimes_ = times;
 	std::sort(IAUCTimes_.begin(), IAUCTimes_.end());
@@ -512,7 +513,7 @@ MDM_API void mdm_VolumeAnalysis::setIAUCtimes(const std::vector<double> &times, 
 		for (auto &t : IAUCTMinutes_)
 			t /= 60;
 	}
-		
+	IAUCAtPeak_ = IAUCAtPeak;	
 }
 
 //
@@ -661,7 +662,8 @@ mdm_DCEVoxel mdm_VolumeAnalysis::setUpVoxel(size_t voxelIndex) const
     Ct,//dynConc
     prebolusImage_,//bolus_time
     dynamicTimes_,//dynamicTimings
-    IAUCTMinutes_);//IAUC_times
+    IAUCTMinutes_,
+    IAUCAtPeak_);//IAUC_times
 
   if (computeCt_)
   {

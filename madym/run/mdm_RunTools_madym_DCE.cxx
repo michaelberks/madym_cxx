@@ -185,6 +185,7 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.outputCt_sig);
 	options_parser_.add_option(config_options, options_.outputCt_mod);
 	options_parser_.add_option(config_options, options_.IAUCTimes);
+	options_parser_.add_option(config_options, options_.IAUCAtPeak);
 
 		//General output options_
 	options_parser_.add_option(config_options, options_.outputRoot);
@@ -267,7 +268,7 @@ void mdm_RunTools_madym_DCE::setVolumeAnalysisParams()
 		volumeAnalysis_.setFirstImage(options_.firstImage() - 1);
 	if (options_.lastImage() > 0)
 		volumeAnalysis_.setLastImage(options_.lastImage() - 1);
-	volumeAnalysis_.setIAUCtimes(options_.IAUCTimes());
+	volumeAnalysis_.setIAUCtimes(options_.IAUCTimes(), true, options_.IAUCAtPeak());
 	volumeAnalysis_.setMaxIterations(options_.maxIterations());
 }
 
