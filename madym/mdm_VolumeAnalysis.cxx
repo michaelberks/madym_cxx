@@ -56,7 +56,7 @@ MDM_API mdm_VolumeAnalysis::mdm_VolumeAnalysis()
 	maxIterations_(0),
   model_(NULL)
 {
-	setIAUCtimes({ 60.0, 90.0, 120.0 }, true);
+	setIAUCtimes({ 60.0, 90.0, 120.0 }, true, false);
 }
 
 MDM_API mdm_VolumeAnalysis::~mdm_VolumeAnalysis()
@@ -354,6 +354,9 @@ MDM_API mdm_Image3D mdm_VolumeAnalysis::DCEMap(const std::string &mapName) const
 			return IAUCMaps_[i];
 	}	
 
+  if (mapName == (MAP_NAME_IAUC + "_peak"))
+    return IAUCMaps_.back();
+
 	if (mapName == MAP_NAME_RESDIUALS)
 		return modelResidualsMap_;
 
@@ -391,6 +394,12 @@ MDM_API void mdm_VolumeAnalysis::setDCEMap(const std::string &mapName, const mdm
       IAUCMaps_[i] = map;
       return;
     }    
+  }
+
+  if (mapName == (MAP_NAME_IAUC + "_peak"))
+  {
+    IAUCMaps_[IAUCMaps_.size()-1] = map;
+    return;
   }
 
   if (mapName == MAP_NAME_RESDIUALS)
@@ -448,6 +457,12 @@ MDM_API std::vector<double> mdm_VolumeAnalysis::IAUCtimes() const
 }
 
 //
+MDM_API bool mdm_VolumeAnalysis::IAUCAtpeak() const
+{
+  return IAUCAtPeak_;
+}
+
+//
 MDM_API void mdm_VolumeAnalysis::setR1Const(double rc)
 {
 	r1Const_ = rc;
@@ -501,7 +516,8 @@ MDM_API void mdm_VolumeAnalysis::setOutputCtMod(bool flag)
 }
 
 //
-MDM_API void mdm_VolumeAnalysis::setIAUCtimes(const std::vector<double> &times, bool convertToMins)
+MDM_API void mdm_VolumeAnalysis::setIAUCtimes(
+  const std::vector<double> &times, bool convertToMins, bool IAUCAtPeak)
 {
 	IAUCTimes_ = times;
 	std::sort(IAUCTimes_.begin(), IAUCTimes_.end());
@@ -512,7 +528,7 @@ MDM_API void mdm_VolumeAnalysis::setIAUCtimes(const std::vector<double> &times, 
 		for (auto &t : IAUCTMinutes_)
 			t /= 60;
 	}
-		
+	IAUCAtPeak_ = IAUCAtPeak;	
 }
 
 //
@@ -626,7 +642,7 @@ void mdm_VolumeAnalysis::initialiseParameterMaps(
       createMap(map);
 
   //Create IAUC maps
-  IAUCMaps_.resize(IAUCTimes_.size());
+  IAUCMaps_.resize(IAUCTimes_.size() + int(IAUCAtPeak_));
   for (auto &map : IAUCMaps_)
     createMap(map);
 
@@ -661,7 +677,8 @@ mdm_DCEVoxel mdm_VolumeAnalysis::setUpVoxel(size_t voxelIndex) const
     Ct,//dynConc
     prebolusImage_,//bolus_time
     dynamicTimes_,//dynamicTimings
-    IAUCTMinutes_);//IAUC_times
+    IAUCTMinutes_,
+    IAUCAtPeak_);//IAUC_times
 
   if (computeCt_)
   {
@@ -740,7 +757,7 @@ void mdm_VolumeAnalysis::setVoxelPreFit(size_t voxelIndex,
 
   //Set any IAUC values
   for (size_t i = 0; i < IAUCMaps_.size(); i++)
-    IAUCMaps_[i].setVoxel(voxelIndex, vox.IAUC_val(i));
+    IAUCMaps_[i].setVoxel(voxelIndex, vox.IAUCVal(i));
 
   //Set output C(t) maps
   if (outputCt_sig_)

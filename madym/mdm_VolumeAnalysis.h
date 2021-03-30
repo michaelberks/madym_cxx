@@ -224,6 +224,12 @@ public:
 	*/
 	MDM_API std::vector<double> IAUCtimes() const;
 
+  //! Return whether IAUC computed at peak signal
+  /*!
+  \return true if IAUC computed at peak signal
+  */
+  MDM_API bool IAUCAtpeak() const;
+
 	//! Set relaxivity coefficient of contrast-agent
 	/*!
 	\param rc relaxivity coefficient of contrast-agent
@@ -282,11 +288,13 @@ public:
 	//! Set the time points at which we calculate IAUC
 	/*!
 	\param times IAUC times
-	\param convertToMins flag to convert input from seconds to minutes. Default true. Set to false if
+	\param convertToMins flag to convert input from seconds to minutes. Set to false if
 	input already in minutes.
+	\param IAUCAtPeak flag to compute IAUC at peak signal
 	\return
 	*/
-	MDM_API void setIAUCtimes(const std::vector<double> &times, bool convertToMins = true);
+	MDM_API void setIAUCtimes(const std::vector<double> &times, bool convertToMins,
+		bool IAUCAtPeak);
 
   //!Set temporal varying noise flag
 	/*!
@@ -459,6 +467,7 @@ private:
 	//Time points at which calculate IAUC values
 	std::vector<double> IAUCTimes_;
 	std::vector<double> IAUCTMinutes_;
+	bool IAUCAtPeak_;
 
 	double r1Const_;
 

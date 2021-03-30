@@ -177,6 +177,11 @@ MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir)
       const std::string iaucName = volumeAnalysis_.MAP_NAME_IAUC + std::to_string(int(t));
       saveOutputMap(iaucName, outputDir, false);
     }
+    if (volumeAnalysis_.IAUCAtpeak())
+    {
+      const std::string iaucName = volumeAnalysis_.MAP_NAME_IAUC + "_peak";
+      saveOutputMap(iaucName, outputDir, false);
+    }
     saveOutputMap(volumeAnalysis_.MAP_NAME_ENHANCING, outputDir, false);
   }
 	
@@ -598,6 +603,12 @@ void mdm_FileManager::saveMapsSummaryStats(const std::string &roiName, mdm_Param
 			const std::string iaucName = volumeAnalysis_.MAP_NAME_IAUC + std::to_string(int(time));
 			saveMapSummaryStats(iaucName, volumeAnalysis_.DCEMap(iaucName), stats);
 		}
+    if (volumeAnalysis_.IAUCAtpeak())
+    {
+      const std::string iaucName = volumeAnalysis_.MAP_NAME_IAUC + "_peak";
+      saveMapSummaryStats(iaucName, volumeAnalysis_.DCEMap(iaucName), stats);
+    }
+
 		saveMapSummaryStats(volumeAnalysis_.MAP_NAME_ENHANCING,
 			volumeAnalysis_.DCEMap(volumeAnalysis_.MAP_NAME_ENHANCING), stats);
 	}

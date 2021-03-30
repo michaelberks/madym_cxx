@@ -219,6 +219,7 @@ MDM_API void mdm_RunTools_madym_DCE_lite::run()
 				options_.testEnhancement(),
 				options_.M0Ratio(),
 				iauc_t,
+				options_.IAUCAtPeak(),
 				options_.outputCt_mod(),
 				options_.outputCt_sig(),
 				!options_.noOptimise());
@@ -349,6 +350,7 @@ void mdm_RunTools_madym_DCE_lite::fit_series(
   const bool&testEnhancement,
   const bool&useM0Ratio,
   const std::vector<double> &IAUCTimes,
+	const bool IAUCAtPeak,
   const bool &outputCt_mod,
   const bool &outputCt_sig,
   const bool &optimiseModel)
@@ -369,7 +371,8 @@ void mdm_RunTools_madym_DCE_lite::fit_series(
 		CtData,
 		model_->AIF().prebolus(),
 		AIF_.AIFTimes(),
-		IAUCTimes);
+		IAUCTimes,
+		IAUCAtPeak);
 
   //Convert signal
   if (!inputCt)
@@ -396,7 +399,10 @@ void mdm_RunTools_madym_DCE_lite::fit_series(
 		fitter.modelFitError() << " ";
 
 	for (size_t i = 0; i < IAUCTimes.size(); i++)
-		outputData << " " << vox.IAUC_val(i);
+		outputData << " " << vox.IAUCVal(i);
+
+  if (IAUCAtPeak)
+    outputData << " " << vox.IAUCVal(IAUCTimes.size());
 
 	for (const auto p : model_->params())
 		outputData << " " << p; 

@@ -37,14 +37,16 @@ public:
 	\param dynConc time-series of signal-derived concentration (if empty, computed from dynSignals)
 	\param injectionImg timepoint bolus injected
 	\param dynamicTimings time in minutes of each series timepoint
-	\param IAUC_times times at which compute IAUC
+	\param IAUCTimes times at which compute IAUC
+	\param IAUCAtPeak flag to compute IAUC at peak signal
 	*/
 	MDM_API mdm_DCEVoxel(
 		const std::vector<double> &dynSignals,
 		const std::vector<double> &dynConc,
     const size_t injectionImg,
 		const std::vector<double> &dynamicTimings,
-		const std::vector<double> &IAUC_times);
+		const std::vector<double> &IAUCTimes,
+  	const bool IAUCAtPeak);
 
 	//! Default destructor
 	/*!
@@ -93,14 +95,14 @@ public:
 	\param idx index into IAUC values
 	\return IAUC value at specified index
 	*/
-	MDM_API double			IAUC_val(size_t idx) const;
+	MDM_API double			IAUCVal(size_t idx) const;
 
 	//! Return IAUC time at specified index
 	/*
 	\param idx index into IAUC times
 	\return IAUC time at specified index
 	*/
-	MDM_API double			IAUC_time(size_t idx) const;
+	MDM_API double			IAUCTime(size_t idx) const;
 	
 	//! Return enhancing status
 	/*!
@@ -130,7 +132,8 @@ private:
     const double cosFA, const double sinFA, const double TR, int &errorCode);
 
   //
-	std::vector<double> computeIAUC(const std::vector<double> &times);
+	std::vector<double> computeIAUC(
+		const std::vector<double> &times, bool computePeak) const;
 
 
 	
@@ -147,8 +150,9 @@ private:
 	//double M0_;						//M0 value for this voxel - not used if using ratio method
 	//double r1Const_;				//relaxivity constant of tissue 
   size_t injectionImg_;    //Time point of injection
-	std::vector<double> IAUC_times_; //Vector of times (in secs) at which to caclucate IAUC values
-	std::vector<double> IAUC_vals_; 
+	std::vector<double> IAUCTimes_; //Vector of times (in secs) at which to caclucate IAUC values
+	std::vector<double> IAUCVals_; 
+	bool IAUCAtPeak_;
 	
 	bool enhancing_; //Flag if the voxel enhanced
 

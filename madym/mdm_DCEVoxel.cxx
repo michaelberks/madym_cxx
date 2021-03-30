@@ -28,13 +28,15 @@ MDM_API mdm_DCEVoxel::mdm_DCEVoxel(
 	const std::vector<double> &dynConc,
   const size_t injectionImg,
 	const std::vector<double> &dynamicTimings,
-	const std::vector<double> &IAUC_times)
+	const std::vector<double> &IAUCTimes,
+  const bool IAUCAtPeak)
 	:
 	StData_(dynSignals),
 	CtData_(dynConc),
   injectionImg_(injectionImg),
-	IAUC_times_(IAUC_times),
-	IAUC_vals_(0),
+	IAUCTimes_(IAUCTimes),
+	IAUCVals_(0),
+  IAUCAtPeak_(IAUCAtPeak),
 	enhancing_(true),
 	dynamicTimings_(dynamicTimings),
 	status_(mdm_DCEVoxelStatus::OK)
@@ -173,18 +175,21 @@ double mdm_DCEVoxel::computeT1DynM0(const double st, const double M0,
 }
 
 //
-std::vector<double> mdm_DCEVoxel::computeIAUC(const std::vector<double> &times)
+std::vector<double> mdm_DCEVoxel::computeIAUC(
+  const std::vector<double> &times, bool computePeak) const
 {
 	auto nIAUC = times.size();
 	std::vector<double> vals(nIAUC, 0);
 
-	if (!nIAUC)
+	if (!nIAUC && !computePeak)
 		return vals;
 
 	size_t nTimes = dynamicTimings_.size();
 
 	double cumulativeCt = 0;
 	const double bolusTime = dynamicTimings_[injectionImg_];
+  double maxCt = CtData_[injectionImg_];
+  double iaucAtPeak = 0;
 
 	//This relies on IAUC times being sorted, which we enforce externally to save
 	//time, but for robustness could do so here?
@@ -197,30 +202,41 @@ std::vector<double> mdm_DCEVoxel::computeIAUC(const std::vector<double> &times)
 		double addedCt = delta_t * delta_Ct / 2.0;
 
 		//If we exceed time for any IAUC time, set the val
-		if (elapsedTime > times[currIAUCt])
+		if (currIAUCt < nIAUC && elapsedTime > times[currIAUCt])
 		{
 			//Compute the extra littl ebit of trapezium...
 			double t_frac = 1.0 - (elapsedTime - times[currIAUCt]) / delta_t;
 
 			vals[currIAUCt] = cumulativeCt + t_frac * addedCt;
+      currIAUCt++;
 
-			//If this was the last time point, we can break
-			if (currIAUCt == nIAUC - 1)
+			//If this was the last time point and we're not computing,
+      //IAUC at peak we can break
+			if (!computePeak && currIAUCt == nIAUC)
 				break;
-			else
-				currIAUCt++;;
 		}
 
 		//Add to the cumulative Ct
 		cumulativeCt += addedCt;
+
+    //If we're computing iauc at peak signal, check if new max reached
+    if (computePeak && CtData_[i_t] > maxCt)
+    {
+      maxCt = CtData_[i_t];
+      iaucAtPeak = cumulativeCt;
+    }
 	}
+
+  if (computePeak)
+    vals.push_back(iaucAtPeak);
+
 	return vals;
 }
 
 //
 MDM_API void mdm_DCEVoxel::computeIAUC()
 {
-	IAUC_vals_ = computeIAUC(IAUC_times_);
+	IAUCVals_ = computeIAUC(IAUCTimes_, IAUCAtPeak_);
 }
 
 MDM_API mdm_DCEVoxel::mdm_DCEVoxelStatus mdm_DCEVoxel::status() const
@@ -241,25 +257,25 @@ MDM_API const std::vector<double>&	mdm_DCEVoxel::CtData() const
 }
 
 //
-MDM_API double mdm_DCEVoxel::IAUC_val(size_t i) const
+MDM_API double mdm_DCEVoxel::IAUCVal(size_t i) const
 {
-  if (i >= IAUC_vals_.size())
+  if (i >= (IAUCVals_.size() + int(IAUCAtPeak_)))
     throw mdm_exception(__func__, boost::format(
       "Attempting to access IAUC value %1% when there are only %2% IAUC times")
-      % i % IAUC_vals_.size());
+      % i % IAUCVals_.size());
     
-  return IAUC_vals_[i];
+  return IAUCVals_[i];
 }
 
 //
-MDM_API double mdm_DCEVoxel::IAUC_time(size_t i) const
+MDM_API double mdm_DCEVoxel::IAUCTime(size_t i) const
 {
-  if (i >= IAUC_times_.size())
+  if (i >= IAUCTimes_.size())
     throw mdm_exception(__func__, boost::format(
       "Attempting to access IAUC time %1% when there are only %2% IAUC times")
-      % i % IAUC_times_.size());
+      % i % IAUCTimes_.size());
 
-  return IAUC_times_[i]; 
+  return IAUCTimes_[i]; 
 }
 
 //
@@ -272,15 +288,15 @@ MDM_API bool mdm_DCEVoxel::enhancing() const
 MDM_API void mdm_DCEVoxel::testEnhancing()
 {
   bool enhancing_ = true;
-  if (IAUC_vals_.empty())
+  if (IAUCVals_.empty())
   {
-    auto iauc60 = computeIAUC({ 1.0 });
+    auto iauc60 = computeIAUC({ 1.0 }, false);
     enhancing_ = iauc60[0] > 0;
   }
   else
   {
     // TODO better test enhancement checks?
-    for (const auto iauc : IAUC_vals_)
+    for (const auto iauc : IAUCVals_)
     {
       if (iauc <= 0.0)
       {

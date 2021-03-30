@@ -71,7 +71,8 @@ private:
 		const bool&testEnhancement,
 		const bool&useM0Ratio,
 		const std::vector<double> &IAUCTimes,
-		const bool &outputCt_mod,
+		const bool IAUCAtPeak,
+  	const bool &outputCt_mod,
 		const bool &outputCt_sig,
 		const bool &optimiseModel);
 
