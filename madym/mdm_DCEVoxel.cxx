@@ -188,7 +188,7 @@ std::vector<double> mdm_DCEVoxel::computeIAUC(
 
 	double cumulativeCt = 0;
 	const double bolusTime = dynamicTimings_[injectionImg_];
-  double maxCt = 0;
+  double maxCt = CtData_[injectionImg_];
   double iaucAtPeak = 0;
 
 	//This relies on IAUC times being sorted, which we enforce externally to save
@@ -257,9 +257,9 @@ MDM_API const std::vector<double>&	mdm_DCEVoxel::CtData() const
 }
 
 //
-MDM_API double mdm_DCEVoxel::IAUC_val(size_t i) const
+MDM_API double mdm_DCEVoxel::IAUCVal(size_t i) const
 {
-  if (i >= IAUCVals_.size())
+  if (i >= (IAUCVals_.size() + int(IAUCAtPeak_)))
     throw mdm_exception(__func__, boost::format(
       "Attempting to access IAUC value %1% when there are only %2% IAUC times")
       % i % IAUCVals_.size());
@@ -268,7 +268,7 @@ MDM_API double mdm_DCEVoxel::IAUC_val(size_t i) const
 }
 
 //
-MDM_API double mdm_DCEVoxel::IAUC_time(size_t i) const
+MDM_API double mdm_DCEVoxel::IAUCTime(size_t i) const
 {
   if (i >= IAUCTimes_.size())
     throw mdm_exception(__func__, boost::format(

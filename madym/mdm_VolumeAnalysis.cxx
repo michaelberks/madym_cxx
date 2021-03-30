@@ -354,6 +354,9 @@ MDM_API mdm_Image3D mdm_VolumeAnalysis::DCEMap(const std::string &mapName) const
 			return IAUCMaps_[i];
 	}	
 
+  if (mapName == (MAP_NAME_IAUC + "_peak"))
+    return IAUCMaps_.back();
+
 	if (mapName == MAP_NAME_RESDIUALS)
 		return modelResidualsMap_;
 
@@ -391,6 +394,12 @@ MDM_API void mdm_VolumeAnalysis::setDCEMap(const std::string &mapName, const mdm
       IAUCMaps_[i] = map;
       return;
     }    
+  }
+
+  if (mapName == (MAP_NAME_IAUC + "_peak"))
+  {
+    IAUCMaps_[IAUCMaps_.size()-1] = map;
+    return;
   }
 
   if (mapName == MAP_NAME_RESDIUALS)
@@ -445,6 +454,12 @@ MDM_API std::vector<std::string> mdm_VolumeAnalysis::paramNames() const
 MDM_API std::vector<double> mdm_VolumeAnalysis::IAUCtimes() const
 {
 	return IAUCTimes_;
+}
+
+//
+MDM_API bool mdm_VolumeAnalysis::IAUCAtpeak() const
+{
+  return IAUCAtPeak_;
 }
 
 //
@@ -627,7 +642,7 @@ void mdm_VolumeAnalysis::initialiseParameterMaps(
       createMap(map);
 
   //Create IAUC maps
-  IAUCMaps_.resize(IAUCTimes_.size());
+  IAUCMaps_.resize(IAUCTimes_.size() + int(IAUCAtPeak_));
   for (auto &map : IAUCMaps_)
     createMap(map);
 
@@ -742,7 +757,7 @@ void mdm_VolumeAnalysis::setVoxelPreFit(size_t voxelIndex,
 
   //Set any IAUC values
   for (size_t i = 0; i < IAUCMaps_.size(); i++)
-    IAUCMaps_[i].setVoxel(voxelIndex, vox.IAUC_val(i));
+    IAUCMaps_[i].setVoxel(voxelIndex, vox.IAUCVal(i));
 
   //Set output C(t) maps
   if (outputCt_sig_)

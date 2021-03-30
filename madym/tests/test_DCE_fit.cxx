@@ -117,7 +117,7 @@ void test_model_time_fit(
 		vox.computeIAUC();
 		std::vector<double> computedIAUC(nIAUC);
 		for (int i = 0; i < nIAUC; i++)
-			computedIAUC[i] = vox.IAUC_val(i);
+			computedIAUC[i] = vox.IAUCVal(i);
 
 		BOOST_TEST_MESSAGE("Test IAUC values for " + modelName);
 		BOOST_CHECK(mdm_test_utils::vectors_near_equal(

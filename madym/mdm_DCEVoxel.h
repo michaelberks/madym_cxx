@@ -95,14 +95,14 @@ public:
 	\param idx index into IAUC values
 	\return IAUC value at specified index
 	*/
-	MDM_API double			IAUC_val(size_t idx) const;
+	MDM_API double			IAUCVal(size_t idx) const;
 
 	//! Return IAUC time at specified index
 	/*
 	\param idx index into IAUC times
 	\return IAUC time at specified index
 	*/
-	MDM_API double			IAUC_time(size_t idx) const;
+	MDM_API double			IAUCTime(size_t idx) const;
 	
 	//! Return enhancing status
 	/*!

@@ -399,7 +399,10 @@ void mdm_RunTools_madym_DCE_lite::fit_series(
 		fitter.modelFitError() << " ";
 
 	for (size_t i = 0; i < IAUCTimes.size(); i++)
-		outputData << " " << vox.IAUC_val(i);
+		outputData << " " << vox.IAUCVal(i);
+
+  if (IAUCAtPeak)
+    outputData << " " << vox.IAUCVal(IAUCTimes.size());
 
 	for (const auto p : model_->params())
 		outputData << " " << p; 

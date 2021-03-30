@@ -224,6 +224,12 @@ public:
 	*/
 	MDM_API std::vector<double> IAUCtimes() const;
 
+  //! Return whether IAUC computed at peak signal
+  /*!
+  \return true if IAUC computed at peak signal
+  */
+  MDM_API bool IAUCAtpeak() const;
+
 	//! Set relaxivity coefficient of contrast-agent
 	/*!
 	\param rc relaxivity coefficient of contrast-agent
