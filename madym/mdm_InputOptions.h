@@ -320,8 +320,8 @@ struct mdm_InputOptions {
     0, "dicom_offset", "", "Additional offset factor applied to the dicom data");
 
   //DICOM -acquisition time
-  mdm_input_strings dynTimeTag = mdm_input_strings(
-    mdm_input_string_list(std::vector<std::string>{}),
+  mdm_input_string dynTimeTag = mdm_input_string(
+    mdm_input_str(""),
     "acquisition_time_tag", "",
     "Dicom tag key (group,element) for acquisition time, if empty uses DCM_AcquisitionTime"); //!< See initial value
   mdm_input_double temporalResolution = mdm_input_double(

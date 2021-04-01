@@ -83,8 +83,8 @@ MDM_API void mdm_RunTools_madym_DicomConvert::run()
 //
 MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *argv[])
 {
-  po::options_description cmdline_options("madym_DCE options");
-  po::options_description config_options("madym_DCE config options");
+  po::options_description cmdline_options("madym_DicomConvert options");
+  po::options_description config_options("madym_DicomConvert config options");
 
   options_parser_.add_option(cmdline_options, options_.configFile);
   options_parser_.add_option(cmdline_options, options_.dataDir);

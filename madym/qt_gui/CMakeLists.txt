@@ -225,27 +225,13 @@ if (BUILD_INSTALL)
     # Transfer the value of ${MY_DEPENDENCY_PATHS} into the install script
     install(CODE "
       set(_id ${APPLE_CODESIGN_ID})
-      set(LIB_PATH \"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}\")
-      set(RUN_PATH \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\")
       set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
       set(GUI_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app\")
-      "
-      COMPONENT Tools
-      CONFIGURATIONS Release)
-
-    if (BUILD_WITH_DCMTK)
-      install(CODE "
-      set(MADYM_EXE \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_DicomConvert\")
-      "
-      COMPONENT Tools
-      CONFIGURATIONS Release)
-    else()
-      install(CODE "
       set(MADYM_EXE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_DCE)
       "
       COMPONENT Tools
       CONFIGURATIONS Release)
-    endif()
+    
     install(CODE [[
       message(STATUS "Getting dependencies for ${MADYM_EXE}")
       file(GET_RUNTIME_DEPENDENCIES
@@ -343,15 +329,8 @@ if (BUILD_INSTALL)
   #Unix
   elseif ( UNIX )
 
-  install(CODE "
-  set(LIB_PATH \"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}\")
-  set(RUN_PATH \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\")
-  set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
-  "
-  COMPONENT Tools
-  CONFIGURATIONS Release)
-
     install(CODE "
+      set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
       set(MADYM_EXE \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_gui\")
       "
       COMPONENT Tools
