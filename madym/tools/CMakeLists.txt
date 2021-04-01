@@ -149,6 +149,46 @@ if (BUILD_INSTALL)
 
     #Apple
     elseif(APPLE)
+
+      install(CODE "
+        set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
+        set(MADYM_EXE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_DCE)
+        "
+        COMPONENT Tools
+        CONFIGURATIONS Release)
+    
+      install(CODE [[
+        message(STATUS "Getting dependencies for ${MADYM_EXE}")
+        file(GET_RUNTIME_DEPENDENCIES
+          EXECUTABLES ${MADYM_EXE}
+          RESOLVED_DEPENDENCIES_VAR _r_deps
+          UNRESOLVED_DEPENDENCIES_VAR _u_deps
+	        PRE_EXCLUDE_REGEXES "(^/System/.*$)" )
+        foreach(_file ${_r_deps})
+
+	        file(INSTALL
+            DESTINATION ${LIB_DEST}
+            TYPE SHARED_LIBRARY
+            FILES "${_file}"
+          )
+
+          get_filename_component(_resolvedFile "${_file}" REALPATH)
+          if (NOT "${_file}" STREQUAL "${_resolvedFile}")
+            file(INSTALL
+              DESTINATION ${LIB_DEST}
+              TYPE SHARED_LIBRARY
+              FILES "${_resolvedFile}"
+            )
+          endif()
+        
+        endforeach()
+        list(LENGTH _u_deps _u_length)
+        if("${_u_length}" GREATER 0)
+          message(WARNING "Unresolved dependencies detected!")
+        endif()
+        ]]
+        COMPONENT Tools
+        CONFIGURATIONS Release)
       
       #Sign the tools on Apple
       install(CODE
@@ -176,26 +216,12 @@ if (BUILD_INSTALL)
     #Unix
     elseif(UNIX)
       install(CODE "
-        set(LIB_PATH \"${CMAKE_LIBRARY_OUTPUT_DIRECTORY}\")
-        set(RUN_PATH \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}\")
         set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
-        "
-        COMPONENT Tools
-        CONFIGURATIONS Release)
-
-      if (BUILD_WITH_DCMTK)
-        install(CODE "
-        set(MADYM_EXE \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_DicomConvert\")
-        "
-        COMPONENT Tools
-        CONFIGURATIONS Release)
-      else()
-        install(CODE "
         set(MADYM_EXE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_DCE)
         "
         COMPONENT Tools
         CONFIGURATIONS Release)
-      endif()
+
       install(CODE [[
         message(STATUS "Getting dependencies for ${MADYM_EXE}")
         file(GET_RUNTIME_DEPENDENCIES
