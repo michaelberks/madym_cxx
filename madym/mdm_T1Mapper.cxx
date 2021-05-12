@@ -107,7 +107,18 @@ MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 		{
       //If using B1 correction, add this to the inputs
       if (useB1_)
-        signal.push_back(B1_.voxel(voxelIndex));
+      {
+        auto B1 = B1_.voxel(voxelIndex);
+        if (B1 > 0)
+          signal.push_back(B1);
+        else
+        {
+          errorTracker_.updateVoxel(voxelIndex, mdm_ErrorTracker::B1_INVALID);
+          numErrors++;
+          continue;
+        }
+      }
+        
 
 			//Compute T1 and M0
 			double T1, M0;

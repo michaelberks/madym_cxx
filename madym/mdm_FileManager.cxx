@@ -333,7 +333,7 @@ MDM_API void mdm_FileManager::loadB1Map(const std::string &B1path, const double 
 
     //Scale if necessary
     if (B1Scaling && B1Scaling != 1)
-      B1_map *= B1Scaling;
+      B1_map /= B1Scaling;
 
     //If image successfully read, add it to the T1 mapper object
     volumeAnalysis_.T1Mapper().setB1(B1_map); 

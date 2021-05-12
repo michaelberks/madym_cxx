@@ -40,6 +40,7 @@ public:
 		DCE_INVALID_INPUT = 512,	///> Input value NaN or -ve                  - Binary bit 10 set 
 		DCE_FIT_FAIL = 1024,			///> Error in model fitting optimisation     - Binary bit 11 set
 		DCE_INVALID_PARAM = 2048,	///> Error in model fitting optimisation     - Binary bit 12 set
+    B1_INVALID = 4096,	      ///> B1 map correction value <= 0            - Binary bit 13 set
 	};
 	
 	//! Default constructor
