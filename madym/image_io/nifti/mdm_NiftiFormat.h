@@ -139,51 +139,52 @@ private:
    */
   struct nifti_image {                /*!< Image storage struct **/
 
-    int64_t ndim;                /*!< last dimension greater than 1 (1..7) */
-    int64_t nx;                  /*!< dimensions of grid array             */
-    int64_t ny;                  /*!< dimensions of grid array             */
-    int64_t nz;                  /*!< dimensions of grid array             */
-    int64_t nt;                  /*!< dimensions of grid array             */
-    int64_t nu;                  /*!< dimensions of grid array             */
-    int64_t nv;                  /*!< dimensions of grid array             */
-    int64_t nw;                  /*!< dimensions of grid array             */
+    int64_t ndim = 4;                /*!< last dimension greater than 1 (1..7) */
+    int64_t nx = 0;                  /*!< dimensions of grid array             */
+    int64_t ny = 0;                  /*!< dimensions of grid array             */
+    int64_t nz = 0;                  /*!< dimensions of grid array             */
+    int64_t nt = 0;                  /*!< dimensions of grid array             */
+    int64_t nu = 0;                  /*!< dimensions of grid array             */
+    int64_t nv = 0;                  /*!< dimensions of grid array             */
+    int64_t nw = 0;                  /*!< dimensions of grid array             */
     int64_t dim[8];              /*!< dim[0]=ndim, dim[1]=nx, etc.         */
-    int64_t nvox;                /*!< number of voxels = nx*ny*nz*...*nw   */
-    int nbyper;                  /*!< bytes per voxel, matches datatype    */
-    int datatype;                /*!< type of data in voxels: DT_* code    */
+    int64_t nvox = 0;                /*!< number of voxels = nx*ny*nz*...*nw   */
+    int nbyper = 0;                  /*!< bytes per voxel, matches datatype    */
+    int datatype = 0;                /*!< type of data in voxels: DT_* code    */
 
-    double dx;                   /*!< grid spacings      */
-    double dy;                   /*!< grid spacings      */
-    double dz;                   /*!< grid spacings      */
-    double dt;                   /*!< grid spacings      */
-    double du;                   /*!< grid spacings      */
-    double dv;                   /*!< grid spacings      */
-    double dw;                   /*!< grid spacings      */
+    double dx = 1;                   /*!< grid spacings      */
+    double dy = 1;                   /*!< grid spacings      */
+    double dz = 1;                   /*!< grid spacings      */
+    double dt = 1;                   /*!< grid spacings      */
+    double du = 0;                   /*!< grid spacings      */
+    double dv = 0;                   /*!< grid spacings      */
+    double dw = 0;                   /*!< grid spacings      */
     double pixdim[8];            /*!< pixdim[1]=dx, etc. */
 
-    double scl_slope;            /*!< scaling parameter - slope        */
-    double scl_inter;            /*!< scaling parameter - intercept    */
+    double scl_slope = 1;            /*!< scaling parameter - slope        */
+    double scl_inter = 0;            /*!< scaling parameter - intercept    */
 
-    double cal_min;              /*!< calibration parameter, minimum   */
-    double cal_max;              /*!< calibration parameter, maximum   */
+    double cal_min = 0;              /*!< calibration parameter, minimum   */
+    double cal_max = 0;              /*!< calibration parameter, maximum   */
 
-    int qform_code;              /*!< codes for (x,y,z) space meaning  */
-    int sform_code;              /*!< codes for (x,y,z) space meaning  */
+    int qform_code = 0;              /*!< codes for (x,y,z) space meaning  */
+    int sform_code = 0;              /*!< codes for (x,y,z) space meaning  */
 
-    int freq_dim;               /*!< indexes (1,2,3, or 0) for MRI    */
-    int phase_dim;               /*!< directions in dim[]/pixdim[]     */
-    int slice_dim;               /*!< directions in dim[]/pixdim[]     */
+    int freq_dim = 0;               /*!< indexes (1,2,3, or 0) for MRI    */
+    int phase_dim = 0;               /*!< directions in dim[]/pixdim[]     */
+    int slice_dim = 3;               /*!< directions in dim[]/pixdim[]     */
 
-    int     slice_code;         /*!< code for slice timing pattern    */
-    int64_t slice_start;         /*!< index for start of slices        */
-    int64_t slice_end;         /*!< index for end of slices          */
-    double  slice_duration;      /*!< time between individual slices   */
+    int     slice_code = 0;         /*!< code for slice timing pattern    */
 
     /*! quaternion transform parameters
       [when writing a dataset, these are used for qform, NOT qto_xyz]   */
-    double quatern_b, quatern_c, quatern_d,
-      qoffset_x, qoffset_y, qoffset_z,
-      qfac;
+    double quatern_b = 0;
+    double quatern_c = 0;
+    double quatern_d = 0;
+    double qoffset_x = 0;
+    double qoffset_y = 0;
+    double qoffset_z = 0;
+    double qfac = 0;
 
     nifti_dmat44 qto_xyz;        /*!< qform: transform (i,j,k) to (x,y,z) */
     nifti_dmat44 qto_ijk;        /*!< qform: transform (x,y,z) to (i,j,k) */
@@ -191,10 +192,10 @@ private:
     nifti_dmat44 sto_xyz;        /*!< sform: transform (i,j,k) to (x,y,z) */
     nifti_dmat44 sto_ijk;        /*!< sform: transform (x,y,z) to (i,j,k) */
 
-    double toffset;              /*!< time coordinate offset */
+    double toffset = 0;              /*!< time coordinate offset */
 
-    int xyz_units;              /*!< dx,dy,dz units: NIFTI_UNITS_* code  */
-    int time_units;              /*!< dt       units: NIFTI_UNITS_* code  */
+    int xyz_units = 2;              /*!< dx,dy,dz units: NIFTI_UNITS_* code  */
+    int time_units = 0;              /*!< dt       units: NIFTI_UNITS_* code  */
 
     int nifti_type;              /*!< see NIFTI_FTYPE_* codes, below:
                                           0==ANALYZE,
@@ -204,10 +205,10 @@ private:
                                           4==NIFTI-2     (1 file),
                                           5==NIFTI-2     (2 files) */
 
-    int    intent_code;          /*!< statistic type (or something)       */
-    double intent_p1;            /*!< intent parameters                   */
-    double intent_p2;            /*!< intent parameters                   */
-    double intent_p3;            /*!< intent parameters                   */
+    int    intent_code = 0;          /*!< statistic type (or something)       */
+    double intent_p1 = 0;            /*!< intent parameters                   */
+    double intent_p2 = 0;            /*!< intent parameters                   */
+    double intent_p3 = 0;            /*!< intent parameters                   */
     char   intent_name[16];      /*!< optional description of intent data */
 
     char descrip[80];           /*!< optional text to describe dataset   */
@@ -216,11 +217,11 @@ private:
     std::string fname;                 /*!< header filename (.hdr or .nii)         */
     std::string iname;                 /*!< image filename  (.img or .nii)         */
     int64_t iname_offset;        /*!< offset into iname where data starts    */
-    int   swapsize;              /*!< swap unit in image data (might be 0)   */
-    int   byteorder;             /*!< byte order on disk (MSB_ or LSB_FIRST) */
+    int   swapsize = 0;              /*!< swap unit in image data (might be 0)   */
+    int   byteorder = LSB_FIRST;             /*!< byte order on disk (MSB_ or LSB_FIRST) */
     void *data;                  /*!< pointer to data: nbyper*nvox bytes     */
 
-    int                num_ext;  /*!< number of extensions in ext_list       */
+    int num_ext = 0;  /*!< number of extensions in ext_list       */
     nifti1_extension * ext_list; /*!< array of extension structs (with data) */
     analyze_75_orient_code analyze75_orient; /*!< for old analyze files, orient */
 
@@ -484,6 +485,10 @@ private:
     int *icod, int *jcod, int *kcod);
 
   static void nifti_mat44_to_orientation(mat44 R, int *icod, int *jcod, int *kcod);
+
+  //Copy to/from nifit_image data to Madym mdm_Image3D
+  template <class T> static void fromData(const nifti_image &nii, mdm_Image3D &img);
+  template <class T> static void toData(const mdm_Image3D &img, nifti_image &nii);
 
   //Variable constants
   static const std::string extnii;   /* modifiable, for possible uppercase */

@@ -25,6 +25,7 @@
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/mdm_exception.h>
 #include <madym/mdm_platform_defs.h>
+#include <mdm_version.h>
 
 namespace fs = boost::filesystem;
 
@@ -110,67 +111,46 @@ MDM_API mdm_Image3D mdm_NiftiFormat::readImage3D(const std::string &fileName,
 
   //Copy the data
   // ------------------------------------------------------------------------
-  auto nVoxels = img.numVoxels();
   switch (nii.datatype)
   {
     case NIFTI_TYPE_UINT8: {
-      uint8_t* nii_data = static_cast<uint8_t*>(nii.data);
-      for (size_t i = 0; i < nVoxels; ++i)
-        img.setVoxel(i, static_cast<double>(*(nii_data + i)));
+      fromData<uint8_t>(nii, img);
       break;
     }
     case NIFTI_TYPE_UINT16:  {
-      uint16_t* nii_data = static_cast<uint16_t*>(nii.data);
-      for (size_t i = 0; i < nVoxels; ++i)
-        img.setVoxel(i, static_cast<double>(*(nii_data + i)));
+      fromData<uint16_t>(nii, img);
       break;
     }
     case NIFTI_TYPE_UINT32:  { 
-      uint32_t* nii_data = static_cast<uint32_t*>(nii.data);
-      for (size_t i = 0; i < nVoxels; ++i)
-        img.setVoxel(i, static_cast<double>(*(nii_data + i)));
+      fromData<uint32_t>(nii, img);
       break;
     }
     case NIFTI_TYPE_UINT64:  { 
-      uint64_t* nii_data = static_cast<uint64_t*>(nii.data);
-      for (size_t i = 0; i < nVoxels; ++i)
-        img.setVoxel(i, static_cast<double>(*(nii_data + i)));
+      fromData<uint64_t>(nii, img);
       break;
     }
     case NIFTI_TYPE_INT8:  { 
-      int8_t* nii_data = static_cast<int8_t*>(nii.data);
-      for (size_t i = 0; i < nVoxels; ++i)
-        img.setVoxel(i, static_cast<double>(*(nii_data + i)));
+      fromData<int8_t>(nii, img);
       break;
     }
     case NIFTI_TYPE_INT16:  { 
-      int16_t* nii_data = static_cast<int16_t*>(nii.data);
-      for (size_t i = 0; i < nVoxels; ++i)
-        img.setVoxel(i, static_cast<double>(*(nii_data + i)));
+      fromData<int16_t>(nii, img);
       break;
     }
     case NIFTI_TYPE_INT32:  { 
-      int32_t* nii_data = static_cast<int32_t*>(nii.data);
-      for (size_t i = 0; i < nVoxels; ++i)
-        img.setVoxel(i, static_cast<double>(*(nii_data + i)));
+      fromData<int32_t>(nii, img);
       break;
     }
     case NIFTI_TYPE_INT64:  { 
-      int64_t* nii_data = static_cast<int64_t*>(nii.data);
-      for (size_t i = 0; i < nVoxels; ++i)
-        img.setVoxel(i, static_cast<double>(*(nii_data + i)));
+      fromData<int64_t>(nii, img);
       break;
     }
     case NIFTI_TYPE_FLOAT32:  { 
-      float* nii_data = static_cast<float*>(nii.data);
-      for (size_t i = 0; i < nVoxels; ++i)
-        img.setVoxel(i, static_cast<double>(*(nii_data + i)));
+      fromData<float>(nii, img);
       break;
     }
     case NIFTI_TYPE_FLOAT64:  { 
-      double* nii_data = static_cast<double*>(nii.data);
-      for (size_t i = 0; i < nVoxels; ++i)
-        img.setVoxel(i, *(nii_data + i));
+      fromData<double>(nii, img);
       break;
     }
     default: {
@@ -203,46 +183,95 @@ MDM_API void mdm_NiftiFormat::writeImage3D(const std::string &fileName,
   if (!img)
     throw mdm_exception(__func__, "Image for writing image must not be empty");
 
-  /*Temporary hack while we workout how to use the nift IO routines... 
-  1) write as Analyze using native madym code
-  2) read into nift struct using nifti2_io
-  3) delete .hdr/.img pair
-  4) write out nifti struct using nifti2_io
-  */
+  //Check name is valid
   std::string baseName;
   std::string ext;
   bool gz;
-  parseName(fileName,
-    baseName, ext, gz);
+  parseName(fileName, baseName, ext, gz);
 
   //What to do if gz true but compress false? Let gz override...
   if (gz && !compress)
     compress = true;
 
-  std::string hdrFileName = baseName + exthdr;
-  std::string imgFileName = baseName + extimg;
-  std::string xtrFileName = baseName + ".xtr";
+  //Create new NIFTI image instance
+  nifti_image nii;
 
-  //Write in Analyze format
-  mdm_AnalyzeFormat::writeImage3D(baseName, img, dataTypeFlag, xtrTypeFlag, false);
+  //Set dimesnions fields
+  size_t nx, ny, nz;
+  img.getDimensions(nx, ny, nz);
 
-  //Read into a NIFTI struct
-  nifti_image nii = nifti_image_read(hdrFileName, 1);
+  nii.nx = nx;
+  nii.ny = ny;
+  nii.nz = nz;
+  nii.nvox = nx * ny * nz;
+  nii.nt = 1;
+  nii.dx = img.info().Xmm.value();
+  nii.dy = img.info().Ymm.value();
+  nii.dz = img.info().Zmm.value();
 
-  //delete Analyze pair
-  fs::remove(hdrFileName);
-  fs::remove(imgFileName);
+  //Set datatype
+  nii.nifti_type = NIFTI_FTYPE::NIFTI1_1;
+  nii.datatype = dataTypeFlag;
+  std::string descrip("Madym-");
+  descrip.append(MDM_VERSION);
+  for (size_t s = 0; s < descrip.size(); s++)
+    nii.descrip[s] = descrip[s];
+  for (size_t s = descrip.size(); s < sizeof(nii.descrip); s++)
+    nii.descrip[s] = '\0';
+  nii.aux_file[0] = '\0';
 
-  //Set fields not set in analyze format header
-  nii.intent_code = 0;
-  nii.qform_code = 0;
-  nii.sform_code = 0;
-  nii.sform_code = 0;
-  nii.slice_start = 0;
-  nii.slice_end = 0;
+  //Set data field
+  // ------------------------------------------------------------------------
+  switch (nii.datatype)
+  {
+  case NIFTI_TYPE_UINT8: {
+    toData<uint8_t>(img, nii);
+    break;
+  }
+  case NIFTI_TYPE_UINT16: {
+    toData<uint16_t>(img, nii);
+    break;
+  }
+  case NIFTI_TYPE_UINT32: {
+    toData<uint32_t>(img, nii);
+    break;
+  }
+  case NIFTI_TYPE_UINT64: {
+    toData<uint64_t>(img, nii);
+    break;
+  }
+  case NIFTI_TYPE_INT8: {
+    toData<int8_t>(img, nii);
+    break;
+  }
+  case NIFTI_TYPE_INT16: {
+    toData<int16_t>(img, nii);
+    break;
+  }
+  case NIFTI_TYPE_INT32: {
+    toData<int32_t>(img, nii);
+    break;
+  }
+  case NIFTI_TYPE_INT64: {
+    toData<int64_t>(img, nii);
+    break;
+  }
+  case NIFTI_TYPE_FLOAT32: {
+    toData<float>(img, nii);
+    break;
+  }
+  case NIFTI_TYPE_FLOAT64: {
+    toData<double>(img, nii);
+    break;
+  }
+  default: {
+    throw mdm_exception(__func__, boost::format(
+      "Error reading %1%, datatype = %2% not recognised")
+      % fileName % nii.datatype);
+  }
+  }
 
   //Write out as NIFTI
-  nii.nifti_type = NIFTI_FTYPE::NIFTI1_1;
   std::string saveName = baseName + ".nii";
   if (compress)
     saveName += extgz;
@@ -305,6 +334,25 @@ MDM_API bool mdm_NiftiFormat::filesExist(const std::string & fileName,
 //**********************************************************************
 //
 //
+
+//
+template <class T> void mdm_NiftiFormat::fromData(const nifti_image &nii, mdm_Image3D &img)
+{
+  auto nVoxels = img.numVoxels();
+  T* nii_data = static_cast<T*>(nii.data);
+  for (size_t i = 0; i < nVoxels; ++i)
+    img.setVoxel(i, static_cast<double>(*(nii_data + i)));
+}
+
+//
+template <class T> void mdm_NiftiFormat::toData(const mdm_Image3D &img, nifti_image &nii)
+{
+  nii.nbyper = sizeof(T);
+  nii.data = malloc(nii.nvox*nii.nbyper);
+  T* nii_data = static_cast<T*>(nii.data);
+  for (size_t i = 0; i < nii.nvox; ++i)
+    *(nii_data + i) = (T)img.voxel(i);
+}
 
 //
 mdm_NiftiFormat::nifti_image mdm_NiftiFormat::nifti_image_read(const std::string &fileName, int read_data)
@@ -1066,9 +1114,6 @@ mdm_NiftiFormat::nifti_image mdm_NiftiFormat::nifti_convert_n1hdr2nim(nifti_1_he
     nim.slice_dim = DIM_INFO_TO_SLICE_DIM(nhdr.dim_info);
 
     nim.slice_code = nhdr.slice_code;
-    nim.slice_start = nhdr.slice_start;
-    nim.slice_end = nhdr.slice_end;
-    nim.slice_duration = nhdr.slice_duration;
   }
 
   /**- set Miscellaneous ANALYZE stuff */
@@ -1449,9 +1494,6 @@ mdm_NiftiFormat::nifti_image mdm_NiftiFormat::nifti_convert_n2hdr2nim(nifti_2_he
     nim.slice_dim = DIM_INFO_TO_SLICE_DIM(nhdr.dim_info);
 
     nim.slice_code = nhdr.slice_code;
-    nim.slice_start = nhdr.slice_start;
-    nim.slice_end = nhdr.slice_end;
-    nim.slice_duration = nhdr.slice_duration;
   }
 
   /**- set Miscellaneous ANALYZE stuff */
@@ -1968,10 +2010,7 @@ void mdm_NiftiFormat::nifti_swap_as_nifti2(nifti_2_header * h)
   nifti_swap_8bytes(1, &h->scl_inter);
   nifti_swap_8bytes(1, &h->cal_max);
   nifti_swap_8bytes(1, &h->cal_min);
-  nifti_swap_8bytes(1, &h->slice_duration);
   nifti_swap_8bytes(1, &h->toffset);
-  nifti_swap_8bytes(1, &h->slice_start);
-  nifti_swap_8bytes(1, &h->slice_end);
 
   nifti_swap_4bytes(1, &h->qform_code);
   nifti_swap_4bytes(1, &h->sform_code);
@@ -2015,18 +2054,15 @@ void mdm_NiftiFormat::nifti_swap_as_nifti1(nifti_1_header * h)
   nifti_swap_2bytes(1, &h->intent_code);
   nifti_swap_2bytes(1, &h->datatype);
   nifti_swap_2bytes(1, &h->bitpix);
-  nifti_swap_2bytes(1, &h->slice_start);
 
   nifti_swap_4bytes(8, h->pixdim);
 
   nifti_swap_4bytes(1, &h->vox_offset);
   nifti_swap_4bytes(1, &h->scl_slope);
   nifti_swap_4bytes(1, &h->scl_inter);
-  nifti_swap_2bytes(1, &h->slice_end);
 
   nifti_swap_4bytes(1, &h->cal_max);
   nifti_swap_4bytes(1, &h->cal_min);
-  nifti_swap_4bytes(1, &h->slice_duration);
   nifti_swap_4bytes(1, &h->toffset);
   nifti_swap_4bytes(1, &h->glmax);
   nifti_swap_4bytes(1, &h->glmin);
@@ -2215,11 +2251,7 @@ int mdm_NiftiFormat::nifti_convert_nim2n2hdr(const nifti_image &nim, nifti_2_hea
 
   nhdr.cal_max = nim.cal_max;
   nhdr.cal_min = nim.cal_min;
-
-  nhdr.slice_duration = nim.slice_duration;
   nhdr.toffset = nim.toffset;
-  nhdr.slice_start = nim.slice_start;
-  nhdr.slice_end = nim.slice_end;
 
   if (nim.descrip[0] != '\0') {
     memcpy(nhdr.descrip, nim.descrip, 79); nhdr.descrip[79] = '\0';
@@ -2412,15 +2444,10 @@ int mdm_NiftiFormat::nifti_convert_nim2n1hdr(const nifti_image & nim, nifti_1_he
     }
 
     N_CHECK_2BYTE_VAL(sform_code);
-    N_CHECK_2BYTE_VAL(slice_start);
-    N_CHECK_2BYTE_VAL(slice_end);
 
     nhdr.dim_info = FPS_INTO_DIM_INFO(nim.freq_dim,
       nim.phase_dim, nim.slice_dim);
     nhdr.slice_code = nim.slice_code;
-    nhdr.slice_start = nim.slice_start;
-    nhdr.slice_end = nim.slice_end;
-    nhdr.slice_duration = nim.slice_duration;
   }
 
   memcpy(&hdr, &nhdr, sizeof(nhdr));

@@ -502,9 +502,6 @@ mdm_NiftiFormat::nifti_image mdm_NiftiFormat::nifti_image_from_ascii(const char 
      else QNUM(phase_dim, int);
      else QNUM(slice_dim, int);
      else QNUM(slice_code, int);
-     else QNUM(slice_start, int);
-     else QNUM(slice_end, int);
-     else QNUM(slice_duration, float);
      else QNUM(num_ext, int);
 
   } /* end of while loop */
@@ -679,13 +676,6 @@ char *mdm_NiftiFormat::nifti_image_to_ascii(const nifti_image &nim)
       "  slice_code = '%d'\n"
       "  slice_code_name = '%s'\n",
       nim.slice_code, nifti_slice_string(nim.slice_code));
-  if (nim.slice_start >= 0 && nim.slice_end > nim.slice_start)
-    sprintf(buf + strlen(buf),
-      "  slice_start = ' '\n"
-      "  slice_end = ' '\n");
-  if (nim.slice_duration != 0.0)
-    sprintf(buf + strlen(buf), "  slice_duration = '%g'\n",
-      nim.slice_duration);
 
   if (nim.descrip[0] != '\0') {
     ebuf = escapize_string(nim.descrip);
