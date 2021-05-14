@@ -75,9 +75,12 @@ public:
 	\param StPrefix appended to basePath, forming base pattern to match files using series index
 	\param nDyns number of images to load. If 0, loads all images matching filename pattern
 	\param indexPattern string format specification, to convert integers 1,...,nDyns into a string
+  \param startIndex start index of sequence names
+  \param stepSize step size between indices in sequence names
 	*/
 	MDM_API void loadStDataMaps(const std::string &basePath,
-		const std::string &StPrefix, int nDyns, const std::string &indexPattern="%01u");
+		const std::string &StPrefix, int nDyns, const std::string &indexPattern,
+    const int startIndex, const int stepSize);
 
 	//! Load DCE time-series contrast-agent concentration volumes
 	/*!
@@ -85,10 +88,13 @@ public:
 	\param CtPrefix appended to basePath, forming base pattern to match files using series index
 	\param nDyns number of images to load. If 0, loads all images matching filename pattern
 	\param indexPattern string format specification, to convert integers 1,...,nDyns into a string
+  \param startIndex start index of sequence names
+  \param stepSize step size between indices in sequence names
 	\see loadStDataMaps
 	*/
 	MDM_API void loadCtDataMaps(const std::string &basePath,
-		const std::string &CtPrefix, int nDyns, const std::string &indexPattern = "%01u");
+		const std::string &CtPrefix, int nDyns, const std::string &indexPattern,
+    const int startIndex, const int stepSize);
 
 	//! Load ROI mask image
 	/*!
@@ -134,8 +140,13 @@ public:
 	//! Save all output maps to disk
 	/*!
 	\param outputDir directory in which to write output maps.
+  \param indexPattern string format specification, to convert integers 1,...,nDyns into a string
+  \param startIndex start index of sequence names
+  \param stepSize step size between indices in sequence names
 	*/
-	MDM_API void saveOutputMaps(const std::string &outputDir);
+	MDM_API void saveOutputMaps(const std::string &outputDir,
+    const std::string &indexPattern,
+    const int startIndex, const int stepSize);
 
 	//! Save model residuals map to disk
 	/*!
@@ -190,9 +201,6 @@ private:
 	/*METHODS*/
 
 	void loadT1InputImage(const std::string& filePath, int inputIdx);
-
-  std::string makeSequenceFilename(const std::string &path, const std::string &prefix,
-		const int fileNumber, const std::string &fileNumberFormat);
 	
 	void saveOutputMap(const std::string &mapName, 
 		const std::string &outputDir, bool writeXtr = false);

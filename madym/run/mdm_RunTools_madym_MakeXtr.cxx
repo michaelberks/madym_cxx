@@ -15,6 +15,7 @@
 #include <madym/image_io/xtr/mdm_XtrFormat.h>
 #include <madym/image_io/mdm_ImageIO.h>
 #include <madym/mdm_Image3D.h>
+#include <madym/mdm_SequenceNames.h>
 
 #include <madym/mdm_exception.h>
 
@@ -69,6 +70,8 @@ MDM_API int mdm_RunTools_madym_MakeXtr::parseInputs(int argc, const char *argv[]
   options_parser_.add_option(config_options, options_.dynDir);
   options_parser_.add_option(config_options, options_.dynName);
   options_parser_.add_option(config_options, options_.sequenceFormat);
+  options_parser_.add_option(config_options, options_.sequenceStart);
+  options_parser_.add_option(config_options, options_.sequenceStep);
   options_parser_.add_option(config_options, options_.T1inputNames);
   options_parser_.add_option(config_options, options_.T1Dir);
   options_parser_.add_option(config_options, options_.nDyns);
@@ -223,20 +226,11 @@ void mdm_RunTools_madym_MakeXtr::makeDynamicXtr()
     img.setTimeStampFromDoubleStr(acquisitionTime);
 
 
-    auto outputName = makeSequenceFilename(
-      dynBasePath, dynPrefix, i_dyn + 1, options_.sequenceFormat());
+    auto outputName = mdm_SequenceNames::makeSequenceFilename(
+      dynBasePath, dynPrefix, i_dyn + 1, options_.sequenceFormat(),
+      options_.sequenceStart(), options_.sequenceStep());
 
     mdm_XtrFormat::writeAnalyzeXtr(outputName, img, mdm_XtrFormat::NEW_XTR);
     mdm_ProgramLogger::logProgramMessage("Created dynamic XTR file " + outputName + ".xtr");
   }
-}
-
-//
-std::string mdm_RunTools_madym_MakeXtr::makeSequenceFilename(
-  const fs::path &filepath, const std::string &prefix,
-  const int fileNumber, const std::string &fileNumberFormat)
-{
-  auto formattedFilenumber = boost::format(fileNumberFormat.c_str()) % fileNumber;
-  auto imageName = boost::format("%1%%2%") % prefix % formattedFilenumber;
-  return (filepath / imageName.str()).string();
 }

@@ -280,6 +280,16 @@ void madym_gui_ui::on_dceFormatLineEdit_textChanged(const QString &text)
 	processor_.madym_exe().options().sequenceFormat.set(text.toStdString());
 }
 
+void madym_gui_ui::on_dceStartSpinBox_valueChanged(int value)
+{
+  processor_.madym_exe().options().sequenceStart.set(value);
+}
+
+void madym_gui_ui::on_dceStepSpinBox_valueChanged(int value)
+{
+  processor_.madym_exe().options().sequenceStep.set(value);
+}
+
 void madym_gui_ui::on_nDynSpinBox_valueChanged(int value)
 {
 	processor_.madym_exe().options().nDyns.set(value);
@@ -983,6 +993,8 @@ void madym_gui_ui::initialize_widget_values()
     ui.dceInputLineEdit->setText(options.dynDir().c_str());
     ui.dceNameLineEdit->setText(options.dynName().c_str());
     ui.dceFormatLineEdit->setText(options.sequenceFormat().c_str());
+    ui.dceStartSpinBox->setValue(options.sequenceStart());
+    ui.dceStepSpinBox->setValue(options.sequenceStep());
     ui.nDynSpinBox->setValue(options.nDyns());
     ui.injectionImageSpinBox->setValue(options.injectionImage());
 

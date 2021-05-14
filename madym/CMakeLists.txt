@@ -84,6 +84,7 @@ set(mdm_sources
 	
 	mdm_OptionsParser.cxx			mdm_OptionsParser.h
 	mdm_InputTypes.cxx				mdm_InputTypes.h
+  mdm_SequenceNames.h
 	mdm_InputOptions.h
 	mdm_platform_defs.h
   mdm_exception.h
