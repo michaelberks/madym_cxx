@@ -36,10 +36,16 @@ struct mdm_InputOptions {
 	mdm_input_int injectionImage = mdm_input_int(
 		8, "inj", "i", "Injection image"); //!< See initial value
 
-  //Generic namin conventions
+  //Generic naming conventions
   mdm_input_string sequenceFormat = mdm_input_string(
     mdm_input_str("%01u"), "sequence_format", "",
     "Number format for suffix specifying temporal index of volumes in a sequence"); //!< See initial value
+  mdm_input_int sequenceStart = mdm_input_int(
+   1, "sequence_start", "",
+    "Start index volumes in a sequence"); //!< See initial value
+  mdm_input_int sequenceStep = mdm_input_int(
+    1, "sequence_step", "",
+    "Start index volumes in a sequence"); //!< See initial value
 
 	//ROI options
 	mdm_input_string roiName = mdm_input_string(

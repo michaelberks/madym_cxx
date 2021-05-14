@@ -98,8 +98,10 @@ private slots:
   void on_dceInputSelect_clicked();
   void on_dceNameLineEdit_textChanged(const QString &text);
   void on_dceFormatLineEdit_textChanged(const QString &text);  
-	void on_nDynSpinBox_valueChanged(int value);
-	void on_injectionImageSpinBox_valueChanged(int value);
+  void on_dceStartSpinBox_valueChanged(int value);
+  void on_dceStepSpinBox_valueChanged(int value);
+  void on_nDynSpinBox_valueChanged(int value);
+  void on_injectionImageSpinBox_valueChanged(int value);
 
   //T1 calculation options
   void on_t1MethodComboBox_currentIndexChanged(const QString &text);

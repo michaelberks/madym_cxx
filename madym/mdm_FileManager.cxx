@@ -14,13 +14,13 @@
 
 #include <sstream>
 #include <boost/filesystem.hpp>
-#include <boost/format.hpp>
 
 namespace fs = boost::filesystem;
 
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/mdm_exception.h>
 #include <madym/image_io/xtr/mdm_XtrFormat.h>
+#include <madym/mdm_SequenceNames.h>
 
 const int mdm_FileManager::MAX_DYN_IMAGES = 1024;
 
@@ -145,7 +145,9 @@ MDM_API void mdm_FileManager::loadModelResiduals(const std::string &path)
     "Model residuals loaded loaded from " + path);
 }
 
-MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir)
+MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir,
+  const std::string &indexPattern,
+  const int startIndex, const int stepSize)
 {
   //Write out ROI (if used)
   saveROI(outputDir, volumeAnalysis_.MAP_NAME_ROI);
@@ -199,7 +201,10 @@ MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir)
 
 		for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
 		{
-			std::string ctName = ctSigPrefix + std::to_string(i + 1);
+			std::string ctName = mdm_SequenceNames::makeSequenceFilename(
+        "", ctSigPrefix, i+1, indexPattern,
+        startIndex, stepSize);
+
 			saveOutputMap(ctName, volumeAnalysis_.CtDataMap(i), ctOutputDir.string(), true);
 		}
 	}
@@ -211,7 +216,9 @@ MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir)
 
     for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
     {
-      std::string cmodName = ctModPrefix + std::to_string(i + 1);
+      std::string cmodName = mdm_SequenceNames::makeSequenceFilename(
+        "", ctModPrefix, i + 1, indexPattern,
+        startIndex, stepSize);
       saveOutputMap(cmodName, volumeAnalysis_.CtModelMap(i), ctOutputDir.string(), false);
     }
   }
@@ -350,7 +357,8 @@ MDM_API void mdm_FileManager::loadB1Map(const std::string &B1path, const double 
 
 //
 MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
-	const std::string &dynPrefix, int nDyns, const std::string &indexPattern)
+	const std::string &dynPrefix, int nDyns, const std::string &indexPattern,
+  const int startIndex, const int stepSize)
 {
 	bool dynFilesExist = true;
 	int nDyn = 0;
@@ -387,7 +395,9 @@ MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 
 		nDyn++;
 
-		std::string dynPath = makeSequenceFilename(dynBasePath, dynPrefix, nDyn, indexPattern);
+		std::string dynPath = mdm_SequenceNames::makeSequenceFilename(
+      dynBasePath, dynPrefix, nDyn, indexPattern,
+      startIndex, stepSize);
 
 		if (!mdm_ImageIO::filesExist(imageReadFormat_, dynPath, false))
 		{
@@ -426,7 +436,8 @@ MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 
 //
 MDM_API void mdm_FileManager::loadCtDataMaps(const std::string &CtBasePath,
-	const std::string &CtPrefix, int nDyns, const std::string &indexPattern)
+	const std::string &CtPrefix, int nDyns, const std::string &indexPattern,
+  const int startIndex, const int stepSize)
 {
 	bool CtFilesExist = true;
 	int nCt = 0;
@@ -464,7 +475,9 @@ MDM_API void mdm_FileManager::loadCtDataMaps(const std::string &CtBasePath,
 		nCt++;
 
 		/* This sets various globals (see function header comment) */
-		std::string CtPath = makeSequenceFilename(CtBasePath, CtPrefix, nCt, indexPattern);
+		std::string CtPath = mdm_SequenceNames::makeSequenceFilename(
+      CtBasePath, CtPrefix, nCt, indexPattern,
+      startIndex, stepSize);
 
 		if (!mdm_ImageIO::filesExist(imageReadFormat_, CtPath, false))
 		{
@@ -621,14 +634,5 @@ void mdm_FileManager::saveMapSummaryStats(const std::string &mapName, const mdm_
 {
 	stats.makeStats(img, mapName);
 	stats.writeStats();
-}
-
-//
-std::string mdm_FileManager::makeSequenceFilename(const std::string &path, const std::string &prefix,
-	const int fileNumber, const std::string &fileNumberFormat)
-{
-	auto formattedFilenumber = boost::format(fileNumberFormat.c_str()) % fileNumber;
-	auto imageName = boost::format("%1%%2%") % prefix % formattedFilenumber;
-	return (fs::path(path) / imageName.str()).string();
 }
 

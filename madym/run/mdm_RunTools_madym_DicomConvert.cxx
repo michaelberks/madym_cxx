@@ -16,6 +16,7 @@
 #include <madym/image_io/xtr/mdm_XtrFormat.h>
 #include <madym/image_io/mdm_ImageIO.h>
 #include <madym/mdm_Image3D.h>
+#include <madym/mdm_SequenceNames.h>
 
 #include <madym/mdm_exception.h>
 
@@ -104,6 +105,8 @@ MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *a
   
   //General naming
   options_parser_.add_option(config_options, options_.sequenceFormat);
+  options_parser_.add_option(config_options, options_.sequenceStart);
+  options_parser_.add_option(config_options, options_.sequenceStep);
   options_parser_.add_option(config_options, options_.meanSuffix);
   options_parser_.add_option(config_options, options_.repeatPrefix);
 
@@ -962,8 +965,9 @@ void mdm_RunTools_madym_DicomConvert::makeT1InputVols(
       auto img = loadDicomImage(series, startIdx);
 
       //Make output name
-      auto outputName = makeSequenceFilename(
-        T1Dir, options_.repeatPrefix(), i_rpt + 1, options_.sequenceFormat());
+      auto outputName = mdm_SequenceNames::makeSequenceFilename(
+        T1Dir.string(), options_.repeatPrefix(), i_rpt + 1, options_.sequenceFormat(),
+        options_.sequenceStart(), options_.sequenceStep());
 
       //Write the output image and xtr file
       mdm_ImageIO::writeImage3D(imageWriteFormat,
@@ -1039,8 +1043,9 @@ void mdm_RunTools_madym_DicomConvert::makeDynamicVols(
     auto img = loadDicomImage(series, startIdx, true, i_dyn);
 
     //Make output name
-    auto outputName = makeSequenceFilename(
-      dynDir, options_.dynName(), i_dyn+1, options_.sequenceFormat());
+    auto outputName = mdm_SequenceNames::makeSequenceFilename(
+      dynDir.string(), options_.dynName(), i_dyn+1, options_.sequenceFormat(),
+      options_.sequenceStart(), options_.sequenceStep());
 
     //Write the output image and xtr file
     mdm_ImageIO::writeImage3D(imageWriteFormat,
@@ -1066,14 +1071,4 @@ void mdm_RunTools_madym_DicomConvert::makeDynamicVols(
       meanName.string(), meanImg, imageDatatype, mdm_XtrFormat::NEW_XTR);
     mdm_ProgramLogger::logProgramMessage("Created temporal mean of dynamic images " + meanName.string());
   }
-}
-
-//
-std::string mdm_RunTools_madym_DicomConvert::makeSequenceFilename(
-  const fs::path &filepath, const std::string &prefix,
-  const int fileNumber, const std::string &fileNumberFormat)
-{
-  auto formattedFilenumber = boost::format(fileNumberFormat.c_str()) % fileNumber;
-  auto imageName = boost::format("%1%%2%") % prefix % formattedFilenumber;
-  return (filepath / imageName.str()).string();
 }

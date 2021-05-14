@@ -69,7 +69,8 @@ void mdm_RunToolsVolumeAnalysis::loadSt()
     throw mdm_exception(__func__, "paths and/or prefix to dynamic images not set");
 
   //Load the dynamic images
-  fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns(), options_.sequenceFormat());
+  fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns(), 
+    options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
 
 }
 
@@ -82,7 +83,8 @@ void mdm_RunToolsVolumeAnalysis::loadCt()
   if (CtBasePath.empty() && CtPrefix.empty())
     throw mdm_exception(__func__, "Ct flag set to true, but paths and/or prefix to Ct maps not set");
 
-  fileManager_.loadCtDataMaps(CtBasePath, CtPrefix, options_.nDyns(), options_.sequenceFormat());
+  fileManager_.loadCtDataMaps(CtBasePath, CtPrefix, options_.nDyns(), 
+    options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
 }
 
 //
@@ -173,7 +175,8 @@ void mdm_RunToolsVolumeAnalysis::mapT1()
 
 MDM_API void mdm_RunToolsVolumeAnalysis::writeOutput()
 {
-  fileManager_.saveOutputMaps(outputPath_.string());
+  fileManager_.saveOutputMaps(outputPath_.string(),
+    options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
 }
 
 //
