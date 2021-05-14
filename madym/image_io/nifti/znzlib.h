@@ -62,6 +62,7 @@ extern "C" {
 #endif
 #endif
 
+/* the type for all file pointers */
 struct znzptr {
   int withz;
   FILE* nzfptr;

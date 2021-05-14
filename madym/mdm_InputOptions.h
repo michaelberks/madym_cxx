@@ -321,9 +321,9 @@ struct mdm_InputOptions {
     "Dicom tag key (group,element) for rescale intercept, in hexideciaml form - for Philips this is (0x2005, 0x100d)"); //!< See initial value
 
   mdm_input_double dicomScale = mdm_input_double(
-    1.0, "dicom_scale", "", "Additional scaling factor applied to the dicom data");
+    1.0, "dicom_scale", "", "Additional scaling factor applied to the dicom data"); //!< See initial value
   mdm_input_double dicomOffset = mdm_input_double(
-    0, "dicom_offset", "", "Additional offset factor applied to the dicom data");
+    0, "dicom_offset", "", "Additional offset factor applied to the dicom data"); //!< See initial value
 
   //DICOM -acquisition time
   mdm_input_string dynTimeTag = mdm_input_string(
@@ -332,7 +332,7 @@ struct mdm_InputOptions {
     "Dicom tag key (group,element) for acquisition time, if empty uses DCM_AcquisitionTime"); //!< See initial value
   mdm_input_double temporalResolution = mdm_input_double(
     0, "temp_res", "", 
-    "Time in seconds between volumes in the DCE sequence, used to fill acquisition time not set in dynTimeTag");
+    "Time in seconds between volumes in the DCE sequence, used to fill acquisition time not set in dynTimeTag"); //!< See initial value
 
   //DICOM - naming
   mdm_input_string repeatPrefix = mdm_input_string(

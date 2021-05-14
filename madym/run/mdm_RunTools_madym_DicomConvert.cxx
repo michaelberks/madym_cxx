@@ -176,6 +176,7 @@ void mdm_RunTools_madym_DicomConvert::checkRequiredInputs()
   //}
 }
 
+//! Template method for getting numeric info from DICOM header in different numeric formats
 template <class T> bool getNumericInfo(DcmFileFormat &fileformat, const DcmTagKey &key, T &info)
 {
   try

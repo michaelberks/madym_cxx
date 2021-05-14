@@ -13,36 +13,37 @@
 #include <dcmtk/dcmimgle/dcmimage.h>
 #include <dcmtk/dcmdata/dctk.h> 
 
-//Helper struct to hold numeric dicom header info for sorter
+//! Helper struct to hold numeric dicom header info for sorter
 struct dcmNumericInfo {
-  int seriesNumber;
-  int  acquisitionNumber;
-  int  temporalPositionIdentifier;
-  double  sliceLocation;
-  int instanceNumber;
+  int seriesNumber; ///< series number
+  int  acquisitionNumber; ///< acquisitionNumber
+  int  temporalPositionIdentifier;  ///< temporalPositionIdentifier
+  double  sliceLocation;  ///< sliceLocation
+  int instanceNumber;  ///< instanceNumber
 };
 
+//! Defines the set of information for an invidual dicome series
 struct dcmSeriesInfo {
-  std::string name;
-  std::string manufacturer;
-  int index;
-  std::vector<std::string> filenames;
-  std::vector<dcmNumericInfo> numericInfo;
-  int nTimes;
-  int nX;
-  int nY;
-  int nZ;
-  double Xmm;
-  double Ymm;
-  double Zmm;
-  double FA = 0;
-  double TR = 0;
-  double TE = 0;
-  double TI = 0;
-  double B = 0;
-  double gradOri = 0;
-  double acquisitionTime;
-  bool sortValid;
+  std::string name; ///< Name of the series
+  std::string manufacturer; ///< Manufacturer of the scanner (eg Philips)
+  int index; ///< Index in the list of sequences processed
+  std::vector<std::string> filenames; ///< List of paths to DICOM images in the series
+  std::vector<dcmNumericInfo> numericInfo; ///< Info struct for each DICOM image in series
+  int nTimes; ///< Number of temporal positions in series
+  int nX; ///< number of voxels in X-axis
+  int nY; ///< number of voxels in Y-axis
+  int nZ; ///< number of voxels in Z-axis
+  double Xmm; ///< size of voxels in X-axis in mm
+  double Ymm; ///< size of voxels in X-axis in mm
+  double Zmm; ///< size of voxels in X-axis in mm
+  double FA = 0; ///< Flip-angle 
+  double TR = 0; ///< Repetition time in ms
+  double TE = 0; ///< echo time in ms
+  double TI = 0; ///< inversion time in ms
+  double B = 0; ///< B-value
+  double gradOri = 0; ///< Gradient orientation
+  double acquisitionTime; ///< Acquisition time
+  bool sortValid; ///< Cache flag to check the series has been validly sorted
 };
 
 //! Class to run the lite version of the DCE analysis tool

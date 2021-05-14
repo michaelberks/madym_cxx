@@ -30,11 +30,20 @@ public:
 		NEW_XTR = 1, ///< Current format
 	};
 
-  //
+  //! Read XTR file
+  /*!
+  \param xtrFileName name of file to read
+  \param img Image object to update with meta-parameters from XTR file
+  */
   MDM_API static void readAnalyzeXtr(const std::string &xtrFileName,
     mdm_Image3D &img);
 
-  //
+  //! Write XTR file
+  /*!
+  \param baseName name of file to write (will be appended with .xtr)
+  \param img Image object with meta-parameters to write
+  \param typeFlag flag to write in new or old format
+  */
   MDM_API static void writeAnalyzeXtr(const std::string &baseName,
     const mdm_Image3D &img,
     const XTR_type typeFlag);

@@ -15,9 +15,21 @@
 
 namespace fs = boost::filesystem;
 
+//! Header only class to provide method for generating sequence names from user options
 class mdm_SequenceNames {
 
 public:
+
+  //Generates sequence filenames from user options
+  /*!
+  \param path directory path to file name (leave empty if path included in prefix)
+  \param prefix prefix of file name
+  \param fileNumber current file number in sequence
+  \param fileNumberFormat string format for converting number to string
+  \param startIndex first index of volume names in index
+  \param stepSize step between indexes of volume names in sequence
+  \return filepath to current sequence volume
+  */
   static std::string makeSequenceFilename(
     const std::string &path, const std::string &prefix,
     const int fileNumber, const std::string &fileNumberFormat,

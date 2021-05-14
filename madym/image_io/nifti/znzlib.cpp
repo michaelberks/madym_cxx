@@ -1,4 +1,4 @@
-/** \file znzlib.c
+/** \file znzlib.cpp
     \brief Low level i/o interface to compressed and noncompressed files.
         Written by Mark Jenkinson, FMRIB
 

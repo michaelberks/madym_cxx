@@ -639,7 +639,7 @@ typedef struct { unsigned char r,g,b; } rgb_byte ;
        p1 = degrees of freedom
        R/sqrt(1-R*R) is t-distributed with p1 DOF. */
 
-/*! \defgroup NIFTI1_INTENT_CODES
+/*! \defgroup NIFTI1_INTENT_CODES NIFTI-1 intent codes
     \brief nifti1 intent codes, to describe intended meaning of dataset contents
     @{
  */
@@ -1191,7 +1191,7 @@ typedef struct { unsigned char r,g,b; } rgb_byte ;
    /* [qs]form_code value:  */      /* x,y,z coordinate system refers to:    */
    /*-----------------------*/      /*---------------------------------------*/
 
-/*! \defgroup NIFTI1_XFORM_CODES
+/*! \defgroup NIFTI1_XFORM_CODES  NIFTI-1 xform codes
     \brief nifti1 xform codes to describe the "standard" coordinate system
     @{
  */
@@ -1262,7 +1262,7 @@ typedef struct { unsigned char r,g,b; } rgb_byte ;
    for m=0..dim[4]-1.
 -----------------------------------------------------------------------------*/
 
-/*! \defgroup NIFTI1_UNITS
+/*! \defgroup NIFTI1_UNITS  NIFTI-1 units codes
     \brief nifti1 units codes to describe the unit of measurement for
            each dimension of the dataset
     @{
@@ -1403,7 +1403,7 @@ typedef struct { unsigned char r,g,b; } rgb_byte ;
                                       ( ( ((char)(pd)) & 0x03) << 2 ) |  \
                                       ( ( ((char)(sd)) & 0x03) << 4 )  )
 
-/*! \defgroup NIFTI1_SLICE_ORDER
+/*! \defgroup NIFTI1_SLICE_ORDER  NIFTI-1 slice orders
     \brief nifti1 slice order codes, describing the acquisition order
            of the slices
     @{

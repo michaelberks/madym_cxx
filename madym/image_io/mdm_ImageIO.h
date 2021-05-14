@@ -61,8 +61,9 @@ public:
   */
   MDM_API static ImageFormat formatFromString(const std::string& fmt);
 
-	//!    Read Analyze format file(s) and return mdm_Image3D object
+	//!    Read Analyze/NIFTI format file(s) and return mdm_Image3D object
 	/*!
+  \param    imgFormat format of image (Analyze, NIFTI etc) to check
 	\param    fileName		name of file from which to read the data
 	\param		loadXtr			flag, if true tries to load .xtr file too
 	\return   mdm_Image3D object containing image read from disk
@@ -72,8 +73,9 @@ public:
     bool loadXtr);
 
 	
-	//!    Write mdm_Image3D to QBI extended Analyze hdr/img/xtr file set
+	//!    Write mdm_Image3D to QBI extended Analyze (hdr/img/xtr) or NIFTI (nii/xtr) file set
 	/*!
+  \param    imgFormat format of image (Analyze, NIFTI etc) to check
 	\param    baseName      base name for file (gets .hdr/.img/.xtr appended)
 	\param    img           mdm_Image3D holding the data to be written to file
 	\param    dataTypeFlag  integer data type flag; see Data_type enum
@@ -86,6 +88,7 @@ public:
 
   //!    Test for existence of the file with the specified basename and format appropriate extension
   /*!
+  \param    imgFormat format of image (Analyze, NIFTI etc) to check
   \param    baseName base name of files to test
   \param    warn  flag, if true triggers warning for program logger if files don't exist
   \return   bool true if files exist, false otherwise

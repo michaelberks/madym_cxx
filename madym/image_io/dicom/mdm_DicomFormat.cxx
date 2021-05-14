@@ -131,10 +131,13 @@ MDM_API mdm_Image3D mdm_DicomFormat::loadImageFromDicomSlices(
   return img;
 }
 
-//
+//! Auxillary struct to help convert hex strings to floats
 union ulf
 {
+  //! int part of union
   long int l;
+
+  //! float part of union
   float f;
 };
 

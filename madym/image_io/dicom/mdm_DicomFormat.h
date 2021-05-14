@@ -68,18 +68,31 @@ public:
     const bool flipX = false,
     const bool flipY = true);
 
-  //!
+  //! Get value of a numeric field from DICOM header
   /*!
+  \param fileformat refernce to DICOM header object
+  \param key tag key to the field
+  \return numeric value of field
+  \throw mdm_DicomMissingFieldException if field not found in header object
   */
   MDM_API static double getNumericField(DcmFileFormat &fileformat, const DcmTagKey &key);
 
-  //!
+  //! Get value of a text field from DICOM header
   /*!
+  \param fileformat refernce to DICOM header object
+  \param key tag key to the field
+  \return text value of field
+  \throw mdm_DicomMissingFieldException if field not found in header object
   */
   MDM_API static std::string getTextField(DcmFileFormat &fileformat, const DcmTagKey & key);
 
-  //!
+  //! Get values of a numeric vector field from DICOM header
   /*!
+  \param fileformat refernce to DICOM header object
+  \param key tag key to the field
+  \param numValues number of values in the vector
+  \return vector of numeric values for field
+  \throw mdm_DicomMissingFieldException if field not found in header object
   */
   MDM_API static std::vector< double> getNumericVector(
     DcmFileFormat &fileformat, const DcmTagKey & key, size_t numValues);
@@ -89,13 +102,16 @@ protected:
 private:
 };
 
+//! Speciliased exception thrown when user requests a field not present in a DICOM header
+ /*!
+ */
 class mdm_DicomMissingFieldException : virtual public mdm_exception {
 
 public:
   //! Constructor from standard string message
   /*!
   \param func name of throwing function
-  \param msg exception message displayed by what()
+  \param key tag key of missing field, used to auto-generate exception method
   */
   mdm_DicomMissingFieldException(const char* func, DcmTagKey key) noexcept
     : mdm_exception(func, "Missing key ")
