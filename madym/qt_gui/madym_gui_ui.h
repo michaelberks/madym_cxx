@@ -233,6 +233,12 @@ private: // Variables
   //Cache config dir
   QString configDir_;
 
+  //Validator to check range inputs
+  QValidator *rangeValidator;
+
+  //Validator to check range inputs
+  QValidator *doubleListValidator;
+
 };
 
 #endif // madym_gui_ui_H
