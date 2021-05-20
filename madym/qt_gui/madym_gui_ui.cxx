@@ -17,6 +17,7 @@
 
 #include <QScrollBar>
 #include <QDesktopServices>
+#include <QRegExp>
 
 static const QString NONE_SELECTED = "<None selected>";
 static const QString IMAGE_FILE_FILTER =
@@ -39,6 +40,19 @@ madym_gui_ui::madym_gui_ui(QWidget *parent)
   inputTypeRadioGroup->setExclusive(true);
   QObject::connect( inputTypeRadioGroup, SIGNAL(buttonClicked( int )),
                     this, SLOT(change_input_type( int )) );
+
+  //Set up some validators for entry boxes
+  QRegExp rangeREX("^[0-9]+(?:(,|-)[0-9]+)*$");
+  rangeREX.setPatternSyntax(QRegExp::RegExp);
+  rangeValidator = new QRegExpValidator(rangeREX);
+  ui.xRangeLineEdit->setValidator(rangeValidator);
+  ui.yRangeLineEdit->setValidator(rangeValidator);
+  ui.slicesLineEdit->setValidator(rangeValidator);
+
+  QRegExp doubleListREX("^[0-9]+(\\.[0-9]+)?(?:,([0-9]+(\\.[0-9]+)?))*$");
+  doubleListREX.setPatternSyntax(QRegExp::RegExp);
+  doubleListValidator = new QRegExpValidator(doubleListREX);
+  ui.iaucTimesLineEdit->setValidator(doubleListValidator);
 
   initialize_processor_thread();
   connect_signals_to_slots();
@@ -567,19 +581,25 @@ void madym_gui_ui::on_hctLineEdit_textChanged(const QString &text)
 //AIF detection options
 void madym_gui_ui::on_xRangeLineEdit_textChanged(const QString &text)
 {
-  processor_.madym_exe().options().aifXrange.value().fromString(text.toStdString());
+  int pos = 0;
+  if (rangeValidator->validate(QString(text), pos) == QValidator::Acceptable)
+    processor_.madym_exe().options().aifXrange.value().fromString(text.toStdString());
 }
 
 //
 void madym_gui_ui::on_yRangeLineEdit_textChanged(const QString &text)
 {
-  processor_.madym_exe().options().aifYrange.value().fromString(text.toStdString());
+  int pos = 0;
+  if (rangeValidator->validate(QString(text), pos) == QValidator::Acceptable)
+    processor_.madym_exe().options().aifYrange.value().fromString(text.toStdString());
 }
 
 //
 void madym_gui_ui::on_slicesLineEdit_textChanged(const QString &text)
 {
-  processor_.madym_exe().options().aifSlices.value().fromString(text.toStdString());
+  int pos = 0;
+  if (rangeValidator->validate(QString(text), pos) == QValidator::Acceptable)
+    processor_.madym_exe().options().aifSlices.value().fromString(text.toStdString());
 }
 
 //
@@ -638,7 +658,9 @@ void madym_gui_ui::on_outputDirSelect_clicked()
 //
 void madym_gui_ui::on_iaucTimesLineEdit_textChanged(const QString &text)
 {
-  processor_.madym_exe().options().IAUCTimes.value().fromString(text.toStdString());
+  int pos = 0;
+  if (doubleListValidator->validate(QString(text), pos) == QValidator::Acceptable)
+    processor_.madym_exe().options().IAUCTimes.value().fromString(text.toStdString());
 }
 
 //
