@@ -582,7 +582,8 @@ void madym_gui_ui::on_hctLineEdit_textChanged(const QString &text)
 void madym_gui_ui::on_xRangeLineEdit_textChanged(const QString &text)
 {
   int pos = 0;
-  if (rangeValidator->validate(QString(text), pos) == QValidator::Acceptable)
+  QString str(text);
+  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
     processor_.madym_exe().options().aifXrange.value().fromString(text.toStdString());
 }
 
@@ -590,7 +591,8 @@ void madym_gui_ui::on_xRangeLineEdit_textChanged(const QString &text)
 void madym_gui_ui::on_yRangeLineEdit_textChanged(const QString &text)
 {
   int pos = 0;
-  if (rangeValidator->validate(QString(text), pos) == QValidator::Acceptable)
+  QString str(text);
+  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
     processor_.madym_exe().options().aifYrange.value().fromString(text.toStdString());
 }
 
@@ -598,7 +600,8 @@ void madym_gui_ui::on_yRangeLineEdit_textChanged(const QString &text)
 void madym_gui_ui::on_slicesLineEdit_textChanged(const QString &text)
 {
   int pos = 0;
-  if (rangeValidator->validate(QString(text), pos) == QValidator::Acceptable)
+  QString str(text);
+  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
     processor_.madym_exe().options().aifSlices.value().fromString(text.toStdString());
 }
 
@@ -659,7 +662,8 @@ void madym_gui_ui::on_outputDirSelect_clicked()
 void madym_gui_ui::on_iaucTimesLineEdit_textChanged(const QString &text)
 {
   int pos = 0;
-  if (doubleListValidator->validate(QString(text), pos) == QValidator::Acceptable)
+  QString str(text);
+  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable)
     processor_.madym_exe().options().IAUCTimes.value().fromString(text.toStdString());
 }
 
