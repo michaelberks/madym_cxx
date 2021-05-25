@@ -1,2 +1,10 @@
 #!/bin/bash
-sudo echo 'export MADYM_ROOT=/usr/madym-@GIT_TAG@/bin' | sudo tee -a /etc/profile.d/madym_setup.sh
+
+#!/bin/bash
+if [ $(id -u) = 0 ]; 
+then
+    echo 'export MADYM_ROOT=/usr/madym-@GIT_TAG@/bin' | tee -a /etc/profile.d/madym_setup.sh
+else
+    sudo echo 'export MADYM_ROOT=/usr/madym-@GIT_TAG@/bin' | sudo tee -a /etc/profile.d/madym_setup.sh
+fi
+

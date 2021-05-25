@@ -29,19 +29,20 @@ build:
   script:
     - echo "This job builds madym in debug configuration for testing"
     - mkdir -p build
-    - cmake \
-        -D CMAKE_BUILD_TYPE=Debug \
-        -D BUILD_DOCUMENTATION=OFF \
-        -D BUILD_INSTALL=OFF \
-        -D BUILD_QT_GUI=ON \
-        -D BUILD_SHARED_LIBS=ON \
-        -D BUILD_TESTING=ON \
-        -D BUILD_TOOLS=ON \
-        -D BUILD_WITH_DCMTK=ON \
-        -D BUILD_WITH_ZLIB=ON \
-        -S ../madym_cxx
+    - cmake 
+        -D CMAKE_BUILD_TYPE=Debug 
+        -D BUILD_DOCUMENTATION=ON 
+        -D BUILD_INSTALL=OFF 
+        -D BUILD_QT_GUI=ON 
+        -D BUILD_SHARED_LIBS=ON 
+        -D BUILD_TESTING=ON 
+        -D BUILD_TOOLS=ON 
+        -D BUILD_WITH_DCMTK=ON 
+        -D BUILD_WITH_ZLIB=ON 
+        -S ../madym_cxx 
         -B build
     - cd build
+    - ls
     - make
     - echo "Madym version is $(bin/madym_DCE -v)"
   cache:
@@ -75,17 +76,17 @@ build_dist:
     - mkdir ../dist
     - cd ../dist
     - cmake \
-        -D CMAKE_C_COMPILER=$CC \
-        -D CMAKE_CXX_COMPILER=$CXX \
-        -D CMAKE_BUILD_TYPE=Release \
-        -D BUILD_DOCUMENTATION=OFF \
-        -D BUILD_INSTALL=OFF \
-        -D BUILD_QT_GUI=ON \
-        -D BUILD_SHARED_LIBS=ON \
-        -D BUILD_TESTING=ON \
-        -D BUILD_TOOLS=ON \
-        -D BUILD_WITH_DCMTK=ON \
-        -D BUILD_WITH_ZLIB=ON \
+        -D CMAKE_C_COMPILER=$CC
+        -D CMAKE_CXX_COMPILER=$CXX
+        -D CMAKE_BUILD_TYPE=Release
+        -D BUILD_DOCUMENTATION=OFF
+        -D BUILD_INSTALL=OFF
+        -D BUILD_QT_GUI=ON
+        -D BUILD_SHARED_LIBS=ON
+        -D BUILD_TESTING=ON
+        -D BUILD_TOOLS=ON
+        -D BUILD_WITH_DCMTK=ON
+        -D BUILD_WITH_ZLIB=ON
         -S ../madym_cxx
     - make
   artifacts:
@@ -93,6 +94,19 @@ build_dist:
       - ../dist/
   only:
   - /^[0-9]+-[0-9]+-release$/
+
+pages:
+  stage: build_dist
+  script:
+  - doxygen build/doxyfile
+  - mv /builds/manchester_qbi/manchester_qbi_public/madym_cxx/build/docs/html/ public/
+  - cp /builds/manchester_qbi/manchester_qbi_public/madym_cxx/madym_lrg.png public/
+  artifacts:
+    paths:
+    - public
+  only:
+    - master
+    - /^[0-9]+-[0-9]+-release$/
 
 test_dist:
   stage: test_dist
