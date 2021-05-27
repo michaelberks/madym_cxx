@@ -35,8 +35,7 @@ contrast-agent within a tissue of interest. Quantitative DCE-MRI (DCE-MRI), in w
 one or more tracer-kinetic models are fitted to the contrast-agent
 concentration time-series, enables the estimation of clinically useful parameters of tissue microvasculature.
 
-`Madym` is a C++ toolkit for quantitative DCE-MRI analysis developed in the 
-[QBI Lab](http://qbi-lab.org/) at the University of Manchester. It comprises 
+`Madym` is a C++ toolkit for quantitative DCE-MRI analysis developed at the University of Manchester. It comprises 
 a set of command line tools and a graphical user-interface based on an extendable 
 C++ library. It is cross-platform, and requires few external libraries to 
 build from source. Pre-built binaries for Windows, MacOS and Linux are available 
@@ -85,7 +84,7 @@ inversion recovery methods are supported),
  individual tissue voxels rather than spatially averaged regions-of-interest). 3D MRI images have many 
  hundreds of thousands of voxels (*eg* a typical image may have dimensions 128 x 128 x 40 = 655,360 voxels).
  By using C++ and externally developed open-source optimisation library (ALGLIB, [@alglib]), on standard desktop
- `Madym` requires $~10 \mus$ per voxel to estimate baseline $`T_1`$ (allowing $`T_1`$ mapping of whole volumes in a few seconds) 
+ `Madym` requires $~10 {\mu}s$ per voxel to estimate baseline $T_1$ (allowing $T_1$ mapping of whole volumes in a few seconds) 
  and $< 30 ms$ per voxel to fit the extended-Tofts model (so a typical tumour of 500-1,000 voxels can be analysed in 20-30 seconds
 , while whole organs can be fitted in a few hours). 
 
