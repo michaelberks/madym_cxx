@@ -8,7 +8,7 @@ tags:
 authors:
   - name: Michael Berks^[corresponding author]
     orcid: 0000-0003-4727-2006
-    affiliation: "1"
+    affiliation: 1
   - name: Geoff J M Parker
     orcid: 0000-0003-2934-2234
     affiliation: "2 3"
@@ -36,7 +36,7 @@ one or more tracer-kinetic models are fitted to the contrast-agent
 concentration time-series, enables the estimation of clinically useful parameters of tissue microvasculature.
 
 `Madym` is a C++ toolkit for quantitative DCE-MRI analysis developed in the 
-[QBI Lab](http://qbi-lab.org/) at the University of Manchester. It comprises 
+Quantitative Biomedical Imaging Lab at the University of Manchester. It comprises 
 a set of command line tools and a graphical user-interface based on an extendable 
 C++ library. It is cross-platform, and requires few external libraries to 
 build from source. Pre-built binaries for Windows, MacOS and Linux are available 
