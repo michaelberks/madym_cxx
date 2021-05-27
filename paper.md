@@ -35,4 +35,13 @@ contrast-agent within a tissue of interest. Quantitative DCE-MRI (DCE-MRI), in w
 one or more tracer-kinetic models are fitted to the contrast-agent
 concentration time-series, enables the estimation of clinically useful parameters of tissue microvasculature.
 
+# Statement of need
+Statement
+
+# Acknowledgements
+
+Code updates to the open source version of `Madym` have been made entirely by Michael Berks, with significant input on the design
+and features of the new version from the remaining authors. We would also like to thank Gio Buonnacorsi, Anita Banerji and Angela Caunce
+for their work in developing previous non-public versions, following Geoff Parker's original design.
+
 # References
