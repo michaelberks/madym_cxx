@@ -4,3 +4,4 @@ examples/test_dataset/madym*
 ~*
 *.bak
 docs/docker_instructions.md
+.vscode/*
