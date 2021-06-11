@@ -1,3 +1,6 @@
+'''
+Wrapper to C++ tool madym_DCE
+'''
 import os
 import warnings
 import subprocess
@@ -564,6 +567,7 @@ def test(plot_output=True):
         img_fmt_r = 'ANALYZE',
         img_fmt_w = 'ANALYZE',
         injection_image=injection_img,
+        no_audit=True,
         overwrite=True)
     print(f'madym return code = {result.returncode}')
 
@@ -617,6 +621,7 @@ def test(plot_output=True):
         injection_image = injection_img,
         img_fmt_r = 'ANALYZE',
         img_fmt_w = 'ANALYZE',
+        no_audit=True,
         overwrite = 1)
     print(f'madym return code = {result.returncode}')
 

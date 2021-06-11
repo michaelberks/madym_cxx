@@ -1,3 +1,6 @@
+'''
+Wrapper to C++ tool madym_AIF
+'''
 import os
 import warnings
 import subprocess

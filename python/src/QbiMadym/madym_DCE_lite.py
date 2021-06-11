@@ -1,3 +1,6 @@
+'''
+Wrapper to C++ tool madym_DCE_lite
+'''
 import numpy as np
 import warnings
 from tempfile import TemporaryDirectory

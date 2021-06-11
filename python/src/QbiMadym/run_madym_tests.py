@@ -1,3 +1,7 @@
+'''
+Runs the integrated tests for the wrappers
+'''
+
 import sys
 from QbiMadym import madym_DCE, madym_DCE_lite, madym_T1
 def run_madym_tests(test_level=1, plot_output=True):

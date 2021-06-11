@@ -1,3 +1,6 @@
+'''
+Wrapper to C++ tool madym_T1
+'''
 import os
 import warnings
 import subprocess
@@ -459,6 +462,7 @@ def test(plot_output=True):
         img_fmt_r = 'ANALYZE',
         img_fmt_w = 'ANALYZE',
         return_maps = True,
+        no_audit=True,
         overwrite = True)
     signals_fit = signal_from_T1(T1_fit, M0_fit, FAs, TR)
     
