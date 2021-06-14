@@ -187,10 +187,6 @@ else ( MSVC )
 	target_link_libraries( mdm m)
 endif ( MSVC )
 
-if (BUILD_INSTALL)
-  include (install.cmake)
-endif (BUILD_INSTALL)
-
 if ( BUILD_TOOLS )
 	subdirs(tools)
 endif ()
