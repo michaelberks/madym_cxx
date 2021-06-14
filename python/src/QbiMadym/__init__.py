@@ -21,15 +21,12 @@ def version_from_git():
         #Check tags against head
         head_idx = -1
         version = str(repo.tags[head_idx]).split('v')[1]
-        print('Loaded version from git')
     except:
         version = 'unknown'
-        print('Version unknown')
     
     return version
 
 def version_from_file(version_path):
-    print('Loaded version from file')
     with open(version_path, 'r') as f:
         v = f.readlines()
 

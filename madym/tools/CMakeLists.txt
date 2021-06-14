@@ -119,7 +119,7 @@ if (BUILD_INSTALL)
     #Cpack options common to all systems
     set(CPACK_PACKAGE_NAME "Madym")
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Madym DCE-MRI analysis tools")
-    set(CPACK_COMPONENTS_ALL GUI Tools Libs Examples)
+    set(CPACK_COMPONENTS_ALL GUI Tools Libs  Python)
     set(CPACK_PACKAGE_VENDOR "University of Manchester")
     set(CPACK_PACKAGE_CONTACT "michael.berks@manchester.ac.uk")
     set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.md")
