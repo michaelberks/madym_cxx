@@ -5,3 +5,9 @@ examples/test_dataset/madym*
 *.bak
 docs/docker_instructions.md
 .vscode/*
+python/src/QbiMadym/VERSION
+python/build*
+python/dist*
+python/tests/sandpit.py
+*.egg-info*
+*__pycache__*
