@@ -75,7 +75,7 @@ def local_madym_root(empty_check:bool=True):
     madym_root = os.getenv('MADYM_ROOT')
     if empty_check and not madym_root:
         warnings.warn(f'MADYM_ROOT environment variable not set.')
-   
+    
     return madym_root
 
 #--------------------------------------------------------------------------------
