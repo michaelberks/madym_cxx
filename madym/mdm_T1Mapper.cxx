@@ -43,28 +43,28 @@ MDM_API void mdm_T1Mapper::reset()
 //
 MDM_API void mdm_T1Mapper::addInputImage(mdm_Image3D img)
 {
-  checkOrSetDimension(img);
+  errorTracker_.checkOrSetDimension(img, "T1 input");
 	inputImages_.push_back(img); 
 }
 
 //
 MDM_API void mdm_T1Mapper::setT1(mdm_Image3D T1)
 {
-  checkOrSetDimension(T1);
+  errorTracker_.checkOrSetDimension(T1, "T1");
 	T1_ = T1;
 }
 
 //
 MDM_API void mdm_T1Mapper::setM0(mdm_Image3D M0)
 {
-  checkOrSetDimension(M0);
+  errorTracker_.checkOrSetDimension(M0, "M0");
 	M0_ = M0;
 }
 
 //
 MDM_API void mdm_T1Mapper::setB1(mdm_Image3D B1)
 {
-  checkOrSetDimension(B1);
+  errorTracker_.checkOrSetDimension(B1, "B1");
   B1_ = B1;
 }
 
@@ -255,12 +255,3 @@ MDM_API void  mdm_T1Mapper::overrideTR(double TR)
 //******************************************************************
 //Private methods
 //******************************************************************
-
-void mdm_T1Mapper::checkOrSetDimension(const mdm_Image3D &img)
-{
-  if (!errorTracker_.errorImage())
-    errorTracker_.initErrorImage(img);
-
-  else if (!img.dimensionsMatch(errorTracker_.errorImage()))
-    throw mdm_dimension_mismatch(__func__, errorTracker_.errorImage(), img);
-}

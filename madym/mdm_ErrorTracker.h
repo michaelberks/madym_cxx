@@ -95,8 +95,34 @@ public:
 	*/
 	MDM_API mdm_Image3D maskSingleErrorCode(const int errCode);
 
+  //!Check the image dimensions match, with option to set if no current reference dimensions
+  /* If no other images set yet, this will
+   - initialise the error tracker
+   - in doing so, set the dimension for all subsequent images to be checked against
+   Throws mdm_mismatched_image() exception if dimensions don't match
+   \param img input image to check
+   */
+  MDM_API void checkOrSetDimension(const mdm_Image3D &img, const std::string &msg);
+
+  //!Check the image dimensions match, with option to set if no current reference dimensions
+  /*
+   Throws mdm_mismatched_image() exception if dimensions don't match
+   \param img input image to check
+   */
+  MDM_API void checkDimension(const mdm_Image3D &img, const std::string &msg) const;
+
+  //! Set voxelSizeWarnOnly flag
+  /*!
+  \param flag if true, loaded images with mismatched voxel sizes only generate a warning
+  */
+  MDM_API void setVoxelSizeWarnOnly(bool flag);
+
 private:
+  //Map to log images, also sets expected dimensions for all image input
 	mdm_Image3D errorImage_;
+
+  //Only log warning instead of breaking error if voxel sizes don't match
+  bool voxelSizeWarnOnly_;
 
 };
 

@@ -14,10 +14,12 @@
 
 #include <cassert>
 #include <madym/mdm_exception.h>
+#include <madym/mdm_ProgramLogger.h>
 
 //
 //
 MDM_API mdm_ErrorTracker::mdm_ErrorTracker()
+  : voxelSizeWarnOnly_(false)
 {
 
 }
@@ -98,4 +100,33 @@ MDM_API mdm_Image3D mdm_ErrorTracker::maskSingleErrorCode(const int errCodesInt)
 	return maskOut;
 }
 
+MDM_API void mdm_ErrorTracker::checkOrSetDimension(const mdm_Image3D &img, const std::string &msg)
+{
+  if (!errorImage_)
+    initErrorImage(img);
+
+  else
+    checkDimension(img, msg);
+}
+
+MDM_API void mdm_ErrorTracker::checkDimension(const mdm_Image3D &img, const std::string &msg) const
+{
+  if (!img.dimensionsMatch(errorImage_))
+    throw mdm_dimension_mismatch(__func__, errorImage_, img);
+
+  else if (!img.voxelSizesMatch(errorImage_))
+  {
+    if (voxelSizeWarnOnly_)
+      mdm_ProgramLogger::logProgramWarning(__func__, "Voxel size mismatch reading " + msg);
+    
+    else
+      throw mdm_voxelsize_mismatch(__func__, errorImage_, img);
+  }
+}
+
+//
+MDM_API void mdm_ErrorTracker::setVoxelSizeWarnOnly(bool flag)
+{
+  voxelSizeWarnOnly_ = flag;
+}
 //

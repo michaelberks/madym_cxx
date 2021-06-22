@@ -16,6 +16,7 @@ BOOST_AUTO_TEST_CASE(test_volumeAnalysis) {
   //Test setting volumes
   mdm_Image3D ROI;
   ROI.setDimensions(1, 1, 1);
+  ROI.setVoxelDims(1, 1, 1);
 
   //Reference image has size 1, 1, 1
   mdm_VolumeAnalysis v;
@@ -24,6 +25,7 @@ BOOST_AUTO_TEST_CASE(test_volumeAnalysis) {
   //Trying to set an image of any other dimension should throw a mismatch exception
   mdm_Image3D img;
   img.setDimensions(1, 1, 1);
+  img.setVoxelDims(1, 1, 1);
 
   //Check setting of volumes
   v.setComputeCt(true);
@@ -47,7 +49,7 @@ BOOST_AUTO_TEST_CASE(test_volumeAnalysis) {
   BOOST_CHECK_NO_THROW(v.setModel(model));
   BOOST_CHECK_NO_THROW(v.setDCEMap(model->paramName(0), img));
 
-  //Check getting of volumes
+  //Check getting of volumes - dimensions match
   BOOST_CHECK(img.dimensionsMatch(v.ROI()));
   BOOST_CHECK(img.dimensionsMatch(v.AIFmap()));
   BOOST_CHECK(img.dimensionsMatch(v.StDataMap(0)));
@@ -56,6 +58,16 @@ BOOST_AUTO_TEST_CASE(test_volumeAnalysis) {
   BOOST_CHECK(img.dimensionsMatch(v.T1Mapper().inputImage(0)));
   BOOST_CHECK(img.dimensionsMatch(v.T1Mapper().M0()));
   BOOST_CHECK(img.dimensionsMatch(v.T1Mapper().T1()));
+
+  //Check getting of volumes - voxel sizes match
+  BOOST_CHECK(img.voxelSizesMatch(v.ROI()));
+  BOOST_CHECK(img.voxelSizesMatch(v.AIFmap()));
+  BOOST_CHECK(img.voxelSizesMatch(v.StDataMap(0)));
+  BOOST_CHECK(img.voxelSizesMatch(v.CtDataMap(0)));
+  BOOST_CHECK(img.voxelSizesMatch(v.CtModelMap(0)));
+  BOOST_CHECK(img.voxelSizesMatch(v.T1Mapper().inputImage(0)));
+  BOOST_CHECK(img.voxelSizesMatch(v.T1Mapper().M0()));
+  BOOST_CHECK(img.voxelSizesMatch(v.T1Mapper().T1()));
 
   //Check setting of values - these all set with no get, so just check no throw
   BOOST_CHECK_NO_THROW(v.setR1Const(5.0));
