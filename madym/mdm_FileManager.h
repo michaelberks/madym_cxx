@@ -13,6 +13,7 @@
 #include "mdm_ParamSummaryStats.h"
 #include <madym/image_io/mdm_ImageDatatypes.h>
 #include <madym/image_io/mdm_ImageIO.h>
+#include <madym/mdm_Image3D.h>
 
 //!   Manager class for reading input and writing ouput of volume-wise model analysis
 /*!
@@ -48,22 +49,22 @@ public:
 
 	//! Load baseline T1 image
 	/*!
-	\param T1path filepath to baseline T1 image
+	\param path filepath to baseline T1 image
 	*/
-	MDM_API void loadT1Map(const std::string &T1path);
+	MDM_API void loadT1Map(const std::string &path);
 
 	//! Load M0 image
 	/*!
-	\param M0path filepath to M0 image
+	\param path filepath to M0 image
 	*/
-	MDM_API void loadM0Map(const std::string &M0path);
+	MDM_API void loadM0Map(const std::string &path);
 
   //! Load B1 correction map
   /*!
-  \param B1path filepath to B1 correction image
+  \param path filepath to B1 correction image
   \param B1Scaling scaling applied to B1 correction
   */
-  MDM_API void loadB1Map(const std::string &B1path, const double B1Scaling);
+  MDM_API void loadB1Map(const std::string &path, const double B1Scaling);
 
 	//! Load DCE time-series signal volumes
 	/*!
@@ -199,8 +200,6 @@ protected:
 private:
 
 	/*METHODS*/
-
-	void loadT1InputImage(const std::string& filePath, int inputIdx);
 	
 	void saveOutputMap(const std::string &mapName, 
 		const std::string &outputDir, bool writeXtr = false);
@@ -213,6 +212,10 @@ private:
 
   void saveMapSummaryStats(const std::string &mapName, const mdm_Image3D &img,
 		mdm_ParamSummaryStats &stats);
+
+  template <class T> void loadAndSetImage(
+    const std::string &path, const std::string &msgName, T setFunc,
+    const mdm_Image3D::ImageType type, bool loadXtr, double scaling = 1.0);
 
 	/*VARIABLES*/
 

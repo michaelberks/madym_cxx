@@ -93,6 +93,7 @@ MDM_API int mdm_RunTools_madym_T1::parseInputs(int argc, const char *argv[])
   options_parser_.add_option(config_options, options_.imageWriteFormat);
 
 		//Logging options_
+  options_parser_.add_option(config_options, options_.voxelSizeWarnOnly);
   options_parser_.add_option(config_options, options_.noLog);
   options_parser_.add_option(config_options, options_.noAudit);
   options_parser_.add_option(config_options, options_.quiet);

@@ -107,9 +107,9 @@ MDM_API const mdm_T1Mapper& mdm_VolumeAnalysis::T1Mapper() const
 //
 MDM_API void mdm_VolumeAnalysis::setROI(const mdm_Image3D ROI)
 {
-  checkOrSetDimension(ROI);
-	ROI_ = ROI;
-}
+  errorTracker_.checkOrSetDimension(ROI, "ROI");
+  ROI_ = ROI;
+	}
 
 //
 MDM_API mdm_Image3D mdm_VolumeAnalysis::ROI() const
@@ -120,7 +120,8 @@ MDM_API mdm_Image3D mdm_VolumeAnalysis::ROI() const
 MDM_API void mdm_VolumeAnalysis::setAIFmap(
   const mdm_Image3D map)
 {
-  checkOrSetDimension(map);
+  errorTracker_.checkOrSetDimension(map, "AIF map");
+
   if (map.type() != mdm_Image3D::ImageType::TYPE_AIFVOXELMAP)
   {
     AIFmap_.copy(map);
@@ -159,7 +160,8 @@ MDM_API mdm_Image3D mdm_VolumeAnalysis::AIFmap() const
 MDM_API void mdm_VolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
 {
   //Check the image dimension match
-  checkOrSetDimension(dynImg);
+  errorTracker_.checkOrSetDimension(dynImg, 
+    "dynamic image " + std::to_string(StDataMaps_.size()+1));
 
 	//Add the image to the list
 	StDataMaps_.push_back(dynImg);
@@ -194,7 +196,6 @@ MDM_API void mdm_VolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
     cModMap.setType(mdm_Image3D::ImageType::TYPE_CAMAP);
     CtModelMaps_.push_back(cModMap);
   }
-  
 }
 
 //
@@ -228,7 +229,7 @@ MDM_API void mdm_VolumeAnalysis::computeMeanCt(
   const mdm_Image3D &map, double map_val,
   std::vector<double> &meanCt, std::vector<size_t> &badVoxels) const
 {
-  checkDimension(map);
+  errorTracker_.checkDimension(map, "Ct ROI");
 
   auto nTimes = numDynamics();
   
@@ -276,12 +277,13 @@ MDM_API void mdm_VolumeAnalysis::computeMeanCt(
 //
 MDM_API void mdm_VolumeAnalysis::addCtDataMap(const mdm_Image3D ctMap)
 {
+  //Check the image dimension match
+  errorTracker_.checkOrSetDimension(ctMap,
+    "concentration image " + std::to_string(CtDataMaps_.size() + 1));
+
   //We don't allow mixed setting of Ct and St maps - so if St already set, throw error
   if (!StDataMaps_.empty())
     throw mdm_exception(__func__, "Attempting to add C(t) when S(t) maps already set");
-
-  //Check the image dimension match
-  checkOrSetDimension(ctMap);
 
 	//Add the image to the list
 	CtDataMaps_.push_back(ctMap);
@@ -371,9 +373,9 @@ MDM_API mdm_Image3D mdm_VolumeAnalysis::DCEMap(const std::string &mapName) const
 //
 MDM_API void mdm_VolumeAnalysis::setDCEMap(const std::string &mapName, const mdm_Image3D &map)
 {
-  checkModelSet();
+  errorTracker_.checkOrSetDimension(map, "param map " + mapName);
 
-  checkOrSetDimension(map);
+  checkModelSet();
 
   if (pkParamMaps_.size() != model_->numParams())
     pkParamMaps_.resize(model_->numParams());
@@ -609,23 +611,6 @@ void mdm_VolumeAnalysis::checkDynamicsSet() const
 {
   if (!numDynamics())
     throw mdm_exception(__func__, "Dynamic maps not loaded.");
-}
-
-//
-void mdm_VolumeAnalysis::checkOrSetDimension(const mdm_Image3D &img)
-{
-  if (!errorTracker_.errorImage())
-    errorTracker_.initErrorImage(img);
-
-  else
-    checkDimension(img);
-}
-
-//
-void mdm_VolumeAnalysis::checkDimension(const mdm_Image3D &img) const
-{
-   if (!img.dimensionsMatch(errorTracker_.errorImage()))
-    throw mdm_dimension_mismatch(__func__, errorTracker_.errorImage(), img);
 }
 
 //

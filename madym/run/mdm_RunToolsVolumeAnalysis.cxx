@@ -45,6 +45,7 @@ MDM_API void mdm_RunToolsVolumeAnalysis::loadErrorTracker()
     std::string errorTrackerPath = fs::absolute(options_.errorTrackerName()).string();
     fileManager_.loadErrorTracker(errorTrackerPath);
   }
+  volumeAnalysis_.errorTracker().setVoxelSizeWarnOnly(options_.voxelSizeWarnOnly());
 }
 
 //

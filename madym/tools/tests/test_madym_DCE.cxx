@@ -360,6 +360,147 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
     );
   }
 
+  //-------------------------------------------------------------------------------
+  // 6) Fit once, then reload params and call no opt
+  //-------------------------------------------------------------------------------
+  {
+    std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct1/";
+    {
+      mdm_RunTools_madym_DCE madym_exe;
+      auto &madym_options = madym_exe.options();
+
+      madym_options.model.set("ETM");
+      madym_options.outputDir.set(Ct_output_dir);
+      madym_options.dynDir.set(dyn_dir);
+      madym_options.dynName.set("Ct_");
+      madym_options.sequenceFormat.set("%02u");
+      madym_options.nDyns.set(nTimes);
+      madym_options.injectionImage.set(injectionImage);
+      madym_options.dose.set(dose);
+      madym_options.hct.set(hct);
+      madym_options.IAUCTimes.set(IAUCTimes);
+      madym_options.inputCt.set(true);
+      madym_options.imageWriteFormat.set("ANALYZE");
+      madym_options.overwrite.set(true);
+      madym_options.noAudit.set(true);
+
+      madym_exe.parseInputs("test_madym_DCE");
+      int result = madym_exe.run_catch();
+
+      BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
+    }
+    {
+      mdm_RunTools_madym_DCE madym_exe;
+      auto &madym_options = madym_exe.options();
+
+      madym_options.model.set("ETM");
+      madym_options.outputDir.set(Ct_output_dir);
+      madym_options.dynDir.set(dyn_dir);
+      madym_options.dynName.set("Ct_");
+      madym_options.sequenceFormat.set("%02u");
+      madym_options.nDyns.set(nTimes);
+      madym_options.injectionImage.set(injectionImage);
+      madym_options.dose.set(dose);
+      madym_options.hct.set(hct);
+      madym_options.IAUCTimes.set(IAUCTimes);
+      madym_options.inputCt.set(true);
+      madym_options.imageWriteFormat.set("ANALYZE");
+      madym_options.initMapsDir.set(Ct_output_dir);
+      madym_options.noOptimise.set(true);
+      madym_options.overwrite.set(true);
+      madym_options.noAudit.set(true);
+
+      madym_exe.parseInputs("test_madym_DCE");
+      int result = madym_exe.run_catch();
+
+      BOOST_CHECK_MESSAGE(!result, "Running madym_DCE from init params map failed");
+    }
+
+
+    check_output(Ct_output_dir,
+      trueParams,
+      IAUCTimes,
+      IAUCVals,
+      mdm_ImageIO::ImageFormat::ANALYZE
+    );
+  }
+  //-------------------------------------------------------------------------------
+  // 6) Check voxel size checks works as expected
+  //-------------------------------------------------------------------------------
+  {
+    //
+    mdm_Image3D ROI;
+    ROI.setDimensions(1, 1, 1);
+    ROI.setVoxelDims(1, 1, 2);
+    ROI.setVoxel(0, 1);
+
+    std::string ROI_name = dyn_dir + "ROI";
+    mdm_AnalyzeFormat::writeImage3D(ROI_name, ROI,
+      mdm_ImageDatatypes::DT_FLOAT, mdm_XtrFormat::NO_XTR, false);
+
+    std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct1/";
+
+    {
+      mdm_RunTools_madym_DCE madym_exe;
+      auto &madym_options = madym_exe.options();
+
+      madym_options.model.set("ETM");
+      madym_options.outputDir.set(Ct_output_dir);
+      madym_options.dynDir.set(dyn_dir);
+      madym_options.dynName.set("Ct_");
+      madym_options.sequenceFormat.set("%02u");
+      madym_options.nDyns.set(nTimes);
+      madym_options.roiName.set(ROI_name);
+      madym_options.injectionImage.set(injectionImage);
+      madym_options.dose.set(dose);
+      madym_options.hct.set(hct);
+      madym_options.IAUCTimes.set(IAUCTimes);
+      madym_options.inputCt.set(true);
+      madym_options.imageWriteFormat.set("ANALYZE");
+      madym_options.overwrite.set(true);
+      madym_options.noAudit.set(true);
+
+      madym_exe.parseInputs("test_madym_DCE");
+      int result = madym_exe.run_catch();
+      BOOST_CHECK_EQUAL(result, 1.0);
+
+    }
+    {
+      mdm_RunTools_madym_DCE madym_exe;
+      auto &madym_options = madym_exe.options();
+
+      madym_options.model.set("ETM");
+      madym_options.outputDir.set(Ct_output_dir);
+      madym_options.dynDir.set(dyn_dir);
+      madym_options.dynName.set("Ct_");
+      madym_options.sequenceFormat.set("%02u");
+      madym_options.nDyns.set(nTimes);
+      madym_options.roiName.set(ROI_name);
+      madym_options.injectionImage.set(injectionImage);
+      madym_options.dose.set(dose);
+      madym_options.hct.set(hct);
+      madym_options.IAUCTimes.set(IAUCTimes);
+      madym_options.inputCt.set(true);
+      madym_options.imageWriteFormat.set("ANALYZE");
+      madym_options.voxelSizeWarnOnly.set(true);
+      madym_options.overwrite.set(true);
+      madym_options.noAudit.set(true);
+
+      madym_exe.parseInputs("test_madym_DCE");
+      int result = madym_exe.run_catch();
+
+      BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
+    }
+
+
+    check_output(Ct_output_dir,
+      trueParams,
+      IAUCTimes,
+      IAUCVals,
+      mdm_ImageIO::ImageFormat::ANALYZE
+    );
+  }
+
 	//---------------------------------------------------------------------------
 	//Tidy up
 	fs::remove_all(dyn_dir);
