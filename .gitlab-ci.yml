@@ -67,7 +67,7 @@ test:
   only:
     - master
     - merge_requests
-    - /^[0-9]+-[0-9]+-release$/
+    - /^release-.*$/
 
 build_dist:
   stage: build_dist
@@ -93,7 +93,7 @@ build_dist:
     paths:
       - ../dist/
   only:
-  - /^[0-9]+-[0-9]+-release$/
+  - /^release-.*$/
 
 pages:
   stage: build_dist
@@ -106,7 +106,7 @@ pages:
     - public
   only:
     - master
-    - /^[0-9]+-[0-9]+-release$/
+    - /^release-.*$/
 
 test_dist:
   stage: test_dist
@@ -115,7 +115,7 @@ test_dist:
     - cd ../dist
     - ctest --verbose
   only:
-    - /^[0-9]+-[0-9]+-release$/
+    - /^release-.*$/
 
 deploy:
   stage: deploy
@@ -134,5 +134,5 @@ deploy:
   #  name: staging
   #  url: https://staging.example.com
   only:
-    - /^[0-9]+-[0-9]+-release$/
+    - /^release-.*$/
   
