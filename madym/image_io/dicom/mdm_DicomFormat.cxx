@@ -1,7 +1,11 @@
-/**@(#)Functions to read/write DICOM image files
-       These functions are a modified version of the
-       ACR-NEMA ones
-*/
+/**
+ *  @file    mdm_DicomFormat.cxx
+ *  @brief   Implementation of class for DICOM image format reading and writing
+ *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
+ */
+#ifndef MDM_API_EXPORTS
+#define MDM_API_EXPORTS
+#endif
 
 #include "mdm_DicomFormat.h"
 
