@@ -119,7 +119,7 @@ build_dist_win:
   stage: build_dist
   script:
     - echo "This job builds madym in release configuration for distribution as an MSI installer for windows"
-    - "C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Auxiliary/Build/vcvars64.bat"
+    - '"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Auxiliary/Build/vcvars64.bat"'
     - mkdir ../dist
     - cd ../dist
     - cmake -C C:/CMake/initialCache.txt -S ../madym_cxx
