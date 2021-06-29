@@ -14,6 +14,7 @@ RUN `
     && (start /w vs_buildtools.exe --quiet --wait --norestart --nocache modify `
         --installPath "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\BuildTools" `
         --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended `
+        --add Microsoft.VisualStudio.Component.Git `
         --remove Microsoft.VisualStudio.Component.Windows10SDK.10240 `
         --remove Microsoft.VisualStudio.Component.Windows10SDK.10586 `
         --remove Microsoft.VisualStudio.Component.Windows10SDK.14393 `
@@ -21,38 +22,29 @@ RUN `
         || IF "%ERRORLEVEL%"=="3010" EXIT 0) `
     `
     # Cleanup
-    && del /q vs_buildtools.exe `
-    && setx PATH "%PATH%;C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build"
-    
+    && del /q vs_buildtools.exe
+
+# Rather than trying to install the deps from cmd line, *much* easier just to copy local
+# build context. The downside is this image can't be built from scratch on any host machine
+# but that shouldn't be a problem for our current needs    
+COPY Qt Qt
+
+COPY boost boost
+
+COPY DCMTK DCMTK
+
+COPY zlib zlib
+
+COPY CMake CMake
+
+COPY NSIS NSIS
+
+ENV BOOST_ROOT C:\\boost\\boost_1_76_0
+
+#Put NSIS where CMake expects it to be, and add git to the path
 RUN `
-    #Download chocolatey
-    powershell -Command Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+    move "C:\\NSIS" "C:\\Program Files (x86)\\" && `
+    setx PATH "%PATH%;C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer\\Git\\cmd;C:\\Program Files (x86)\\NSIS\\Bin"
     
-RUN `
-    #Install, git, boost and dcmtk
-    choco install git boost-msvc-14.2 qt5-default -y
-    
-RUN ` 
-    #Clone zlib
-    git clone https://github.com/madler/zlib/ `
-    && mkdir zlib_build `
-    #Clone dcmtk, installing from chocolatey didn't work for me 
-    && git clone https://github.com/DCMTK/dcmtk `
-    && mkdir dcmtk_build 
-    
-RUN `
-    #Build zlib and DCMTK after setting build environment
-    vcvars64.bat `
-    && cd zlib_build `
-    && cmake ..\\zlib `
-    && cmake --build . --config Release `
-    && cmake --install . --config Release `
-    && cd .. `
-    && cd dcmtk_build `
-    && cmake ..\\dcmtk -D DCMTK_COMPILE_WIN32_MULTITHREADED=ON `
-    && cmake --build . --config Release `
-    && cmake --install . --config Release `
-    && cd ..
-    
-# Define the entry point for the docker container.
-ENTRYPOINT ["cmd"]
+# Define the entry point for the docker container, running vcvars64 to set-up MSVC x64 build environment
+ENTRYPOINT ["C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\BuildTools\\VC\\Auxiliary\\Build\\vcvars64.bat", "&&", "cmd"]
