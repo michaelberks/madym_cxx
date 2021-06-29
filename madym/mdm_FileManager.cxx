@@ -13,6 +13,8 @@
 #include "mdm_FileManager.h"
 
 #include <sstream>
+#include <functional>
+
 #include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
@@ -41,19 +43,8 @@ MDM_API mdm_FileManager::~mdm_FileManager()
 MDM_API void mdm_FileManager::loadROI(const std::string &path)
 {
 	// Read in ROI image volume
-  try {
-    mdm_Image3D ROI = mdm_ImageIO::readImage3D(imageReadFormat_,path, false);
-    ROI.setType(mdm_Image3D::ImageType::TYPE_ROI);
-    volumeAnalysis_.setROI(ROI);
-  }
-  catch (mdm_exception &e)
-  {
-    e.append("Error reading ROI");
-    throw;
-  }
-
-	mdm_ProgramLogger::logProgramMessage(
-		"ROI loaded from " + path);
+  auto setFunc = std::bind(&mdm_VolumeAnalysis::setROI, &volumeAnalysis_, std::placeholders::_1);
+  loadAndSetImage(path, "ROI", setFunc, mdm_Image3D::ImageType::TYPE_ROI, false);
 
 }
 
@@ -67,20 +58,8 @@ MDM_API void mdm_FileManager::saveROI(const std::string &outputDir, const std::s
 //
 MDM_API void mdm_FileManager::loadAIFmap(const std::string &path)
 {
-  try {
-    // Read in AIF map image volume
-    mdm_Image3D AIFmap = mdm_ImageIO::readImage3D(imageReadFormat_,path, false);
-    AIFmap.setType(mdm_Image3D::ImageType::TYPE_ROI);
-    volumeAnalysis_.setAIFmap(AIFmap);
-  }
-  catch (mdm_exception &e)
-  {
-    e.append("Error reading AIF map");
-    throw;
-  }
-  
-  mdm_ProgramLogger::logProgramMessage(
-    "AIF map loaded loaded from " + path);
+  auto setFunc = std::bind(&mdm_VolumeAnalysis::setAIFmap, &volumeAnalysis_, std::placeholders::_1);
+  loadAndSetImage(path, "AIF map", setFunc, mdm_Image3D::ImageType::TYPE_ROI, false);
 }
 
 //
@@ -106,18 +85,13 @@ MDM_API void mdm_FileManager::loadParameterMaps(const std::string &paramDir,
 
   for (auto i : params)
   {
-    std::string paramName = paramDir + "/" + paramNames[i];
+    std::string paramPath = paramDir + "/" + paramNames[i];
 
-    try {
-      mdm_Image3D paramMap = mdm_ImageIO::readImage3D(imageReadFormat_,paramName, false);
-      paramMap.setType(mdm_Image3D::ImageType::TYPE_KINETICMAP);
-      volumeAnalysis_.setDCEMap(paramNames[i], paramMap);
-    }
-    catch (mdm_exception &e)
-    {
-      e.append("Error reading parameter map " + paramName);
-      throw;
-    }
+    auto setFunc = std::bind(
+      &mdm_VolumeAnalysis::setDCEMap, &volumeAnalysis_, paramNames[i], std::placeholders::_1);
+    loadAndSetImage(paramPath, "param map " + paramNames[i], 
+      setFunc, mdm_Image3D::ImageType::TYPE_KINETICMAP, false);
+
   }
   volumeAnalysis_.setInitMapParams(params);
 
@@ -129,20 +103,11 @@ MDM_API void mdm_FileManager::loadParameterMaps(const std::string &paramDir,
 //
 MDM_API void mdm_FileManager::loadModelResiduals(const std::string &path)
 {
-  try {
-    // Read in AIF map image volume
-    mdm_Image3D residuals = mdm_ImageIO::readImage3D(imageReadFormat_,path, false);
-    residuals.setType(mdm_Image3D::ImageType::TYPE_KINETICMAP);
-    volumeAnalysis_.setDCEMap(mdm_VolumeAnalysis::MAP_NAME_RESDIUALS, residuals);
-  }
-  catch (mdm_exception &e)
-  {
-    e.append("Error reading model residuals");
-    throw;
-  }
+  auto setFunc = std::bind(
+    &mdm_VolumeAnalysis::setDCEMap, &volumeAnalysis_, mdm_VolumeAnalysis::MAP_NAME_RESDIUALS, std::placeholders::_1);
+  loadAndSetImage(path, mdm_VolumeAnalysis::MAP_NAME_RESDIUALS, setFunc,
+    mdm_Image3D::ImageType::TYPE_KINETICMAP, false);
 
-  mdm_ProgramLogger::logProgramMessage(
-    "Model residuals loaded loaded from " + path);
 }
 
 MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir,
@@ -253,23 +218,13 @@ MDM_API void mdm_FileManager::saveSummaryStats(const std::string &outputDir)
 }
 
 //
-MDM_API void mdm_FileManager::loadErrorTracker(const std::string &errorPath)
+MDM_API void mdm_FileManager::loadErrorTracker(const std::string &path)
 {
-  // Read in ROI image volume
-  try {
-    mdm_Image3D errorMap = mdm_ImageIO::readImage3D(imageReadFormat_,errorPath, false);
-    errorMap.setType(mdm_Image3D::ImageType::TYPE_ERRORMAP);
-
-    volumeAnalysis_.errorTracker().setErrorImage(errorMap);
-  }
-  catch (mdm_exception &e)
-  {
-    e.append("Error reading error tracker map");
-    throw;
-  }
-
-  mdm_ProgramLogger::logProgramMessage(
-    "Error tracker map loaded from " + errorPath);
+  // Read in Error tracker
+  auto setFunc = std::bind(
+    &mdm_ErrorTracker::setErrorImage, &volumeAnalysis_.errorTracker(), std::placeholders::_1);
+  loadAndSetImage(path, mdm_VolumeAnalysis::MAP_NAME_ERROR_TRACKER, setFunc,
+    mdm_Image3D::ImageType::TYPE_ERRORMAP, false);
 }
 
 //
@@ -286,73 +241,40 @@ MDM_API void mdm_FileManager::loadT1MappingInputImages(const std::vector<std::st
 	auto nNumImgs = T1InputPaths.size();
 
 	//Loop through filePaths, loaded each variable flip angle images
-	for (int i = 0; i < nNumImgs; i++)
-	  loadT1InputImage(T1InputPaths[i], i + 1);
-
+  for (int i = 0; i < nNumImgs; i++)
+  {
+    auto setFunc = std::bind(
+      &mdm_T1Mapper::addInputImage, &volumeAnalysis_.T1Mapper(), std::placeholders::_1);
+    loadAndSetImage(T1InputPaths[i], "T1 input", setFunc,
+      mdm_Image3D::ImageType::TYPE_T1WTSPGR, true);
+  }
 }
 
 //
-MDM_API void mdm_FileManager::loadT1Map(const std::string &T1path)
+MDM_API void mdm_FileManager::loadT1Map(const std::string &path)
 {
-  try {
-    mdm_Image3D T1_map = mdm_ImageIO::readImage3D(imageReadFormat_,T1path, false);
-    T1_map.setType(mdm_Image3D::ImageType::TYPE_T1BASELINE);
-
-    //If image successfully read, add it to the T1 mapper object
-    volumeAnalysis_.T1Mapper().setT1(T1_map);
-  }
-  catch (mdm_exception &e)
-  {
-    e.append("Error loading T1 map");
-    throw;
-  }
-
-  mdm_ProgramLogger::logProgramMessage(
-    "Successfully read T1 map from " + T1path);
+  auto setFunc = std::bind(
+    &mdm_T1Mapper::setT1, &volumeAnalysis_.T1Mapper(), std::placeholders::_1);
+  loadAndSetImage(path, "T1", setFunc,
+    mdm_Image3D::ImageType::TYPE_T1BASELINE, false);
 }
 
 //
-MDM_API void mdm_FileManager::loadM0Map(const std::string &M0path)
+MDM_API void mdm_FileManager::loadM0Map(const std::string &path)
 {
-  try {
-    mdm_Image3D M0_map = mdm_ImageIO::readImage3D(imageReadFormat_,M0path, false);
-    M0_map.setType(mdm_Image3D::ImageType::TYPE_M0MAP);
-    
-    //If image successfully read, add it to the T1 mapper object
-    volumeAnalysis_.T1Mapper().setM0(M0_map);
-  }
-  catch (mdm_exception &e)
-  {
-    e.append("Error loading M0 map");
-    throw;
-  }
-
-	mdm_ProgramLogger::logProgramMessage(
-		"Successfully read M0 map from " + M0path);
+  auto setFunc = std::bind(
+    &mdm_T1Mapper::setM0, &volumeAnalysis_.T1Mapper(), std::placeholders::_1);
+  loadAndSetImage(path, "M0", setFunc,
+    mdm_Image3D::ImageType::TYPE_M0MAP, false);
 }
 
 //
-MDM_API void mdm_FileManager::loadB1Map(const std::string &B1path, const double B1Scaling)
+MDM_API void mdm_FileManager::loadB1Map(const std::string &path, const double B1Scaling)
 {
-  try {
-    mdm_Image3D B1_map = mdm_ImageIO::readImage3D(imageReadFormat_, B1path, false);
-    B1_map.setType(mdm_Image3D::ImageType::TYPE_B1MAP);
-
-    //Scale if necessary
-    if (B1Scaling && B1Scaling != 1)
-      B1_map /= B1Scaling;
-
-    //If image successfully read, add it to the T1 mapper object
-    volumeAnalysis_.T1Mapper().setB1(B1_map); 
-  }
-  catch (mdm_exception &e)
-  {
-    e.append("Error loading B1 map");
-    throw;
-  }
-
-  mdm_ProgramLogger::logProgramMessage(
-    "Successfully read B1 map from " + B1path);
+  auto setFunc = std::bind(
+    &mdm_T1Mapper::setB1, &volumeAnalysis_.T1Mapper(), std::placeholders::_1);
+  loadAndSetImage(path, "B1", setFunc,
+    mdm_Image3D::ImageType::TYPE_B1MAP, false, B1Scaling);
 }
 
 //
@@ -413,23 +335,11 @@ MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 		}
 		else
 		{
-      try {
-        mdm_Image3D img = mdm_ImageIO::readImage3D(imageReadFormat_,dynPath, true);
-        img.setType(mdm_Image3D::ImageType::TYPE_T1DYNAMIC);
-
-        //If successfully loaded, add image to the volume analysis
-        volumeAnalysis_.addStDataMap(img);
-      }
-      catch (mdm_exception &e)
-      {
-        e.append("Failed to read dynamic image " +
-          std::to_string(nDyn) + " from " + dynPath);
-        throw;
-      }
-
-			mdm_ProgramLogger::logProgramMessage(
-				"Successfully read dynamic image " +
-				std::to_string(nDyn) + " from " + dynPath);			
+      auto msg = "dynamic image " + std::to_string(nDyn);
+      auto setFunc = std::bind(
+        &mdm_VolumeAnalysis::addStDataMap, &volumeAnalysis_, std::placeholders::_1);
+      loadAndSetImage(dynPath, msg, setFunc,
+        mdm_Image3D::ImageType::TYPE_T1DYNAMIC, true);
 		}
 	}
 }
@@ -492,23 +402,11 @@ MDM_API void mdm_FileManager::loadCtDataMaps(const std::string &CtBasePath,
 		}
 		else
 		{
-      try {
-        mdm_Image3D img = mdm_ImageIO::readImage3D(imageReadFormat_,CtPath, true);
-        img.setType(mdm_Image3D::ImageType::TYPE_CAMAP);
-
-        //If successfully loaded, add image to the volume analysis
-        volumeAnalysis_.addCtDataMap(img);        
-      }
-      catch (mdm_exception &e)
-      {
-        e.append("Failed to read concentration image " +
-          std::to_string(nCt) + " from " + CtPath);
-        throw;
-      }
-
-			mdm_ProgramLogger::logProgramMessage(
-				"Successfully read concentration image  " +
-				std::to_string(nCt) + " from " + CtPath);		
+      auto msg = "concentration image " + std::to_string(nCt);
+      auto setFunc = std::bind(
+        &mdm_VolumeAnalysis::addCtDataMap, &volumeAnalysis_, std::placeholders::_1);
+      loadAndSetImage(CtPath, msg, setFunc,
+        mdm_Image3D::ImageType::TYPE_CAMAP, true);
 		}
 	}
 }
@@ -538,25 +436,6 @@ MDM_API void mdm_FileManager::setImageWriteFormat(const std::string &fmt)
 //---------------------------------------------------------------------------
 //Private functions
 //---------------------------------------------------------------------------
-
-void mdm_FileManager::loadT1InputImage(const std::string& filePath, int inputIdx)
-{
-  try {
-    mdm_Image3D img = mdm_ImageIO::readImage3D(imageReadFormat_,filePath, true);
-    img.setType(mdm_Image3D::ImageType::TYPE_T1WTSPGR);
-
-    //If image successfully read, add it to the T1 mapper object
-    volumeAnalysis_.T1Mapper().addInputImage(img);
-  }
-  catch (mdm_exception &e)
-  {
-    e.append("Error loading T1 input " + filePath);
-    throw;
-  }
-
-	mdm_ProgramLogger::logProgramMessage(
-		"Successfully read T1 input image " + std::to_string(inputIdx) + " from " + filePath);
-}
 
 void mdm_FileManager::saveOutputMap(
   const std::string &mapName, const std::string &outputDir, bool writeXtr/* = true*/)
@@ -635,4 +514,52 @@ void mdm_FileManager::saveMapSummaryStats(const std::string &mapName, const mdm_
 	stats.makeStats(img, mapName);
 	stats.writeStats();
 }
+
+//
+template <class T> void  mdm_FileManager::loadAndSetImage(
+  const std::string &path, const std::string &msgName, T setFunc,
+  const mdm_Image3D::ImageType type, bool loadXtr, double scaling)
+{
+  try {
+    //Read in image and set type
+    mdm_Image3D img = mdm_ImageIO::readImage3D(imageReadFormat_, path, loadXtr);
+    img.setType(type);
+
+    //Scale if necessary
+    if (scaling && scaling != 1)
+      img /= scaling;
+
+    //Call the appropriate volumeAnalysis set function based on functor input
+    setFunc(img);
+  }
+  catch (mdm_dimension_mismatch &e)
+  {
+    //Dimension errors all cause a breaking exception
+    e.append("Dimension error reading " + msgName + " from " + path);
+    throw;
+  }
+  catch (mdm_voxelsize_mismatch &e)
+  {
+    //Voxel size errors can be caught and replaced with a warning if user opts
+    e.append("Voxel size error reading " + msgName + " from " + path);
+    throw;
+  }
+  catch (mdm_exception &e)
+  {
+    //Any other error (eg loading) should break
+    e.append("Error reading " + msgName + " from " + path);
+    throw;
+  }
+  mdm_ProgramLogger::logProgramMessage(
+    msgName + " loaded from " + path);
+}
+
+/*template void  mdm_FileManager::setImage< std::function<void(mdm_Image3D)> >(
+  const std::string &msgName,
+  std::function<void(mdm_Image3D)> setFunc);
+
+template void  mdm_FileManager::setImage< std::function<void(const std::string&, mdm_Image3D)> >(
+  const std::string &msgName,
+  std::function<void(const std::string&, mdm_Image3D)> setFunc);*/
+
 

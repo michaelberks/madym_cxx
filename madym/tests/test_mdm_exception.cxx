@@ -17,6 +17,7 @@ BOOST_AUTO_TEST_CASE(test_mdm_exception) {
   {
     mdm_Image3D ROI;
     ROI.setDimensions(1, 1, 1);
+    ROI.setVoxelDims(1, 1, 1);
 
     //Reference image has size 1, 1, 1
     mdm_VolumeAnalysis v;
@@ -25,14 +26,24 @@ BOOST_AUTO_TEST_CASE(test_mdm_exception) {
     //Trying to set an image of any other dimension should throw a mismatch exception
     mdm_Image3D img;
     img.setDimensions(1, 1, 2);
+    img.setVoxelDims(1, 1, 1);
 
-    BOOST_CHECK_THROW(v.setAIFmap(img), mdm_dimension_mismatch);
     BOOST_CHECK_THROW(v.setAIFmap(img), mdm_dimension_mismatch);
     BOOST_CHECK_THROW(v.addStDataMap(img), mdm_dimension_mismatch);
     BOOST_CHECK_THROW(v.addCtDataMap(img), mdm_dimension_mismatch);
     BOOST_CHECK_THROW(v.T1Mapper().addInputImage(img), mdm_dimension_mismatch);
     BOOST_CHECK_THROW(v.T1Mapper().setM0(img), mdm_dimension_mismatch);
     BOOST_CHECK_THROW(v.T1Mapper().setT1(img), mdm_dimension_mismatch);
+
+    //Now mismatch voxel sizes
+    img.setDimensions(1, 1, 1);
+    img.setVoxelDims(1, 1, 2);
+    BOOST_CHECK_THROW(v.setAIFmap(img), mdm_voxelsize_mismatch);
+    BOOST_CHECK_THROW(v.addStDataMap(img), mdm_voxelsize_mismatch);
+    BOOST_CHECK_THROW(v.addCtDataMap(img), mdm_voxelsize_mismatch);
+    BOOST_CHECK_THROW(v.T1Mapper().addInputImage(img), mdm_voxelsize_mismatch);
+    BOOST_CHECK_THROW(v.T1Mapper().setM0(img), mdm_voxelsize_mismatch);
+    BOOST_CHECK_THROW(v.T1Mapper().setT1(img), mdm_voxelsize_mismatch);
   }
 
   //Test some things we're not allowed to do in volume analysis

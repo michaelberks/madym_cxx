@@ -174,15 +174,6 @@ private:
 
 	//Methods:
 
-  //!Check the image dimensions match, with option to set if no current reference dimensions
-  /* If no other images set yet, this will
-   - initialise the error tracker
-   - in doing so, set the dimension for all subsequent images to be checked against
-   Throws mdm_mismatched_image() exception if dimensions don't match
-   \param img input image to check
-   */
-  void checkOrSetDimension(const mdm_Image3D &img);
-
 	//
 	std::vector<mdm_Image3D> inputImages_;
 

@@ -322,9 +322,16 @@ class mdm_Image3D
 	//! Check if dimensions match another image 
 	/*!
 	\param    img image to compare to
-	\return   true if dimensions are the same and all voxel dimensions are within +/- 0.01mm 
+	\return   true if dimensions are the same 
 	*/
 	MDM_API bool dimensionsMatch(const mdm_Image3D &img) const;
+
+  //! Check if voxel size match another image 
+  /*!
+  \param    img image to compare to
+  \return   true if all voxel dimensions are within +/- 0.01mm
+  */
+  MDM_API bool voxelSizesMatch(const mdm_Image3D &img) const;
 
 	//!   Copy meta data (except type and timestamp) and data dimensions from existing image
 	/*!
@@ -476,6 +483,9 @@ private:
 
 	//! Image meta data
 	MetaData info_;
+
+  //! Voxel size check tolerance
+  static const double voxelSizeTolerance_;
 };
 
 //! Custom exception class for specific case when image dimensions don't match
@@ -507,9 +517,47 @@ public:
       "new image (dimensions %1% x %2% x %3%, voxel sizes %4% x %5% x %6% mm3) does not match \n"
       "reference image (dimensions %7% x %8% x %9%, voxel sizes %10% x %11% x %12% mm3)"
       )
-      % nxr % nyr %nzr % r.Xmm.value() % r.Ymm.value() % r.Zmm.value()
-      % nxi % nyi %nzi % i.Xmm.value() % i.Ymm.value() % i.Zmm.value());
+      % nxi % nyi %nzi % i.Xmm.value() % i.Ymm.value() % i.Zmm.value() 
+      % nxr % nyr %nzr % r.Xmm.value() % r.Ymm.value() % r.Zmm.value());
    
+  }
+
+private:
+
+};
+
+//! Custom exception class for specific case when image dimensions don't match
+/*!
+This should be thrown whenever there is an attempt to add a new image to an analysis
+that doesn't match the voxel sizes of already loaded images.
+*/
+class mdm_voxelsize_mismatch : virtual public mdm_exception {
+
+public:
+  //! Constructor from standard string message
+  /*!
+  \param func name of throwing function
+  \param ref reference image that dimensions should match
+  \param img new image with mis-matched dimensions
+  */
+  mdm_voxelsize_mismatch(const char* func,
+    const mdm_Image3D &ref, const mdm_Image3D &img) noexcept
+    : mdm_exception(func, "Voxel sizes mismatch: ")
+  {
+    size_t nxr, nyr, nzr, nxi, nyi, nzi;
+    const auto &r = ref.info();
+    const auto &i = img.info();
+
+    ref.getDimensions(nxr, nyr, nzr);
+    img.getDimensions(nxi, nyi, nzi);
+
+    append(boost::format(
+      "new image (dimensions %1% x %2% x %3%, voxel sizes %4% x %5% x %6% mm3) does not match \n"
+      "reference image (dimensions %7% x %8% x %9%, voxel sizes %10% x %11% x %12% mm3)"
+    )
+      % nxi % nyi %nzi % i.Xmm.value() % i.Ymm.value() % i.Zmm.value()
+      % nxr % nyr %nzr % r.Xmm.value() % r.Ymm.value() % r.Zmm.value());
+
   }
 
 private:

@@ -57,14 +57,17 @@ target_link_libraries( madym_gui mdm)
 qt5_use_modules(madym_gui Widgets)
 qt5_use_modules(madym_gui Core)
 qt5_use_modules(madym_gui Gui)
-  
-#--------------------------------------------------------------------------------
-# Now the installation stuff below
-#--------------------------------------------------------------------------------
 
 if (BUILD_INSTALL)
+  install(TARGETS madym_gui 
+    BUNDLE DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT GUI
+    RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT GUI
+    CONFIGURATIONS Release)
 
-  if ( WIN32 )
+  #For the different platforms we run some custom post build
+  #commands to generate the necessary library dependencies 
+  #that can be copied into the install packages
+  if (WIN32)
     #Use windeployqt to generate Qt dependencies post release build
     #these can then be installed in to the deploy dir below
     get_target_property(QMAKE_EXECUTABLE Qt5::qmake IMPORTED_LOCATION)
@@ -74,14 +77,15 @@ if (BUILD_INSTALL)
     set(GUI_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/madym_gui.exe")
 
     add_custom_command(TARGET madym_gui POST_BUILD
-      COMMAND "${CMAKE_COMMAND}" -E
-          env PATH="${QT_BIN_DIR}" "${WINDEPLOYQT_EXECUTABLE}" "${GUI_PATH}"
-              --no-compiler-runtime
-              --dir "${CMAKE_CURRENT_BINARY_DIR}/qt_deploy"
-      COMMENT "Running ${WINDEPLOYQT_EXECUTABLE} to get GUI dependencies..."
-      CONFIGURATIONS Release
+        COMMAND "${CMAKE_COMMAND}" -E
+            env PATH="${QT_BIN_DIR}" "${WINDEPLOYQT_EXECUTABLE}" "${GUI_PATH}"
+                --no-compiler-runtime
+                --dir "${CMAKE_CURRENT_BINARY_DIR}/qt_deploy"
+        COMMENT "Running ${WINDEPLOYQT_EXECUTABLE} to get GUI dependencies..."
+        CONFIGURATIONS Release
     )
 
+    #Uncomment to generate dependencies in Debug mode
     #set(GUI_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/madym_gui.exe")
     #add_custom_command(TARGET madym_gui POST_BUILD
     #  COMMAND "${CMAKE_COMMAND}" -E
@@ -92,8 +96,8 @@ if (BUILD_INSTALL)
     #  CONFIGURATIONS Debug
     #)
 
-  elseif ( APPLE )
-    #Configure mac bundle
+  elseif (APPLE)
+    #Configure mac bundle for the GUI tool
     set(MACOSX_BUNDLE_BUNDLE_NAME "madym_gui")
     set(MACOSX_BUNDLE_BUNDLE_VERSION "${MADYM_VERSION}")
     set(MACOSX_BUNDLE_COPYRIGHT "")
@@ -106,288 +110,50 @@ if (BUILD_INSTALL)
     #Override global rpath properties - hardcode to the original libs
     #then the Qt deploy tool will do the relative rpath replacement 
     message(STATUS "Setting gui RPATH to ${Boost_LIBRARY_DIRS};${ZLIB_LIBRARY_DIR};${DCMTK_LIBRARY_DIR}")
-    set_target_properties(madym_gui
-      PROPERTIES
-      INSTALL_RPATH 
-      "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib;${Boost_LIBRARY_DIRS};${ZLIB_LIBRARY_DIR};${DCMTK_LIBRARY_DIR}"
-      XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES
-      CONFIGURATIONS Release)
-
-  elseif( UNIX )
-
-    get_target_property(QMAKE_EXECUTABLE Qt5::qmake IMPORTED_LOCATION)
-    set(GUI_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_gui")
-
-    add_custom_command(TARGET madym_gui POST_BUILD
-      COMMAND "cqtdeployer" 
-            -bin "${GUI_PATH}"
-            -qmake "${QMAKE_EXECUTABLE}"
-            -targetDir "${CMAKE_BINARY_DIR}/qt_deploy"
-            -name "madym-${MADYM_VERSION}"
-      COMMENT "Running ${cqtdeployer} to get GUI dependencies..."
-      CONFIGURATIONS Release
-    )
-    add_custom_command(TARGET madym_gui POST_BUILD
-      COMMAND rm "${CMAKE_BINARY_DIR}/qt_deploy/bin/madym_gui"
-      COMMENT "Removing unwanted binary, we just want the libraries and Qt plugins..."
-      CONFIGURATIONS Release
-    )
-    
-  endif()
-
-  install(TARGETS madym_gui 
-    BUNDLE DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT GUI
-    RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT GUI
-      CONFIGURATIONS Release)
-
-  set(CPACK_PACKAGE_FILE_NAME "madym_${MADYM_VERSION}-${CMAKE_SYSTEM}")
-
-  #Cpack options common to all systems
-  set(CPACK_PACKAGE_NAME "Madym")
-  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Madym DCE-MRI analysis tools")
-  set(CPACK_COMPONENTS_ALL GUI Tools Libs Examples)
-  set(CPACK_PACKAGE_VENDOR "University of Manchester")
-  set(CPACK_PACKAGE_CONTACT "michael.berks@manchester.ac.uk")
-  set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/license.txt")
-  set(CPACK_PACKAGE_INSTALL_DIRECTORY "Madym")
-  set(CPACK_PACKAGE_EXECUTABLES "madym_gui" "Madym")
-  set(CPACK_PACKAGE_VERSION_MAJOR "${MADYM_VERSION_MAJOR}")
-  set(CPACK_PACKAGE_VERSION_MINOR "${MADYM_VERSION_MINOR}")
-  set(CPACK_PACKAGE_VERSION_PATCH "${MADYM_VERSION_PATCH}")
-
-  #Windows
-  if ( WIN32 )
-    message(STATUS "Set generator to NSIS for ${CPACK_ARCHIVE_FILE_NAME}")
-    set(CPACK_GENERATOR "NSIS")
-    
-    #Install Qt dependencies
-    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/qt_deploy/" DESTINATION "${MADYM_DEPLOY_DIR}/bin"
-        COMPONENT GUI
+    set_target_properties(
+        madym_gui
+        PROPERTIES
+        INSTALL_RPATH 
+            "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib;${Boost_LIBRARY_DIRS};${ZLIB_LIBRARY_DIR};${DCMTK_LIBRARY_DIR}"
+        XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES
         CONFIGURATIONS Release)
 
-    #Install boost dependencies using fixup bundle
-    set(DIRS ${Boost_LIBRARY_DIR_RELEASE} ${ZLIB_LIBRARY_DIR} ${ZLIB_BIN_DIR} ${DCMTK_LIBRARY_DIR})
-    message("Fixup bundle search paths: ${DIRS}")
-    install(CODE "
-      include(BundleUtilities)
-      fixup_bundle(\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.exe 
-      \"\" \"${DIRS}\") 
-      " 
-      COMPONENT GUI
-      CONFIGURATIONS Release)
-
-    #Install Windows runtime dependencies
-    set(CMAKE_INSTALL_MFC_LIBRARIES TRUE)
-    set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
-    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin")
-    include(InstallRequiredSystemLibraries)
-
-    #Set Cpack variable to cofigure NSIS installer
-    set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/images\\\\madym.ico")
-    set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_SOURCE_DIR}/images\\\\madym.ico")
-    set(CPACK_NSIS_INSTALLED_ICON_NAME "${MADYM_DEPLOY_DIR}\\\\bin\\\\madym_gui.exe")
-    set(CPACK_NSIS_EXECUTABLES_DIRECTORY "${MADYM_DEPLOY_DIR}\\\\bin")
-    set(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
-    set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS " ExecWait 'setx MADYM_ROOT \\\"$INSTDIR\\\\${MADYM_DEPLOY_DIR}\\\\bin\\\"'")
-    set(CPACK_NSIS_HELP_LINK "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/madym_gui")
-    set(CPACK_NSIS_URL_INFO_ABOUT "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/madym_gui")
-    set(CPACK_NSIS_CONTACT "michael.berks@manchester.ac.uk")
-    set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
-    set(CPACK_NSIS_MENU_LINKS
-      "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/madym_gui" "Madym user guide (online)"
-      "http://qbi-lab.org" "QBI Lab Website")
-    set(CPACK_NSIS_MODIFY_PATH ON)
-    
-    set(CPACK_CREATE_DESKTOP_LINKS "madym_gui" "Madym")
-
-  #Apple
-  elseif ( APPLE )
     #For MacOs we run the QT deploy tool on the install (not build) bundle
     get_target_property(QMAKE_EXECUTABLE Qt5::qmake IMPORTED_LOCATION)
     get_filename_component(QT_BIN_DIR "${QMAKE_EXECUTABLE}" DIRECTORY)
     find_program(MACDEPLOYQT_EXECUTABLE macdeployqt HINTS "${QT_BIN_DIR}")
 
     message(STATUS "mac deploy tool found at ${MACDEPLOYQT_EXECUTABLE}")
-
-    #Note the backslash before ${CMAKE_INSTALL_PREFIX} - this delays the resolving of the 
-    #variable until install time, so Cpack packages the deploy GUI app bundle
     install(CODE
-      "execute_process(COMMAND ${MACDEPLOYQT_EXECUTABLE} 
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app )
-      message(STATUS \"Code-signing GUI using ID ${APPLE_CODESIGN_ID}\")
-      execute_process(COMMAND codesign --deep -s 
-          ${APPLE_CODESIGN_ID}
-          \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app )"
-      COMPONENT GUI
-      CONFIGURATIONS Release)
+        "execute_process(COMMAND ${MACDEPLOYQT_EXECUTABLE} 
+            \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app )
+        "
+    COMPONENT GUI
+    CONFIGURATIONS Release)
 
-    # Transfer the value of ${MY_DEPENDENCY_PATHS} into the install script
-    install(CODE "
-      set(_id ${APPLE_CODESIGN_ID})
-      set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
-      set(GUI_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app\")
-      set(MADYM_EXE ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_DCE)
-      "
-      COMPONENT Tools
-      CONFIGURATIONS Release)
-    
-    install(CODE [[
-      message(STATUS "Getting dependencies for ${MADYM_EXE}")
-      file(GET_RUNTIME_DEPENDENCIES
-        EXECUTABLES ${MADYM_EXE}
-        RESOLVED_DEPENDENCIES_VAR _r_deps
-        UNRESOLVED_DEPENDENCIES_VAR _u_deps
-	      PRE_EXCLUDE_REGEXES "(^/System/.*$)" )
-      foreach(_file ${_r_deps})
+  elseif(UNIX)
+    #Find QMake executable
+    get_target_property(QMAKE_EXECUTABLE Qt5::qmake IMPORTED_LOCATION)
+    set(GUI_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_gui")
 
-	      file(INSTALL
-          DESTINATION ${LIB_DEST}
-          TYPE SHARED_LIBRARY
-          FILES "${_file}"
+    #Add custom command to run cqtdeployer to get GUI dependencies
+    add_custom_command(TARGET madym_gui POST_BUILD
+    COMMAND "cqtdeployer" 
+            -bin "${GUI_PATH}"
+            -qmake "${QMAKE_EXECUTABLE}"
+            -targetDir "${CMAKE_BINARY_DIR}/qt_deploy"
+            -name "madym-${MADYM_VERSION}"
+    COMMENT "Running ${cqtdeployer} to get GUI dependencies..."
+    CONFIGURATIONS Release
+    )
+    add_custom_command(TARGET madym_gui POST_BUILD
+        COMMAND rm "${CMAKE_BINARY_DIR}/qt_deploy/bin/madym_gui"
+        COMMENT "Removing unwanted binary, we just want the libraries and Qt plugins..."
+        CONFIGURATIONS Release
         )
-
-        get_filename_component(_resolvedFile "${_file}" REALPATH)
-        if (NOT "${_file}" STREQUAL "${_resolvedFile}")
-          file(INSTALL
-            DESTINATION ${LIB_DEST}
-            TYPE SHARED_LIBRARY
-            FILES "${_resolvedFile}"
-          )
-        endif()
-        
-      endforeach()
-      list(LENGTH _u_deps _u_length)
-      if("${_u_length}" GREATER 0)
-        message(WARNING "Unresolved dependencies detected!")
-      endif()
-      ]]
-      COMPONENT Tools
-      CONFIGURATIONS Release)
-
-    install(CODE [[
-      file(INSTALL
-          DESTINATION ${LIB_DEST}
-          FILES ${GUI_DEST}/Contents/Frameworks/QtCore.framework
-      )
-      ]]
-      COMPONENT Tools
-      CONFIGURATIONS Release)
-
-    install(CODE
-      "message(STATUS \"Code-signing cmd line tools using ID ${APPLE_CODESIGN_ID}\")
-      execute_process(COMMAND codesign -s 
-          ${APPLE_CODESIGN_ID}
-          \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DCE )
-      execute_process(COMMAND codesign -s 
-        ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DCE_lite )
-      execute_process(COMMAND codesign -s 
-        ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_T1 )
-      execute_process(COMMAND codesign -s 
-        ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_T1_lite )
-      execute_process(COMMAND codesign -s 
-        ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_AIF )
-      execute_process(COMMAND codesign -s 
-        ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_MakeXtr )"
-      COMPONENT Tools
-      CONFIGURATIONS Release)  
-
-    install(CODE [[
-      file(GLOB_RECURSE lib_files
-        LIST_DIRECTORIES false
-        "${LIB_DEST}/*")
-      foreach(lib_file ${lib_files})
-        execute_process(COMMAND codesign --force -s 
-          ${_id}
-          ${lib_file} )
-      endforeach()
-      
-     ]]
-     COMPONENT Tools
-     CONFIGURATIONS Release)
-
-    if (BUILD_WITH_DCMTK)
-      install(CODE
-      "execute_process(COMMAND codesign -s 
-        ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DicomConvert )"
-      COMPONENT Tools
-      CONFIGURATIONS Release)  
-    endif()
-
-    set(CPACK_ARCHIVE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
-    message(STATUS "Set generator to tgz for ${CPACK_ARCHIVE_FILE_NAME}")
-    set(CPACK_GENERATOR "DragNDrop")
-    set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/images/madym.icns")
-    set(CPACK_DMG_BACKGROUND_IMAGE "${CMAKE_CURRENT_SOURCE_DIR}/images/madym.icns")
-
-  #Unix
-  elseif ( UNIX )
-
-    install(CODE "
-      set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
-      set(MADYM_EXE \"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/madym_gui\")
-      "
-      COMPONENT Tools
-      CONFIGURATIONS Release)
-    
-    install(CODE [[
-      message(STATUS "Getting dependencies for ${MADYM_EXE}")
-      file(GET_RUNTIME_DEPENDENCIES
-        EXECUTABLES ${MADYM_EXE}
-        RESOLVED_DEPENDENCIES_VAR _r_deps
-        UNRESOLVED_DEPENDENCIES_VAR _u_deps
-        PRE_EXCLUDE_REGEXES "(^/lib/.*$)" 
-        POST_EXCLUDE_REGEXES "(^/lib/.*$)")
-      foreach(_file ${_r_deps})          
-        file(INSTALL
-          DESTINATION ${LIB_DEST}
-          TYPE SHARED_LIBRARY
-          FILES "${_file}"
-        )
-        get_filename_component(_resolvedFile "${_file}" REALPATH)
-        if (NOT "${_file}" STREQUAL "${_resolvedFile}")
-          file(INSTALL
-            DESTINATION ${LIB_DEST}
-            TYPE SHARED_LIBRARY
-            FILES "${_resolvedFile}"
-          )
-        endif()
-      endforeach()
-      list(LENGTH _u_deps _u_length)
-      if("${_u_length}" GREATER 0)
-        message(WARNING "Unresolved dependencies detected!")
-      endif()
-      ]]
-      COMPONENT Tools
-      CONFIGURATIONS Release)
-
-    install(DIRECTORY "${CMAKE_BINARY_DIR}/qt_deploy/" DESTINATION "${MADYM_DEPLOY_DIR}"
-      USE_SOURCE_PERMISSIONS
-      COMPONENT GUI
-      CONFIGURATIONS Release)
-
-    set(CPACK_ARCHIVE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
-    message(STATUS "Set generator to deb;tgz for ${CPACK_ARCHIVE_FILE_NAME}")
-    set(CPACK_GENERATOR "DEB;TGZ")
-    set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/images/madym.png")
-    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS_PRIVATE_DIRS "${LIB_DEST}")
-    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Michael Berks")
-    set(CPACK_DEBIAN_FILE_NAME "madym_${MADYM_VERSION}.deb")
-    set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/madym_gui")
-    set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Madym debian package")
-    set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA 
-      "${CMAKE_BINARY_DIR}/generated/postinst" 
-      "${CMAKE_BINARY_DIR}/generated/madym_config.sh" 
-      "${CMAKE_BINARY_DIR}/generated/prerm")
-
   endif()
 
-  include(CPack)
+  #All the rest of the install command wrapped in the install script
+  include (${CMAKE_SOURCE_DIR}/madym/install.cmake)
 endif()
+

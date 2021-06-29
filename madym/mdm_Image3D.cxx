@@ -21,6 +21,7 @@
 
 const std::string mdm_Image3D::MetaData::ImageTypeKey = "ImageType";
 const std::string mdm_Image3D::MetaData::TimeStampKey = "TimeStamp";
+const double mdm_Image3D::voxelSizeTolerance_ = 0.01;
 
 //
 mdm_Image3D::MetaData::MetaData()
@@ -283,7 +284,7 @@ MDM_API const mdm_Image3D::MetaData& mdm_Image3D::info() const
 }
 
 //
-MDM_API void mdm_Image3D::setMetaData(const std::string &key, const double &value)
+void mdm_Image3D::setMetaData(const std::string &key, const double &value)
 {
 
 	if (key.compare(info_.TimeStampKey) == 0)
@@ -416,22 +417,24 @@ MDM_API void mdm_Image3D::getSetKeyValuePairs(std::vector<std::string> &keys,
 MDM_API bool mdm_Image3D::dimensionsMatch(const mdm_Image3D &img) const
 {
   // Test that voxel matrix dimensions match
-	size_t nx, ny, nz;
-	img.getDimensions(nx, ny, nz);
-  if ((nX_ != nx)
-       || (nY_ != ny)
-       || (nZ_ != nz))
-    return false;
+  size_t nx, ny, nz;
+  img.getDimensions(nx, ny, nz);
+  return ((nX_ == nx)
+    && (nY_ == ny)
+    && (nZ_ == nz));
+}
+
+//
+MDM_API bool mdm_Image3D::voxelSizesMatch(const mdm_Image3D &img) const
+{
 
   // Test that individual voxel mm dimensions match
-	if ((fabs(info_.Xmm.value() - img.info_.Xmm.value()) > 0.01)
-       || (fabs(info_.Ymm.value() - img.info_.Ymm.value()) > 0.01)
-       || (fabs(info_.Zmm.value() - img.info_.Zmm.value()) > 0.01))
-    return false;
-
-  //
-  return true;
+  return ((fabs(info_.Xmm.value() - img.info_.Xmm.value()) <= voxelSizeTolerance_)
+    && (fabs(info_.Ymm.value() - img.info_.Ymm.value()) <= voxelSizeTolerance_)
+    && (fabs(info_.Zmm.value() - img.info_.Zmm.value()) <= voxelSizeTolerance_));
 }
+
+
 
 //
 MDM_API void mdm_Image3D::copy(const mdm_Image3D &imgToCopy)

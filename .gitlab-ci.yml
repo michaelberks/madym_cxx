@@ -67,12 +67,12 @@ test:
   only:
     - master
     - merge_requests
-    - /^[0-9]+-[0-9]+-release$/
+    - /^release-.*$/
 
-build_dist:
+build_dist_deb:
   stage: build_dist
   script:
-    - echo "This job builds madym in release configuration for distribution"
+    - echo "This job builds madym in release configuration for distribution as a debian package for ubuntu"
     - mkdir ../dist
     - cd ../dist
     - cmake \
@@ -80,7 +80,7 @@ build_dist:
         -D CMAKE_CXX_COMPILER=$CXX
         -D CMAKE_BUILD_TYPE=Release
         -D BUILD_DOCUMENTATION=OFF
-        -D BUILD_INSTALL=OFF
+        -D BUILD_INSTALL=ON
         -D BUILD_QT_GUI=ON
         -D BUILD_SHARED_LIBS=ON
         -D BUILD_TESTING=ON
@@ -88,12 +88,16 @@ build_dist:
         -D BUILD_WITH_DCMTK=ON
         -D BUILD_WITH_ZLIB=ON
         -S ../madym_cxx
-    - make
+    - make all
+    - ctest --verbose
+    - make install
+    - make package
   artifacts:
     paths:
-      - ../dist/
+      - madym_v*.deb
+      - madym_v*.tar.gz
   only:
-  - /^[0-9]+-[0-9]+-release$/
+  - /^release-.*$/
 
 pages:
   stage: build_dist
@@ -106,33 +110,25 @@ pages:
     - public
   only:
     - master
-    - /^[0-9]+-[0-9]+-release$/
-
-test_dist:
-  stage: test_dist
+    - /^release-.*$/
+    
+build_dist_win:
+  image: registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/madym_depends_win
+  stage: build_dist
   script:
-    - echo "This job tests madym in release configuration for distribution"
-    - cd ../dist
-    - ctest --verbose
-  only:
-    - /^[0-9]+-[0-9]+-release$/
-
-deploy:
-  stage: deploy
-  script: 
-    - echo "Make intall and package"
-    - cd ../dist
-    - make install
-    - make package
+    - echo "This job builds madym in release configuration for distribution as an MSI installer for windows"
+    - cd
+    - dir
+    - mkdir C:/dist
+    - cd C:/dist
+    - cmake -C C:/CMake/initialCache.txt -S ../madym_cxx
+    - cmake --build . --config Release
+    - cmake --install . --config Release
+    - cpack .
   artifacts:
     paths:
-      - deploy/
-      - madym_v*.deb
-      - madym_v*.tar.gz
-      - madym_v*.exe
-  #environment:
-  #  name: staging
-  #  url: https://staging.example.com
+      - C:/dist/madym_v*.exe
+      - C:/madym_v*.zip
   only:
-    - /^[0-9]+-[0-9]+-release$/
+    - /^release-.*$/
   

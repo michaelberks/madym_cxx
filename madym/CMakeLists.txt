@@ -199,7 +199,3 @@ if ( BUILD_TESTING )
   subdirs(tests)
 endif ( BUILD_TESTING )
 
-#if ( BUILD_PYTHON )
-#	subdirs(python)
-#endif ( BUILD_PYTHON )
-

@@ -216,6 +216,9 @@ struct mdm_InputOptions {
     16, "img_dt_type", "", "Data type of output images - see Analyze format type specifiers"); //!< See initial value
 
 	//Logging options
+  mdm_input_bool voxelSizeWarnOnly = mdm_input_bool(
+    false, "voxel_size_warn_only", "",
+    "Only throw a warning (instead of error) if input image voxel sizes do not match"); //!< See initial value
   mdm_input_bool noLog = mdm_input_bool(
     false, "no_log", "",
     "Switch off program logging"); //!< See initial value
