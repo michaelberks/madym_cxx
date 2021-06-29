@@ -121,16 +121,17 @@ build_dist_win:
   stage: build_dist
   script:
     - echo "This job builds madym in release configuration for distribution as an MSI installer for windows"
-    - echo %path%
+    - echo $env:path
     - '"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Auxiliary/Build/vcvars64.bat"'
-    - echo %path%
+    - echo $env:path
     #- mkdir ../dist
     #- cd ../dist
     #- cmake -C C:/CMake/initialCache.txt -S ../madym_cxx
     #- cmake --build . --config Release
     #- cmake --install . --config Release
     #- cpack .
-  needs: ["fetch-semantic-version"]
+  #needs: ["fetch-semantic-version"]
+  needs: []
   dependencies: []
   artifacts:
     paths:
