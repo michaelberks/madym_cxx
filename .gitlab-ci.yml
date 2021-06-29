@@ -94,8 +94,8 @@ build_dist_deb:
     - make package
   artifacts:
     paths:
-      - dist/madym_v*.deb
-      - dist/madym_v*.tar.gz
+      - /builds/manchester_qbi/manchester_qbi_public/dist/madym_v*.deb
+      - /builds/manchester_qbi/manchester_qbi_public/dist/madym_v*.tar.gz
   only:
   - /^release-.*$/
 
@@ -119,18 +119,19 @@ build_dist_win:
   stage: build_dist
   script:
     - echo "This job builds madym in release configuration for distribution as an MSI installer for windows"
-    - cd
-    - dir
-    - mkdir C:/dist
-    - cd C:/dist
+    - "C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Auxiliary/Build/vcvars64.bat"
+    - mkdir ../dist
+    - cd ../dist
     - cmake -C C:/CMake/initialCache.txt -S ../madym_cxx
     - cmake --build . --config Release
     - cmake --install . --config Release
     - cpack .
+  needs: ["fetch-semantic-version"]
+  dependencies: []
   artifacts:
     paths:
-      - C:/dist/madym_v*.exe
-      - C:/madym_v*.zip
+      - C:/GitLab-Runner/builds/manchester_qbi/manchester_qbi_public/dist/madym_v*.exe
+      - C:/GitLab-Runner/builds/manchester_qbi/manchester_qbi_public/dist/madym_v*.zip
   only:
     - /^release-.*$/
   
