@@ -94,8 +94,8 @@ build_dist_deb:
     - make package
   artifacts:
     paths:
-      - madym_v*.deb
-      - madym_v*.tar.gz
+      - dist/madym_v*.deb
+      - dist/madym_v*.tar.gz
   only:
   - /^release-.*$/
 
@@ -114,6 +114,8 @@ pages:
     
 build_dist_win:
   image: registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/madym_depends_win
+  tags: 
+    - windows
   stage: build_dist
   script:
     - echo "This job builds madym in release configuration for distribution as an MSI installer for windows"
