@@ -73,8 +73,8 @@ build_dist_deb:
   stage: build_dist
   script:
     - echo "This job builds madym in release configuration for distribution as a debian package for ubuntu"
-    - mkdir ../dist
-    - cd ../dist
+    - mkdir dist
+    - cd dist
     - cmake \
         -D CMAKE_C_COMPILER=$CC
         -D CMAKE_CXX_COMPILER=$CXX
@@ -122,21 +122,20 @@ build_dist_win:
   script:
     - echo "This job builds madym in release configuration for distribution as an MSI installer for windows"
     - echo $env:path
-    - '"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Auxiliary/Build/vcvars64.bat"'
+    - '"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Auxiliary/Build/vcvarsall.bat" x64'
     - echo $env:path
-    #- mkdir ../dist
-    #- cd ../dist
-    #- cmake -C C:/CMake/initialCache.txt -S ../madym_cxx
-    #- cmake --build . --config Release
-    #- cmake --install . --config Release
-    #- cpack .
-  #needs: ["fetch-semantic-version"]
-  needs: []
+    - mkdir dist
+    - cd dist
+    - cmake -C C:/CMake/initialCache.txt -S ../madym_cxx
+    - cmake --build . --config Release
+    - cmake --install . --config Release
+    - cpack .
+  needs: ["fetch-semantic-version"]
   dependencies: []
   artifacts:
     paths:
-      - 'C:/GitLab-Runner/builds/manchester_qbi/manchester_qbi_public/dist/madym_v*.exe'
-      - 'C:/GitLab-Runner/builds/manchester_qbi/manchester_qbi_public/dist/madym_v*.zip'
+      - 'dist/madym_v*.exe'
+      - 'dist/madym_v*.zip'
   only:
     - /^release-.*$/
   
