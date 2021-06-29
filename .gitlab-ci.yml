@@ -130,5 +130,5 @@ build_dist_win:
       - C:/dist/madym_v*.exe
       - C:/madym_v*.zip
   only:
-  - /^release-.*$/
+    - /^release-.*$/
   

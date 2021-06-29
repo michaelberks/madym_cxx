@@ -99,6 +99,6 @@ first of many in the future.
 
 Code updates to the open source version of `Madym` have been made entirely by Michael Berks, with significant input on the design
 and features of the new version from the remaining authors. We would also like to thank Gio Buonnacorsi, Anita Banerji and Angela Caunce
-for their work in developing previous non-public versions, following Geoff Parker's original design.
+for their work in developing previous non-public versions, following Geoff Parker's original design. While working on Madym, Michael Berks was funded by the following grants: Cancer Research UK (CRUK) Clinician Scientist award (grant C19221/A22746); CRUK and EPSRC Cancer Imaging Centre in Cambridge and Manchester funding to The University of Manchester (grant C8742/A18097).
 
 # References
