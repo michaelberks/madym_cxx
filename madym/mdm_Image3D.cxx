@@ -284,7 +284,7 @@ MDM_API const mdm_Image3D::MetaData& mdm_Image3D::info() const
 }
 
 //
-MDM_API void mdm_Image3D::setMetaData(const std::string &key, const double &value)
+void mdm_Image3D::setMetaData(const std::string &key, const double &value)
 {
 
 	if (key.compare(info_.TimeStampKey) == 0)

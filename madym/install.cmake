@@ -54,6 +54,16 @@ install(
 #-------------------------------------------------------------------------
 #Windows
 if (WIN32)
+    set(DIRS 
+        ${Boost_LIBRARY_DIR_RELEASE} ${ZLIB_BIN_DIR} ${DCMTK_LIBRARY_DIR})
+        message("Fixup bundle search paths: ${DIRS}")
+
+    #Install Windows runtime dependencies
+    set(CMAKE_INSTALL_MFC_LIBRARIES TRUE)
+    set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin")
+    include(InstallRequiredSystemLibraries)
+
     if (BUILD_QT_GUI)
         
         #Install Qt dependencies
@@ -63,9 +73,6 @@ if (WIN32)
             CONFIGURATIONS Release)
 
         #Install boost dependencies using fixup bundle
-        set(DIRS 
-            ${Boost_LIBRARY_DIR_RELEASE} ${ZLIB_LIBRARY_DIR} ${ZLIB_BIN_DIR} ${DCMTK_LIBRARY_DIR})
-        message("Fixup bundle search paths: ${DIRS}")
         install(CODE "
             include(BundleUtilities)
             fixup_bundle(\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.exe 
@@ -74,21 +81,13 @@ if (WIN32)
             COMPONENT GUI
             CONFIGURATIONS Release)
 
-        #Install Windows runtime dependencies
-        set(CMAKE_INSTALL_MFC_LIBRARIES TRUE)
-        set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
-        set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION "${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin")
-        include(InstallRequiredSystemLibraries)
-
     else() #NOT BUILD_QT_GUI
 
         #We need to include boost dlls for windows
-        set(APPS "\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/madym_DCE.exe")
-        set(DIRS "${Boost_LIBRARY_DIR_RELEASE}")
-    
         install(CODE "
             include(BundleUtilities)
-            fixup_bundle(\"${APPS}\" \"\" \"${DIRS}\")
+            fixup_bundle(\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DCE.exe 
+            \"\" \"${DIRS}\") 
             " 
             COMPONENT Tools
             CONFIGURATIONS Release)

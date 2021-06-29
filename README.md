@@ -2,7 +2,7 @@
 
 ![Madym logo](madym_lrg.png)
 
-Madym is a C++ toolkit for quantative DCE-MRI analysis developed in the [QBI Lab](http://qbi-lab.org/) at the University of Manchester. It comprises a set of command line tools and a graphical user-interface based on an extendable C++ library. It is cross-platform, and requires few external libraries to build from source. Pre-built binaries for Windows, MacOS and Linux are available on request. We have also developed complementary interfaces in Matlab and python, that allow the flexibility of developing in those scripting languages, while allowing C++ to do the heavy-duty computational work of tracer-kinetic model fitting.
+Madym is a C++ toolkit for quantative DCE-MRI analysis developed in the [QBI Lab](http://qbi-lab.org/) at the University of Manchester. It comprises a set of command line tools and a graphical user-interface based on an extendable C++ library. It is cross-platform, and requires few external libraries to build from source. Pre-built binaries for Windows, MacOS and Linux are available on request. We have also developed complementary interfaces in python and Matlab, that allow the flexibility of developing in those scripting languages, while allowing C++ to do the heavy-duty computational work of tracer-kinetic model fitting.
 
 See the [project wiki](https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/home) for full documentation.
 
@@ -13,7 +13,7 @@ To build from source, Madym requires the following:
 
 1. A C++ compiler that fully supports C++14
 2. CMake to configure and generate project files
-3. The `filesystem`, `system`, `program_options`, `date_time` and `unit_test` libraries from Boost
+3. The `filesystem`, `system`, `program_options`, `date_time` and `test` libraries from Boost
 4. (Optional) Qt5 - required to build the Madym-GUI, but not required for the main C++ library or command line tools
 5. (Optional) zlib - required to support compressed NIFTI format (*.nii.gz), standard uncompressed NIFTI images can be used without zlib
 6. (Optional) DCMTK - required to build the DICOM conversion tool
@@ -56,11 +56,11 @@ Now call `b2` to build the filesystem, system and program_option libraries, sett
 1. `--toolset=msvc-14.0` this tells boost to use correct compiler (this assumes using Visual Studio 2015, see eg [here](https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B#Internal_version_numbering) for a list of other versions)
 2. `address-model=64` this makes sure we build 64-bit binaries
 3. `--build-type=complete` tells boost to build both debug and release versions (if you know you only want one, you can put Debug or Release instead of complete
-4. `--with-filesystem`, `--with-system`, `--with-program_options`, `--with-unit_test`, `--with-date_time`. These options aren’t essential, but will save *lots* of time and disk space compared to building all the libraries, which is the default if individual libraries are not specified.
+4. `--with-filesystem`, `--with-system`, `--with-program_options`, `--with-test`, `--with-date_time`. These options aren’t essential, but will save *lots* of time and disk space compared to building all the libraries, which is the default if individual libraries are not specified.
 
 So the final command should look like:
 
-    b2 --toolset=msvc-14.0 address-model=64 --build-type=complete --with-filesystem --with-system --with-program_options --with-unit_test --with-date_time
+    b2 --toolset=msvc-14.0 address-model=64 --build-type=complete --with-filesystem --with-system --with-program_options --with-test --with-date_time
 
 If all has been successful the libraries will have been built into **<Boost_DIR>stage\lib**. Make a note of the location of these files as you may need to manually add to CMake to configure Madym.
 
@@ -72,7 +72,7 @@ Zlib is required to support compressed NIFTI format (*.nii.gz) images. On linux/
 
 #### DCMTK
 DCMTK is required to build the command-line tool for sorting and converting DICOM data into NIFTI/Analyze images. Options for installing from binaries are given [here](https://dicom.offis.de/dcmtk.php.en). It can also be built from source, which can be downloaded [here](https://github.com/DCMTK/dcmtk). If building from source, the root directory has a CMakeLists.txt file, allowing the project files to be built and generated as usual with CMake. If building from source on Windows, note that:
-1. DCMTK defaults to building against the [static Windows runtime](https://docs.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-160) (compiler flags MT/MTd), whereas Madym defaults to building against the dynamic runtime (compiler flags MD/MDd), causing a link error. To avoid this, make sure you set *DCMTK_COMPILE_WIN32_MULTITHREADED* to *ON*, before reconfiguring and generating the project. After setting this option and reconfiguring, you can check the various *CMAKE_CXX_FLAGS* have changed to MD/MDd (note though it is not a good idea to change these manually yourself).
+1. DCMTK defaults to building against the [static Windows runtime](https://docs.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-160) (compiler flags MT/MTd), whereas Madym defaults to building against the dynamic runtime (compiler flags MD/MDd), causing a link error. To avoid this, make sure you set *DCMTK_COMPILE_WIN32_MULTITHREADED_ON* to *ON*, before reconfiguring and generating the project. After setting this option and reconfiguring, you can check the various *CMAKE_CXX_FLAGS* have changed to MD/MDd (note though it is not a good idea to change these manually yourself).
 2. DCMTK does not suffix debug libraries by default, thus if you build and install both Debug and Release versions, whichever you build last will overwrite the former in the install location. As a result, when you try to build against the installed library, you may get a mismatched build type error in Visual Studio. To avoid this, set the *CMAKE_DEBUG_POSTFIX* option to a suitable value (*eg* d, you may need to toggle advanced options to on) before genearting and building the Debug libraries.
 
 If building from source on Linux/MacOS, DCMTK deafults to static builds, therefore to make compatible with a dynamic build (the default for Madym on Linux/MacOS), set *BUILD_SHARED_LIBS=ON*. 
