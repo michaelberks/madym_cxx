@@ -106,11 +106,13 @@ pages:
   - doxygen build/doxyfile
   - mv /builds/manchester_qbi/manchester_qbi_public/madym_cxx/build/docs/html/ public/
   - cp /builds/manchester_qbi/manchester_qbi_public/madym_cxx/madym_lrg.png public/
+  - mkdir public/binary_installers
+  - cp '/builds/manchester_qbi/manchester_qbi_public/madym_cxx/dist/madym_v*.deb' public/binary_installers/
+  - cp '/builds/manchester_qbi/manchester_qbi_public/madym_cxx/dist/madym_v*.tar.gz' public/binary_installers/
   artifacts:
     paths:
     - public
   only:
-    - master
     - /^release-.*$/
 
 #Abandoning the windows build for now - we can't use our own docker image unless
