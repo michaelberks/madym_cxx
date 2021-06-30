@@ -112,7 +112,10 @@ pages:
   only:
     - master
     - /^release-.*$/
-    
+
+#Abandoning the windows build for now - we can't use our own docker image unless
+#we call docker pull, but this takes >1hr. Can try again if GitLab provides proper
+#windows support    
 build_dist_win:
   tags: 
     - windows
@@ -140,5 +143,5 @@ build_dist_win:
       - 'dist/madym_v*.exe'
       - 'dist/madym_v*.zip'
   only:
-    - /^release-.*$/
+    - /^win_release-.*$/
   
