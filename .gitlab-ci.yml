@@ -118,15 +118,14 @@ build_dist_win:
     - windows
   stage: build_dist
   script:
-    - "docker pull registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/madym_depends_win"
-    - "docker images"
+    - "docker pull registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/madym_depends_win:latest"
     - "docker run -v %cd%:%cd% -w %cd% registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/madym_depends_win"
     - echo "This job builds madym in release configuration for distribution as an MSI installer for windows"
     - cd
     - dir C:/
-    - echo $env:path
+    - echo %path%
     - '"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Auxiliary/Build/vcvars64.bat"'
-    - echo $env:path
+    - echo %path%
     - mkdir dist
     - cmake -C C:/CMake/initialCache.txt -S ../madym_cxx -B dist
     - cd dist
