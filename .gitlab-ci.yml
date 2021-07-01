@@ -6,7 +6,6 @@ stages:
   - build
   - test
   - build_dist
-  - test_dist
   - deploy
 
 before_script:
@@ -46,7 +45,6 @@ build:
     - make
     - echo "Madym version is $(bin/madym_DCE -v)"
   cache:
-    key: ${CI_BUILD_REF_NAME}
     paths:
       - build/
   artifacts:
@@ -73,8 +71,7 @@ build_dist_deb:
   stage: build_dist
   script:
     - echo "This job builds madym in release configuration for distribution as a debian package for ubuntu"
-    - mkdir ../dist
-    - cd ../dist
+    - mkdir dist
     - cmake \
         -D CMAKE_C_COMPILER=$CC
         -D CMAKE_CXX_COMPILER=$CXX
@@ -88,47 +85,66 @@ build_dist_deb:
         -D BUILD_WITH_DCMTK=ON
         -D BUILD_WITH_ZLIB=ON
         -S ../madym_cxx
+        -B dist
+    - cd dist
     - make all
     - ctest --verbose
     - make install
     - make package
+  cache:
+    paths:
+      - dist/
   artifacts:
     paths:
-      - madym_v*.deb
-      - madym_v*.tar.gz
+      - 'dist/madym_v*.deb'
+      - 'dist/madym_v*.tar.gz'
   only:
   - /^release-.*$/
 
 pages:
-  stage: build_dist
+  stage: deploy
   script:
   - doxygen build/doxyfile
-  - mv /builds/manchester_qbi/manchester_qbi_public/madym_cxx/build/docs/html/ public/
-  - cp /builds/manchester_qbi/manchester_qbi_public/madym_cxx/madym_lrg.png public/
+  - mv build/docs/html/ public/
+  - cp madym_lrg.png public/
+  #- mkdir public/binary_installers
+  #- ls dist
+  #- cp -r dist/ public/binary_installers/
   artifacts:
     paths:
     - public
   only:
-    - master
     - /^release-.*$/
-    
+
+#Abandoning the windows build for now - we can't use our own docker image unless
+#we call docker pull, but this takes >1hr. Can try again if GitLab provides proper
+#windows support    
 build_dist_win:
-  image: registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/madym_depends_win
+  tags: 
+    - windows
   stage: build_dist
   script:
+    - "docker pull registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/madym_depends_win:latest"
+    - "docker run -v %cd%:%cd% -w %cd% registry.gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/madym_depends_win"
     - echo "This job builds madym in release configuration for distribution as an MSI installer for windows"
     - cd
-    - dir
-    - mkdir C:/dist
-    - cd C:/dist
-    - cmake -C C:/CMake/initialCache.txt -S ../madym_cxx
+    - dir C:/
+    - echo %path%
+    - '"C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Auxiliary/Build/vcvars64.bat"'
+    - echo %path%
+    - mkdir dist
+    - cmake -C C:/CMake/initialCache.txt -S ../madym_cxx -B dist
+    - cd dist
     - cmake --build . --config Release
     - cmake --install . --config Release
     - cpack .
+    - exit
+  needs: []
+  dependencies: []
   artifacts:
     paths:
-      - C:/dist/madym_v*.exe
-      - C:/madym_v*.zip
+      - 'dist/madym_v*.exe'
+      - 'dist/madym_v*.zip'
   only:
-    - /^release-.*$/
+    - /^win_release-.*$/
   
