@@ -108,8 +108,8 @@ pages:
   - mv build/docs/html/ public/
   - cp madym_lrg.png public/
   - mkdir public/binary_installers
-  - ls
-  - cp dist/ public/binary_installers/
+  - ls dist
+  - cp -r dist/ public/binary_installers/
   artifacts:
     paths:
     - public
