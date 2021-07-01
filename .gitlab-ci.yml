@@ -6,7 +6,6 @@ stages:
   - build
   - test
   - build_dist
-  - test_dist
   - deploy
 
 before_script:
@@ -46,7 +45,6 @@ build:
     - make
     - echo "Madym version is $(bin/madym_DCE -v)"
   cache:
-    key: ${CI_BUILD_REF_NAME}
     paths:
       - build/
   artifacts:
@@ -93,6 +91,9 @@ build_dist_deb:
     - ctest --verbose
     - make install
     - make package
+  cache:
+    paths:
+      - dist/
   artifacts:
     paths:
       - 'dist/madym_v*.deb'
@@ -101,14 +102,14 @@ build_dist_deb:
   - /^release-.*$/
 
 pages:
-  stage: build_dist
+  stage: deploy
   script:
   - doxygen build/doxyfile
-  - mv /builds/manchester_qbi/manchester_qbi_public/madym_cxx/build/docs/html/ public/
-  - cp /builds/manchester_qbi/manchester_qbi_public/madym_cxx/madym_lrg.png public/
+  - mv build/docs/html/ public/
+  - cp madym_lrg.png public/
   - mkdir public/binary_installers
-  - cp '/builds/manchester_qbi/manchester_qbi_public/madym_cxx/dist/madym_v*.deb' public/binary_installers/
-  - cp '/builds/manchester_qbi/manchester_qbi_public/madym_cxx/dist/madym_v*.tar.gz' public/binary_installers/
+  - cp 'dist/madym_v*.deb' public/binary_installers/
+  - cp 'dist/madym_v*.tar.gz' public/binary_installers/
   artifacts:
     paths:
     - public
