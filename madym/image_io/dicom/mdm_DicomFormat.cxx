@@ -103,26 +103,73 @@ MDM_API mdm_Image3D mdm_DicomFormat::loadImageFromDicomSlices(
 
     if (slice.getStatus() != EIS_Normal)
       throw mdm_exception(__func__,
-        sliceName + " did not successsfully load");
+        sliceName + " did not successsfully load. Check DICOM dictionary.");
 
     if (!slice.isMonochrome())
       throw mdm_exception(__func__,
         sliceName + " is not a monochrome image");
 
-    //Can we flip the data in Y?
+    //Apply image flips
     slice.flipImage(flipX, flipY);
 
-    //Set voxel data - this is not the most efficient, as we effectively double copy
-    //but it should be secure and keeps our image class interface clean
-    auto bitDepth = slice.getDepth();
-    std::vector<Uint16> voxelValues(nSliceVoxels);
+    //Get raw pixel data from slice
+    auto pixelData = slice.getInterData();
 
-    if (!slice.getOutputData(voxelValues.data(), nSliceVoxels * sizeof(Uint16), bitDepth))
-      throw mdm_exception(__func__, "Unable to read slice data");
+    //Check voxel count and pre-allocate voxel values vector
+    if (pixelData->getCount() != nSliceVoxels)
+      throw mdm_exception(__func__, "Count from pixelArray does not match expected number of slice voxels");
+    std::vector<double> voxelValues(nSliceVoxels);
 
-    //Set slice, casting Uint16 vector to double vector
-    img.setSlice(currSlice++,
-      std::vector<double>(voxelValues.begin(), voxelValues.end()));
+    //Get pixel representation and use to determine correct cast of pixel array
+    //the copy values into voxels vector
+    switch (pixelData->getRepresentation())
+    {
+    case EPR_Uint8: //unsigned 8 bit integer
+    {
+      auto pixelArray = (Uint8*)pixelData->getData();
+      for (size_t vox = 0; vox < nSliceVoxels; vox++)
+        voxelValues[vox] = (double)pixelArray[vox];
+      break;
+    }
+    case EPR_Sint8: //signed 8 bit integer
+    {
+      auto pixelArray = (int8_t*)pixelData->getData();
+      for (size_t vox = 0; vox < nSliceVoxels; vox++)
+        voxelValues[vox] = (double)pixelArray[vox];
+      break;
+    }
+    case EPR_Uint16: //unsigned 16 bit integer
+    {
+      auto pixelArray = (Uint16*)pixelData->getData();
+      for (size_t vox = 0; vox < nSliceVoxels; vox++)
+        voxelValues[vox] = (double)pixelArray[vox];
+      break;
+    }
+    case EPR_Sint16: //signed 16 bit integer
+    {
+      auto pixelArray = (int16_t*)pixelData->getData();
+      for (size_t vox = 0; vox < nSliceVoxels; vox++)
+        voxelValues[vox] = (double)pixelArray[vox];
+      break;
+    }
+    case EPR_Uint32: //unsigned 32 bit integer
+    {
+      auto pixelArray = (Uint32*)pixelData->getData();
+      for (size_t vox = 0; vox < nSliceVoxels; vox++)
+        voxelValues[vox] = (double)pixelArray[vox];
+      break;
+    }
+    case EPR_Sint32: //signed 32 bit integer
+    {
+      auto pixelArray = (int32_t*)pixelData->getData();
+      for (size_t vox = 0; vox < nSliceVoxels; vox++)
+        voxelValues[vox] = (double)pixelArray[vox];
+      break;
+    }
+    }
+
+    //Set slice in the 3D image
+    img.setSlice(currSlice++, voxelValues);
   }
 
   //Apply scaling if set
