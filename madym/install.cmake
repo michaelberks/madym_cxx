@@ -330,7 +330,11 @@ message(STATUS "Set generator to ${CPACK_GENERATOR} for ${CPACK_ARCHIVE_FILE_NAM
 
 #---------------------------------------------------------------------------
 # Set CPACK OPTIONS
-set(CPACK_PACKAGE_FILE_NAME "madym_${MADYM_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_VERSION}")
+if (NOT BUILD_QT_GUI)
+    set(GUI_STR "-no_gui")
+endif()
+
+set(CPACK_PACKAGE_FILE_NAME "madym_${MADYM_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_VERSION}${GUI_STR}")
 set(CPACK_ARCHIVE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
 
 #Cpack options common to all systems
