@@ -1,1 +1,18 @@
-Berks, M., Parker, G. M. B., Little, R., & Cheung, S. (2021). Madym: quantitative analysis software for perfusion-MRI (Version v4.15.1) [Software]. Available from https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx.
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Berks"
+  given-names: "Michael"
+  orcid: "https://orcid.org/0000-0003-4727-2006"
+- family-names: "Parker"
+  given-names: "Geoff J M"
+  orcid: "https://orcid.org/0000-0003-2934-2234"
+- family-names: "Little"
+  given-names: "Ross"
+- family-names: "Cheung"
+  given-names: "Susan"
+title: "Madym: quantitative analysis software for perfusion-MRI"
+version: 4.15.1
+doi: TBC
+date-released: 2021-08-10
+url: "https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx"
