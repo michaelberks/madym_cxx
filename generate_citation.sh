@@ -2,7 +2,7 @@
 git fetch
 curr_date=$(date +'%Y-%m-%d')
 version=$(git describe --tags --abbrev=0 | sed 's/v//g')
-doi='TBC'
+doi='10.5281/zenodo.5176080'
 echo "cff-version: 1.2.0" > CITATION.cff
 echo 'message: "If you use this software, please cite it as below."' >> CITATION.cff
 echo 'authors:' >> CITATION.cff
