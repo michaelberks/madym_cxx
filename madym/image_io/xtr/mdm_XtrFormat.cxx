@@ -48,6 +48,8 @@ MDM_API void mdm_XtrFormat::readAnalyzeXtr(const std::string &xtrFileName,
   xtrFileStream.close();
   if (xtrFileStream.is_open())
     throw mdm_exception(__func__, "Failed to close Analyze extra info file " + xtrFileName);
+
+  img.setMetaDataSource(xtrFileName);
 }
 
 //

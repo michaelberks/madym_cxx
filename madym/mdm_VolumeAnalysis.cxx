@@ -168,10 +168,10 @@ MDM_API void mdm_VolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
 
   //First map we add, set the reference image
   if (!dynamicMetaData_)
-    dynamicMetaData_ = std::make_unique<mdm_Image3D::MetaData>(dynImg.info());
+    setDynamicMetaData(dynImg);
 
 	//Extract the time from the header, converted to minutes
-	dynamicTimes_.push_back(dynImg.minutesFromTimeStamp());
+  setDynamicTime(dynImg);
 
   if (useNoise_)
   {
@@ -180,7 +180,7 @@ MDM_API void mdm_VolumeAnalysis::addStDataMap(const mdm_Image3D dynImg)
       noiseVar_.push_back(noise);
   }
   
-	if (outputCt_sig_ && (CtDataMaps_.size() == numSt()-1))
+	if (outputCt_sig_ && (CtDataMaps_.size() == numSt() - 1))
 	{
 		mdm_Image3D ctMap;
 		ctMap.copy(dynImg);
@@ -290,7 +290,7 @@ MDM_API void mdm_VolumeAnalysis::addCtDataMap(const mdm_Image3D ctMap)
 
   //First map we add, set the reference image
   if (!dynamicMetaData_)
-    dynamicMetaData_ = std::make_unique<mdm_Image3D::MetaData>(ctMap.info());
+    setDynamicMetaData(ctMap);
 
 
 	//Extract the time from the header, converted to minutes
@@ -611,6 +611,34 @@ void mdm_VolumeAnalysis::checkDynamicsSet() const
 {
   if (!numDynamics())
     throw mdm_exception(__func__, "Dynamic maps not loaded.");
+}
+
+//
+void mdm_VolumeAnalysis::setDynamicMetaData(const mdm_Image3D& img)
+{
+  dynamicMetaData_ = std::make_unique<mdm_Image3D::MetaData>(img.info());
+  auto msg = boost::format(
+    "Acquisition parameters for dynamic series set from %1%: \n"
+    "    TR = %2% ms\n"
+    "    FA = %3% deg")
+    % dynamicMetaData_->xtrSource 
+    % dynamicMetaData_->TR.value() 
+    % dynamicMetaData_->flipAngle.value();
+
+  mdm_ProgramLogger::logProgramMessage(msg.str());
+}
+
+//
+void mdm_VolumeAnalysis::setDynamicTime(const mdm_Image3D& img)
+{
+  dynamicTimes_.push_back(img.minutesFromTimeStamp());
+  auto msg = boost::format(
+    "Time t(%1%) = %2% mins set from %3%")
+    % dynamicTimes_.size()
+    % dynamicTimes_.back()
+    % dynamicMetaData_->xtrSource;
+
+  mdm_ProgramLogger::logProgramMessage(msg.str());
 }
 
 //

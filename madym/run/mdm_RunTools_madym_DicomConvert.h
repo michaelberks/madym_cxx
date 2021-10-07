@@ -17,7 +17,7 @@
 struct dcmNumericInfo {
   int seriesNumber; ///< series number
   int  acquisitionNumber; ///< acquisitionNumber
-  int  temporalPositionIdentifier;  ///< temporalPositionIdentifier
+  int  temporalPositionIdentifier=1;  ///< temporalPositionIdentifier
   double  sliceLocation;  ///< sliceLocation
   int instanceNumber;  ///< instanceNumber
 };
@@ -29,10 +29,10 @@ struct dcmSeriesInfo {
   int index; ///< Index in the list of sequences processed
   std::vector<std::string> filenames; ///< List of paths to DICOM images in the series
   std::vector<dcmNumericInfo> numericInfo; ///< Info struct for each DICOM image in series
-  int nTimes; ///< Number of temporal positions in series
-  int nX; ///< number of voxels in X-axis
-  int nY; ///< number of voxels in Y-axis
-  int nZ; ///< number of voxels in Z-axis
+  int nTimes = 1; ///< Number of temporal positions in series
+  int nX = 0; ///< number of voxels in X-axis
+  int nY = 0; ///< number of voxels in Y-axis
+  int nZ = 0; ///< number of voxels in Z-axis
   double Xmm; ///< size of voxels in X-axis in mm
   double Ymm; ///< size of voxels in X-axis in mm
   double Zmm; ///< size of voxels in X-axis in mm
@@ -120,7 +120,7 @@ private:
   std::vector<std::string> getFileList(boost::filesystem::path directory);
 
   //
-  void completeSeriesInfo(dcmSeriesInfo &series);
+  void completeSeriesInfo(dcmSeriesInfo &series, int nDyns = 0);
 
   //
   void printSeriesInfo(const dcmSeriesInfo &series);

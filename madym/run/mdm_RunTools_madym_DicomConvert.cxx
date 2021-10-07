@@ -204,9 +204,10 @@ void mdm_RunTools_madym_DicomConvert::extractInfo(const std::string &filename,
     bool valid = 
       getNumericInfo(fileformat, DCM_SeriesNumber, info_n.seriesNumber) &&
       getNumericInfo(fileformat, DCM_AcquisitionNumber, info_n.acquisitionNumber) &&
-      getNumericInfo(fileformat, DCM_TemporalPositionIdentifier, info_n.temporalPositionIdentifier) &&
       getNumericInfo(fileformat, DCM_SliceLocation, info_n.sliceLocation) &&
       getNumericInfo(fileformat, DCM_InstanceNumber, info_n.instanceNumber);
+
+    getNumericInfo(fileformat, DCM_TemporalPositionIdentifier, info_n.temporalPositionIdentifier);
 
     //Only continue if acquistion number set
     if (valid && info_n.acquisitionNumber)
@@ -272,7 +273,7 @@ std::vector<std::string> mdm_RunTools_madym_DicomConvert::getFileList(fs::path d
 }
 
 //-----------------------------------------------------------------
-void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series)
+void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series, int nDyns)
 {
   if (series.filenames.empty())
     return;
@@ -289,26 +290,29 @@ void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series)
     if (series.name.empty())
       series.name = mdm_DicomFormat::getTextField(fileformat, DCM_ProtocolName);
   }
-  
+
   series.manufacturer =  mdm_DicomFormat::getTextField(fileformat, DCM_Manufacturer);
-  series.nTimes = mdm_DicomFormat::getNumericField(fileformat, DCM_NumberOfTemporalPositions);
+  getNumericInfo(fileformat, DCM_NumberOfTemporalPositions, series.nTimes);
+
+  if (nDyns > series.nTimes)
+    series.nTimes = nDyns;
 
   //Call checkSortValid to compute nZ and set sortValid
   checkSortValid(series);
-  series.nX = mdm_DicomFormat::getNumericField(fileformat, DCM_Columns);
-  series.nY = mdm_DicomFormat::getNumericField(fileformat, DCM_Rows);
+  getNumericInfo(fileformat, DCM_Columns, series.nX);
+  getNumericInfo(fileformat, DCM_Rows, series.nY);
 
   auto pixelSpacing = mdm_DicomFormat::getNumericVector(fileformat, DCM_PixelSpacing, 2);
   series.Xmm = pixelSpacing[0];
   series.Ymm = pixelSpacing[1];
-  series.Zmm = mdm_DicomFormat::getNumericField(fileformat, DCM_SliceThickness);
+  getNumericInfo(fileformat, DCM_SliceThickness, series.Zmm);
 
   bool FA_required = true;
   bool TR_required = true;
   bool TI_required = false;
   bool TE_required = true;
-  bool B_required = true;
-  bool gradOri_required = true;
+  bool B_required = false;
+  bool gradOri_required = false;
   bool time_required = true;
 
   try { series.FA = mdm_DicomFormat::getNumericField(fileformat, DCM_FlipAngle); }
@@ -525,7 +529,8 @@ void mdm_RunTools_madym_DicomConvert::readSeriesInfo()
     numericFileStream.close();
 
     //Get the remaining series info
-    completeSeriesInfo(series);
+    auto nDyns = (series.index == options_.dynSeries()) ? options_.nDyns() : 0;
+    completeSeriesInfo(series, nDyns);
   }
 }
 
@@ -685,7 +690,6 @@ mdm_Image3D mdm_RunTools_madym_DicomConvert::loadDicomImage(
 void mdm_RunTools_madym_DicomConvert::checkSortValid(
   dcmSeriesInfo &series)
 {
-  series.nTimes;
   series.nZ = (int)series.numericInfo.size() / series.nTimes;
 
   //Check numSlices divided into an integer
@@ -1015,9 +1019,9 @@ void mdm_RunTools_madym_DicomConvert::makeDynamicVols(
 
   //Check this sequence was validly sorted
   if (!series.sortValid)
-    throw mdm_exception(__func__, boost::format(
-      "Series %1% was not sorted properly. Check the series log files"
-    ) % series.name);
+    mdm_ProgramLogger::logProgramWarning(__func__, (boost::format(
+      "Series %1% was not sorted properly. Making dynamics will proceed but you are advised to check the output carefully."
+    ) % series.name).str());
 
   //Set up mean image
   mdm_Image3D meanImg;

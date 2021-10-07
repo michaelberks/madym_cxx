@@ -33,14 +33,14 @@ In dynamic contrast-enhanced magnetic resonance imaging (DCE-MRI)
 a sequence of MRI images are acquired to measure the passage of a
 contrast-agent within a tissue of interest. Quantitative DCE-MRI (DCE-MRI), in which
 one or more tracer-kinetic models are fitted to the contrast-agent
-concentration time-series, enables the estimation of clinically useful parameters of tissue microvasculature.
+concentration time-series, enables the estimation of clinically useful parameters of tissue microvasculature [@tofts:1999].
 
 `Madym` is a C++ toolkit for quantitative DCE-MRI analysis developed at the University of Manchester. It comprises 
 a set of command line tools and a graphical user-interface based on an extendable 
 C++ library. It is cross-platform, and requires few external libraries to 
-build from source. Pre-built binaries for Windows, MacOS and Linux are available 
-on request. We have also developed complementary interfaces in Matlab and python
-(available in separate open-source repositories [@madym-matlab], [@madym-python]), 
+build from source. Pre-built binaries (with all dependencies included) for Windows, MacOS and Linux are available 
+so that `Madym` can be installed directly for users not wanting to or unable to compile the C++ source themselves. 
+We have also developed complementary interfaces in Matlab (available in a separate open-source repository [@madym-matlab]) and python (integrated with the main toolkit), 
 that allow the flexibility of developing in those scripting languages, 
 while allowing C++ to do the heavy-duty computational work of tracer-kinetic model fitting.
 
@@ -71,7 +71,7 @@ ISMRM (International Society for Magnetic Resonance in Medicine) Reproducible Re
 have listed `Madym` on the ISMRM MR-hub [@ismrm-mr-hub]. 
 
 - Extensibility: `Madym` includes several of the most commonly used tracer-kinetic models
-as standard, including the Patlak [@patlak:1983], extend-Tofts [@tofts:1997] and two compartment exchange models [@sourbron:2009], as well
+as standard, including the Patlak [@patlak:1983], extended-Tofts [@tofts:1997] and two compartment exchange models [@sourbron:2009], as well
 as more complex models for fitting contrast-agents that are actively metabolised by tissue
 and/or require dual vascular supply functions [@berks:2021]. However these are by no means an exhaustive list
 and, by decoupling model optimisation from the model definitions, the toolkit has been designed to 
@@ -94,6 +94,11 @@ DCE-MRI analyses in more than 20 research papers and many more conference abstra
 this year, these used previous non-open source versions, however the first paper
 using `Madym` as an open-source toolkit has just been published [@berks:2021], and we hope will be the
 first of many in the future.
+
+# Related work
+
+There are several open-source packages for DCE-MRI analysis that provide similar tracer-kinetic model-fitting functionality to Madym. These include standalone tools such as ROCKETSHIP [@barnesrocketship:2015], DCE@urLAB [@ortunodce:2013], and DCEMRI.jl [@smithdcemri:2015, and packages for R: DATforDCEMRI [@ferl:2011], dcemriS4 [@whitcher:2011] or python: pydcemri [welchpydcemri:2017]. In terms of providing a fully open-source, cross platform solution that runs complete end-to-end pipelines, MITK-ModelFit [@debus2019mitk] (also implemented in C++) has probably the closest functionality to Madym. They differ in that MITK-ModelFit builds into the wider MITK and ITK toolkits, with the advantage of providing a richer set of additional pre/post processing options not available in Madym (*eg* image registration and segmentation), at the expense of requiring a much larger install. In comparison, Madym (particularly if using the pre-built binaries) provides an arguably easier and lighter package to get started, while the python and Matlab wrappers add flexibility to include other pre/post processing steps. There are also specific features of Madym (such as inversion recovery $T_1$-mapping and the implementation of dual-input vascular input functions and active-enhancement models for fitting metabolised contrast-agents in the liver), that we believe are currently unique to publicly available DCE-MRI packages.  
+
 
 # Acknowledgements
 
