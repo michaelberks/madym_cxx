@@ -13,7 +13,7 @@ before_script:
 
 fetch-semantic-version:
   # Requires Node >= 10.13 version
-  image: node:13
+  image: node:14
   stage: fetch-version
   only:
     refs:
