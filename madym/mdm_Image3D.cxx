@@ -42,7 +42,8 @@ mdm_Image3D::MetaData::MetaData()
 	colDirCosX("ColDirCosX"),
 	colDirCosY("ColDirCosY"),
 	colDirCosZ("ColDirCosZ"),
-	noiseSigma("NoiseSigma")
+	noiseSigma("NoiseSigma"),
+	xtrSource("from API")
 {}
 
 //
@@ -515,6 +516,12 @@ MDM_API void mdm_Image3D::setMetaDataFromStreamOld(std::istream &ifs)
 	info_.TR.setValue(f);
 	ifs >> str >> f >> f >> f >> f;
 	setTimeStampFromDoubleStr(f);
+}
+
+//
+MDM_API void mdm_Image3D::setMetaDataSource(const std::string& xtrFile)
+{
+	info_.xtrSource = xtrFile;
 }
 
 //

@@ -99,6 +99,7 @@ class mdm_Image3D
 		KeyPair colDirCosY; //!< colDirCosY
 		KeyPair colDirCosZ; //!< colDirCosZ
 		KeyPair noiseSigma; //!< Estimate of noise standard deviation
+		std::string xtrSource; //!< File from which meta information set
 
 		static const std::string ImageTypeKey; //!< Key used for image type
 		static const std::string TimeStampKey; //!< Key used for timestamp
@@ -365,6 +366,12 @@ class mdm_Image3D
 	\param   ifs input filestream
 	*/
 	MDM_API void setMetaDataFromStreamOld(std::istream &ifs);
+
+	//!   Set meta data source
+	/*!
+	\param   xtrFile path to XTR file from which meta data was set
+	*/
+	MDM_API void setMetaDataSource(const std::string& xtrFile);
 
 	//!Return indices and values of voxels with non-zero value
 	/*!

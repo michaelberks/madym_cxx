@@ -44,7 +44,18 @@ MDM_API void mdm_T1Mapper::reset()
 MDM_API void mdm_T1Mapper::addInputImage(mdm_Image3D img)
 {
   errorTracker_.checkOrSetDimension(img, "T1 input");
-	inputImages_.push_back(img); 
+	inputImages_.push_back(img);
+	auto msg = boost::format(
+		"Acquisition parameters for T1 mapping input image %1% set from %2%:\n"
+		"    TR = %3% ms\n"
+		"    FA = %4% deg (only required for VFA method)\n"
+		"    TI = %5% ms (only required for inversion recovery method)")
+		% inputImages_.size()
+		% img.info().xtrSource 
+		% img.info().TR.value() 
+		% img.info().flipAngle.value()
+		% img.info().TI.value();
+	mdm_ProgramLogger::logProgramMessage(msg.str());
 }
 
 //

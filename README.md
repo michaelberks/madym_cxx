@@ -2,35 +2,44 @@
 
 ![Madym logo](madym_lrg.png)
 
-Madym is a C++ toolkit for quantative DCE-MRI analysis developed in the [QBI Lab](http://qbi-lab.org/) at the University of Manchester. It comprises a set of command line tools and a graphical user-interface based on an extendable C++ library. It is cross-platform, and requires few external libraries to build from source. Pre-built binaries for Windows, MacOS and Linux are available on request. We have also developed complementary interfaces in python and Matlab, that allow the flexibility of developing in those scripting languages, while allowing C++ to do the heavy-duty computational work of tracer-kinetic model fitting.
+Madym is a C++ toolkit for quantative DCE-MRI analysis developed in the [QBI Lab](http://qbi-lab.org/) at the University of Manchester. It comprises a set of command line tools and a graphical user-interface based on an extendable C++ library. It is cross-platform, and requires few external libraries to build from source. Alternatively, Madym can be [downloaded and installed](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_binaries/) using pre-built binaries for [Windows](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_binaries/windows/windows.html), [MacOS](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_binaries/mac_os11/mac_os11.html) or [Ubuntu](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_binaries/ubuntu/ubuntu.html). We have also developed complementary interfaces in python and Matlab, that allow the flexibility of developing in those scripting languages, while allowing C++ to do the heavy-duty computational work of tracer-kinetic model fitting.
 
-See the [project wiki](https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/home) for full documentation.
+See the [project wiki](https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/home) for full user documentation. The latest class information built from source code comments using Doxygen is available [here](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_cxx/).
+
+# Downloading Madym
+Madym can be installed directly from pre-built binaries (*ie* without needing to compile the C++ source code). The latest binaries are available [here](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_binaries/). We have made versions for:
+- [Windows](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_binaries/windows/windows.html)
+- [MacOS Big Sur](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_binaries/mac_os11/mac_os11.html)
+- [MacOS Catalina or older](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_binaries/mac_os11/mac_os11.html)
+- [Ubuntu](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_binaries/ubuntu/ubuntu.html)
+
+If you require a version for a different system or would prefer to build from source, please follow the instructions below.
 
 # Installation instructions - building from source
 
 ## 1. External dependencies
 To build from source, Madym requires the following:
 
-1. A C++ compiler that fully supports C++14
-2. CMake to configure and generate project files
-3. The `filesystem`, `system`, `program_options`, `date_time` and `test` libraries from Boost
-4. (Optional) Qt5 - required to build the Madym-GUI, but not required for the main C++ library or command line tools
-5. (Optional) zlib - required to support compressed NIFTI format (*.nii.gz), standard uncompressed NIFTI images can be used without zlib
-6. (Optional) DCMTK - required to build the DICOM conversion tool
-7. (Optional) Doxygen to build documentation from source code comment tags
+1. [A C++ compiler](#c-compiler) that fully supports C++14
+2. [CMake](#cmake) to configure and generate project files
+3. [Boost](#boost) - specifically the `filesystem`, `system`, `program_options`, `date_time` and `test` libraries 
+4. [(Optional) Qt5](#qt) - required to build the Madym-GUI, but not required for the main C++ library or command line tools
+5. [(Optional) zlib](#zlib) - required to support compressed NIFTI format (*.nii.gz), standard uncompressed NIFTI images can be used without zlib
+6. [(Optional) DCMTK](#dcmtk) - required to build the DICOM conversion tool
+7. [(Optional) Doxygen](#doxygen) to build documentation from source code comment tags
 
 ## TL;DR instructions
 If you're used to configuring and building C++ projects with CMake, Madym should be pretty easy to install. Assuming you have the above pre-requisites built and installed:
-+ Go the root directory of the madym_cxx repository you have just cloned, there is a CMakeLists.txt file in this directrory, so this is the head of the source tree. We strongly recommend building your binaries outside of the source tree.
-+ Run CMake to confiure and generate project files
++ Clone the madym_cxx source code repository and go to the root directory. There is a CMakeLists.txt file in this directory, so this is the head of the source tree. We strongly recommend building your binaries outside of the source tree.
++ [Run CMake to configure and generate project files](#2-configuring-madym)
     - If you want to build the Madym-GUI, switch *BUILD_QT_GUI* to *ON*. You may then need to set *Qt* fields if they are not found automatically by CMake
     - If you want to build with zlib, switch *BUILD_WITH_ZLIB* to *ON*. You may then need to set the location of your installed zlib libraries
     - If you want to build the DICOM conversion tool, switch *BUILD_WITH_DCMTK" to *ON*. You may need to set the location of your installed DCMTK libraries
     - If you want to build your own documentation with Doxygen, set *BUILD_DOCUMENTATION* to on
- + Build the project. If you selected to build documentation, this will only be built for release configurations.
- + Run testing using Ctest. Everything should pass, if there are any errors, see notes on Tests below.
+ + [Build the project](#3-building-madym). If you selected to build documentation, this will only be built for release configurations.
+ + [Run testing using Ctest](#4-testing-madym). Everything should pass, if there are any errors, see notes on Tests below.
 
- ## Detailed Instructions
+## Detailed Instructions
 
 #### C++ compiler
 Madym has mainly been developed on Windows using Visual Studio 2017 (compiler version msvc-14.0). However it has also been built and tested using [GCC 6.30](https://www.gnu.org/software/gcc/gcc-6/) (Linux) and [LLVM/Clang](https://clang.llvm.org/) (MacOs). Any compilers *at least as* modern as those that support C++14 should be fine.
@@ -72,10 +81,13 @@ Zlib is required to support compressed NIFTI format (*.nii.gz) images. On linux/
 
 #### DCMTK
 DCMTK is required to build the command-line tool for sorting and converting DICOM data into NIFTI/Analyze images. Options for installing from binaries are given [here](https://dicom.offis.de/dcmtk.php.en). It can also be built from source, which can be downloaded [here](https://github.com/DCMTK/dcmtk). If building from source, the root directory has a CMakeLists.txt file, allowing the project files to be built and generated as usual with CMake. If building from source on Windows, note that:
-1. DCMTK defaults to building against the [static Windows runtime](https://docs.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-160) (compiler flags MT/MTd), whereas Madym defaults to building against the dynamic runtime (compiler flags MD/MDd), causing a link error. To avoid this, make sure you set *DCMTK_COMPILE_WIN32_MULTITHREADED_ON* to *ON*, before reconfiguring and generating the project. After setting this option and reconfiguring, you can check the various *CMAKE_CXX_FLAGS* have changed to MD/MDd (note though it is not a good idea to change these manually yourself).
-2. DCMTK does not suffix debug libraries by default, thus if you build and install both Debug and Release versions, whichever you build last will overwrite the former in the install location. As a result, when you try to build against the installed library, you may get a mismatched build type error in Visual Studio. To avoid this, set the *CMAKE_DEBUG_POSTFIX* option to a suitable value (*eg* d, you may need to toggle advanced options to on) before genearting and building the Debug libraries.
+1. DCMTK defaults to building against the [static Windows runtime](https://docs.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-160) (compiler flags MT/MTd), whereas Madym defaults to building against the dynamic runtime (compiler flags MD/MDd), causing a link error. To avoid this, make sure you set *DCMTK_COMPILE_WIN32_MULTITHREADED_DLL* to *ON*, before reconfiguring and generating the project. After setting this option and reconfiguring, you can check the various *CMAKE_CXX_FLAGS* have changed to MD/MDd (note though it is not a good idea to change these manually yourself).
+2. DCMTK does not suffix debug libraries by default, thus if you build and install both Debug and Release versions, whichever you build last will overwrite the former in the install location. As a result, when you try to build against the installed library, you may get a mismatched build type error in Visual Studio. To avoid this, set the *CMAKE_DEBUG_POSTFIX* option to a suitable value (*eg* d, you may need to toggle advanced options to on) before generating and building the Debug libraries.
 
-If building from source on Linux/MacOS, DCMTK deafults to static builds, therefore to make compatible with a dynamic build (the default for Madym on Linux/MacOS), set *BUILD_SHARED_LIBS=ON*. 
+If building from source on Linux/MacOS, DCMTK defaults to static builds, therefore to make compatible with a dynamic build (the default for Madym on Linux/MacOS), set *BUILD_SHARED_LIBS=ON*.
+
+#### Doxygen
+Doxygen is a tool for generating documentation automatically from C++ source code. Updates to the main Madym project on GitLab automatically trigger new documentation to be generated and published [here](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_cxx/). However you can also build your own local version of the documentation, by downloading doxygen from [here](https://www.doxygen.nl/index.html), and [configuring CMake to build documentation](#additional-configuration-options).
 
 ## 2. Configuring Madym
 Once the external dependencies are installed, Madym should be pretty quick and simple to configure and build, using the following steps:
@@ -86,7 +98,7 @@ Once the external dependencies are installed, Madym should be pretty quick and s
 2. Open the CMake GUI, set *Where is the source code* to the **madym_cxx** repository you have just cloned, and *Where to build the binaries* to the binary directory you have just created.
 3. Click configure, and select the compiler (*eg* Visual Studio 14 2015 Win64) from the list of available compilers.
 4. After running compiler checks, an error should return as it won't be able to find Boost (if you built Boost from source). 
-    * Tick the Advanced checkbox to see the Boost fields. Don't worry about setting *Boost_DIR* but set the paths to the debug/release versions of the filesystem, system, program_options and unit-test libraries and *Boost_INCLUDE_DIR* to the root boost directory (which should contain a directory *boost*, in which the source code headers for each libraries are contained)
+    * Tick the Advanced checkbox to see the Boost fields. Don't worry about setting *Boost_DIR* but set the paths to the debug/release versions of the filesystem, system, program_options and test libraries and *Boost_INCLUDE_DIR* to the root boost directory (which should contain a directory *boost*, in which the source code headers for each libraries are contained)
 5. Click configure again, and this time no errors should be returned. Click Generate to make the project files.
 
 ### Linux/MacOS
@@ -109,10 +121,15 @@ When you have generated CMake project files, check your binary directory. In add
 ### Windows
 Go to the binary directory in a file explorer, and there should be a Visual Studion solution file *manchester_qbi_madym.sln*. Open this solution in Visual Studio. In the solution explorer, right-click **ALL_BUILD** and select **Build**. Repeat as desired for Debug/Release configurations.
 
-Now right click **RUN_TESTS** and select build. This will run the library checks. All tests should pass. If any tests fail, this will return a build error - ignore the build error, but check the output to note which tests have failed. See more under *Testing* [here](library_design). Note the tests will be considerably slower in Debug mode because none of the speed checks used by Alglib are not optimised in debug mode.
+### Linux/MacOS
+CD to the binary directory, and run **make all**.
+
+## 4. Testing Madym
+### Windows
+In the solution explorer in Visual Studio, right click **RUN_TESTS** and select build. This will run the library checks. All tests should pass. If any tests fail, this will return a build error - ignore the build error, but check the output to note which tests have failed. See more under *Testing* [here](library_design). Note the tests will be considerably slower in Debug mode because the speed checks used by Alglib are not optimised in debug mode.
 
 ### Linux/MacOS
-CD to the binary directory, and run **make all**. Then run **ctest** to run the library checks. All tests should pass.
+In the binary directory in which you've built Madym, run **ctest** to run the library checks. All tests should pass. See more under *Testing* [here](library_design). Note the tests will be considerably slower in Debug mode because the speed checks used by Alglib are not optimised in debug mode.
 
 Assuming you've got here and everything has built successfully... great! You're good to go and start doing some DCE analysis. Please see the [project wiki](https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/home) for detailed instructions on how to use Madym.
 

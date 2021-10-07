@@ -365,6 +365,12 @@ private:
   //! Throw exception if dynamic maps not set
   void checkDynamicsSet() const;
 
+	//! Set dynamic meta data
+	void setDynamicMetaData(const mdm_Image3D &img);
+
+	//! Set dynamic time
+	void setDynamicTime(const mdm_Image3D& img);
+
   //! Initialise all DCE and tracer-kinetic model maps
   /*!
   Creates maps of appropiate size for each output map, with zero-values in all voxels.
