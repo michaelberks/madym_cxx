@@ -6,6 +6,9 @@ Madym is a C++ toolkit for quantative DCE-MRI analysis developed in the [QBI Lab
 
 See the [project wiki](https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/home) for full user documentation. The latest class information built from source code comments using Doxygen is available [here](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_cxx/).
 
+Madym version 4.15.2 was reviewed and accepted for the [Journal of Open Source Software](https://joss.theoj.org/). The accompanying paper is available here:
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.03523/status.svg)](https://doi.org/10.21105/joss.03523)
+
 # Downloading Madym
 Madym can be installed directly from pre-built binaries (*ie* without needing to compile the C++ source code). The latest binaries are available [here](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_binaries/). We have made versions for:
 - [Windows](https://manchester_qbi.gitlab.io/manchester_qbi_public/madym_binaries/windows/windows.html)
@@ -134,9 +137,6 @@ In the binary directory in which you've built Madym, run **ctest** to run the li
 Assuming you've got here and everything has built successfully... great! You're good to go and start doing some DCE analysis. Please see the [project wiki](https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx/-/wikis/home) for detailed instructions on how to use Madym.
 
 ## Have fun!
-
-Madym version 4.15.2 was reviewed and accepted for the [Journal of Open Source Software](https://joss.theoj.org/). The accompanying paper is available here:
-[![DOI](https://joss.theoj.org/papers/10.21105/joss.03523/status.svg)](https://doi.org/10.21105/joss.03523)
 
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
