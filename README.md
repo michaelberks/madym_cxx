@@ -135,6 +135,9 @@ Assuming you've got here and everything has built successfully... great! You're 
 
 ## Have fun!
 
+Madym version 4.15.2 was reviewed and accepted for the [Journal of Open Source Software](https://joss.theoj.org/). The accompanying paper is available here:
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.03523/status.svg)](https://doi.org/10.21105/joss.03523)
+
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
 
