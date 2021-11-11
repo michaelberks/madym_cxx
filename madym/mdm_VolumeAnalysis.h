@@ -315,6 +315,12 @@ public:
 	*/
 	MDM_API void setLastImage(size_t timepoint);
 
+	//! Set optimisation type to use
+	/*!
+	\param type see mdm_DCEModelFitter
+	*/
+	MDM_API void setOptimisationType(const std::string &type);
+
 	//! Set maximum number of iterations used in computing model fit
 	/*!
 	\param maxItr if 0, no limit set, optimisation runs to convergence
@@ -486,6 +492,9 @@ private:
   //Start and end points for evaluating model
   size_t firstImage_;
   size_t lastImage_;
+
+	//Optimisation type
+	std::string optimisationType_;
 
 	//Maximum number of iterations applied
 	int maxIterations_;

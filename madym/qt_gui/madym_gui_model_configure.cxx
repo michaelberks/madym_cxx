@@ -23,40 +23,42 @@ madym_gui_model_configure::madym_gui_model_configure(const mdm_DCEModelBase &mod
 
   paramControls_.push_back(
 		paramControls(ui.paramLabel_1, ui.paramLineEdit_1, ui.fixedCheckBox_1,
-			ui.mapsCheckBox_1, ui.relLimitLineEdit_1));
+			ui.mapsCheckBox_1, ui.lowerBoundLineEdit_1, ui.upperBoundLineEdit_1, ui.relLimitLineEdit_1));
   paramControls_.push_back(
 		paramControls(ui.paramLabel_2, ui.paramLineEdit_2, ui.fixedCheckBox_2,
-			ui.mapsCheckBox_2, ui.relLimitLineEdit_2));
+			ui.mapsCheckBox_2, ui.lowerBoundLineEdit_2, ui.upperBoundLineEdit_2, ui.relLimitLineEdit_2));
   paramControls_.push_back(
 		paramControls(ui.paramLabel_3, ui.paramLineEdit_3, ui.fixedCheckBox_3,
-			ui.mapsCheckBox_3, ui.relLimitLineEdit_3));
+			ui.mapsCheckBox_3, ui.lowerBoundLineEdit_3, ui.upperBoundLineEdit_3, ui.relLimitLineEdit_3));
   paramControls_.push_back(
 		paramControls(ui.paramLabel_4, ui.paramLineEdit_4, ui.fixedCheckBox_4,
-			ui.mapsCheckBox_4, ui.relLimitLineEdit_4));
+			ui.mapsCheckBox_4, ui.lowerBoundLineEdit_4, ui.upperBoundLineEdit_4, ui.relLimitLineEdit_4));
   paramControls_.push_back(
 		paramControls(ui.paramLabel_5, ui.paramLineEdit_5, ui.fixedCheckBox_5,
-			ui.mapsCheckBox_5, ui.relLimitLineEdit_5));
+			ui.mapsCheckBox_5, ui.lowerBoundLineEdit_5, ui.upperBoundLineEdit_5, ui.relLimitLineEdit_5));
   paramControls_.push_back(
 		paramControls(ui.paramLabel_6, ui.paramLineEdit_6, ui.fixedCheckBox_6,
-			ui.mapsCheckBox_6, ui.relLimitLineEdit_6));
+			ui.mapsCheckBox_6, ui.lowerBoundLineEdit_6, ui.upperBoundLineEdit_6, ui.relLimitLineEdit_6));
   paramControls_.push_back(
 		paramControls(ui.paramLabel_7, ui.paramLineEdit_7, ui.fixedCheckBox_7,
-			ui.mapsCheckBox_7, ui.relLimitLineEdit_7));
+			ui.mapsCheckBox_7, ui.lowerBoundLineEdit_7, ui.upperBoundLineEdit_7, ui.relLimitLineEdit_7));
   paramControls_.push_back(
 		paramControls(ui.paramLabel_8, ui.paramLineEdit_8, ui.fixedCheckBox_8,
-			ui.mapsCheckBox_8, ui.relLimitLineEdit_8));
+			ui.mapsCheckBox_8, ui.lowerBoundLineEdit_8, ui.upperBoundLineEdit_8, ui.relLimitLineEdit_8));
   paramControls_.push_back(
 		paramControls(ui.paramLabel_9, ui.paramLineEdit_9, ui.fixedCheckBox_9,
-			ui.mapsCheckBox_9, ui.relLimitLineEdit_9));
+			ui.mapsCheckBox_9, ui.lowerBoundLineEdit_9, ui.upperBoundLineEdit_9, ui.relLimitLineEdit_9));
   paramControls_.push_back(
 		paramControls(ui.paramLabel_10, ui.paramLineEdit_10, ui.fixedCheckBox_10,
-			ui.mapsCheckBox_10, ui.relLimitLineEdit_10));
+			ui.mapsCheckBox_10, ui.lowerBoundLineEdit_10, ui.upperBoundLineEdit_10, ui.relLimitLineEdit_10));
 
   ui.modelName->setText(modelName);
   int nParams = model_.numParams();
-  const std::vector<std::string> &params = model_.paramNames();
-  const std::vector<bool> &paramFlags = model_.optimisedParamFlags();
-	const std::vector<double> &relativeLimits = model_.relativeBounds();
+  const auto& params = model_.paramNames();
+  const auto& paramFlags = model_.optimisedParamFlags();
+	const auto& lowerBounds = model_.lowerBounds();
+	const auto& upperBounds = model_.upperBounds();
+	const auto& relativeLimits = model_.relativeBounds();
 
   for (int iParam = 0; iParam < 10; iParam++)
   {
@@ -92,6 +94,13 @@ madym_gui_model_configure::madym_gui_model_configure(const mdm_DCEModelBase &mod
 			}
 			paramControls_[iParam].maps_->setChecked(maps); //this should trigger toggle auto callback
 
+			//Set lower/upper bounds from model, this option should only be enabled
+			//if the parameter is not fixed
+			paramControls_[iParam].lowerBound_->setValidator(new QDoubleValidator(-1e6, 1e6, 8, this));
+			paramControls_[iParam].lowerBound_->setText(QString::number(lowerBounds[iParam]));
+			paramControls_[iParam].upperBound_->setValidator(new QDoubleValidator(-1e6, 1e6, 8, this));
+			paramControls_[iParam].upperBound_->setText(QString::number(upperBounds[iParam]));
+
 			//Set relative limit from model, this option should only be enabled
 			//if the parameter is not fixed
 			paramControls_[iParam].relativeLimit_->setValidator(new QDoubleValidator(0, 1000, 4, this));
@@ -104,6 +113,8 @@ madym_gui_model_configure::madym_gui_model_configure(const mdm_DCEModelBase &mod
       paramControls_[iParam].value_->setVisible(true);
       paramControls_[iParam].fixed_->setVisible(true);
 			paramControls_[iParam].maps_->setVisible(true);
+			paramControls_[iParam].lowerBound_->setVisible(true);
+			paramControls_[iParam].upperBound_->setVisible(true);
 			paramControls_[iParam].relativeLimit_->setVisible(true);
     }
     else
@@ -112,6 +123,8 @@ madym_gui_model_configure::madym_gui_model_configure(const mdm_DCEModelBase &mod
       paramControls_[iParam].value_->setVisible(false);
       paramControls_[iParam].fixed_->setVisible(false);
 			paramControls_[iParam].maps_->setVisible(false);
+			paramControls_[iParam].lowerBound_->setVisible(false);
+			paramControls_[iParam].upperBound_->setVisible(false);
 			paramControls_[iParam].relativeLimit_->setVisible(false);
     }
   }
@@ -132,34 +145,42 @@ void madym_gui_model_configure::on_okButton_clicked()
 	std::vector<double> initialParams(nParams);
 	std::vector<int> fixedParams(0);
 	std::vector<int> initMapParams(0);
+	std::vector<double> lowerBounds(nParams);
+	std::vector<double> upperBounds(nParams);
 	std::vector<int> relativeLimitParams(0);
 	std::vector<double>relativeLimitValues(0);
 
-  for (int iParam = 0; iParam < 10; iParam++)
+  for (int iParam = 0; iParam < nParams; iParam++)
   {
-    if (nParams >= iParam + 1)
-    {
-      initialParams[iParam] = 
-        paramControls_[iParam].value_->text().toDouble();
+    
+    initialParams[iParam] = 
+      paramControls_[iParam].value_->text().toDouble();
 
-      if (paramControls_[iParam].fixed_->isChecked())
-        fixedParams.push_back(iParam+1);
+    if (paramControls_[iParam].fixed_->isChecked())
+      fixedParams.push_back(iParam+1);
 
-			if (paramControls_[iParam].maps_->isChecked())
-				initMapParams.push_back(iParam + 1);
+		if (paramControls_[iParam].maps_->isChecked())
+			initMapParams.push_back(iParam + 1);
 
-			double rl = paramControls_[iParam].relativeLimit_->text().toDouble();
-			if (rl)
-			{
-				relativeLimitParams.push_back(iParam + 1);
-				relativeLimitValues.push_back(rl);
-			}
-    }
+		lowerBounds[iParam] =
+			paramControls_[iParam].lowerBound_->text().toDouble();
+
+		upperBounds[iParam] =
+			paramControls_[iParam].upperBound_->text().toDouble();
+
+		double rl = paramControls_[iParam].relativeLimit_->text().toDouble();
+		if (rl)
+		{
+			relativeLimitParams.push_back(iParam + 1);
+			relativeLimitValues.push_back(rl);
+		}
   }
 
 	madym_options_.initialParams.set(initialParams);
 	madym_options_.initMapParams.set(initMapParams);
 	madym_options_.fixedParams.set(fixedParams);
+	madym_options_.lowerBounds.set(lowerBounds);
+	madym_options_.upperBounds.set(upperBounds);
 	madym_options_.relativeLimitParams.set(relativeLimitParams);
 	madym_options_.relativeLimitValues.set(relativeLimitValues);
   done(0);
@@ -171,41 +192,61 @@ void madym_gui_model_configure::on_cancelButton_clicked()
 
 void madym_gui_model_configure::on_fixedCheckBox_1_toggled(bool checked)
 {
+	ui.lowerBoundLineEdit_1->setEnabled(!checked);
+	ui.upperBoundLineEdit_1->setEnabled(!checked);
 	ui.relLimitLineEdit_1->setEnabled(!checked);
 }
 void madym_gui_model_configure::on_fixedCheckBox_2_toggled(bool checked)
 {
+	ui.lowerBoundLineEdit_2->setEnabled(!checked);
+	ui.upperBoundLineEdit_2->setEnabled(!checked);
 	ui.relLimitLineEdit_2->setEnabled(!checked);
 }
 void madym_gui_model_configure::on_fixedCheckBox_3_toggled(bool checked)
 {
+	ui.lowerBoundLineEdit_3->setEnabled(!checked);
+	ui.upperBoundLineEdit_3->setEnabled(!checked);
 	ui.relLimitLineEdit_3->setEnabled(!checked);
 }
 void madym_gui_model_configure::on_fixedCheckBox_4_toggled(bool checked)
 {
+	ui.lowerBoundLineEdit_4->setEnabled(!checked);
+	ui.upperBoundLineEdit_4->setEnabled(!checked);
 	ui.relLimitLineEdit_4->setEnabled(!checked);
 }
 void madym_gui_model_configure::on_fixedCheckBox_5_toggled(bool checked)
 {
+	ui.lowerBoundLineEdit_5->setEnabled(!checked);
+	ui.upperBoundLineEdit_5->setEnabled(!checked);
 	ui.relLimitLineEdit_5->setEnabled(!checked);
 }
 void madym_gui_model_configure::on_fixedCheckBox_6_toggled(bool checked)
 {
+	ui.lowerBoundLineEdit_6->setEnabled(!checked);
+	ui.upperBoundLineEdit_6->setEnabled(!checked);
 	ui.relLimitLineEdit_6->setEnabled(!checked);
 }
 void madym_gui_model_configure::on_fixedCheckBox_7_toggled(bool checked)
 {
+	ui.lowerBoundLineEdit_7->setEnabled(!checked);
+	ui.upperBoundLineEdit_7->setEnabled(!checked);
 	ui.relLimitLineEdit_7->setEnabled(!checked);
 }
 void madym_gui_model_configure::on_fixedCheckBox_8_toggled(bool checked)
 {
+	ui.lowerBoundLineEdit_8->setEnabled(!checked);
+	ui.upperBoundLineEdit_8->setEnabled(!checked);
 	ui.relLimitLineEdit_8->setEnabled(!checked);
 }
 void madym_gui_model_configure::on_fixedCheckBox_9_toggled(bool checked)
 {
+	ui.lowerBoundLineEdit_9->setEnabled(!checked);
+	ui.upperBoundLineEdit_9->setEnabled(!checked);
 	ui.relLimitLineEdit_9->setEnabled(!checked);
 }
 void madym_gui_model_configure::on_fixedCheckBox_10_toggled(bool checked)
 {
+	ui.lowerBoundLineEdit_10->setEnabled(!checked);
+	ui.upperBoundLineEdit_10->setEnabled(!checked);
 	ui.relLimitLineEdit_10->setEnabled(!checked);
 }

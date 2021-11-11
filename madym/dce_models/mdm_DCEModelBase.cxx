@@ -18,14 +18,18 @@ MDM_API mdm_DCEModelBase::mdm_DCEModelBase(
   const std::vector<double> &initialParams,
   const std::vector<int> &fixedParams,
   const std::vector<double> &fixedValues,
-	const std::vector<int> relativeLimitParams,
-	const std::vector<double> relativeLimitValues)
+  const std::vector<double>& lowerBounds,
+  const std::vector<double>& upperBounds,
+	const std::vector<int> &relativeLimitParams,
+	const std::vector<double> &relativeLimitValues)
   :CtModel_(0),
   AIF_(AIF),
   pkParams_(0),
   pkParamsOpt_(0),
   pkParamNames_(paramNames),
   pkInitParams_(initialParams),
+  lowerBounds_(lowerBounds),
+  upperBounds_(upperBounds),
 	errorCode_(mdm_ErrorTracker::OK)
 {
   
@@ -219,26 +223,36 @@ MDM_API double     mdm_DCEModelBase::initialParams(const std::string &paramName)
   return FLT_MIN;
 }
 
-MDM_API const std::string&     mdm_DCEModelBase::paramName(int paramIdx) const
+MDM_API const std::string& mdm_DCEModelBase::paramName(int paramIdx) const
 {
   return pkParamNames_[paramIdx];
 }
-MDM_API const std::vector<std::string>&     mdm_DCEModelBase::paramNames() const
+MDM_API const std::vector<std::string>& mdm_DCEModelBase::paramNames() const
 {
   return pkParamNames_;
 }
 
-MDM_API const std::vector<bool>&     mdm_DCEModelBase::optimisedParamFlags() const
+MDM_API const std::vector<bool>& mdm_DCEModelBase::optimisedParamFlags() const
 {
   return optParamFlags_;
 }
 
-MDM_API const std::vector<double>&     mdm_DCEModelBase::relativeBounds() const
+MDM_API const std::vector<double>& mdm_DCEModelBase::lowerBounds() const
 {
-	return relativeBounds_;
+	return lowerBounds_;
 }
 
-MDM_API const mdm_AIF&     mdm_DCEModelBase::AIF() const
+MDM_API const std::vector<double>& mdm_DCEModelBase::upperBounds() const
+{
+  return upperBounds_;
+}
+
+MDM_API const std::vector<double>& mdm_DCEModelBase::relativeBounds() const
+{
+  return relativeBounds_;
+}
+
+MDM_API const mdm_AIF& mdm_DCEModelBase::AIF() const
 {
   return AIF_;
 }
@@ -246,4 +260,18 @@ MDM_API const mdm_AIF&     mdm_DCEModelBase::AIF() const
 MDM_API mdm_ErrorTracker::ErrorCode mdm_DCEModelBase::getModelErrorCode() const
 {
 	return errorCode_;
+}
+
+MDM_API std::vector<double> mdm_DCEModelBase::makeLLSMatrix(const std::vector<double>& Ct_sig) const
+{
+  throw mdm_exception(__func__, boost::format(
+    "Model (%1%) does support LLS solving")
+    % modelType());
+}
+
+MDM_API void mdm_DCEModelBase::transformLLSolution(const double* B)
+{
+  throw mdm_exception(__func__, boost::format(
+    "Model (%1%) does support LLS solving")
+    % modelType());
 }

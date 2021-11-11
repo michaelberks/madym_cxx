@@ -75,13 +75,14 @@ void test_model_time_fit(
   AIF.setPIFType(mdm_AIF::PIF_TYPE::PIF_POP);
 	auto model = mdm_DCEModelGenerator::createModel(AIF,
 		modelType, {},
-		{}, fixedParams, {}, {}, {});
+		{}, fixedParams, {}, {}, {}, {}, {});
 
   mdm_DCEModelFitter fitter(
     *model,
     0,
     nTimes,
-    {}
+    {},
+		"BLEIC"
   );
 
 	mdm_DCEVoxel vox(

@@ -13,7 +13,7 @@ def run(
     model:str=None, 
     output_dir:str = None,
     cmd_exe:str = None,
-    no_optimise:bool = False,
+    no_optimise:bool = None,
     T1_vols:list = None,
     T1_method:str = None,
     dynamic_basename:str = None,
@@ -21,16 +21,16 @@ def run(
     sequence_start:str = None,
     sequence_step:str = None,
     n_dyns:int = 0,
-    input_Ct:bool = False,
-    output_Ct_sig:bool = False,
-    output_Ct_mod:bool = False,
+    input_Ct:bool = None,
+    output_Ct_sig:bool = None,
+    output_Ct_mod:bool = None,
     T1_name:str = None,
     M0_name:str = None,
     B1_name:str = None,
     B1_scaling:float = None,
-    B1_correction:bool = False,
+    B1_correction:bool = None,
     r1_const:float = None,
-    M0_ratio:bool = False,
+    M0_ratio:bool = None,
     TR:float = None,
     dose:float = None,
     injection_image:int = None,
@@ -43,30 +43,34 @@ def run(
     aif_map:str = None,
     pif_name:str = None,
     IAUC_times:np.array = None,
-    IAUC_at_peak:bool = False,
+    IAUC_at_peak:bool = None,
     param_names:list = None,
     init_params:np.array = None,
     fixed_params:np.array = None,
     fixed_values:np.array = None,
+    upper_bounds:np.array = None,
+    lower_bounds:np.array = None,
     relative_limit_params:np.array = None,
     relative_limit_values:np.array = None,
     init_maps_dir:str = None,
     init_map_params:np.array = None,
     residuals:str = None,
     max_iter:int = None,
-    dyn_noise:bool = False,
-    test_enhancement:bool = False,
+    opt_type:str = None,
+    dyn_noise:bool = None,
+    test_enhancement:bool = None,
     img_fmt_r:str = None,
     img_fmt_w:str = None,
-    overwrite:bool = False,
+    voxel_size_warn_only:bool = None,
+    overwrite:bool = None,
     program_log_name:str = None,
     audit_dir:str = None,
     audit_name:str = None,
     config_out:str = None,
     error_name:str = None,
-    no_log:bool = False,
-    no_audit:bool = False,
-    quiet:bool = False,
+    no_log:bool = None,
+    no_audit:bool = None,
+    quiet:bool = None,
     working_directory:str = None,
     dummy_run:bool = False):
     '''
@@ -130,7 +134,7 @@ def run(
             Flag to turn B1 correction on
         r1_const : float = None, 
             Relaxivity constant of concentration in tissue (in ms)
-        M0_ratio : bool = False, 
+        M0_ratio : bool = None, 
             Flag to use ratio method to scale signal instead of supplying M0
         TR : float default None,  
             TR of dynamic series (in ms), only required if T1 method is inversion recovery
@@ -166,6 +170,10 @@ def run(
             Parameters fixed to their initial values (ie not optimised)
         fixed_values : np.array = None,
             Values for fixed parameters (overrides default initial parameter values)
+        lower_bounds: np.array = None
+		    Lower bounds for each parameter during optimisation
+	    upper_bounds: np.array = None
+		    Upper bounds for each parameter during optimisation
         relative_limit_params : np.array = None,
             Parameters with relative limits on their optimisation bounds
         relative_limit_values : np.array = None,
@@ -178,6 +186,8 @@ def run(
             Path to residuals map used to threshold new fits
         max_iter: int = None
             Maximum number of iterations to run model fit for
+        opt_type: str = None
+            Type of optimisation to run
         dyn_noise : bool = False,
             Set to use varying temporal noise in model fit
         test_enhancement : bool = False, 
@@ -186,6 +196,8 @@ def run(
             Image format for reading input
         img_fmt_w : str = None
             Image format for writing output
+        voxel_size_warn_only : bool = False
+            If true, only warn if voxel sizes don't match for subsequent images
         overwrite : bool = False,
             Set overwrite existing analysis in output dir
         program_log_name : str = None, 
@@ -283,16 +295,16 @@ def run(
     if n_dyns > 0:
         cmd_args += ['-n', str(n_dyns)]
 
-    if input_Ct:
-        cmd_args += ['--Ct']
+    if input_Ct is not None:
+        cmd_args += ['--Ct', str(int(input_Ct))]
         
     #T1/M0 options to load from maps
     if T1_name:
         cmd_args += ['--T1', T1_name]
                     
     #And if we're not using the ratio method, an M0 map
-    if M0_ratio:
-        cmd_args += ['--M0_ratio']
+    if M0_ratio is not None:
+        cmd_args += ['--M0_ratio', str(int(M0_ratio))]
 
     if M0_name:
         cmd_args += ['--M0', M0_name]
@@ -324,8 +336,8 @@ def run(
     if B1_scaling is not None:
         cmd_args += ['--B1_scaling', B1_scaling]
 
-    if B1_correction:
-        cmd_args += ['--B1_correction']
+    if B1_correction is not None:
+        cmd_args += ['--B1_correction', str(int(B1_correction))]
      
     if dose is not None:
         cmd_args += ['--dose', f'{dose:4.3f}']  
@@ -333,20 +345,20 @@ def run(
     if hct is not None:
         cmd_args += ['--hct', f'{hct:4.3f}']
 
-    if output_Ct_sig:
-        cmd_args += ['--Ct_sig']
+    if output_Ct_sig is not None:
+        cmd_args += ['--Ct_sig', str(int(output_Ct_sig))]
 
-    if output_Ct_mod:
-        cmd_args += ['--Ct_mod']   
+    if output_Ct_mod is not None:
+        cmd_args += ['--Ct_mod', str(int(output_Ct_mod))]   
 
-    if no_optimise:
-        cmd_args += ['--no_opt']
+    if no_optimise is not None:
+        cmd_args += ['--no_opt', str(int(no_optimise))]
 
-    if not test_enhancement:
-        cmd_args += ['--test_enh']  
+    if test_enhancement is not None:
+        cmd_args += ['--test_enh', str(int(test_enhancement))]  
 
-    if dyn_noise:
-        cmd_args += ['--dyn_noise']
+    if dyn_noise is not None:
+        cmd_args += ['--dyn_noise', str(int(dyn_noise))]
 
     if injection_image is not None:
         cmd_args += ['--inj', str(injection_image)]
@@ -381,14 +393,14 @@ def run(
     if config_out:
         cmd_args += ['--config_out', config_out]
 
-    if no_log:
-        cmd_args += ['--no_log']
+    if no_log is not None:
+        cmd_args += ['--no_log', str(int(no_log))]
 
-    if no_audit:
-        cmd_args += ['--no_audit']
+    if no_audit is not None:
+        cmd_args += ['--no_audit', str(int(no_audit))]
 
-    if quiet:
-        cmd_args += ['--quiet']
+    if quiet is not None:
+        cmd_args += ['--quiet', str(int(quiet))]
 
     if error_name:
         cmd_args += ['--err', error_name] 
@@ -423,6 +435,14 @@ def run(
             fixed_str = ','.join(f'{f:5.4f}' for f in fixed_values)           
             cmd_args += ['--fixed_values', fixed_str]
 
+    if lower_bounds:
+        bounds_str = ','.join(f'{b:5.4f}' for b in lower_bounds)       
+        cmd_args += ['--lower_bounds', bounds_str]
+
+    if upper_bounds:
+        bounds_str = ','.join(f'{b:5.4f}' for b in upper_bounds)       
+        cmd_args += ['--upper_bounds', bounds_str]
+
     if relative_limit_params:
         relative_str = ','.join(str(r) for r in relative_limit_params)       
         cmd_args += ['--relative_limit_params', relative_str]
@@ -437,14 +457,20 @@ def run(
     if max_iter is not None:
         cmd_args += ['--max_iter', str(max_iter)]
 
+    if opt_type is not None:
+        cmd_args += ['--opt_type', opt_type]
+
     if img_fmt_r:
         cmd_args += ['--img_fmt_r', img_fmt_r]
 
     if img_fmt_w:
         cmd_args += ['--img_fmt_w', img_fmt_w]
 
-    if overwrite:
-        cmd_args += ['--overwrite']
+    if voxel_size_warn_only is not None:
+        cmd_args += ['--voxel_size_warn_only', str(int(voxel_size_warn_only))]
+
+    if overwrite is not None:
+        cmd_args += ['--overwrite', str(int(overwrite))]
 
     #Args structure complete, convert to string for printing
     cmd_str = ' '.join(cmd_args)

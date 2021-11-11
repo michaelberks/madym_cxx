@@ -170,13 +170,11 @@ MDM_API void mdm_AnalyzeFormat::writeImage3D(const std::string &fileName,
 }
 
 //
-bool mdm_AnalyzeFormat::filesExist(const std::string & fileName,
+bool mdm_AnalyzeFormat::filesExist(const std::string & baseName,
   bool warn)
 {
 
-  assert(!fileName.empty());
-
-  auto baseName = stripAnalyzeExtension(fileName);
+  assert(!baseName.empty());
 
   std::string hdrName = baseName + ".hdr";
   if (!boost::filesystem::exists(hdrName))

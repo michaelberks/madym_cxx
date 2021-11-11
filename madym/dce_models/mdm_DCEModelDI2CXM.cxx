@@ -10,6 +10,7 @@
 #endif // !MDM_API_EXPORTS
 
 #include "mdm_DCEModelDI2CXM.h"
+#include <madym/mdm_Exponentials.h>
 #include <cmath>
 
 MDM_API mdm_DCEModelDI2CXM::mdm_DCEModelDI2CXM(
@@ -18,13 +19,16 @@ MDM_API mdm_DCEModelDI2CXM::mdm_DCEModelDI2CXM(
   const std::vector<double> &initialParams,
   const std::vector<int> &fixedParams,
   const std::vector<double> &fixedValues,
-	const std::vector<int> &relativeLimitParams,
-	const std::vector<double> &relativeLimitValues)
-	:mdm_DCEModelBase(
-		AIF, paramNames, initialParams,
-		fixedParams, fixedValues,
-		relativeLimitParams,
-		relativeLimitValues)
+  const std::vector<double>& lowerBounds,
+  const std::vector<double>& upperBounds,
+  const std::vector<int>& relativeLimitParams,
+  const std::vector<double>& relativeLimitValues)
+  :mdm_DCEModelBase(
+    AIF, paramNames, initialParams,
+    fixedParams, fixedValues,
+    lowerBounds, upperBounds,
+    relativeLimitParams,
+    relativeLimitValues)
 {
   if (pkParamNames_.empty())
     pkParamNames_ = { "F_p", "PS", "v_e", "v_p", "f_a", "tau_a", "tau_v" };
@@ -68,18 +72,8 @@ MDM_API void mdm_DCEModelDI2CXM::computeCtModel(size_t nTimes)
   const double &v_e = pkParams_[2];//extravascular, extracellular space
   const double &v_p = pkParams_[3];//plasma volume*/
   const double &f_a = pkParams_[4];//the arterial fraction
-  const double &tau_a = pkParams_[5];//AIF delay
-  const double &tau_v = pkParams_[6];//the arterial fraction
-  double f_v = 1 - f_a; // estimate of hepatic portal venous fraction
-  const double KMAX = 1e9;
-
-  //Get AIF and PIF, labelled in model equation as Ca_t and Cv_t
-  //Resample AIF and get AIF times
-  AIF_.resample_AIF( tau_a);
-  AIF_.resample_PIF( tau_v, false, true);
-  const std::vector<double> Ca_t = AIF_.AIF();
-  const std::vector<double> Cv_t = AIF_.PIF();
-  const std::vector<double> &AIFtimes = AIF_.AIFTimes();
+  const double &tau_a = pkParams_[5];//arterial delay
+  const double &tau_v = pkParams_[6];//venous delay
 
   double K_pos;
   double K_neg;
@@ -122,52 +116,16 @@ MDM_API void mdm_DCEModelDI2CXM::computeCtModel(size_t nTimes)
     return;
   }
 
-
   double F_pos = F_p * E_pos;
   double F_neg = F_p * (1 - E_pos);
 
-  // Let's rewrite the convolution sum, using the exponential "trick" so 
-  //we can compute everything in one forward loop
-  double  Ft_pos = 0;
-  double Ft_neg = 0;
+  //Get AIF and PIF, labelled in model equation as Ca_t and Cv_t
+  const auto& t = AIF_.AIFTimes();
+  auto Cp_t = mdm_Exponentials::mix_vifs(AIF_, f_a, tau_a, tau_v);
 
-  double Cp_t0 = (f_a*Ca_t[0] + f_v * Cv_t[0]);
-
-  for (size_t i_t = 1; i_t < nTimes; i_t++)
-  {
-
-    // Get current time, and time change
-    double delta_t = AIFtimes[i_t] - AIFtimes[i_t - 1];
-
-    //Compute combined arterial and vascular input for this time
-    double Cp_t1 = (f_a*Ca_t[i_t] + f_v * Cv_t[i_t]);
-
-    //Update the exponentials for the transfer terms in the two compartments
-    double e_delta_pos = exp(-delta_t * K_pos);
-    double e_delta_neg = exp(-delta_t * K_neg);
-
-    //Use iterative trick to update the convolutions of transfers with the
-    //input function
-    double A_pos = (K_pos > KMAX) ? 0 :
-      delta_t * 0.5 * (Cp_t1 + Cp_t0 * e_delta_pos);
-    double A_neg = (K_neg > KMAX) ? 0 :
-      delta_t * 0.5 * (Cp_t1 + Cp_t0 * e_delta_neg);
-
-    Ft_pos = Ft_pos * e_delta_pos + A_pos;
-    Ft_neg = Ft_neg * e_delta_neg + A_neg;
-
-    //Combine the two compartments with the rate constant to get the final
-    //concentration at this time point
-    double C_t = F_neg * Ft_neg + F_pos * Ft_pos;
-
-    //If for any reason this computes NaN, set to zero and bug out now
-    if (std::isnan(C_t))
-      return;
-
-    CtModel_[i_t] = C_t;
-    Cp_t0 = Cp_t1;
-
-  }
+  mdm_Exponentials::biexponential(
+    F_pos, F_neg, K_pos, K_neg, Cp_t, t,
+    CtModel_);
 }
 
 MDM_API void mdm_DCEModelDI2CXM::checkParams()

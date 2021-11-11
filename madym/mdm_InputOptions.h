@@ -135,6 +135,12 @@ struct mdm_InputOptions {
 	mdm_input_doubles fixedValues = mdm_input_doubles(
 		mdm_input_double_list(std::vector<double>{}), "fixed_values", "",
 		"Values for fixed parameters"); //!< See initial value
+	mdm_input_doubles lowerBounds = mdm_input_doubles(
+		mdm_input_double_list(std::vector<double>{}), "lower_bounds", "",
+		"Lower bounds for each parameter during optimisation"); //!< See initial value
+	mdm_input_doubles upperBounds = mdm_input_doubles(
+		mdm_input_double_list(std::vector<double>{}), "upper_bounds", "",
+		"Upper bounds for each parameter during optimisation"); //!< See initial value
 	mdm_input_ints relativeLimitParams = mdm_input_ints(
 		mdm_input_int_list(std::vector<int>{}), "relative_limit_params", "",
 		"Index of parameters to which relative limits are applied"); //!< See initial value
@@ -160,6 +166,9 @@ struct mdm_InputOptions {
 	mdm_input_int maxIterations = mdm_input_int(
 		0, "max_iter", "",
 		"Max iterations per voxel in optimisation - 0 for no limit"); //!< See initial value
+	mdm_input_string optimisationType = mdm_input_string(
+		mdm_input_str("BLEIC"), "opt_type", "",
+		"Type of optimisation to use. LLS fastest but only available for some models. NS slowest but most robust"); //!< See initial value
 
 	//DCE only output options
 	mdm_input_bool outputCt_sig = mdm_input_bool(

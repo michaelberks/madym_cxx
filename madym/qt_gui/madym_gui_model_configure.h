@@ -28,15 +28,25 @@ struct paramControls {
   \param relativeLimit value of relative limit in widget linedit
   */
   paramControls(QLabel *name, QLineEdit *value, 
-		QCheckBox *fixed, QCheckBox *maps, QLineEdit *relativeLimit)
-    :name_(name), value_(value), fixed_(fixed), maps_(maps), relativeLimit_(relativeLimit)
+		QCheckBox *fixed, QCheckBox *maps,
+    QLineEdit *lowerBound, QLineEdit* upperBound, QLineEdit* relativeLimit)
+    :
+    name_(name), 
+    value_(value), 
+    fixed_(fixed), 
+    maps_(maps),
+    lowerBound_(lowerBound),
+    upperBound_(upperBound),
+    relativeLimit_(relativeLimit)
   {};
 
   QLabel *name_; //!<name of parameter in widget label
   QLineEdit *value_; //!< initial value in widget linedit
   QCheckBox *fixed_; //!< checkbox to show if parameter fixed
 	QCheckBox *maps_; //!< checkbox to show if parameter initialised from preloaded maps
-	QLineEdit *relativeLimit_; //!< relativeLimit value of relative limit in widget linedit
+  QLineEdit* lowerBound_; //!< value of lower bound in widget linedit
+  QLineEdit* upperBound_; //!< value of upper bound in widget linedit
+	QLineEdit *relativeLimit_; //!< value of relative limit in widget linedit
 };
 
 //! QT UI class for configuring tracer-kinetic model parameters in pop-up window of main GUI

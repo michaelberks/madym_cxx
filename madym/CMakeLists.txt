@@ -84,6 +84,7 @@ set(mdm_sources
 	
 	mdm_OptionsParser.cxx			mdm_OptionsParser.h
 	mdm_InputTypes.cxx				mdm_InputTypes.h
+  mdm_Exponentials.h
   mdm_SequenceNames.h
 	mdm_InputOptions.h
 	mdm_platform_defs.h
@@ -123,6 +124,7 @@ set(mdm_dce_model_sources
   dce_models/mdm_DCEModelDIETM.cxx		dce_models/mdm_DCEModelDIETM.h
   dce_models/mdm_DCEModelAUEM.cxx		dce_models/mdm_DCEModelAUEM.h
   dce_models/mdm_DCEModel2CXM.cxx		dce_models/mdm_DCEModel2CXM.h
+  dce_models/mdm_DCEModel2CFM.cxx		dce_models/mdm_DCEModel2CFM.h
   dce_models/mdm_DCEModelDI2CXM.cxx		dce_models/mdm_DCEModelDI2CXM.h
   dce_models/mdm_DCEModelDIBEM.cxx		dce_models/mdm_DCEModelDIBEM.h
   dce_models/mdm_DCEModelDIBEM_Fp.cxx	dce_models/mdm_DCEModelDIBEM_Fp.h

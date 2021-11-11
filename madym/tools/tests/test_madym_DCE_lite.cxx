@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(test_madym_lite) {
 	ofs.close();
 
 	//Check the model parameters have fitted correctly
-	double tol = 0.1;
+	double tol = 1.0;
 	BOOST_TEST_MESSAGE(boost::format("Fitted ktrans (%1.2f, %2.2f)")
 		% ktrans_fit % trueParams[0]);
 	BOOST_CHECK_CLOSE(ktrans_fit, trueParams[0], tol);

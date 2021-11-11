@@ -31,7 +31,9 @@ public:
 	\param paramNames names of each parameter - used to label output maps (default {})
 	\param initialParams initial values for parameters (default {})
 	\param fixedParams  indices of parameters not optimised  (default {})
-	\param fixedValues  values for fixed parameters (if set, overrides initialParams - default {})
+	\param fixedValues  values for fixed parameters (if set, overrides initialParams (default {})
+	\param lowerBounds lower bounds for each parameter during optimisation (default {})
+	\param upperBounds upper bounds for each parameter during optimisation (default {})
 	\param relativeLimitParams  indices of parameters to which relative limits are applied  (default {})
 	\param relativeLimitValues  values for relative limits (default {})
 	*/
@@ -41,8 +43,10 @@ public:
     const std::vector<double> &initialParams = std::vector<double>(0),
     const std::vector<int> &fixedParams = std::vector<int>(0),
     const std::vector<double> &fixedValues = std::vector<double>(0),
-		const std::vector<int> relativeLimitParams = std::vector<int>(0),
-		const std::vector<double> relativeLimitValues = std::vector<double>(0));
+		const std::vector<double>& lowerBounds = std::vector<double>(0),
+		const std::vector<double>& upperBounds = std::vector<double>(0),
+		const std::vector<int>& relativeLimitParams = std::vector<int>(0),
+		const std::vector<double>& relativeLimitValues = std::vector<double>(0));
 
 	//! Default destructor
 	/*!
@@ -187,26 +191,38 @@ public:
 	/*!
 	\return names of parameters
 	*/
-	MDM_API const std::vector<std::string>&     paramNames() const;
+	MDM_API const std::vector<std::string>& paramNames() const;
 
 	//! Return flags specifying which parameters free to be are optimised
 	/*!
 	\return flags specifying which parameters free to be are optimised (true) vs fixed (false). 
 	Will be length numParams().
 	*/
-	MDM_API const std::vector<bool>&     optimisedParamFlags() const;
+	MDM_API const std::vector<bool>& optimisedParamFlags() const;
+
+	//! Return the lower bounds (if any) for each parameter
+	/*!
+	\return lower bounds for each parameter.
+	*/
+	MDM_API const std::vector<double>& lowerBounds() const;
+
+	//! Return the upper bounds (if any) for each parameter
+	/*!
+	\return upper bounds for each parameter.
+	*/
+	MDM_API const std::vector<double>& upperBounds() const;
 
 	//! Return the relative bounds (if any) for each parameter
 	/*!
 	\return relative bounds for each parameter.
 	*/
-	MDM_API const std::vector<double>&     relativeBounds() const;
+	MDM_API const std::vector<double>& relativeBounds() const;
 
 	//! Return the relative AIF object used by the model
 	/*!
 	\return AIF object used by the model
 	*/
-	MDM_API const mdm_AIF&     AIF() const;
+	MDM_API const mdm_AIF& AIF() const;
 
   //! Return any errors in fitted parameters.
 	/*!
@@ -226,7 +242,6 @@ public:
 	/*!
 	Pure virtual function, must be implemented by sub-classes.
 	\param nTimes number of time-points, starting from 0 at which to compute Cm(t). Must be < AIF.nTimes()
-	\return
 	*/
 	MDM_API virtual void computeCtModel(size_t nTimes) = 0;
 
@@ -237,6 +252,23 @@ public:
 	\see getModelErrorCode
 	*/
 	MDM_API virtual void checkParams() = 0;
+
+	//! Make a matrix for LLS solving 
+	/*!
+	Base class throws error stating model does not have an LLS solver matrix. 
+	Model subclasses can implement to override error if they are compatible.
+	\param Ct_sig time-series of signal derived CA concentration
+	\return Matrix for LLS solver collapsed column major to a single data vector
+	*/
+	MDM_API virtual std::vector<double> makeLLSMatrix(const std::vector<double>& Ct_sig) const;
+
+	//! Transform LLS solution to model parameters 
+	/*!
+	Base class throws error stating model does not have an LLS solver matrix.
+	Model subclasses can implement to override error if they are compatible.
+	\param B solution returned from LLS solver
+	*/
+	MDM_API virtual void transformLLSolution(const double* B);
 
 protected:
 

@@ -750,7 +750,7 @@ void madym_gui_ui::on_modelSelectComboBox_currentIndexChanged(const QString &tex
   aif.setPIFType(mdm_AIF::PIF_TYPE::PIF_POP);
   model_ = mdm_DCEModelGenerator::createModel(aif,
     modelType, {},
-		{}, {}, {}, {}, {});
+    {}, {}, {}, {}, {}, {}, {});
 	processor_.madym_exe().options().model.set(text.toStdString());
   processor_.madym_exe().options().paramNames.set({});
   processor_.madym_exe().options().initialParams.set({});
@@ -782,6 +782,7 @@ void madym_gui_ui::on_configureModelButton_clicked()
     processor_.madym_exe().options().paramNames(),
     processor_.madym_exe().options().initialParams(), 
 		processor_.madym_exe().options().fixedParams(), processor_.madym_exe().options().fixedValues(),
+    processor_.madym_exe().options().lowerBounds(), processor_.madym_exe().options().upperBounds(),
 		processor_.madym_exe().options().relativeLimitParams(), processor_.madym_exe().options().relativeLimitValues());
 
   madym_gui_model_configure optionsWindow(*model_, modelName, processor_.madym_exe().options(), this);
@@ -803,6 +804,7 @@ void madym_gui_ui::on_temporalNoiseCheckBox_stateChanged(int state)
 void madym_gui_ui::on_optimiseFitCheckBox_stateChanged(int state)
 {
   ui.maxIterationsLineEdit->setEnabled(state);
+  ui.optTypeComboBox->setEnabled(state);
 	processor_.madym_exe().options().noOptimise.set(!state);
 
 }
@@ -810,6 +812,12 @@ void madym_gui_ui::on_testEnhancementCheckBox_stateChanged(int state)
 {
 	processor_.madym_exe().options().testEnhancement.set(state);
 }
+
+void madym_gui_ui::on_optTypeComboBox_currentIndexChanged(const QString& text)
+{
+  processor_.madym_exe().options().optimisationType.set(text.toStdString());
+}
+
 void madym_gui_ui::on_maxIterationsLineEdit_textChanged(const QString &text)
 {
 	processor_.madym_exe().options().maxIterations.set(text.toInt());
@@ -941,6 +949,7 @@ void madym_gui_ui::initialize_widget_values()
     ui.maxIterationsLineEdit->setText(QString::number(options.maxIterations()));
     ui.initMapsLineEdit->setText(options.initMapsDir().c_str());
     ui.residualsLineEdit->setText(options.modelResiduals().c_str());
+    initialize_optimisation_options();
 
     //Output options specific to DCE fits
     ui.iaucLabel->show();
@@ -1196,6 +1205,32 @@ void madym_gui_ui::initialize_image_format_options(QComboBox &b)
   b.setCurrentIndex(selected_index);
 }
 
+//
+void madym_gui_ui::initialize_optimisation_options()
+{
+  const auto& types = mdm_DCEModelFitter::validTypes();
+  int selected_index = 0;
+  bool matched = false;
+  auto& b = ui.optTypeComboBox;
+  {
+    const QSignalBlocker blocker(b);
+    // We use a signal blocker here to avoid trying to set an empty model
+    //if a config file is loaded an we update the widget values
+    b->clear();
+    for (auto type : types)
+    {
+      b->addItem(type.c_str());
+      if (type == processor_.madym_exe().options().optimisationType())
+        matched = true;
+      else if (!matched)
+        selected_index++;
+    }
+    b->addItem(NONE_SELECTED);
+  }
+  b->setCurrentIndex(selected_index);
+}
+
+//
 void madym_gui_ui::set_AIF_enabled()
 {
   auto type = processor_.madym_exe().options().aifType();

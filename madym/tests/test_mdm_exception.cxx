@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(test_mdm_exception) {
     AIF.setPIFType(mdm_AIF::PIF_TYPE::PIF_POP);
     auto model = mdm_DCEModelGenerator::createModel(AIF,
       modelType, {},
-      {}, {}, {}, {}, {});
+      {}, {}, {}, {}, {}, {}, {});
 
     //Stuff we still can't do...
 

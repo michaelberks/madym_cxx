@@ -12,18 +12,8 @@
 #include "mdm_DCEModelNONE.h"
 
 MDM_API mdm_DCEModelNONE::mdm_DCEModelNONE(
-  mdm_AIF &AIF,
-  const std::vector<std::string> &paramNames,
-  const std::vector<double> &initialParams,
-  const std::vector<int> &fixedParams,
-  const std::vector<double> &fixedValues,
-	const std::vector<int> &relativeLimitParams,
-	const std::vector<double> &relativeLimitValues)
-	:mdm_DCEModelBase(
-    AIF, {}, {},
-    {}, {},
-    {},
-    {})
+  mdm_AIF &AIF)
+	:mdm_DCEModelBase(AIF)
 {
   //Could be stricter and raise exception if any inputs are non-empty?
 }

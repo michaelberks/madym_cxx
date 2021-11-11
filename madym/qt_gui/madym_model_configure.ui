@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>334</width>
+    <width>468</width>
     <height>385</height>
    </rect>
   </property>
@@ -30,10 +30,37 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1" colspan="2">
-       <widget class="QLabel" name="modelName">
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="paramLineEdit_2"/>
+      </item>
+      <item row="11" column="1">
+       <widget class="QLineEdit" name="paramLineEdit_10"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="paramLabel_1">
         <property name="text">
-         <string>model</string>
+         <string>Param 1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="0">
+       <widget class="QLabel" name="paramLabel_7">
+        <property name="text">
+         <string>Param 7</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="paramLabel_4">
+        <property name="text">
+         <string>Param 4</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="2" colspan="2">
+       <widget class="QCheckBox" name="fixedCheckBox_9">
+        <property name="text">
+         <string/>
         </property>
        </widget>
       </item>
@@ -44,6 +71,16 @@
         </property>
        </widget>
       </item>
+      <item row="6" column="1">
+       <widget class="QLineEdit" name="paramLineEdit_5"/>
+      </item>
+      <item row="7" column="2">
+       <widget class="QCheckBox" name="fixedCheckBox_6">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
       <item row="11" column="2" colspan="2">
        <widget class="QCheckBox" name="fixedCheckBox_10">
         <property name="text">
@@ -51,32 +88,98 @@
         </property>
        </widget>
       </item>
-      <item row="11" column="1">
-       <widget class="QLineEdit" name="paramLineEdit_10"/>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="paramLineEdit_1"/>
       </item>
-      <item row="10" column="1">
-       <widget class="QLineEdit" name="paramLineEdit_9"/>
+      <item row="3" column="2" colspan="2">
+       <widget class="QCheckBox" name="fixedCheckBox_2">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="paramLineEdit_3"/>
+      </item>
+      <item row="0" column="1" colspan="2">
+       <widget class="QLabel" name="modelName">
+        <property name="text">
+         <string>model</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="paramLabel_6">
+        <property name="text">
+         <string>Param 6</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QLineEdit" name="paramLineEdit_4"/>
+      </item>
+      <item row="7" column="1">
+       <widget class="QLineEdit" name="paramLineEdit_6"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Parameter</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="paramLabel_3">
+        <property name="text">
+         <string>Param 3</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="paramLabel_2">
+        <property name="text">
+         <string>Param 2</string>
+        </property>
+       </widget>
       </item>
       <item row="9" column="1">
        <widget class="QLineEdit" name="paramLineEdit_8"/>
+      </item>
+      <item row="9" column="2" colspan="2">
+       <widget class="QCheckBox" name="fixedCheckBox_8">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="2">
+       <widget class="QCheckBox" name="fixedCheckBox_3">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QLineEdit" name="paramLineEdit_7"/>
+      </item>
+      <item row="6" column="2" colspan="2">
+       <widget class="QCheckBox" name="fixedCheckBox_5">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLabel" name="paramLabel_9">
+        <property name="text">
+         <string>Param 9</string>
+        </property>
+       </widget>
       </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label_4">
         <property name="text">
          <string>Model:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="1">
-       <widget class="QLineEdit" name="paramLineEdit_6"/>
-      </item>
-      <item row="5" column="1">
-       <widget class="QLineEdit" name="paramLineEdit_4"/>
-      </item>
-      <item row="10" column="2" colspan="2">
-       <widget class="QCheckBox" name="fixedCheckBox_9">
-        <property name="text">
-         <string/>
         </property>
        </widget>
       </item>
@@ -94,19 +197,8 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="4">
-       <widget class="QCheckBox" name="mapsCheckBox_2">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="paramLabel_1">
-        <property name="text">
-         <string>Param 1</string>
-        </property>
-       </widget>
+      <item row="10" column="1">
+       <widget class="QLineEdit" name="paramLineEdit_9"/>
       </item>
       <item row="5" column="2" colspan="2">
        <widget class="QCheckBox" name="fixedCheckBox_4">
@@ -115,107 +207,8 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="paramLabel_7">
-        <property name="text">
-         <string>Param 7</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1">
-       <widget class="QLineEdit" name="paramLineEdit_5"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Parameter</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="paramLineEdit_1"/>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="paramLabel_4">
-        <property name="text">
-         <string>Param 4</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="2" colspan="2">
-       <widget class="QCheckBox" name="fixedCheckBox_2">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="2" colspan="2">
-       <widget class="QCheckBox" name="fixedCheckBox_5">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="paramLineEdit_3"/>
-      </item>
-      <item row="7" column="2">
-       <widget class="QCheckBox" name="fixedCheckBox_6">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="1">
-       <widget class="QLineEdit" name="paramLineEdit_7"/>
-      </item>
-      <item row="4" column="2">
-       <widget class="QCheckBox" name="fixedCheckBox_3">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="paramLabel_6">
-        <property name="text">
-         <string>Param 6</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="paramLineEdit_2"/>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="paramLabel_3">
-        <property name="text">
-         <string>Param 3</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="paramLabel_2">
-        <property name="text">
-         <string>Param 2</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="2" colspan="2">
-       <widget class="QCheckBox" name="fixedCheckBox_8">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="0">
-       <widget class="QLabel" name="paramLabel_9">
-        <property name="text">
-         <string>Param 9</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2" colspan="2">
-       <widget class="QCheckBox" name="fixedCheckBox_1">
+      <item row="3" column="4">
+       <widget class="QCheckBox" name="mapsCheckBox_2">
         <property name="text">
          <string/>
         </property>
@@ -242,13 +235,6 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="4">
-       <widget class="QCheckBox" name="mapsCheckBox_3">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
       <item row="9" column="4">
        <widget class="QCheckBox" name="mapsCheckBox_8">
         <property name="text">
@@ -256,15 +242,8 @@
         </property>
        </widget>
       </item>
-      <item row="8" column="4">
-       <widget class="QCheckBox" name="mapsCheckBox_7">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="4">
-       <widget class="QCheckBox" name="mapsCheckBox_9">
+      <item row="4" column="4">
+       <widget class="QCheckBox" name="mapsCheckBox_3">
         <property name="text">
          <string/>
         </property>
@@ -277,6 +256,12 @@
         </property>
        </widget>
       </item>
+      <item row="9" column="7">
+       <widget class="QLineEdit" name="relLimitLineEdit_8"/>
+      </item>
+      <item row="11" column="7">
+       <widget class="QLineEdit" name="relLimitLineEdit_10"/>
+      </item>
       <item row="11" column="4">
        <widget class="QCheckBox" name="mapsCheckBox_10">
         <property name="text">
@@ -284,35 +269,14 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="5">
-       <widget class="QLineEdit" name="relLimitLineEdit_1"/>
-      </item>
-      <item row="3" column="5">
-       <widget class="QLineEdit" name="relLimitLineEdit_2"/>
-      </item>
-      <item row="4" column="5">
-       <widget class="QLineEdit" name="relLimitLineEdit_3"/>
-      </item>
-      <item row="5" column="5">
+      <item row="5" column="7">
        <widget class="QLineEdit" name="relLimitLineEdit_4"/>
       </item>
-      <item row="6" column="5">
-       <widget class="QLineEdit" name="relLimitLineEdit_5"/>
-      </item>
-      <item row="7" column="5">
-       <widget class="QLineEdit" name="relLimitLineEdit_6"/>
-      </item>
-      <item row="8" column="5">
-       <widget class="QLineEdit" name="relLimitLineEdit_7"/>
-      </item>
-      <item row="9" column="5">
-       <widget class="QLineEdit" name="relLimitLineEdit_8"/>
-      </item>
-      <item row="10" column="5">
+      <item row="10" column="7">
        <widget class="QLineEdit" name="relLimitLineEdit_9"/>
       </item>
-      <item row="11" column="5">
-       <widget class="QLineEdit" name="relLimitLineEdit_10"/>
+      <item row="4" column="7">
+       <widget class="QLineEdit" name="relLimitLineEdit_3"/>
       </item>
       <item row="1" column="1">
        <widget class="QLabel" name="label_2">
@@ -324,19 +288,151 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="5">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Relative limit</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="2" colspan="3">
        <widget class="QLabel" name="label_3">
         <property name="text">
          <string>Fixed Maps</string>
         </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
        </widget>
+      </item>
+      <item row="1" column="7">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Relative</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="7">
+       <widget class="QLineEdit" name="relLimitLineEdit_1"/>
+      </item>
+      <item row="3" column="7">
+       <widget class="QLineEdit" name="relLimitLineEdit_2"/>
+      </item>
+      <item row="10" column="4">
+       <widget class="QCheckBox" name="mapsCheckBox_9">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2" colspan="2">
+       <widget class="QCheckBox" name="fixedCheckBox_1">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="7">
+       <widget class="QLineEdit" name="relLimitLineEdit_6"/>
+      </item>
+      <item row="6" column="7">
+       <widget class="QLineEdit" name="relLimitLineEdit_5"/>
+      </item>
+      <item row="8" column="4">
+       <widget class="QCheckBox" name="mapsCheckBox_7">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="7">
+       <widget class="QLineEdit" name="relLimitLineEdit_7"/>
+      </item>
+      <item row="1" column="5">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Lower</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="6">
+       <widget class="QLabel" name="label_7">
+        <property name="text">
+         <string>Upper</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="5" colspan="3">
+       <widget class="QLabel" name="label_8">
+        <property name="text">
+         <string>Optimisation bounds</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="5">
+       <widget class="QLineEdit" name="lowerBoundLineEdit_1"/>
+      </item>
+      <item row="2" column="6">
+       <widget class="QLineEdit" name="upperBoundLineEdit_1"/>
+      </item>
+      <item row="3" column="5">
+       <widget class="QLineEdit" name="lowerBoundLineEdit_2"/>
+      </item>
+      <item row="3" column="6">
+       <widget class="QLineEdit" name="upperBoundLineEdit_2"/>
+      </item>
+      <item row="4" column="5">
+       <widget class="QLineEdit" name="lowerBoundLineEdit_3"/>
+      </item>
+      <item row="4" column="6">
+       <widget class="QLineEdit" name="upperBoundLineEdit_3"/>
+      </item>
+      <item row="5" column="5">
+       <widget class="QLineEdit" name="lowerBoundLineEdit_4"/>
+      </item>
+      <item row="5" column="6">
+       <widget class="QLineEdit" name="upperBoundLineEdit_4"/>
+      </item>
+      <item row="6" column="5">
+       <widget class="QLineEdit" name="lowerBoundLineEdit_5"/>
+      </item>
+      <item row="6" column="6">
+       <widget class="QLineEdit" name="upperBoundLineEdit_5"/>
+      </item>
+      <item row="7" column="5">
+       <widget class="QLineEdit" name="lowerBoundLineEdit_6"/>
+      </item>
+      <item row="7" column="6">
+       <widget class="QLineEdit" name="upperBoundLineEdit_6"/>
+      </item>
+      <item row="8" column="5">
+       <widget class="QLineEdit" name="lowerBoundLineEdit_7"/>
+      </item>
+      <item row="8" column="6">
+       <widget class="QLineEdit" name="upperBoundLineEdit_7"/>
+      </item>
+      <item row="9" column="5">
+       <widget class="QLineEdit" name="lowerBoundLineEdit_8"/>
+      </item>
+      <item row="9" column="6">
+       <widget class="QLineEdit" name="upperBoundLineEdit_8"/>
+      </item>
+      <item row="10" column="5">
+       <widget class="QLineEdit" name="lowerBoundLineEdit_9"/>
+      </item>
+      <item row="10" column="6">
+       <widget class="QLineEdit" name="upperBoundLineEdit_9"/>
+      </item>
+      <item row="11" column="5">
+       <widget class="QLineEdit" name="lowerBoundLineEdit_10"/>
+      </item>
+      <item row="11" column="6">
+       <widget class="QLineEdit" name="upperBoundLineEdit_10"/>
       </item>
      </layout>
     </widget>
