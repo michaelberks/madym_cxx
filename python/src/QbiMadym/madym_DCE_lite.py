@@ -16,14 +16,14 @@ def run(model=None, input_data=None,
     input_Ct:bool = True,
     output_Ct_sig:bool = True,
     output_Ct_mod:bool = True,
-    no_optimise:bool = False,
+    no_optimise:bool = None,
     # The below are all only required if we're converting from signals
     T1:np.array = None, 
     M0:np.array = None,
     TR:float = None,
     FA:float = None,
     r1_const:float = None,
-    M0_ratio:bool = True,
+    M0_ratio:bool = None,
     B1_values:np.array = None,
     dose:float = None,
     injection_image:int = None,
@@ -35,17 +35,20 @@ def run(model=None, input_data=None,
     pif_name:str = None,
     #
     IAUC_times:np.array = [60,90,120],
-    IAUC_at_peak:bool = False,
+    IAUC_at_peak:bool = None,
     init_params:np.array = None,
     fixed_params:np.array = None,
     fixed_values:np.array = None,
+    upper_bounds:np.array = None,
+    lower_bounds:np.array = None,
     relative_limit_params:np.array = None,
     relative_limit_values:np.array = None,
     #
     max_iter: int = None,
+    opt_type:str = None,
     dyn_noise_values:np.array = None,
-    test_enhancement:bool = False,
-    quiet:bool = False,
+    test_enhancement:bool = None,
+    quiet:bool = None,
     dummy_run:bool = False
 ):
     '''
@@ -132,6 +135,10 @@ def run(model=None, input_data=None,
             Parameters fixed to their initial values (ie not optimised)
         fixed_values : np.array default None, 
             Values for fixed parameters (overrides default initial parameter values)"
+        lower_bounds: np.array = None
+		    Lower bounds for each parameter during optimisation
+	    upper_bounds: np.array = None
+		    Upper bounds for each parameter during optimisation
         relative_limit_params : np.array = None,
             Parameters with relative limits on their optimisation bounds
         relative_limit_values : np.array = None,
@@ -139,6 +146,8 @@ def run(model=None, input_data=None,
         
         max_iter: int = None
             Maximum number of iterations to run model fit for
+        opt_type: str = None
+            Type of optimisation to run
         dyn_noise_values : np.array default None,
             Varying temporal noise in model fit
         test_enhancement : bool default False, 
@@ -297,8 +306,8 @@ def run(model=None, input_data=None,
         '-O', output_name]
 
     #Now set any args that require option inputs
-    if input_Ct:
-        cmd_args += ['--Ct']
+    if input_Ct is not None:
+        cmd_args += ['--Ct', str(int(input_Ct))]
         
     else: #Below are only needed if input is signals
         if TR is not None:
@@ -328,17 +337,17 @@ def run(model=None, input_data=None,
     if last_image is not None:
         cmd_args += ['--last', str(last_image)]
 
-    if output_Ct_sig:
-        cmd_args += ['--Ct_sig']
+    if output_Ct_sig is not None:
+        cmd_args += ['--Ct_sig', str(int(output_Ct_sig))]
 
-    if output_Ct_mod:
-        cmd_args += ['--Ct_mod']
+    if output_Ct_mod is not None:
+        cmd_args += ['--Ct_mod', str(int(output_Ct_mod))]
 
-    if no_optimise:
-        cmd_args += ['--no_opt']
+    if no_optimise is not None:
+        cmd_args += ['--no_opt', str(int(no_optimise))]
 
-    if test_enhancement:
-        cmd_args += ['--test_enh']
+    if test_enhancement is not None:
+        cmd_args += ['--test_enh', str(int(test_enhancement))]
 
     if aif_name is not None:
         cmd_args += ['--aif', aif_name]
@@ -356,14 +365,14 @@ def run(model=None, input_data=None,
         #Get a name for the temporary file we'll write noise to (we'll hold
         #off writing anything until we know this isn't a dummy run
         dyn_noise_file = os.path.join(input_dir.name, 'dyn_noise.dat')
-        cmd_args = ['--dyn_noise', f'{dyn_noise_file}']
+        cmd_args += ['--dyn_noise', f'{dyn_noise_file}']
 
     if IAUC_times:
         IAUC_str = ','.join(f'{i:3.2f}' for i in IAUC_times)
         cmd_args += ['--iauc', IAUC_str]
 
-    if IAUC_at_peak:
-        cmd_args += ['--iauc_peak']
+    if IAUC_at_peak is not None:
+        cmd_args += ['--iauc_peak', str(int(IAUC_at_peak))]
 
     load_params = False
     if init_params is not None:
@@ -383,6 +392,14 @@ def run(model=None, input_data=None,
             fixed_str = ','.join(f'{f:5.4f}' for f in fixed_values)           
             cmd_args += ['--fixed_values', fixed_str]
 
+    if lower_bounds:
+        bounds_str = ','.join(f'{b:5.4f}' for b in lower_bounds)       
+        cmd_args += ['--lower_bounds', bounds_str]
+
+    if upper_bounds:
+        bounds_str = ','.join(f'{b:5.4f}' for b in upper_bounds)       
+        cmd_args += ['--upper_bounds', bounds_str]
+
     if relative_limit_params:
         relative_str = ','.join(str(r) for r in relative_limit_params)       
         cmd_args += ['--relative_limit_params', relative_str]
@@ -394,11 +411,14 @@ def run(model=None, input_data=None,
     if max_iter is not None:
         cmd_args += ['--max_iter', str(max_iter)]
 
+    if opt_type is not None:
+        cmd_args += ['--opt_type', opt_type]
+
     if B1_values is not None:
         cmd_args += ['--B1_correction']
 
-    if quiet:
-        cmd_args += ['--quiet']
+    if quiet is not None:
+        cmd_args += ['--quiet', str(int(quiet))]
 
     #Args structure complete, convert to string for printing
     cmd_str = ' '.join(cmd_args)

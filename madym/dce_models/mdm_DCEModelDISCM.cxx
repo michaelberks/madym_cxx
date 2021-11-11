@@ -18,13 +18,16 @@ MDM_API mdm_DCEModelDISCM::mdm_DCEModelDISCM(
   const std::vector<double> &initialParams,
   const std::vector<int> &fixedParams,
   const std::vector<double> &fixedValues,
-	const std::vector<int> &relativeLimitParams,
-	const std::vector<double> &relativeLimitValues)
-	:mdm_DCEModelBase(
-		AIF, paramNames, initialParams,
-		fixedParams, fixedValues,
-		relativeLimitParams,
-		relativeLimitValues)
+  const std::vector<double>& lowerBounds,
+  const std::vector<double>& upperBounds,
+  const std::vector<int>& relativeLimitParams,
+  const std::vector<double>& relativeLimitValues)
+  :mdm_DCEModelBase(
+    AIF, paramNames, initialParams,
+    fixedParams, fixedValues,
+    lowerBounds, upperBounds,
+    relativeLimitParams,
+    relativeLimitValues)
 {
   if (pkParamNames_.empty())
     pkParamNames_ = { "F_p", "k_2", "f_a", "tau_a", "tau_v" };

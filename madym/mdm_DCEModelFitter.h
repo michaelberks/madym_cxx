@@ -23,6 +23,11 @@
 class mdm_DCEModelFitter {
 public:
 
+	enum FitterTypes {
+		LLS,
+		BLEIC,
+		NS
+	};
 	
 	//! Constructor
 	/*!
@@ -37,12 +42,34 @@ public:
     const size_t timepoint0,
 		const size_t timepointN,
     const std::vector<double> &noiseVar,
+		const std::string &type,
 		const int maxIterations = 0);
 
 	//! Default destructor
 	/*!
 	*/
 	MDM_API ~mdm_DCEModelFitter();
+
+	//! Convert  FitterType enum to string input
+	/*!
+	\param type fitter type in string format (eg as set from user options)
+	\return fitter type as enum
+	*/
+	MDM_API static std::string toString(FitterTypes type);
+
+	//! Convert string input to FitterType enum
+	/*!
+	\param type fitter type in string format (eg as set from user options)
+	\return fitter type as enum
+	*/
+	MDM_API static const std::vector<std::string> validTypes();
+
+	//! Convert string input to FitterType enum
+	/*!
+	\param type fitter type in string format (eg as set from user options)
+	\return fitter type as enum
+	*/
+	MDM_API static FitterTypes typeFromString(const std::string& type);
 
   //! Compute modelled C(t) at initial model parameters
   /*!
@@ -89,6 +116,8 @@ private:
 	/*METHODS*/
 
 	//
+	double CtSSD();
+
 	double CtSSD(const std::vector<double> &parameter_array);
 
   double computeSSD(const std::vector<double> &CtModel) const;
@@ -98,13 +127,25 @@ private:
 		func[0] = static_cast<mdm_DCEModelFitter*>(context)->CtSSD(params);
 	}
 
+	static void CtSSDalglib(const alglib::real_1d_array& x, double& func, void* context) {
+		std::vector<double> params(x.getcontent(), x.getcontent() + x.length());
+		func = static_cast<mdm_DCEModelFitter*>(context)->CtSSD(params);
+	}
+
 	//
 	void optimiseModel();
+
+	void optimiseModel_ns(alglib::real_1d_array& x, alglib::ae_int_t maxits);
+
+	void optimiseModel_bleic(alglib::real_1d_array& x, alglib::ae_int_t maxits);
+
+	void optimiseModel_lls();
 
 	/*VARIABLES*/
   mdm_DCEModelBase &model_;
 
-  
+	FitterTypes type_;
+
   size_t timepoint0_;
   size_t timepointN_;
   std::vector<double> noiseVar_;			//DCE time series vector of estimated noise variance for each temporal volume

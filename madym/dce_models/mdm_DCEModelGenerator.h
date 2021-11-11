@@ -21,6 +21,7 @@
 #include <madym/dce_models/mdm_DCEModelAUEM.h>
 #include <madym/dce_models/mdm_DCEModelDISCM.h>
 #include <madym/dce_models/mdm_DCEModel2CXM.h>
+#include <madym/dce_models/mdm_DCEModel2CFM.h>
 #include <madym/dce_models/mdm_DCEModelDI2CXM.h>
 #include <madym/dce_models/mdm_DCEModelDIBEM.h>
 #include <madym/dce_models/mdm_DCEModelDIBEM_Fp.h>
@@ -54,6 +55,7 @@ public:
 		AUEM,
 		DISCM,
 		CXM,
+		CFM,
 		DI2CXM,
 		DIBEM,
 		DIBEM_FP,
@@ -71,6 +73,7 @@ public:
 	"DIETM",
 	"DISCM",
 	"2CXM",
+	"2CFM",
 	"DI2CXM",
 	"AUEM",
 	"DIBEM",
@@ -108,6 +111,9 @@ public:
 		else if (modelName == "2CXM")
 			return CXM;
 
+		else if (modelName == "2CFM")
+			return CFM;
+
 		else if (modelName == "DI2CXM")
 			return DI2CXM;
 
@@ -138,6 +144,8 @@ public:
 	\param initialParams if non-empty, overrides default initial parameter values of model
 	\param fixedParams indices of any parameters to be fixed in the model
 	\param fixedValues values associated with fixed parameters (if non-empty, overrides initial parameters)
+	\param lowerBounds lower bounds for each parameter during optimisation
+	\param upperBounds upper bounds for each parameter during optimisation
 	\param relativeLimitParams  indices of parameters to which relative limits are applied  (default {})
 	\param relativeLimitValues  values for relative limits (default {})
 	\return shared pointer to new model object of specified type
@@ -147,63 +155,67 @@ public:
 		ModelTypes modelType,
 		const std::vector<std::string> &paramNames,
     const std::vector<double> &initialParams,
-    const std::vector<int> fixedParams,
-    const std::vector<double> fixedValues,
-		const std::vector<int> relativeLimitParams,
-		const std::vector<double> relativeLimitValues)
+    const std::vector<int>& fixedParams,
+    const std::vector<double>& fixedValues,
+		const std::vector<double>& lowerBounds,
+		const std::vector<double>& upperBounds,
+		const std::vector<int>& relativeLimitParams,
+		const std::vector<double>& relativeLimitValues)
   {
     switch (modelType)
 		{
     case NONE:
     {
-      return std::make_shared<mdm_DCEModelNONE>(AIF, 
-        std::vector<std::string>(),
-        std::vector<double>(),
-        std::vector<int>(),
-        std::vector<double>(),
-        std::vector<int>(),
-        std::vector<double>());
+      return std::make_shared<mdm_DCEModelNONE>(AIF);
     }
 
 		case TOFTS:
 		{
 			return std::make_shared<mdm_DCEModelETM>(AIF, paramNames, initialParams,
-				fixedParams, fixedValues,
-				relativeLimitParams, relativeLimitValues);;
+				fixedParams, fixedValues, lowerBounds, upperBounds,
+				relativeLimitParams, relativeLimitValues);
 		}
 
 		case ETM:
 		{
 			return std::make_shared < mdm_DCEModelETM>(AIF, paramNames, initialParams,
-				fixedParams, fixedValues,
+				fixedParams, fixedValues, lowerBounds, upperBounds,
 				relativeLimitParams, relativeLimitValues);
 		}
 
 		case DIETM:
 		{
 			return std::make_shared < mdm_DCEModelDIETM>(AIF, paramNames, initialParams,
-				fixedParams, fixedValues,
+				fixedParams, fixedValues, lowerBounds, upperBounds,
 				relativeLimitParams, relativeLimitValues);
 		}
 
 		case AUEM:
 		{
 			return std::make_shared < mdm_DCEModelAUEM>(AIF, paramNames, initialParams,
-				fixedParams, fixedValues,
+				fixedParams, fixedValues, lowerBounds, upperBounds,
 				relativeLimitParams, relativeLimitValues);
 		}
 
 		case DISCM:
 		{
 			return std::make_shared < mdm_DCEModelDISCM>(AIF, paramNames, initialParams,
-				fixedParams, fixedValues,
+				fixedParams, fixedValues, lowerBounds, upperBounds,
 				relativeLimitParams, relativeLimitValues);
 		}
 
 		case CXM:
 		{
 			return std::make_shared < mdm_DCEModel2CXM>(AIF, paramNames, initialParams,
-				fixedParams, fixedValues,
+				fixedParams, fixedValues, lowerBounds, upperBounds,
+				relativeLimitParams, relativeLimitValues);
+
+		}
+
+		case CFM:
+		{
+			return std::make_shared < mdm_DCEModel2CFM>(AIF, paramNames, initialParams,
+				fixedParams, fixedValues, lowerBounds, upperBounds,
 				relativeLimitParams, relativeLimitValues);
 
 		}
@@ -211,21 +223,21 @@ public:
 		case DI2CXM:
 		{
 			return std::make_shared < mdm_DCEModelDI2CXM>(AIF, paramNames, initialParams,
-				fixedParams, fixedValues,
+				fixedParams, fixedValues, lowerBounds, upperBounds,
 				relativeLimitParams, relativeLimitValues);
 		}
 
 		case DIBEM:
 		{
 			return std::make_shared < mdm_DCEModelDIBEM>(AIF, paramNames, initialParams,
-				fixedParams, fixedValues,
+				fixedParams, fixedValues, lowerBounds, upperBounds,
 				relativeLimitParams, relativeLimitValues);
 		}
 
 		case DIBEM_FP:
 		{
 			return std::make_shared < mdm_DCEModelDIBEM_Fp>(AIF, paramNames, initialParams,
-				fixedParams, fixedValues,
+				fixedParams, fixedValues, lowerBounds, upperBounds,
 				relativeLimitParams, relativeLimitValues);
 
 		}
@@ -233,7 +245,7 @@ public:
 		case PATLAK:
 		{
 			return std::make_shared < mdm_DCEModelPatlak>(AIF, paramNames, initialParams,
-				fixedParams, fixedValues,
+				fixedParams, fixedValues, lowerBounds, upperBounds,
 				relativeLimitParams, relativeLimitValues);
 
 		}

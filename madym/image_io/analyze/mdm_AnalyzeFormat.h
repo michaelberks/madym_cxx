@@ -46,11 +46,11 @@ public:
 
   //!    Test for existence of the file with the specified basename and all Analyze extensions (.img, .hdr)
   /*!
-  \param    fileName base name of files to test
+  \param    baseName base name of files to test
   \param    warn  flag, if true triggers warning for program logger if files don't exist
   \return   bool true if files exist, false otherwise
   */
-  MDM_API static bool filesExist(const std::string & fileName,
+  MDM_API static bool filesExist(const std::string & baseName,
     bool warn = false);
 
 protected:

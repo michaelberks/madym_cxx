@@ -59,6 +59,7 @@ MDM_API void mdm_RunTools_madym_DCE_lite::run()
 	setModel(options_.model(),
 		options_.paramNames(), options_.initialParams(),
 		options_.fixedParams(), options_.fixedValues(),
+		options_.lowerBounds(), options_.upperBounds(),
 		options_.relativeLimitParams(), options_.relativeLimitValues());
 	AIF_.setPrebolus(options_.injectionImage());
 	AIF_.setHct(options_.hct());
@@ -183,6 +184,7 @@ MDM_API void mdm_RunTools_madym_DCE_lite::run()
     options_.firstImage(),
     options_.lastImage() ? options_.lastImage() : options_.nDyns(),
     noiseVar,
+		options_.optimisationType(),
     options_.maxIterations()
   );
 
@@ -300,6 +302,8 @@ MDM_API int mdm_RunTools_madym_DCE_lite::parseInputs(int argc, const char *argv[
 	options_parser_.add_option(config_options, options_.paramNames);
 	options_parser_.add_option(config_options, options_.fixedParams);
 	options_parser_.add_option(config_options, options_.fixedValues);
+	options_parser_.add_option(config_options, options_.lowerBounds);
+	options_parser_.add_option(config_options, options_.upperBounds);
 	options_parser_.add_option(config_options, options_.relativeLimitParams);
 	options_parser_.add_option(config_options, options_.relativeLimitValues);
 	options_parser_.add_option(config_options, options_.firstImage);
@@ -309,6 +313,7 @@ MDM_API int mdm_RunTools_madym_DCE_lite::parseInputs(int argc, const char *argv[
 	options_parser_.add_option(config_options, options_.dynNoiseFile);
 	options_parser_.add_option(config_options, options_.testEnhancement);
 	options_parser_.add_option(config_options, options_.maxIterations);
+	options_parser_.add_option(config_options, options_.optimisationType);
 
 		//DCE only output options_
 	options_parser_.add_option(config_options, options_.outputCt_sig);

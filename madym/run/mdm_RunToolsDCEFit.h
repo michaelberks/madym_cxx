@@ -56,6 +56,8 @@ protected:
 	\param initialParams override default initial values for model parameters. If empty defaults used.
 	\param fixedParams specify parameters that are fixed to their initial parameters. If empty, all parameters optimised.
 	\param fixedValues specify initial values for fixed parameters.
+	\param lowerBounds lower bounds for each parameter during optimisation
+	\param upperBounds upper bounds for each parameter during optimisation
 	\param relativeLimitParams specify parameters to which relative optimisation limits applied.
 	\param relativeLimitValues specify limit values for parameters with relative limits applied.
 	\see mdm_DCEModelGenerator
@@ -64,10 +66,12 @@ protected:
 	void setModel(const std::string &model_name,
 		const std::vector<std::string> &paramNames,
 		const std::vector<double> &initialParams,
-		const std::vector<int> fixedParams,
-		const std::vector<double> fixedValues,
-		const std::vector<int> relativeLimitParams,
-		const std::vector<double> relativeLimitValues);
+		const std::vector<int> &fixedParams,
+		const std::vector<double> &fixedValues,
+		const std::vector<double>& lowerBounds,
+		const std::vector<double>& upperBounds,
+		const std::vector<int> &relativeLimitParams,
+		const std::vector<double> &relativeLimitValues);
 
   
 

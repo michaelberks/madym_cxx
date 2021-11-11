@@ -25,6 +25,8 @@ public:
     const std::vector<double> &initialParams = std::vector<double>(0),
     const std::vector<int> &fixedParams = std::vector<int>(0),
     const std::vector<double> &fixedValues = std::vector<double>(0),
+    const std::vector<double>& lowerBounds = std::vector<double>(0),
+    const std::vector<double>& upperBounds = std::vector<double>(0),
 		const std::vector<int> &relativeLimitParams = std::vector<int>(0),
 		const std::vector<double> &relativeLimitValues = std::vector<double>(0));
 
@@ -35,6 +37,10 @@ public:
 	MDM_API virtual void computeCtModel(size_t nTimes);
 
 	MDM_API virtual void checkParams();
+
+  MDM_API std::vector<double> makeLLSMatrix(const std::vector<double>& Ct_sig) const;
+
+  MDM_API void transformLLSolution(const double* B);
 
 protected:
 

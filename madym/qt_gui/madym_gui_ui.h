@@ -173,6 +173,7 @@ private slots:
   void on_temporalNoiseCheckBox_stateChanged(int state);
 	void on_optimiseFitCheckBox_stateChanged(int state);
 	void on_testEnhancementCheckBox_stateChanged(int state);
+  void on_optTypeComboBox_currentIndexChanged(const QString& text);
   void on_maxIterationsLineEdit_textChanged(const QString &text);
 	void on_initMapsLineEdit_textChanged(const QString &text);
 	void on_initMapsDirSelect_clicked();
@@ -198,6 +199,7 @@ private: // Methods
   void initialize_T1_options();
   void initialize_AIF_options();
   void initialize_image_format_options(QComboBox &b);
+  void initialize_optimisation_options();
   void set_AIF_enabled();
   bool check_required_options();
   void setB1Name(const QString &text);

@@ -21,13 +21,7 @@ public:
 	
   //!Constructor for empty model
   MDM_API mdm_DCEModelNONE(
-    mdm_AIF &AIF,
-    const std::vector<std::string> &paramNames = std::vector<std::string>(0),
-    const std::vector<double> &initialParams = std::vector<double>(0),
-    const std::vector<int> &fixedParams = std::vector<int>(0),
-    const std::vector<double> &fixedValues = std::vector<double>(0),
-		const std::vector<int> &relativeLimitParams = std::vector<int>(0),
-		const std::vector<double> &relativeLimitValues = std::vector<double>(0));
+    mdm_AIF &AIF);
 
   MDM_API ~mdm_DCEModelNONE();
 

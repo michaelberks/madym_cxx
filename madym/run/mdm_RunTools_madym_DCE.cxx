@@ -54,6 +54,7 @@ MDM_API void mdm_RunTools_madym_DCE::run()
 	setModel(options_.model(),
 		options_.paramNames(), options_.initialParams(),
 		options_.fixedParams(), options_.fixedValues(),
+		options_.lowerBounds(), options_.upperBounds(),
 		options_.relativeLimitParams(), options_.relativeLimitValues());
 	volumeAnalysis_.setModel(model_);
 
@@ -173,6 +174,8 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.paramNames);
 	options_parser_.add_option(config_options, options_.fixedParams);
 	options_parser_.add_option(config_options, options_.fixedValues);
+	options_parser_.add_option(config_options, options_.lowerBounds);
+	options_parser_.add_option(config_options, options_.upperBounds);
 	options_parser_.add_option(config_options, options_.relativeLimitParams);
 	options_parser_.add_option(config_options, options_.relativeLimitValues);
 	options_parser_.add_option(config_options, options_.firstImage);
@@ -182,6 +185,7 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.dynNoise);
 	options_parser_.add_option(config_options, options_.testEnhancement);
 	options_parser_.add_option(config_options, options_.maxIterations);
+	options_parser_.add_option(config_options, options_.optimisationType);
 
 		//DCE only output options_
 	options_parser_.add_option(config_options, options_.outputCt_sig);
@@ -273,6 +277,7 @@ void mdm_RunTools_madym_DCE::setVolumeAnalysisParams()
 		volumeAnalysis_.setLastImage(options_.lastImage() - 1);
 	volumeAnalysis_.setIAUCtimes(options_.IAUCTimes(), true, options_.IAUCAtPeak());
 	volumeAnalysis_.setMaxIterations(options_.maxIterations());
+	volumeAnalysis_.setOptimisationType(options_.optimisationType());
 }
 
 //

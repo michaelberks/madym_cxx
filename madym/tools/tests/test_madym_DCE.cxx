@@ -23,7 +23,7 @@ void check_output(
 	const std::vector<double> IAUCVals,
   mdm_ImageIO::ImageFormat imageFormat)
 {
-  double tol = 0.1;
+  double tol = 1.0;
 
   //Even with empty model, these should be created
   mdm_Image3D model_fit = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "residuals", false);

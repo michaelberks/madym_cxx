@@ -552,6 +552,12 @@ MDM_API void mdm_VolumeAnalysis::setLastImage(size_t t)
 }
 
 //
+MDM_API void mdm_VolumeAnalysis::setOptimisationType(const std::string& type)
+{
+  optimisationType_ = type;
+}
+
+//
 MDM_API void mdm_VolumeAnalysis::setMaxIterations(int maxItr)
 {
 	maxIterations_ = maxItr;
@@ -878,6 +884,7 @@ void  mdm_VolumeAnalysis::fitModel(
     firstImage_,
     lastImage_ ? lastImage_ : numDynamics(),
     noiseVar_,
+    optimisationType_,
     maxIterations_
   );
 

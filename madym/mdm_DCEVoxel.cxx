@@ -287,7 +287,7 @@ MDM_API bool mdm_DCEVoxel::enhancing() const
 //
 MDM_API void mdm_DCEVoxel::testEnhancing()
 {
-  bool enhancing_ = true;
+  enhancing_ = true;
   if (IAUCVals_.empty())
   {
     auto iauc60 = computeIAUC({ 1.0 }, false);
