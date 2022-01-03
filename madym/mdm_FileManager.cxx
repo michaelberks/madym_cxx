@@ -129,6 +129,15 @@ MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir,
 		saveOutputMap(volumeAnalysis_.MAP_NAME_M0, 
       volumeAnalysis_.T1Mapper().M0(), outputDir, true);
 
+  //Save any diffusion modelling maps
+  for (const auto paramName : volumeAnalysis_.DWIMapper().paramNames())
+  {
+    const auto& map = volumeAnalysis_.DWIMapper().model_map(paramName);
+    if (map)
+      saveOutputMap(paramName, map, outputDir, false);
+  }
+      
+
   //Everything after this point is only applicable to analysis with a DCE model
   if (volumeAnalysis_.modelType().empty())
     return;

@@ -58,7 +58,7 @@ struct mdm_InputOptions {
 	mdm_input_string T1method = mdm_input_string(
 		mdm_input_str("VFA"), "T1_method", "T",
 		"Method used for baseline T1 mapping"); //!< See initial value
-  mdm_input_string T1Dir = mdm_input_string(
+	mdm_input_string T1Dir = mdm_input_string(
     mdm_input_str(""), "T1_dir", "",
     "Folder containing T1 input volumes, can be left empty if already included in option --T1_vols"); //!< See initial value
 	mdm_input_strings T1inputNames = mdm_input_strings(
@@ -70,12 +70,26 @@ struct mdm_InputOptions {
 	mdm_input_int nT1Inputs = mdm_input_int(
 		0, "n_T1", "",
 		"Number of input signals for baseline T1 mapping"); //!< See initial value
-  mdm_input_string B1Name = mdm_input_string(
+	mdm_input_string B1Name = mdm_input_string(
     mdm_input_str(""), "B1", "",
     "Path to B1 correction map"); //!< See initial value
-  mdm_input_double B1Scaling = mdm_input_double(
+	mdm_input_double B1Scaling = mdm_input_double(
     1000.0, "B1_scaling", "",
     "Scaling value appplied to B1 map"); //!< See initial value
+
+	//DWI tool inputs
+	mdm_input_string DWImethod = mdm_input_string(
+		mdm_input_str("ADC"), "DWI_method", "",
+		"Method used for DWI modelling"); //!< See initial value
+	mdm_input_string DWIDir = mdm_input_string(
+		mdm_input_str(""), "DWI_dir", "",
+		"Folder containing DWI input volumes, can be left empty if already included in option --DWI_vols"); //!< See initial value
+	mdm_input_strings DWIinputNames = mdm_input_strings(
+		mdm_input_string_list(std::vector<std::string>{}), "DWI_vols", "",
+		"Filepaths to input signal volumes (eg from multiple B0 values)"); //!< See initial value
+	mdm_input_double DWInoiseThresh = mdm_input_double(
+		0.0, "DWI_noise", "",
+		"Noise threshold for fitting DWI models"); //!< See initial value
 
 	//Signal to concentration options
 	mdm_input_bool M0Ratio = mdm_input_bool(

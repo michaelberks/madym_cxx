@@ -66,6 +66,9 @@ protected:
   //! Map T1 from input images using method specified in options
   MDM_API void mapT1();
 
+	//! Map T1 from input images using method specified in options
+	MDM_API void mapDWI();
+
 	//! Write all output maps
 	MDM_API void writeOutput();
 

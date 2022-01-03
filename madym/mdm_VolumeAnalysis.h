@@ -15,6 +15,7 @@
 #include <madym/mdm_DCEVoxel.h>
 #include <madym/dce_models/mdm_DCEModelBase.h>
 #include <madym/mdm_T1Mapper.h>
+#include <madym/mdm_DWIMapper.h>
 #include <madym/mdm_DCEModelFitter.h>
 
 //! Manager class for DCE analysis, stores input images and output parameter maps
@@ -86,6 +87,18 @@ public:
   \return const reference to T1 mapper
   */
   MDM_API const mdm_T1Mapper &T1Mapper() const;
+
+	//! Return reference to T1 mapper
+	/*!
+	\return reference to T1 mapper
+	*/
+	MDM_API mdm_DWIMapper& DWIMapper();
+
+	//! Return read-only reference to T1 mapper
+	/*!
+	\return const reference to T1 mapper
+	*/
+	MDM_API const mdm_DWIMapper& DWIMapper() const;
 
 	//! Set ROI mask
 	/*!

@@ -1,6 +1,6 @@
 /**
-*  @file    mdm_RunTools_madym_T1.cxx
-*  @brief   Implementation of mdm_RunTools_madym_T1 class
+*  @file    mdm_RunTools_madym_DWI.cxx
+*  @brief   Implementation of mdm_RunTools_madym_DWI class
 *
 *  Original author MA Berks 24 Oct 2018
 *  (c) Copyright QBI, University of Manchester 2020
@@ -10,33 +10,33 @@
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
 
-#include "mdm_RunTools_madym_T1.h"
+#include "mdm_RunTools_madym_DWI.h"
 
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/mdm_exception.h>
-#include <madym/t1_methods/mdm_T1FitterBase.h>
+#include <madym/dwi_methods/mdm_DWIFitterBase.h>
 
 namespace fs = boost::filesystem;
 
 //
-MDM_API mdm_RunTools_madym_T1::mdm_RunTools_madym_T1()
+MDM_API mdm_RunTools_madym_DWI::mdm_RunTools_madym_DWI()
 {}
 
 
-MDM_API mdm_RunTools_madym_T1::~mdm_RunTools_madym_T1()
+MDM_API mdm_RunTools_madym_DWI::~mdm_RunTools_madym_DWI()
 {}
 
-MDM_API void mdm_RunTools_madym_T1::run()
+MDM_API void mdm_RunTools_madym_DWI::run()
 {
 	//Check inputs set by user
-	if (options_.T1inputNames().empty())
-    throw mdm_exception(__func__, "Input map names (option --T1_vols) must be provided");
+	if (options_.DWIinputNames().empty())
+	throw mdm_exception(__func__, "Input map names (option --DWI_vols) must be provided");
 
-  //Set curent working dir
-  set_up_cwd();
+	//Set curent working dir
+	set_up_cwd();
 
-  //Set file manager options
-  setFileManagerParams();
+	//Set file manager options
+	setFileManagerParams();
 
 	//Create output folder/check overwrite
 	set_up_output_folder();
@@ -50,21 +50,21 @@ MDM_API void mdm_RunTools_madym_T1::run()
 	//Load ROI
 	loadROI();
 
-  //Map T1
-  mapT1();
+	//Do the diffusion model mapping
+	mapDWI();
 
 	//Write output
 	writeOutput();
 
-  //Reset the volume analysis
-  volumeAnalysis_.reset();
+	//Reset the volume analysis
+	volumeAnalysis_.reset();
 }
 
 //
-MDM_API int mdm_RunTools_madym_T1::parseInputs(int argc, const char *argv[])
+MDM_API int mdm_RunTools_madym_DWI::parseInputs(int argc, const char *argv[])
 {
-	po::options_description cmdline_options("madym_T1 options_");
-	po::options_description config_options("madym_T1 config options_");
+	po::options_description cmdline_options("madym_DWI options_");
+	po::options_description config_options("madym_DWI config options_");
 	
 	
 	//Generic input options_ applied to all command-line tools
@@ -75,14 +75,11 @@ MDM_API int mdm_RunTools_madym_T1::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.roiName);
 	options_parser_.add_option(config_options, options_.errorTrackerName);
 
-	//T1 calculation options_
-	options_parser_.add_option(config_options, options_.T1method);
-	options_parser_.add_option(config_options, options_.T1Dir);
-	options_parser_.add_option(config_options, options_.T1inputNames);
-	options_parser_.add_option(config_options, options_.T1noiseThresh);
-	options_parser_.add_option(config_options, options_.B1Scaling);
-	options_parser_.add_option(config_options, options_.B1Name);
-	options_parser_.add_option(config_options, options_.TR);
+	//DWI input options_
+	options_parser_.add_option(config_options, options_.DWImethod);
+	options_parser_.add_option(config_options, options_.DWIinputNames);
+	options_parser_.add_option(config_options, options_.DWInoiseThresh);
+  
 
 	//General output options_
 	options_parser_.add_option(config_options, options_.outputRoot);
@@ -107,13 +104,13 @@ MDM_API int mdm_RunTools_madym_T1::parseInputs(int argc, const char *argv[])
 		cmdline_options,
 		config_options,
 		options_.configFile(),
-		who(),
+    who(),
 		argc, argv);
 }
 
-MDM_API std::string mdm_RunTools_madym_T1::who() const
+MDM_API std::string mdm_RunTools_madym_DWI::who() const
 {
-	return "madym_T1";
+	return "madym_DWI";
 }
 //*******************************************************************************
 // Private:
