@@ -75,11 +75,6 @@ MDM_API int mdm_RunTools::run_catch()
     mdm_progAbort("std::exception caught");
     return 1;
   }
-  catch (...)
-  {
-    mdm_progAbort("Unhandled exception caught, aborting");
-    return 1;
-  }
 
   //Tidy up the logging objects
   mdm_progExit();

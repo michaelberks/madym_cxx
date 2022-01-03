@@ -115,8 +115,12 @@ MDM_API void mdm_DCEVoxel::computeCtFromSignal(
     if (errorCode)
       status_ = mdm_DCEVoxelStatus::DYN_T1_BAD;
 
-    else if (std::isnan(CtData_[k]))
+    if (std::isnan(CtData_[k]) || std::isinf(CtData_[k]))
+    {
       status_ = mdm_DCEVoxelStatus::CA_NAN;
+      break;
+    }
+      
   }
 
 }
