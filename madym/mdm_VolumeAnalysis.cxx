@@ -903,7 +903,7 @@ void  mdm_VolumeAnalysis::fitModel(
   for(const auto voxelIndex : selectedVoxels)
   {
     //If compute Ct from signal, skip voxels with invalid T1    
-    if (computeCt_ && T1Mapper_.T1(voxelIndex) < 0.0)
+    if (computeCt_ && T1Mapper_.T1(voxelIndex) <= 0.0)
       continue;
     
     //Check if we've got parameter maps with values to initialise each voxel
