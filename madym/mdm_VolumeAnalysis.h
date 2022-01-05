@@ -465,6 +465,7 @@ private:
   int prebolusImage_;
 
 	mdm_T1Mapper T1Mapper_;
+	mdm_DWIMapper DWIMapper_;
 	mdm_ErrorTracker errorTracker_;
 
 	/* Images for inputs and output */

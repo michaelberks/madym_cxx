@@ -40,6 +40,7 @@ const std::string mdm_VolumeAnalysis::MAP_NAME_CT_MOD = "Ct_mod";
 MDM_API mdm_VolumeAnalysis::mdm_VolumeAnalysis()
 	:
 	T1Mapper_(errorTracker_, ROI_),
+  DWIMapper_(errorTracker_, ROI_),
 	testEnhancement_(false),
 	useM0Ratio_(true),
   useB1correction_(false),
@@ -102,6 +103,18 @@ MDM_API mdm_T1Mapper& mdm_VolumeAnalysis::T1Mapper()
 MDM_API const mdm_T1Mapper& mdm_VolumeAnalysis::T1Mapper() const
 {
   return T1Mapper_;
+}
+
+//
+MDM_API mdm_DWIMapper& mdm_VolumeAnalysis::DWIMapper()
+{
+  return DWIMapper_;
+}
+
+//
+MDM_API const mdm_DWIMapper& mdm_VolumeAnalysis::DWIMapper() const
+{
+  return DWIMapper_;
 }
 
 //
