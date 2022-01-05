@@ -174,18 +174,17 @@ MDM_API const mdm_Image3D& mdm_DWIMapper::inputImage(size_t i) const
 //
 MDM_API std::vector<std::string> mdm_DWIMapper::paramNames() const
 {
-	if ()
-		return model_->paramNames();
+	return {};
 }
 
 //
-MDM_API const mdm_Image3D& mdm_DWIMapper::model_map() const
+MDM_API const mdm_Image3D& mdm_DWIMapper::model_map(const std::string& map_name) const
 {
 	return model_maps_[0];
 }
 
 //
-MDM_API double mdm_DWIMapper::model_map(size_t voxel) const
+MDM_API double mdm_DWIMapper::model_map(const std::string& map_name, size_t voxel) const
 {
 	return model_maps_[0].voxel(voxel);
 }
