@@ -169,6 +169,7 @@ endif()
 
 if (BUILD_WITH_DCMTK)
   target_link_libraries( mdm ${DCMTK_LIBRARIES})
+  target_link_directories( mdm PUBLIC ${DCMTK_LIBRARY_DIR})
 endif()
 
 if ( BUILD_QT_GUI )
