@@ -2,9 +2,9 @@
 #include <ostream>
 
 #include <madym/mdm_AIF.h>
-#include <madym/dce_models/mdm_DCEModelGenerator.h>
-#include <madym/t1_methods/mdm_T1FitterVFA.h>
-#include <madym/t1_methods/mdm_T1FitterIR.h>
+#include <madym/dce/mdm_DCEModelGenerator.h>
+#include <madym/t1/mdm_T1FitterVFA.h>
+#include <madym/t1/mdm_T1FitterIR.h>
 #include "mdm_test_utils.h"
 
 void write_series_to_binary(const std::string filename, 

@@ -1,5 +1,5 @@
 /**
-*  @file    t1_methods/mdm_T1MethodGenerator.h
+*  @file    t1/mdm_T1MethodGenerator.h
 *  @brief Header only class to generate specific instances of DCE models
 *
 *  Original author MA Berks 24 Oct 2018
@@ -16,9 +16,9 @@
 #include <madym/mdm_Image3D.h>
 #include <madym/mdm_InputOptions.h>
 #include <madym/mdm_ProgramLogger.h>
-#include <madym/dwi_methods/mdm_DWIFitterBase.h>
-#include <madym/dwi_methods/mdm_DWIFitterADC.h>
-#include <madym/dwi_methods/mdm_DWIFitterIVIM.h>
+#include <madym/dwi/mdm_DWIFitterBase.h>
+#include <madym/dwi/mdm_DWIFitterADC.h>
+#include <madym/dwi/mdm_DWIFitterIVIM.h>
 
 //!Header only class to generate specific instances of DCE models
 /*! 
@@ -114,7 +114,7 @@ public:
 			for (auto img : inputImages)
 				B0s.push_back(img.info().B.value());
 
-      return std::make_unique<mdm_DWIFitterADC>(B0s);
+      return std::make_unique<mdm_DWIFitterIVIM>(B0s);
 		}
     case IVIM:
     {

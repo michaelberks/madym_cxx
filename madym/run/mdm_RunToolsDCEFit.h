@@ -10,7 +10,7 @@
 #define MDM_RUNTOOLS_DCE_FIT_HDR
 #include "mdm_api.h"
 #include <madym/mdm_RunTools.h>
-#include <madym/mdm_DCEModelFitter.h>
+#include <madym/dce/mdm_DCEModelFitter.h>
 #include <memory>
 
 //! Abstract base class providing methods common to DCE analysis tools

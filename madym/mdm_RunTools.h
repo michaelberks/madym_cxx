@@ -13,10 +13,10 @@
 #include <madym/mdm_FileManager.h>
 #include <madym/mdm_VolumeAnalysis.h>
 #include <madym/mdm_AIF.h>
-#include <madym/mdm_T1Mapper.h>
+#include <madym/t1/mdm_T1Mapper.h>
 #include <madym/mdm_ErrorTracker.h>
 
-#include <madym/dce_models/mdm_DCEModelBase.h>
+#include <madym/dce/mdm_DCEModelBase.h>
 
 #include <string>
 #include <vector>

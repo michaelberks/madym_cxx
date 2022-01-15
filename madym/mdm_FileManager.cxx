@@ -287,6 +287,22 @@ MDM_API void mdm_FileManager::loadB1Map(const std::string &path, const double B1
 }
 
 //
+MDM_API void mdm_FileManager::loadDWIMappingInputImages(const std::vector<std::string>& DWIInputPaths)
+{
+  //Check we haven't been given too many or too few images
+  auto nNumImgs = DWIInputPaths.size();
+
+  //Loop through filePaths, loaded each variable flip angle images
+  for (int i = 0; i < nNumImgs; i++)
+  {
+    auto setFunc = std::bind(
+      &mdm_DWIMapper::addInputImage, &volumeAnalysis_.DWIMapper(), std::placeholders::_1);
+    loadAndSetImage(DWIInputPaths[i], "DWI input", setFunc,
+      mdm_Image3D::ImageType::TYPE_DWI, true);
+  }
+}
+
+//
 MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 	const std::string &dynPrefix, int nDyns, const std::string &indexPattern,
   const int startIndex, const int stepSize)

@@ -30,7 +30,7 @@ MDM_API mdm_T1FitterVFA::mdm_T1FitterVFA(const std::vector<double> &FAs, const d
   TR_(TR),
   usingB1_(usingB1)
 {
-	if (!FAs.empty())
+	if (!FAs_.empty())
 		initFAs();
 }
 

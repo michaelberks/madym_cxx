@@ -10,7 +10,7 @@
 #include <madym/mdm_api.h>
 
 #include <madym/dce/mdm_DCEModelBase.h>
-#include <madym/mdm_DCEVoxel.h>
+#include <madym/dce/mdm_DCEVoxel.h>
 
 #include <madym/opt/linalg.h>
 

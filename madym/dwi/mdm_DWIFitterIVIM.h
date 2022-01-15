@@ -10,6 +10,40 @@
 #include "mdm_api.h"
 #include "mdm_DWIFitterBase.h"
 #include "mdm_ErrorTracker.h"
+#include "mdm_DWIFitterADC.h"
+
+struct paramOpt
+{
+	double value;
+	double min;
+	double max;
+};
+
+struct bcfitParameters
+{
+	paramOpt s0;
+	paramOpt d;
+	paramOpt dstar;
+	paramOpt f;
+	paramOpt delta;
+};
+
+struct bcfitOutput
+{
+	std::vector<double> fitted_params;
+	std::vector<double> residuals;
+	double ssr;
+	int nvarys;
+	int ndata;
+	double aic;
+	double aicc;
+	double bic;
+	double rsq;
+
+	bool success;
+};
+
+
 
 //! Class for fitting IVIM to DWI data
 class mdm_DWIFitterIVIM : public mdm_DWIFitterBase {
@@ -19,33 +53,21 @@ public:
 	
 	//! Constructor from set of FAs and repetition time
 	/*!
-	\param B0s vector of B0 values sin msecs
+	\param Bvals vector of B0 values sin msecs
 	*/
-	MDM_API mdm_DWIFitterIVIM(const std::vector<double> &B0s);
+	MDM_API mdm_DWIFitterIVIM(const std::vector<double> &Bvals);
 
 	//! Default denstructor
 	/*!
 	*/
 	MDM_API ~mdm_DWIFitterIVIM();
 
-	//! Set variable flip angles
+	//! Perform IVIM fit
 	/*!
-	\param FAs vector of flip-angles in radians
+	\param params ...
+	\param ssr ...
 	*/
-	MDM_API void setB0s(const std::vector<double> &B0s);
-
-
-	//! Set inputs that vary on per voxel basis
-	/*!
-	*/
-	MDM_API void setInputs(const std::vector<double> &inputs);
-
-	//! Perform T1 fit using variable flip-angle method
-	/*!
-	\param T1value reference to hold computed T1
-	\param M0value reference to hold computed M0
-	*/
-	MDM_API mdm_ErrorTracker::ErrorCode fitModel(std::vector<double>&params);
+	MDM_API mdm_ErrorTracker::ErrorCode fitModel(std::vector<double>&params, double& ssr);
 
 	//! Set inputs for fitting IVIM to a single line of an input data stream buffer
 	/*!
@@ -82,8 +104,26 @@ public:
 	
 private:
 
-	void computeSignalGradient(const std::vector<double>& params,
-		double &signal, double &signal_dT1, double &signal_dM0);
+	std::vector<double> ivim_model(
+		const std::vector<double>& params,
+		const std::vector<double>& Bvals,
+		const std::string& model_type);
+
+	mdm_ErrorTracker::ErrorCode bcfitIVIM(
+		const std::vector<double>& initParams,
+		bcfitOutput& fit);
+
+	void ivim_fit(
+		const std::vector<double>& bval_thresh,
+		bool fit_model,
+		bcfitOutput& best_fit
+	);
+
+	void computeSignalGradient(
+		const double& s0, const double& d, const double& f, const double& dstar,
+		const double &B,
+		double &signal, 
+		double& ds0, double& dd, double& df, double& ddstar);
 
 	void computeSSEGradient(
 		const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad);
@@ -95,12 +135,15 @@ private:
 			x, func, grad);
 	}
 
-	void initB0s();
+	//Variables
 
-	std::vector<double> B0s_;
-	size_t nB0s_;
+	//!Thresholds on B-value to use in fitting
+	std::vector<double> Bvals_thresh_;
 
-	static const double PI;
+	//ADC fitter
+	mdm_DWIFitterADC ADCFitter_;
+
+	
 	
 };
 

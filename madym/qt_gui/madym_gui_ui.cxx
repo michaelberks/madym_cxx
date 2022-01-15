@@ -6,8 +6,8 @@
 
 #include "madym_gui_ui.h"
 
-#include <madym/dce_models/mdm_DCEModelGenerator.h>
-#include <madym/t1_methods/mdm_T1MethodGenerator.h>
+#include <madym/dce/mdm_DCEModelGenerator.h>
+#include <madym/t1/mdm_T1MethodGenerator.h>
 #include <madym/image_io/mdm_ImageIO.h>
 
 #include <madym/mdm_ProgramLogger.h>

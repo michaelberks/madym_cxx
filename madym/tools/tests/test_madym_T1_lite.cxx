@@ -3,8 +3,8 @@
 #include <madym/tests/mdm_test_utils.h>
 
 #include <fstream>
-#include <madym/t1_methods/mdm_T1FitterVFA.h>
-#include <madym/t1_methods/mdm_T1FitterIR.h>
+#include <madym/t1/mdm_T1FitterVFA.h>
+#include <madym/t1/mdm_T1FitterIR.h>
 #include <mdm_version.h>
 
 namespace fs = boost::filesystem;

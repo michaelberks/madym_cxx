@@ -3,10 +3,10 @@
 #include <fstream>
 
 #include <madym/tests/mdm_test_utils.h>
-#include <madym/t1_methods/mdm_T1FitterBase.h>
+#include <madym/t1/mdm_T1FitterBase.h>
 #include <mdm_version.h>
 #include <madym/mdm_AIF.h>
-#include <madym/dce_models/mdm_DCEModelGenerator.h>
+#include <madym/dce/mdm_DCEModelGenerator.h>
 
 namespace fs = boost::filesystem;
 

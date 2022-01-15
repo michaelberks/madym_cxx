@@ -61,6 +61,21 @@ protected:
 private:
   //Methods:
 
+	//! Map DWI from input images using method specified in options
+	void mapDWI();
+
+	//! Check there are a valid number of signal inputs for a given DWI modelling method
+	/*!
+	Throws mdm_exception if number of inputs not valid
+	\param methodType T1 method
+	\param numInputs number of input signals specified by user
+	*/
+	void checkNumInputs(mdm_DWIMethodGenerator::DWIMethods methodType, const int& numInputs);
+
+	//! Check if there are T1 signal inputs to load, and if so, load them
+	void loadDWIInputs();
+
+
 };
 
 #endif

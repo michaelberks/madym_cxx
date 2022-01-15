@@ -8,9 +8,9 @@
 #include <madym/mdm_AIF.h>
 #include <madym/tests/mdm_test_utils.h>
 #include <madym/mdm_AIF.h>
-#include <madym/dce_models/mdm_DCEModelGenerator.h>
-#include <madym/mdm_DCEVoxel.h>
-#include <madym/mdm_DCEModelFitter.h>
+#include <madym/dce/mdm_DCEModelGenerator.h>
+#include <madym/dce/mdm_DCEVoxel.h>
+#include <madym/dce/mdm_DCEModelFitter.h>
 
 
 void test_model_time_fit(

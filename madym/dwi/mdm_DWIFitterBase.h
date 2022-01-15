@@ -26,25 +26,49 @@ public:
 	//! Default constructor
 	/*!
 	Pre-conditions alglib optimiser
+	\param Bvals vector of B0 values sin msecs
+	\param paramNames name sof parameters in instantiated sub-class
 	*/
-	MDM_API mdm_DWIFitterBase();
+	MDM_API mdm_DWIFitterBase(
+		const std::vector<double>& Bvals, const std::vector<std::string> &paramNames);
 
 	//! Default destructor
 	MDM_API virtual ~mdm_DWIFitterBase();
 
-	//! Set inputs that vary on per voxel basis
+	//! Set B values
 	/*!
-	\param sigs vector of signals
+	\param B-values in msecs
 	*/
-	MDM_API virtual void setInputs(const std::vector<double> &sigs) = 0;
+	MDM_API virtual void setBvals(const std::vector<double>& Bvals);
+
+
+	//! Set signals matching B-values
+	/*!
+	* \param 
+	*/
+	MDM_API virtual void setSignals(const std::vector<double>& sigs);
+
+	//! Set B values
+	/*!
+	\param B-values in msecs that we're going to fit (as subset of Bvals_)
+	*/
+	MDM_API virtual void setBvalsToFit(const std::vector<double>& Bvals);
+
+
+	//! Set signals matching B-values to fit
+	/*!
+	* \param signals set of signals matching BvalsToFit_
+	*/
+	MDM_API virtual void setSignalsToFit(const std::vector<double>& sigs);
 
 	//! Fit DWI at a single voxel.
 	/*!
 	All sub-classes must implement this method.
 
 	\param params reference to hold computed DWI model parameters
+	\param ssr sum-of-squared residuals for model fit
 	*/
-	MDM_API virtual mdm_ErrorTracker::ErrorCode fitModel(std::vector<double> &params) = 0;
+	MDM_API virtual mdm_ErrorTracker::ErrorCode fitModel(std::vector<double> &params, double &ssr) = 0;
 
 	//! Set inputs for fitting DWI model from a single line of an input data stream buffer
 	/*!
@@ -69,6 +93,18 @@ public:
 	*/
 	MDM_API virtual int maximumInputs() const = 0;
 
+	//! Return parameter names
+	/*
+	\return name sof model parameters
+	*/
+	MDM_API virtual const std::vector<std::string> paramNames() const;
+
+	//! Return number of parameters in model
+	/*
+	\return number of parameters in model
+	*/
+	MDM_API virtual size_t nParams() const;
+
 protected:
 	//! Heper method to clear up after any fit failures
 	/*
@@ -77,13 +113,26 @@ protected:
 	*/
 	static void setErrorValuesAndTidyUp(std::vector<double>& params);
 	
-  //! Signals to fit
+  //! Signals
 	std::vector<double> signals_;
+
+	//!B-values
+	std::vector<double> Bvals_;
+
+	//! Signals to fit - we sometimes want this to be a subset of all signals
+	std::vector<double> signals_to_fit_;
+
+	//!B-values - we sometimes want this to be a subset of all B-values
+	std::vector<double> Bvals_to_fit_;
+
+	//! Parameter names
+	const std::vector<std::string> paramNames_;
 	
   //! Maximum number of iterations in optimisation, if 0 runs to convergence
 	int maxIterations_;
-	alglib::mincgstate state_; //!< Cached ALGLIB internal
-	alglib::mincgreport rep_; //!< Cached ALGLIB internal
+	
+	alglib::minbcstate   state_; //!< Cached ALGLIB internal
+	alglib::minbcreport rep_; //!< Cached ALGLIB internal
 
 private:
 	

@@ -11,7 +11,7 @@
 
 #include "mdm_Image3D.h"
 #include "mdm_ErrorTracker.h"
-#include "dwi_methods/mdm_DWIMethodGenerator.h"
+#include "dwi/mdm_DWIMethodGenerator.h"
 
 //!Mapping T1 for a full volume from input signal images
 /*!
@@ -127,12 +127,13 @@ private:
 
 	//
 	std::vector<mdm_Image3D> inputImages_;
+	mdm_Image3D SSR_;
 
 	// if ROI not empty, only compute values for ROI
 	mdm_Image3D &ROI_;
 
 	// Output image maps
-	std::vector<mdm_Image3D> model_maps_;
+	std::vector<mdm_Image3D> modelMaps_;
 
 	//Reference to an error image. If we don't pass one as a constructor to the class
 	// a default empty image will be used

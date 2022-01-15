@@ -66,6 +66,12 @@ public:
   */
   MDM_API void loadB1Map(const std::string &path, const double B1Scaling);
 
+	//! Load signal image volumes for DWI modelling
+	/*!
+	\param DWIInputPaths list of filepaths to input signal images
+	*/
+	MDM_API void loadDWIMappingInputImages(const std::vector<std::string>& DWIInputPaths);
+
 	//! Load DCE time-series signal volumes
 	/*!
 	DCE time-series volumes are loaded by pattern matching a base file name with the series index 1,...,nDyns

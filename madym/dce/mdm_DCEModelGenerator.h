@@ -14,18 +14,18 @@
 #include "mdm_api.h"
 #include <mdm_AIF.h>
 
-#include <madym/dce_models/mdm_DCEModelBase.h>
-#include <madym/dce_models/mdm_DCEModelNONE.h>
-#include <madym/dce_models/mdm_DCEModelETM.h>
-#include <madym/dce_models/mdm_DCEModelDIETM.h>
-#include <madym/dce_models/mdm_DCEModelAUEM.h>
-#include <madym/dce_models/mdm_DCEModelDISCM.h>
-#include <madym/dce_models/mdm_DCEModel2CXM.h>
-#include <madym/dce_models/mdm_DCEModel2CFM.h>
-#include <madym/dce_models/mdm_DCEModelDI2CXM.h>
-#include <madym/dce_models/mdm_DCEModelDIBEM.h>
-#include <madym/dce_models/mdm_DCEModelDIBEM_Fp.h>
-#include <madym/dce_models/mdm_DCEModelPatlak.h>
+#include <madym/dce/mdm_DCEModelBase.h>
+#include <madym/dce/mdm_DCEModelNONE.h>
+#include <madym/dce/mdm_DCEModelETM.h>
+#include <madym/dce/mdm_DCEModelDIETM.h>
+#include <madym/dce/mdm_DCEModelAUEM.h>
+#include <madym/dce/mdm_DCEModelDISCM.h>
+#include <madym/dce/mdm_DCEModel2CXM.h>
+#include <madym/dce/mdm_DCEModel2CFM.h>
+#include <madym/dce/mdm_DCEModelDI2CXM.h>
+#include <madym/dce/mdm_DCEModelDIBEM.h>
+#include <madym/dce/mdm_DCEModelDIBEM_Fp.h>
+#include <madym/dce/mdm_DCEModelPatlak.h>
 
 //!Header only class to generate specific instances of DCE models
 /*! 

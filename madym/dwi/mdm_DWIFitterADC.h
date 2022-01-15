@@ -28,24 +28,12 @@ public:
 	*/
 	MDM_API ~mdm_DWIFitterADC();
 
-	//! Set variable flip angles
+	//! Perform ADC fit
 	/*!
-	\param FAs vector of flip-angles in radians
+	\param params ...
+	\param ssr ...
 	*/
-	MDM_API void setB0s(const std::vector<double>& B0s);
-
-
-	//! Set inputs that vary on per voxel basis
-	/*!
-	*/
-	MDM_API void setInputs(const std::vector<double>& inputs);
-
-	//! Perform T1 fit using variable flip-angle method
-	/*!
-	\param T1value reference to hold computed T1
-	\param M0value reference to hold computed M0
-	*/
-	MDM_API mdm_ErrorTracker::ErrorCode fitModel(std::vector<double>& params);
+	MDM_API mdm_ErrorTracker::ErrorCode fitModel(std::vector<double>& params, double& ssr);
 
 	//! Set inputs for fitting ADC to a single line of an input data stream buffer
 	/*!
@@ -82,8 +70,9 @@ public:
 
 private:
 
-	void computeSignalGradient(const std::vector<double>& params,
-		double& signal, double& signal_dT1, double& signal_dM0);
+	void computeSignalGradient(
+		const double& S0, const double& ADC, const double &Bval,
+		double& signal, double& signal_dS0, double& signal_dADC);
 
 	void computeSSEGradient(
 		const alglib::real_1d_array& x, double& func, alglib::real_1d_array& grad);
@@ -95,12 +84,7 @@ private:
 			x, func, grad);
 	}
 
-	void initB0s();
-
-	std::vector<double> B0s_;
-	size_t nB0s_;
-
-	static const double PI;
+	void linearFit(double &S0, double &ADC, double& ssr);
 
 };
 

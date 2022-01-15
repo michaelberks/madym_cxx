@@ -36,7 +36,7 @@ MDM_API mdm_DWIMapper::~mdm_DWIMapper()
 MDM_API void mdm_DWIMapper::reset()
 {
   inputImages_.clear();
-	for (auto &map : model_maps_)
+	for (auto &map : modelMaps_)
 		map.reset(); 
   
 }
@@ -44,18 +44,14 @@ MDM_API void mdm_DWIMapper::reset()
 //
 MDM_API void mdm_DWIMapper::addInputImage(mdm_Image3D img)
 {
-  errorTracker_.checkOrSetDimension(img, "T1 input");
+  errorTracker_.checkOrSetDimension(img, "DWI input");
 	inputImages_.push_back(img);
 	auto msg = boost::format(
-		"Acquisition parameters for T1 mapping input image %1% set from %2%:\n"
-		"    TR = %3% ms\n"
-		"    FA = %4% deg (only required for VFA method)\n"
-		"    TI = %5% ms (only required for inversion recovery method)")
+		"Acquisition parameters for DWI mapping input image %1% set from %2%:\n"
+		"    B = %3% ms\n")
 		% inputImages_.size()
 		% img.info().xtrSource 
-		% img.info().TR.value() 
-		% img.info().flipAngle.value()
-		% img.info().TI.value();
+		% img.info().B.value();
 	mdm_ProgramLogger::logProgramMessage(msg.str());
 }
 
@@ -65,25 +61,27 @@ MDM_API void  mdm_DWIMapper::mapDWI(mdm_DWIMethodGenerator::DWIMethods method)
 	//
 	auto nSignals = inputImages_.size();
 
-	//Instantiate T1 fitter object of required method type
-	auto T1Fitter = mdm_DWIMethodGenerator::createFitter(method, inputImages_);
+	//Instantiate DWI fitter object of required method type
+	auto DWIFitter = mdm_DWIMethodGenerator::createFitter(method, inputImages_);
+	auto nParams = DWIFitter->nParams();
 
-	mdm_ErrorTracker::ErrorCode errCode = mdm_ErrorTracker::OK;
-
-	/*
-	T1_.copy(inputImages_[0]);
-	T1_.setType(mdm_Image3D::ImageType::TYPE_T1BASELINE);
-
-	M0_.copy(inputImages_[0]);
-	M0_.setType(mdm_Image3D::ImageType::TYPE_M0MAP);
+	//Initialise maps
+	modelMaps_.resize(nParams);
+	for (auto& map : modelMaps_)
+	{
+		map.copy(inputImages_[0]);
+		map.setType(mdm_Image3D::ImageType::TYPE_ADCMAP);
+	}
+	SSR_.copy(inputImages_[0]);
+	SSR_.setType(mdm_Image3D::ImageType::TYPE_DWI);
 
   bool useROI = (bool)ROI_;
-  bool useB1_ = (bool)B1_ && method == mdm_T1MethodGenerator::VFA_B1;
 
+	auto numVoxels = inputImages_[0].numVoxels();
 	int numFitted = 0;
 	int numErrors = 0;
 	auto fit_start = std::chrono::system_clock::now();
-	for (size_t voxelIndex = 0, n = M0_.numVoxels(); voxelIndex < n; voxelIndex++)
+	for (size_t voxelIndex = 0, n = numVoxels; voxelIndex < n; voxelIndex++)
 	{
 		if (useROI && !ROI_.voxel(voxelIndex))
 			continue;
@@ -93,45 +91,24 @@ MDM_API void  mdm_DWIMapper::mapDWI(mdm_DWIMethodGenerator::DWIMethods method)
 		for (size_t i_f = 0; i_f < nSignals; i_f++)
 			signal[i_f] = inputImages_[i_f].voxel(voxelIndex);
 
-		//TODO - MB, why only check the first signal?				
-		if (signal[0] > noiseThreshold_)
-		{
-      //If using B1 correction, add this to the inputs
-      if (useB1_)
-      {
-        auto B1 = B1_.voxel(voxelIndex);
-        if (B1 > 0)
-          signal.push_back(B1);
-        else
-        {
-          errorTracker_.updateVoxel(voxelIndex, mdm_ErrorTracker::B1_INVALID);
-          numErrors++;
-          continue;
-        }
-      }
         
+		//Compute T1 and M0
+		std::vector<double> params;
+		double ssr;
+		DWIFitter->setSignals(signal);
+		auto errCode = DWIFitter->fitModel(params, ssr);
 
-			//Compute T1 and M0
-			double T1, M0;
-			T1Fitter->setInputs(signal);
-			errCode = T1Fitter->fitT1(T1, M0);
-
-			//Check for errors
-			if (errCode != mdm_ErrorTracker::OK)
-			{
-				errorTracker_.updateVoxel(voxelIndex, errCode);
-				numErrors++;
-			}
-
-			//Fill the image maps.
-			T1_.setVoxel(voxelIndex, T1);
-			M0_.setVoxel(voxelIndex, M0);
-		}
-		else
+		//Check for errors
+		if (errCode != mdm_ErrorTracker::OK)
 		{
-			errorTracker_.updateVoxel(voxelIndex, mdm_ErrorTracker::VFA_THRESH_FAIL);
+			errorTracker_.updateVoxel(voxelIndex, errCode);
 			numErrors++;
 		}
+
+		//Fill the image maps.
+		for (size_t i_p = 0; i_p < nParams; i_p++)
+			modelMaps_[i_p].setVoxel(voxelIndex, params[i_p]);
+		SSR_.setVoxel(voxelIndex, ssr);
 		numFitted++;
 	}
 
@@ -144,7 +121,6 @@ MDM_API void  mdm_DWIMapper::mapDWI(mdm_DWIMethodGenerator::DWIMethods method)
   if (numErrors)
     mdm_ProgramLogger::logProgramWarning(__func__, 
       std::to_string(numErrors) + " voxels returned fit errors");
-	*/
 }
 
 //
@@ -180,13 +156,13 @@ MDM_API std::vector<std::string> mdm_DWIMapper::paramNames() const
 //
 MDM_API const mdm_Image3D& mdm_DWIMapper::model_map(const std::string& map_name) const
 {
-	return model_maps_[0];
+	return modelMaps_[0];
 }
 
 //
 MDM_API double mdm_DWIMapper::model_map(const std::string& map_name, size_t voxel) const
 {
-	return model_maps_[0].voxel(voxel);
+	return modelMaps_[0].voxel(voxel);
 }
 
 //

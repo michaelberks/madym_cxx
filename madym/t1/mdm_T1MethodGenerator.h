@@ -1,5 +1,5 @@
 /**
-*  @file    t1_methods/mdm_T1MethodGenerator.h
+*  @file    t1/mdm_T1MethodGenerator.h
 *  @brief Header only class to generate specific instances of DCE models
 *
 *  Original author MA Berks 24 Oct 2018
@@ -16,9 +16,9 @@
 #include <madym/mdm_Image3D.h>
 #include <madym/mdm_InputOptions.h>
 #include <madym/mdm_ProgramLogger.h>
-#include <madym/t1_methods/mdm_T1FitterBase.h>
-#include <madym/t1_methods/mdm_T1FitterVFA.h>
-#include <madym/t1_methods/mdm_T1FitterIR.h>
+#include <madym/t1/mdm_T1FitterBase.h>
+#include <madym/t1/mdm_T1FitterVFA.h>
+#include <madym/t1/mdm_T1FitterIR.h>
 
 //!Header only class to generate specific instances of DCE models
 /*! 

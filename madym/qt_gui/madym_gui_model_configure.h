@@ -12,7 +12,7 @@
 #include <QLineEdit>
 #include <QCheckBox>
 
-#include <madym/dce_models/mdm_DCEModelBase.h>
+#include <madym/dce/mdm_DCEModelBase.h>
 #include <madym/mdm_OptionsParser.h>
 #include "ui_madym_model_configure.h"
 

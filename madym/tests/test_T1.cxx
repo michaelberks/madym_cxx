@@ -3,8 +3,8 @@
 
 #include <iostream>
 #include <vector>
-#include <madym/t1_methods/mdm_T1FitterVFA.h>
-#include <madym/t1_methods/mdm_T1FitterIR.h>
+#include <madym/t1/mdm_T1FitterVFA.h>
+#include <madym/t1/mdm_T1FitterIR.h>
 #include <madym/tests/mdm_test_utils.h>
 
 BOOST_AUTO_TEST_SUITE(test_mdm)

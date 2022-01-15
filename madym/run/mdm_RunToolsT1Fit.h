@@ -9,7 +9,7 @@
 #define MDM_RUNTOOLS_T1_FIT_HDR
 #include "mdm_api.h"
 #include <madym/mdm_RunTools.h>
-#include <madym/t1_methods/mdm_T1MethodGenerator.h>
+#include <madym/t1/mdm_T1MethodGenerator.h>
 
 //! Abstract base class providing methods common to T1 mapping tools
 /*!

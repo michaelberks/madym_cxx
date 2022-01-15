@@ -14,7 +14,7 @@
 
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/mdm_exception.h>
-#include <madym/t1_methods/mdm_T1FitterBase.h>
+#include <madym/t1/mdm_T1FitterBase.h>
 
 namespace fs = boost::filesystem;
 

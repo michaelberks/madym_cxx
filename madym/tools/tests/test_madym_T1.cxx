@@ -2,8 +2,8 @@
 
 #include <madym/tests/mdm_test_utils.h>
 
-#include <madym/t1_methods/mdm_T1FitterVFA.h>
-#include <madym/t1_methods/mdm_T1FitterIR.h>
+#include <madym/t1/mdm_T1FitterVFA.h>
+#include <madym/t1/mdm_T1FitterIR.h>
 #include <madym/image_io/nifti/mdm_NiftiFormat.h>
 #include <madym/image_io/xtr/mdm_XtrFormat.h>
 #include <madym/mdm_Image3D.h>

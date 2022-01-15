@@ -12,11 +12,11 @@
 #include <madym/mdm_Image3D.h>
 
 #include <madym/mdm_ErrorTracker.h>
-#include <madym/mdm_DCEVoxel.h>
-#include <madym/dce_models/mdm_DCEModelBase.h>
-#include <madym/mdm_T1Mapper.h>
-#include <madym/mdm_DWIMapper.h>
-#include <madym/mdm_DCEModelFitter.h>
+#include <madym/dce/mdm_DCEVoxel.h>
+#include <madym/dce/mdm_DCEModelBase.h>
+#include <madym/dce/mdm_DCEModelFitter.h>
+#include <madym/t1/mdm_T1Mapper.h>
+#include <madym/dwi/mdm_DWIMapper.h>
 
 //! Manager class for DCE analysis, stores input images and output parameter maps
 /*!

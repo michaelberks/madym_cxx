@@ -14,7 +14,7 @@
 
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/mdm_exception.h>
-#include <madym/dwi_methods/mdm_DWIFitterBase.h>
+#include <madym/dwi/mdm_DWIFitterBase.h>
 
 namespace fs = boost::filesystem;
 
@@ -112,6 +112,57 @@ MDM_API std::string mdm_RunTools_madym_DWI::who() const
 {
 	return "madym_DWI";
 }
+
 //*******************************************************************************
 // Private:
 //*******************************************************************************
+
+//
+void mdm_RunTools_madym_DWI::checkNumInputs(mdm_DWIMethodGenerator::DWIMethods methodType,
+	const int& numInputs)
+{
+	//This is a bit rubbish - instantiating a whole new object just to get
+	//some limits returned. But we want limits defined by the derived DWI method class,
+	//and want to check these to parse user input before the actual fitting objects
+	//get created.
+	auto DWIfitter = mdm_DWIMethodGenerator::createFitter(methodType, options_);
+
+	if (numInputs < DWIfitter->minimumInputs())
+		throw mdm_exception(__func__, "not enough DWI inputs");
+
+	else if (numInputs > DWIfitter->maximumInputs())
+		throw mdm_exception(__func__, "too many DWI inputs");
+}
+
+//
+void mdm_RunTools_madym_DWI::mapDWI()
+{
+	//Check inputs set by user
+	if (options_.DWIinputNames().empty())
+		throw mdm_exception(__func__, "input map names (option --DWI_vols) must be provided");
+
+	//Parse DWI method from string, will abort if method type not recognised
+	auto methodType = mdm_DWIMethodGenerator::parseMethodName(
+		options_.DWImethod(), options_.B1Correction());
+
+	//Check number of signal inputs, will abort if too many/too few
+	checkNumInputs(methodType, (int)options_.DWIinputNames().size());
+
+	//Load DWI inputs
+	loadDWIInputs();
+
+	//FA images loaded, try computing DWI maps
+	volumeAnalysis_.DWIMapper().setMethod(methodType);
+	volumeAnalysis_.DWIMapper().setNoiseThreshold(options_.DWInoiseThresh());
+	volumeAnalysis_.DWIMapper().mapDWI();
+}
+
+//
+void mdm_RunTools_madym_DWI::loadDWIInputs()
+{
+	std::vector<std::string> DWIinputPaths(0);
+	for (std::string mapName : options_.DWIinputNames())
+		DWIinputPaths.push_back(fs::absolute(fs::path(options_.DWIDir()) / mapName).string());
+
+	fileManager_.loadDWIMappingInputImages(DWIinputPaths);
+}

@@ -65,34 +65,42 @@ if (BUILD_WITH_DCMTK)
       "Directory where DCMTK libraries are installed")
 endif()
 
+set(mdm_utils_sources
 
-set(mdm_sources
-	mdm_RunTools.cxx				  mdm_RunTools.h
-	mdm_AIF.cxx						    mdm_AIF.h
-	mdm_ErrorTracker.cxx			mdm_ErrorTracker.h			
-		
-	mdm_DCEVoxel.cxx				  mdm_DCEVoxel.h
-	mdm_DCEModelFitter.cxx		mdm_DCEModelFitter.h
-		
-	mdm_FileManager.cxx				mdm_FileManager.h
-	mdm_Image3D.cxx					  mdm_Image3D.h
-	mdm_ProgramLogger.cxx			mdm_ProgramLogger.h
-	mdm_ParamSummaryStats.cxx	mdm_ParamSummaryStats.h
-
-	mdm_T1Mapper.cxx	        mdm_T1Mapper.h
-  mdm_DWIMapper.cxx	        mdm_DWIMapper.h	
-  mdm_VolumeAnalysis.cxx	  mdm_VolumeAnalysis.h
-	
-	mdm_OptionsParser.cxx			mdm_OptionsParser.h
-	mdm_InputTypes.cxx				mdm_InputTypes.h
-  mdm_Exponentials.h
-  mdm_SequenceNames.h
-	mdm_InputOptions.h
-	mdm_platform_defs.h
-  mdm_exception.h
 	mdm_api.h
+	mdm_Image3D.cxx				mdm_Image3D.h
+	mdm_ErrorTracker.h		mdm_ErrorTracker.cxx
+	mdm_exception.h
+	mdm_InputTypes.h		mdm_InputTypes.cxx
+	mdm_platform_defs.h
+	mdm_ProgramLogger.h		mdm_ProgramLogger.cxx
+	mdm_SequenceNames.h
+	
 )
-set(mdm_io_sources
+
+add_library(mdm_utils 
+	${mdm_utils_sources}
+	${mdm_moc_files})
+
+target_link_libraries( mdm_utils
+  Boost::filesystem
+  Boost::system
+  Boost::program_options
+  Boost::date_time
+)
+
+if ( BUILD_QT_GUI )
+  qt5_use_modules(mdm_utils Core)
+endif()
+
+if ( MSVC )
+	target_link_libraries( mdm_utils ws2_32 )
+else ( MSVC )
+	target_link_libraries( mdm_utils m)
+endif ( MSVC )
+
+set(mdm_image_sources
+	
   image_io/mdm_ImageDatatypes.h
   image_io/mdm_ImageIO.cxx image_io/mdm_ImageIO.h
   image_io/analyze/mdm_AnalyzeFormat.cxx image_io/analyze/mdm_AnalyzeFormat.h
@@ -105,7 +113,97 @@ set(mdm_io_sources
   image_io/nifti/nifti2.h  
 )
 
+if (BUILD_WITH_DCMTK)
+  set(mdm_image_sources ${mdm_image_sources} 
+    image_io/dicom/mdm_DicomFormat.cxx image_io/dicom/mdm_DicomFormat.h
+  )
+endif()
+
+add_library(mdm_image 
+	${mdm_image_sources})
+
+target_link_libraries( mdm_image
+  mdm_utils
+)
+
+if (BUILD_WITH_ZLIB)
+  target_link_libraries( mdm_image ZLIB::ZLIB)
+endif()
+
+if (BUILD_WITH_DCMTK)
+  target_link_libraries( mdm_image ${DCMTK_LIBRARIES})
+endif()
+
+set(mdm_dce_sources
+  #Models
+	dce/mdm_DCEModelGenerator.h
+	dce/mdm_DCEModelBase.cxx		dce/mdm_DCEModelBase.h
+	dce/mdm_DCEModelNONE.cxx		dce/mdm_DCEModelNONE.h
+	dce/mdm_DCEModelETM.cxx		dce/mdm_DCEModelETM.h
+	dce/mdm_DCEModelDIETM.cxx		dce/mdm_DCEModelDIETM.h
+	dce/mdm_DCEModelAUEM.cxx		dce/mdm_DCEModelAUEM.h
+	dce/mdm_DCEModel2CXM.cxx		dce/mdm_DCEModel2CXM.h
+	dce/mdm_DCEModel2CFM.cxx		dce/mdm_DCEModel2CFM.h
+	dce/mdm_DCEModelDI2CXM.cxx		dce/mdm_DCEModelDI2CXM.h
+	dce/mdm_DCEModelDIBEM.cxx		dce/mdm_DCEModelDIBEM.h
+	dce/mdm_DCEModelDIBEM_Fp.cxx	dce/mdm_DCEModelDIBEM_Fp.h
+	dce/mdm_DCEModelDISCM.cxx		dce/mdm_DCEModelDISCM.h
+	dce/mdm_DCEModelPatlak.cxx		dce/mdm_DCEModelPatlak.h
+	dce/mdm_DCEVoxel.cxx			dce/mdm_DCEVoxel.h
+	dce/mdm_DCEModelFitter.cxx		dce/mdm_DCEModelFitter.h
+	mdm_AIF.cxx					mdm_AIF.h
+	mdm_Exponentials.h
+)
+
+add_library(mdm_dce 
+	${mdm_dce_sources})
+
+target_link_libraries( mdm_dce
+  mdm_image
+  mdm_opt
+)
+
+set(mdm_t1_sources
+	t1/mdm_T1Mapper.cxx	        t1/mdm_T1Mapper.h
+	t1/mdm_T1MethodGenerator.h
+	t1/mdm_T1FitterBase.cxx			t1/mdm_T1FitterBase.h
+	t1/mdm_T1FitterVFA.cxx			t1/mdm_T1FitterVFA.h
+	t1/mdm_T1FitterIR.cxx			t1/mdm_T1FitterIR.h
+)
+
+add_library(mdm_t1 
+	${mdm_t1_sources})
+
+target_link_libraries( mdm_t1
+  mdm_image
+  mdm_opt
+)
+
+set(mdm_dwi_sources
+	dwi/mdm_DWIMapper.cxx	        dwi/mdm_DWIMapper.h
+	dwi/mdm_DWIMethodGenerator.h
+	dwi/mdm_DWIFitterBase.cxx			dwi/mdm_DWIFitterBase.h
+	dwi/mdm_DWIFitterADC.cxx			dwi/mdm_DWIFitterADC.h
+  dwi/mdm_DWIFitterIVIM.cxx			dwi/mdm_DWIFitterIVIM.h
+)
+
+add_library(mdm_dwi 
+	${mdm_dwi_sources})
+
+target_link_libraries( mdm_dwi
+  mdm_image
+  mdm_opt
+)
+
 set(mdm_run_sources
+
+	mdm_InputOptions.h
+	mdm_RunTools.cxx			mdm_RunTools.h	
+	mdm_FileManager.cxx			mdm_FileManager.h		
+	mdm_ParamSummaryStats.cxx	mdm_ParamSummaryStats.h
+	mdm_OptionsParser.cxx		mdm_OptionsParser.h
+	mdm_VolumeAnalysis.cxx		mdm_VolumeAnalysis.h
+
   run/mdm_RunToolsDCEFit.cxx			run/mdm_RunToolsDCEFit.h
   run/mdm_RunToolsT1Fit.cxx				run/mdm_RunToolsT1Fit.h
   run/mdm_RunToolsVolumeAnalysis.cxx	run/mdm_RunToolsVolumeAnalysis.h
@@ -118,73 +216,21 @@ set(mdm_run_sources
   run/mdm_RunTools_madym_AIF.cxx		run/mdm_RunTools_madym_AIF.h
   run/mdm_RunTools_madym_MakeXtr.cxx run/mdm_RunTools_madym_MakeXtr.h
 )
-set(mdm_dce_model_sources
-  #Models
-  dce_models/mdm_DCEModelGenerator.h
-  dce_models/mdm_DCEModelBase.cxx		dce_models/mdm_DCEModelBase.h
-  dce_models/mdm_DCEModelNONE.cxx		dce_models/mdm_DCEModelNONE.h
-  dce_models/mdm_DCEModelETM.cxx		dce_models/mdm_DCEModelETM.h
-  dce_models/mdm_DCEModelDIETM.cxx		dce_models/mdm_DCEModelDIETM.h
-  dce_models/mdm_DCEModelAUEM.cxx		dce_models/mdm_DCEModelAUEM.h
-  dce_models/mdm_DCEModel2CXM.cxx		dce_models/mdm_DCEModel2CXM.h
-  dce_models/mdm_DCEModel2CFM.cxx		dce_models/mdm_DCEModel2CFM.h
-  dce_models/mdm_DCEModelDI2CXM.cxx		dce_models/mdm_DCEModelDI2CXM.h
-  dce_models/mdm_DCEModelDIBEM.cxx		dce_models/mdm_DCEModelDIBEM.h
-  dce_models/mdm_DCEModelDIBEM_Fp.cxx	dce_models/mdm_DCEModelDIBEM_Fp.h
-  dce_models/mdm_DCEModelDISCM.cxx		dce_models/mdm_DCEModelDISCM.h
-  dce_models/mdm_DCEModelPatlak.cxx		dce_models/mdm_DCEModelPatlak.h
-)
-
-set(mdm_t1_method_sources
-	t1_methods/mdm_T1MethodGenerator.h
-	t1_methods/mdm_T1FitterBase.cxx			t1_methods/mdm_T1FitterBase.h
-	t1_methods/mdm_T1FitterVFA.cxx			t1_methods/mdm_T1FitterVFA.h
-  t1_methods/mdm_T1FitterIR.cxx			t1_methods/mdm_T1FitterIR.h
-)
-
-set(mdm_dwi_method_sources
-	dwi_methods/mdm_DWIMethodGenerator.h
-	dwi_methods/mdm_DWIFitterBase.cxx			dwi_methods/mdm_DWIFitterBase.h
-	dwi_methods/mdm_DWIFitterADC.cxx			dwi_methods/mdm_DWIFitterADC.h
-  dwi_methods/mdm_DWIFitterIVIM.cxx			dwi_methods/mdm_DWIFitterIVIM.h
-)
 
 if (BUILD_WITH_DCMTK)
-  set(mdm_io_sources ${mdm_io_sources} 
-    image_io/dicom/mdm_DicomFormat.cxx image_io/dicom/mdm_DicomFormat.h
-  )
   set(mdm_run_sources ${mdm_run_sources} 
     run/mdm_RunTools_madym_DicomConvert.cxx run/mdm_RunTools_madym_DicomConvert.h
   )
 endif()
 
-add_library(mdm 
-	${mdm_sources} 
-  ${mdm_io_sources}
-  ${mdm_run_sources} 
-  ${mdm_dce_model_sources} 
-  ${mdm_t1_method_sources}
-  ${mdm_dwi_method_sources}  
-  ${mdm_moc_files})
+add_library(mdm
+	${mdm_run_sources})
 
 target_link_libraries( mdm
-  mdm_opt
-  Boost::filesystem
-  Boost::system
-  Boost::program_options
-  Boost::date_time
+  mdm_dce
+  mdm_t1
+  mdm_dwi
 )
-if (BUILD_WITH_ZLIB)
-  target_link_libraries( mdm ZLIB::ZLIB)
-endif()
-
-if (BUILD_WITH_DCMTK)
-  target_link_libraries( mdm ${DCMTK_LIBRARIES})
-endif()
-
-if ( BUILD_QT_GUI )
-  qt5_use_modules(mdm Core)
-endif()
 
 if (BUILD_INSTALL)
   install(TARGETS mdm
@@ -193,12 +239,6 @@ if (BUILD_INSTALL)
     RUNTIME DESTINATION "${MADYM_DEPLOY_DIR}/bin" COMPONENT Libs
     CONFIGURATIONS Release) 
 endif()
-
-if ( MSVC )
-	target_link_libraries( mdm ws2_32 )
-else ( MSVC )
-	target_link_libraries( mdm m)
-endif ( MSVC )
 
 if ( BUILD_TOOLS )
 	subdirs(tools)
