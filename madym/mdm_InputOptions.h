@@ -87,9 +87,9 @@ struct mdm_InputOptions {
 	mdm_input_strings DWIinputNames = mdm_input_strings(
 		mdm_input_string_list(std::vector<std::string>{}), "DWI_vols", "",
 		"Filepaths to input signal volumes (eg from multiple B0 values)"); //!< See initial value
-	mdm_input_double DWInoiseThresh = mdm_input_double(
-		0.0, "DWI_noise", "",
-		"Noise threshold for fitting DWI models"); //!< See initial value
+	mdm_input_doubles BvalsThresh = mdm_input_doubles(
+		mdm_input_double_list(std::vector<double>{ 100.0 }), "Bvals_thresh", "",
+		"Used to separate B-values into high and low sets for initial IVIM fitting"); //!< See initial value
 
 	//Signal to concentration options
 	mdm_input_bool M0Ratio = mdm_input_bool(
@@ -356,9 +356,64 @@ struct mdm_InputOptions {
     mdm_input_str(""),
     "acquisition_time_tag", "",
     "Dicom tag key (group,element) for acquisition time, if empty uses DCM_AcquisitionTime"); //!< See initial value
+	mdm_input_bool dynTimeRequired = mdm_input_bool(
+		true, "acquisition_time_required", "",
+		"If set to true, throws program warning if acquisition time not found in a DICOM header"); //!< See initial value
   mdm_input_double temporalResolution = mdm_input_double(
     0, "temp_res", "", 
     "Time in seconds between volumes in the DCE sequence, used to fill acquisition time not set in dynTimeTag"); //!< See initial value
+
+
+	//DICOM scanning settings
+	mdm_input_string FATag = mdm_input_string(
+		mdm_input_str(""),
+		"FA_tag", "",
+		"Custom Dicom tag key (group,element) for FlipAngle, only required if protocol doesn't use standard FlipAngle field (0018,1314)"); //!< See initial value
+	mdm_input_bool FARequired = mdm_input_bool(
+		true, "FA_required", "",
+		"If set to true, throws program warning if FA not found in a DICOM header"); //!< See initial value
+
+	mdm_input_string TRTag = mdm_input_string(
+		mdm_input_str(""),
+		"TR_tag", "",
+		"Custom Dicom tag key (group,element) for TR, only required if protocol doesn't use standard RepetitionTime field (0018,0080)"); //!< See initial value
+	mdm_input_bool TRRequired = mdm_input_bool(
+		true, "TR_required", "",
+		"If set to true, throws program warning if TR not found in a DICOM header"); //!< See initial value
+
+	mdm_input_string TITag = mdm_input_string(
+		mdm_input_str(""),
+		"TI_tag", "",
+		"Custom Dicom tag key (group,element) for TI, only required if protocol doesn't use standard InversionTime field (0018,0082)"); //!< See initial value
+	mdm_input_bool TIRequired = mdm_input_bool(
+		false, "TI_required", "",
+		"If set to true, throws program warning if TI not found in a DICOM header"); //!< See initial value
+
+	mdm_input_string TETag = mdm_input_string(
+		mdm_input_str(""),
+		"TE_tag", "",
+		"Custom Dicom tag key (group,element) for TE, only required if protocol doesn't use standard EchoTime field (0018,0081)"); //!< See initial value
+	mdm_input_bool TERequired = mdm_input_bool(
+		true, "TE_required", "",
+		"If set to true, throws program warning if TE not found in a DICOM header"); //!< See initial value
+
+	mdm_input_string BTag = mdm_input_string(
+		mdm_input_str(""),
+		"B_tag", "",
+		"Custom Dicom tag key (group,element) for diffusion B-value, only required if protocol doesn't use standard DCM_DiffusionBValue field (0018,9087)"); //!< See initial value
+	mdm_input_bool BRequired = mdm_input_bool(
+		false, "B_required", "",
+		"If set to true, throws program warning if diffusion B-value not found in a DICOM header"); //!< See initial value
+
+	mdm_input_string gradOriTag = mdm_input_string(
+		mdm_input_str(""),
+		"grad_ori_tag", "",
+		"Custom Dicom tag key (group,element) for diffusion gradient orientation, only required if protocol doesn't use standard DCM_DiffusionGradientOrientation field (0018,9089)"); //!< See initial value
+	mdm_input_bool gradOriRequired = mdm_input_bool(
+		false, "grad_ori_required", "",
+		"If set to true, throws program warning if diffusion gradient orientation not found in a DICOM header"); //!< See initial value
+
+	bool time_required = true;
 
   //DICOM - naming
   mdm_input_string repeatPrefix = mdm_input_string(

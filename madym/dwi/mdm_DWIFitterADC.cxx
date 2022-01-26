@@ -21,49 +21,54 @@
 #include <madym/mdm_exception.h>
 
 //
-MDM_API mdm_DWIFitterADC::mdm_DWIFitterADC(const std::vector<double>& Bvals)
+MDM_API mdm_DWIFitterADC::mdm_DWIFitterADC(const std::vector<double>& Bvals, bool linearFit)
 	:
-	mdm_DWIFitterBase(Bvals, { "S0", "ADC" })
+	mdm_DWIFitterBase(Bvals, { "S0", "ADC" }),
+	linearFit_(linearFit)
 {
 	//Pre-initialise the alglib state
-	int nParams = 2;
-	std::vector<double> init = { 1, 1 };
-	std::vector<double> lowerBounds = { 0, 1e-4 };
-	std::vector<double> upperBounds = { 1e6, 1e6 };
+	if (!linearFit_)
+	{
+		int nParams = 2;
+		std::vector<double> init = { 1, 1 };
+		std::vector<double> lowerBounds = { 0, 1e-4 };
+		std::vector<double> upperBounds = { 1e6, 1e6 };
 
-	std::vector<double> scale = { 1, 1 };
+		std::vector<double> scale = { 1, 1 };
 
 
-	alglib::real_1d_array x;
-	alglib::real_1d_array s;
-	alglib::real_1d_array bndl;
-	alglib::real_1d_array bndu;
+		alglib::real_1d_array x;
+		alglib::real_1d_array s;
+		alglib::real_1d_array bndl;
+		alglib::real_1d_array bndu;
 
-	x.setcontent(nParams, init.data());
-	s.setcontent(nParams, scale.data());
-	bndl.setcontent(nParams, lowerBounds.data());
-	bndu.setcontent(nParams, upperBounds.data());
+		x.setcontent(nParams, init.data());
+		s.setcontent(nParams, scale.data());
+		bndl.setcontent(nParams, lowerBounds.data());
+		bndu.setcontent(nParams, upperBounds.data());
 
-	double epsg = 0.00000001;
-	double epsf = 0.0000;
-	double epsx = 0.0001;
+		double epsg = 0.00000001;
+		double epsf = 0.0000;
+		double epsx = 0.0001;
 #if _DEBUG
-	alglib::ae_int_t maxits = maxIterations_ > 100 ? 100 : maxIterations_;
+		alglib::ae_int_t maxits = maxIterations_ > 100 ? 100 : maxIterations_;
 #else
-	alglib::ae_int_t maxits = maxIterations_;
+		alglib::ae_int_t maxits = maxIterations_;
 #endif
 
-	alglib::minbccreate(x, state_);
-	alglib::minbcsetbc(state_, bndl, bndu);
-	alglib::minbcsetcond(state_, epsg, epsf, epsx, maxits);
-	alglib::minbcsetscale(state_, s);
+		alglib::minbccreate(x, state_);
+		alglib::minbcsetbc(state_, bndl, bndu);
+		alglib::minbcsetcond(state_, epsg, epsf, epsx, maxits);
+		alglib::minbcsetscale(state_, s);
 #if _DEBUG
-	//REQUIRES UPDATE TO LATEST ALGLIB VERSION
-	//Provides numerical check of analytic gradient, useful in debugging, but should not be
-	//used in release versions
-	//alglib::minbcoptguardsmoothness(state_);
-	//alglib::minbcoptguardgradient(state_, 0.001);
+		//REQUIRES UPDATE TO LATEST ALGLIB VERSION
+		//Provides numerical check of analytic gradient, useful in debugging, but should not be
+		//used in release versions
+		//alglib::minbcoptguardsmoothness(state_);
+		//alglib::minbcoptguardgradient(state_, 0.001);
 #endif
+	}
+	
 }
 
 //
@@ -84,12 +89,11 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_DWIFitterADC::fitModel(
 	linearFit(params[0], params[1], ssr);
 
 	//What to do about returning linear fit here?
-	bool doLinearFit = false;
-	if (doLinearFit)
+	if (linearFit_)
 		return mdm_ErrorTracker::ErrorCode::OK;
 	
 
-	//Otherwise, use lin fit as init values for full fit
+	//Otherwise, use lin fit as init values for full non-linear fit
 	alglib::real_1d_array x;
 	x.attach_to_ptr(2, params.data());
 
@@ -139,6 +143,9 @@ MDM_API bool mdm_DWIFitterADC::setInputsFromStream(std::istream& ifs,
 	for (auto& si : signals_)
 		ifs >> si;
 
+	signals_to_fit_ = signals_;
+	Bvals_to_fit_ = Bvals_;
+
 	return true;
 }
 
@@ -155,12 +162,21 @@ MDM_API int mdm_DWIFitterADC::maximumInputs() const
 }
 
 //
-MDM_API double mdm_DWIFitterADC::modeltoSignal(
+MDM_API double mdm_DWIFitterADC::modelToSignal(
 	const std::vector<double>& params, double Bval)
 {
 	auto s0 = params[0];// 's0'
-	auto adc = params[0];// 'adc'
+	auto adc = params[1];// 'adc'
 	return s0 * std::exp(-adc * Bval);
+}
+
+MDM_API const std::vector<double> mdm_DWIFitterADC::modelToSignals(
+	const std::vector<double>& params, const std::vector<double> B0s)
+{
+	std::vector<double> sigs;
+	for (auto B0 : B0s)
+		sigs.push_back(modelToSignal(params, B0));
+	return sigs;
 }
 
 //**********************************************************************
@@ -210,15 +226,15 @@ void mdm_DWIFitterADC::linearFit(double& S0, double& ADC, double& ssr)
 	alglib::real_1d_array x;
 	alglib::real_1d_array y;
 	auto n = signals_to_fit_.size();
-	x.setcontent(n, signals_to_fit_.data());
+	x.setcontent(n, Bvals_to_fit_.data());
 	y.setlength(n);
 	for (size_t i = 0; i < n; i++)
 		y[i] = std::log(signals_to_fit_[i]);
 
 	alglib::ae_int_t info;
-	alglib::barycentricinterpolant p;
+	alglib::barycentricinterpolant pi;
+	alglib::real_1d_array p;
 	alglib::polynomialfitreport rep;
-	double v;
 
 	//
 	// Fitting without individual weights
@@ -229,9 +245,11 @@ void mdm_DWIFitterADC::linearFit(double& S0, double& ADC, double& ssr)
 	//       from barycentric to power representation (see docs for 
 	//       POLINT subpackage for more info).
 	//
-	polynomialfit(x, y, 2, info, p, rep);
-	S0 = barycentriccalc(p, 1);
-	ADC = -barycentriccalc(p, 2);
+	polynomialfit(x, y, 2, info, pi, rep);
+	polynomialbar2pow(pi, p);
+
+	S0 = std::exp(p[0]);
+	ADC = -p[1];
 
 	alglib::real_1d_array g;
 	g.setlength(2);

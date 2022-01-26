@@ -120,6 +120,16 @@ private:
   std::vector<std::string> getFileList(boost::filesystem::path directory);
 
   //
+  void getScannerSetting(
+    DcmFileFormat& fileFormat,
+    const std::string& seriesName,
+    const std::string& settingName,
+    const mdm_input_string& customTag,
+    const DcmTagKey& defaultTag,
+    const bool required,
+    double& setting);
+
+  //
   void completeSeriesInfo(dcmSeriesInfo &series, int nDyns = 0);
 
   //

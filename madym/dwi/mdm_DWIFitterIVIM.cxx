@@ -20,10 +20,13 @@
 #include <madym/mdm_exception.h>
 
 //
-MDM_API mdm_DWIFitterIVIM::mdm_DWIFitterIVIM(const std::vector<double> &Bvals)
+MDM_API mdm_DWIFitterIVIM::mdm_DWIFitterIVIM(const std::vector<double> &Bvals,
+  bool fullModel, std::vector<double> BValsThresh)
   :
   mdm_DWIFitterBase(Bvals, { "S0", "d", "f", "dstar" }),
-  ADCFitter_(Bvals)
+  ADCFitter_(Bvals, false),
+  fullModel_(fullModel),
+  BValsThresh_(BValsThresh)
 {
   //Pre-initialise the alglib state
   int nParams = 4;
@@ -76,8 +79,7 @@ MDM_API mdm_DWIFitterIVIM::~mdm_DWIFitterIVIM()
 MDM_API mdm_ErrorTracker::ErrorCode mdm_DWIFitterIVIM::fitModel(
 	std::vector<double> &params, double& ssr)
 {
-  bcfitOutput fit;
-  ivim_fit(Bvals_thresh_, true, fit);
+  auto fit = fitMultipleThresholds();
   params = fit.fitted_params;
   ssr = fit.ssr;
 
@@ -138,7 +140,7 @@ Signal from biexponential IVIM model.
   residuals : np array
   Array of differences between model and measured signals, if fitting.
 */
-MDM_API double mdm_DWIFitterIVIM::modeltoSignal(
+MDM_API double mdm_DWIFitterIVIM::modelToSignal(
 	const std::vector<double> &params, double Bval)
 {
 
@@ -148,6 +150,15 @@ MDM_API double mdm_DWIFitterIVIM::modeltoSignal(
   auto f = params[3];
 
   return s0 * ((1 - f) * std::exp(-d * Bval) + f * std::exp(-dstar * Bval));
+}
+
+MDM_API const std::vector<double> mdm_DWIFitterIVIM::modelToSignals(
+  const std::vector<double>& params, const std::vector<double> B0s)
+{
+  std::vector<double> sigs;
+  for (auto B0 : B0s)
+    sigs.push_back(modelToSignal(params, B0));
+  return sigs;
 }
 
 //**********************************************************************
@@ -162,7 +173,7 @@ void mdm_DWIFitterIVIM::computeSignalGradient(
 {
   // Preliminary Calculations
   auto Ed = std::exp(-d * B);
-  auto Edstar = std::exp(-dstar * B);
+  auto Edstar = fullModel_ ? std::exp(-dstar * B) : 0;
 
   //Partial derivative sof signal by model param
   ds0 = (1 - f) * Ed + f * Edstar;
@@ -176,20 +187,23 @@ void mdm_DWIFitterIVIM::computeSignalGradient(
   //What about bad values?
 }
 
+//
 void mdm_DWIFitterIVIM::computeSSEGradient(
 	const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad)
 {
   const double& s0 = x[0];
   const double& d = x[1];
-  const double& f = x[0];
-  const double& dstar = x[1];
+  const double& f = x[2];
+  const double& dstar = fullModel_ ? x[3] : 0;
   auto n = signals_to_fit_.size();
 
   func = 0;
   grad[0] = 0;
   grad[1] = 0;
   grad[2] = 0;
-  grad[3] = 0;
+
+  if (fullModel_)
+    grad[3] = 0;
 
   double s, ds0, dd, df, ddstar;
   for (int i = 0; i < n; i++)
@@ -202,7 +216,8 @@ void mdm_DWIFitterIVIM::computeSSEGradient(
     grad[0] += 2 * ds0 * diff;
     grad[1] += 2 * dd * diff;
     grad[2] += 2 * df * diff;
-    grad[3] += 2 * ddstar * diff;
+    if (fullModel_)
+      grad[3] += 2 * ddstar * diff;
   }
 }
 
@@ -214,7 +229,8 @@ mdm_ErrorTracker::ErrorCode mdm_DWIFitterIVIM::bcfitIVIM(
   // First, we create optimizer object and tune its properties
   //
   alglib::real_1d_array x;
-  x.setcontent(4, initParams.data());
+  int nParams = fullModel_ ? 4 : 3;
+  x.setcontent(nParams, initParams.data());
 
   //
   fit.fitted_params.resize(4);
@@ -243,20 +259,23 @@ mdm_ErrorTracker::ErrorCode mdm_DWIFitterIVIM::bcfitIVIM(
   fit.fitted_params[0] = x[0]; //s0
   fit.fitted_params[1] = x[1]; //d
   fit.fitted_params[2] = x[2]; //f
-  fit.fitted_params[3] = x[3]; //dstar
+
+  if (fullModel_)
+    fit.fitted_params[3] = x[3]; //dstar
+
   alglib::real_1d_array g;
-  g.setlength(4);
+  g.setlength(nParams);
   computeSSEGradient(x, fit.ssr, g);
   return mdm_ErrorTracker::OK;
 }
 
-void setNan(
-  bcfitOutput& fit
-)
+bcfitOutput setNan()
 {
+  bcfitOutput fit;
   for (auto& p : fit.fitted_params)
     p = NAN;
-  fit.ssr;
+  fit.ssr = NAN;
+  return fit;
 }
 
 void correctAic(bcfitOutput& fit)
@@ -322,11 +341,7 @@ Fit IVIM - biexponential decay with b-value.
   Dictionary of fitted parameters and goodness of fit metrics from
   bcfit MinimizerResult.
 */
-void mdm_DWIFitterIVIM::ivim_fit(
-  const std::vector<double>& bval_thresh,
-  bool fit_full_model,
-  bcfitOutput& best_fit
-  )
+bcfitOutput mdm_DWIFitterIVIM::fitMultipleThresholds()
 {
   auto nBvals = Bvals_.size();
 
@@ -334,7 +349,9 @@ void mdm_DWIFitterIVIM::ivim_fit(
   for (auto s : signals_)
   {
     if (s <= 0)
-      return setNan(best_fit);
+    {
+      return setNan();
+    }   
   }
 
   // Loop over starting values generated for different thresholds
@@ -346,8 +363,8 @@ void mdm_DWIFitterIVIM::ivim_fit(
   
   // Get starting values from fit to subset of bvals
   // Use high bvals for S0 interceptand D starting value
-    
-  for (auto bthresh : bval_thresh)
+  bcfitOutput best_fit;
+  for (auto bthresh : BValsThresh_)
   {
     // Collect all starting values
     std::vector<double> starting_vals(4);
@@ -358,7 +375,7 @@ void mdm_DWIFitterIVIM::ivim_fit(
     std::vector<double> Bvals_lo;
     std::vector<double> signals_lo;
 
-    double s0_meas;
+    double s0_meas = 0.0;
 
     for (size_t i_b = 0; i_b < nBvals; i_b++)
     {
@@ -388,7 +405,7 @@ void mdm_DWIFitterIVIM::ivim_fit(
     auto d_strt = initial_fit_high[1]; //adc
     double f_strt;
 
-    if (fit_full_model)
+    if (fullModel_)
     {
       // Use low bvals for S0and D* starting values
       std::vector<double> initial_fit_low;
@@ -402,7 +419,8 @@ void mdm_DWIFitterIVIM::ivim_fit(
       auto dstar_strt = initial_fit_low[1];// "adc"
 
       // Starting value for f from ratio of two "S0" values
-      f_strt = 1 - s0_inter / s0_strt;
+      // This is only valid if s0_inter < s0_strt, otherwise set f to 0
+      f_strt = (s0_strt > s0_inter) ? 1 - s0_inter / s0_strt : 0;
 
       starting_vals[0] = s0_strt;
       starting_vals[3] = dstar_strt;
@@ -429,9 +447,6 @@ void mdm_DWIFitterIVIM::ivim_fit(
     bcfitOutput fit;
     bcfitIVIM(starting_vals, fit);
 
-    for (auto r : fit.residuals)
-      fit.ssr += (r * r);
-
     if (fit.ssr < min_ssr)
     {
       min_ssr = fit.ssr;
@@ -443,11 +458,14 @@ void mdm_DWIFitterIVIM::ivim_fit(
 
   // Output
   if (!best_fit.success)
-    return setNan(best_fit);
+  {
+    return setNan();
+  } 
   
   // Calculate corrected AIC(AICc)
-  correctAic(best_fit);
+  //correctAic(best_fit);
 
   // Rsq calculation
-  best_fit.rsq = calculateRsq(signals_fitted, best_fit.ssr);
+  //best_fit.rsq = calculateRsq(signals_fitted, best_fit.ssr);
+  return best_fit;
 }

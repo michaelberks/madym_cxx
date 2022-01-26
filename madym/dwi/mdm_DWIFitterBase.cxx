@@ -22,6 +22,7 @@ MDM_API mdm_DWIFitterBase::mdm_DWIFitterBase(
 	const std::vector<double>& Bvals, const std::vector<std::string>& paramNames)
 	:
 	Bvals_(Bvals),
+	Bvals_to_fit_(Bvals),
 	paramNames_(paramNames),
 	maxIterations_(500)
 { 
@@ -36,13 +37,17 @@ MDM_API mdm_DWIFitterBase::~mdm_DWIFitterBase()
 //
 MDM_API void mdm_DWIFitterBase::setBvals(const std::vector<double>& Bvals)
 {
+	//When we set main B-values, also update B-values to fit
 	Bvals_ = Bvals;
+	Bvals_to_fit_ = Bvals_;
 }
 
 //
 MDM_API void mdm_DWIFitterBase::setSignals(const std::vector<double>& sigs)
 {
+	//When we set main signals, also update signals to fit
 	signals_ = sigs;
+	signals_to_fit_ = sigs;
 }
 
 //

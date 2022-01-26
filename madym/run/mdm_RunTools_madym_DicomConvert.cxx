@@ -137,10 +137,30 @@ MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *a
   options_parser_.add_option(config_options, options_.dicomScale);
   options_parser_.add_option(config_options, options_.dicomOffset);
 
+  //Dicom scanner settings
+  options_parser_.add_option(config_options, options_.FATag);
+  options_parser_.add_option(config_options, options_.FARequired);
+
+  options_parser_.add_option(config_options, options_.TRTag);
+  options_parser_.add_option(config_options, options_.TRRequired);
+
+  options_parser_.add_option(config_options, options_.TITag);
+  options_parser_.add_option(config_options, options_.TIRequired);
+
+  options_parser_.add_option(config_options, options_.TETag);
+  options_parser_.add_option(config_options, options_.TERequired);
+
+  options_parser_.add_option(config_options, options_.BTag);
+  options_parser_.add_option(config_options, options_.BRequired);
+
+  options_parser_.add_option(config_options, options_.gradOriTag);
+  options_parser_.add_option(config_options, options_.gradOriRequired);
+
   //Dicom options - time
   options_parser_.add_option(config_options, options_.dynTimeTag);
+  options_parser_.add_option(config_options, options_.dynTimeRequired);
   options_parser_.add_option(config_options, options_.temporalResolution);
-
+  
   //Logging options_
   options_parser_.add_option(config_options, options_.noLog);
   options_parser_.add_option(config_options, options_.noAudit);
@@ -272,6 +292,31 @@ std::vector<std::string> mdm_RunTools_madym_DicomConvert::getFileList(fs::path d
   return files;
 }
 
+void mdm_RunTools_madym_DicomConvert::getScannerSetting(
+  DcmFileFormat& fileFormat,
+  const std::string& seriesName,
+  const std::string&settingName, 
+  const mdm_input_string& customTag,
+  const DcmTagKey& defaultTag, 
+  const bool required, 
+  double& setting)
+{
+  DcmTagKey tagKey;
+  if (customTag().empty())
+    tagKey = defaultTag;
+  else
+    setDicomTag(customTag, tagKey);
+
+  try { setting = mdm_DicomFormat::getNumericField(fileFormat, tagKey); }
+  catch (mdm_DicomMissingFieldException) {
+    if (required)
+      mdm_ProgramLogger::logProgramWarning(__func__,
+        (boost::format(
+          "Series %1% missing %2% expected in field %3%."
+        ) % seriesName % settingName % tagKey.toString()).str());
+  };
+}
+
 //-----------------------------------------------------------------
 void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series, int nDyns)
 {
@@ -307,55 +352,33 @@ void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series, 
   series.Ymm = pixelSpacing[1];
   getNumericInfo(fileformat, DCM_SliceThickness, series.Zmm);
 
-  bool FA_required = true;
-  bool TR_required = true;
-  bool TI_required = false;
-  bool TE_required = true;
-  bool B_required = false;
-  bool gradOri_required = false;
-  bool time_required = true;
+  getScannerSetting(
+    fileformat, series.name, "FA", options_.FATag, 
+    DCM_FlipAngle, options_.FARequired(), series.FA);
 
-  try { series.FA = mdm_DicomFormat::getNumericField(fileformat, DCM_FlipAngle); }
-  catch (mdm_DicomMissingFieldException ) {
-    if (FA_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_FlipAngle field");
-  };
+  getScannerSetting(
+    fileformat, series.name, "TR", options_.TRTag, 
+    DCM_RepetitionTime, options_.TRRequired(), series.TR);
 
-  try { series.TR = mdm_DicomFormat::getNumericField(fileformat, DCM_RepetitionTime); }
-  catch (mdm_DicomMissingFieldException ) {
-    if (TR_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_RepetitionTime field");
-  };
+  getScannerSetting(
+    fileformat, series.name, "TI", options_.TITag, 
+    DCM_InversionTime, options_.TIRequired(), series.TI);
 
-  try { series.TI = mdm_DicomFormat::getNumericField(fileformat, DCM_InversionTime);}
-  catch (mdm_DicomMissingFieldException ) {
-    if (TI_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_InversionTime field");
-  };
+  getScannerSetting(
+    fileformat, series.name, "TE", options_.TETag, 
+    DCM_EchoTime, options_.TERequired(), series.TE);
 
-  try {series.TE = mdm_DicomFormat::getNumericField(fileformat, DCM_EchoTime);}
-  catch (mdm_DicomMissingFieldException ) {
-    if (TE_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_EchoTime field");
-  };
+  getScannerSetting(
+    fileformat, series.name, "B", options_.BTag, 
+    DCM_DiffusionBValue, options_.BRequired(), series.B);
 
-  try { series.B = mdm_DicomFormat::getNumericField(fileformat, DCM_DiffusionBValue); }
-  catch (mdm_DicomMissingFieldException) {
-    if (B_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_DiffusionBValue field");
-  };
+  getScannerSetting(
+    fileformat, series.name, "gradientOrientation", options_.gradOriTag, 
+    DCM_DiffusionGradientOrientation, options_.gradOriRequired(), series.gradOri);
 
-  try { series.gradOri = mdm_DicomFormat::getNumericField(fileformat, DCM_DiffusionGradientOrientation); }
-  catch (mdm_DicomMissingFieldException) {
-    if (gradOri_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_DiffusionGradientOrientation field");
-  }
-
-  try {series.acquisitionTime = mdm_DicomFormat::getNumericField(fileformat, DCM_AcquisitionTime);}
-  catch (mdm_DicomMissingFieldException) {
-    if (time_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_AcquisitionTime field");
-  };
+  getScannerSetting(
+    fileformat, series.name, "acquisitionTime", options_.dynTimeTag,
+    DCM_DiffusionGradientOrientation, options_.dynTimeRequired(), series.acquisitionTime);
 }
 
 //-----------------------------------------------------------------
@@ -603,9 +626,15 @@ void mdm_RunTools_madym_DicomConvert::sortDicomDir()
       if (!status.good())
         throw mdm_exception(__func__, "Unable to open " + filename[0]);
 
-      auto seriesName = mdm_DicomFormat::getTextField(fileformat, DCM_SeriesDescription);
-      if (seriesName.empty())
+      std::string seriesName;
+      try
+      {
+        seriesName = mdm_DicomFormat::getTextField(fileformat, DCM_SeriesDescription);
+      }
+      catch (mdm_DicomMissingFieldException& e)
+      {
         seriesName = mdm_DicomFormat::getTextField(fileformat, DCM_ProtocolName);
+      }
 
       //Create a series info struct and push onto the seriesInfo container
       dcmSeriesInfo series;

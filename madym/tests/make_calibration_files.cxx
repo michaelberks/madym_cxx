@@ -5,6 +5,8 @@
 #include <madym/dce/mdm_DCEModelGenerator.h>
 #include <madym/t1/mdm_T1FitterVFA.h>
 #include <madym/t1/mdm_T1FitterIR.h>
+#include <madym/dwi/mdm_DWIFitterADC.h>
+#include <madym/dwi/mdm_DWIFitterIVIM.h>
 #include "mdm_test_utils.h"
 
 void write_series_to_binary(const std::string filename, 
@@ -116,6 +118,8 @@ int main(int argc, char *argv[])
 	std::string outputDir;
 	if (argc > 1)
 		outputDir = std::string(argv[1]);
+
+  std::cout << "Writing data to " << outputDir << std::endl;
 
 	//Create dynamic times vector
   {
@@ -276,5 +280,63 @@ int main(int argc, char *argv[])
 
     T1FileStream.close();
     std::cout << "Wrote T1 data to binary calibration file" << std::endl;
+  }
+
+  //Create signals from DWI ADC
+  {
+    std::vector<double> Bvals = { 0, 150, 500, 800 };
+    int nBvals = (int)Bvals.size();
+    double S0 = 100;
+    double ADC = 0.8e-3;
+    auto signals = mdm_DWIFitterADC::modelToSignals({ S0, ADC }, Bvals);
+
+    std::string DWIFileName(outputDir + "DWI_ADC.dat");
+    std::ofstream DWIFileStream(DWIFileName, std::ios::out | std::ios::binary);
+    DWIFileStream.write(reinterpret_cast<const char*>(
+      &nBvals), sizeof(int));
+    DWIFileStream.write(reinterpret_cast<const char*>(
+      &Bvals[0]), sizeof(double) * nBvals);
+    DWIFileStream.write(reinterpret_cast<const char*>(
+      &signals[0]), sizeof(double) * nBvals);
+
+    DWIFileStream.write(reinterpret_cast<const char*>(
+      &S0), sizeof(double));
+    DWIFileStream.write(reinterpret_cast<const char*>(
+      &ADC), sizeof(double));
+
+    DWIFileStream.close();
+    std::cout << "Wrote DWI ADC data to binary calibration file" << std::endl;
+  }
+
+  //Create signals from DWI IVIM
+  {
+    std::vector<double> Bvals = { 0.0, 20.0, 40.0, 60.0, 80.0, 100.0, 300.0, 500.0, 800.0 };
+    int nBvals = (int)Bvals.size();
+    double S0 = 100;
+    double d = 0.8e-3;
+    double f = 0.2;
+    double dstar = 15e-3;
+    auto signals = mdm_DWIFitterIVIM::modelToSignals({ S0, d, f, dstar }, Bvals);
+
+    std::string DWIFileName(outputDir + "DWI_IVIM.dat");
+    std::ofstream DWIFileStream(DWIFileName, std::ios::out | std::ios::binary);
+    DWIFileStream.write(reinterpret_cast<const char*>(
+      &nBvals), sizeof(int));
+    DWIFileStream.write(reinterpret_cast<const char*>(
+      &Bvals[0]), sizeof(double) * nBvals);
+    DWIFileStream.write(reinterpret_cast<const char*>(
+      &signals[0]), sizeof(double) * nBvals);
+
+    DWIFileStream.write(reinterpret_cast<const char*>(
+      &S0), sizeof(double));
+    DWIFileStream.write(reinterpret_cast<const char*>(
+      &d), sizeof(double));
+    DWIFileStream.write(reinterpret_cast<const char*>(
+      &f), sizeof(double));
+    DWIFileStream.write(reinterpret_cast<const char*>(
+      &dstar), sizeof(double));
+
+    DWIFileStream.close();
+    std::cout << "Wrote DWI IVIM data to binary calibration file" << std::endl;
   }
 }

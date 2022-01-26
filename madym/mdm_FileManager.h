@@ -151,9 +151,18 @@ public:
   \param startIndex start index of sequence names
   \param stepSize step size between indices in sequence names
 	*/
-	MDM_API void saveOutputMaps(const std::string &outputDir,
-    const std::string &indexPattern,
-    const int startIndex, const int stepSize);
+
+	MDM_API void saveGeneralOutputMaps(const std::string& outputDir);
+
+	MDM_API void saveT1OutputMaps(const std::string& outputDir);
+
+	MDM_API void saveDynamicOutputMaps(const std::string& outputDir,
+		const std::string& indexPattern,
+		const int startIndex, const int stepSize);
+
+	MDM_API void saveDCEOutputMaps(const std::string& outputDir);
+
+	MDM_API void saveDWIOutputMaps(const std::string& outputDir);
 
 	//! Save model residuals map to disk
 	/*!

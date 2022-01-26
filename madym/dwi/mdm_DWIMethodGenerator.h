@@ -42,7 +42,9 @@ public:
 	enum DWIMethods {
 		UNDEFINED, ///> Method not recognised
 		ADC, ///> ADC
-    IVIM ///> IVIM
+		ADC_linear, ///> ADC, using only a linear fit
+    IVIM, ///> IVIM
+		IVIM_simple, ///> IVIM simplified version with no D* term
 	};
 
   //! Returns list of implemented model names
@@ -53,7 +55,9 @@ public:
 	{
 		return {
 	    toString(ADC),
-      toString(IVIM)
+			toString(ADC_linear),
+      toString(IVIM),
+			toString(IVIM_simple),
 		};
 	}
 
@@ -67,7 +71,9 @@ public:
     switch (methodType)
     {
     case ADC: return "ADC";
-    case IVIM: return "IVIM";
+		case ADC_linear: return "ADC-linear";
+		case IVIM: return "IVIM";
+    case IVIM_simple: return "IVIM_simple";
     default:
       throw mdm_exception(__func__, "DWI method " + std::to_string(methodType) + " not valid");
     }
@@ -78,15 +84,19 @@ public:
 	\param method string name of DWI mapping method, must be a member of implementedMethods
 	\return method enum DWI mapping method, UNSPECIFIED if method name not recognised
 	*/
-	MDM_API static DWIMethods parseMethodName(const std::string &method, bool B1Correction)
+	MDM_API static DWIMethods parseMethodName(const std::string &method)
   {
     if (method == toString(ADC))
-    {
-      return ADC;
-    }
-			
-    else if (method == toString(IVIM))
+			return ADC;
+    
+		else if (method == toString(ADC_linear))
+			return ADC_linear;
+
+		else if (method == toString(IVIM))
 			return IVIM;
+
+    else if (method == toString(IVIM_simple))
+			return IVIM_simple;
 
 		else
 			throw mdm_exception(__func__, "DWI method " + method + " not recognised");
@@ -102,7 +112,8 @@ public:
 	\return shared pointer to DWI fitter using specified method
 	*/
 	MDM_API static std::unique_ptr<mdm_DWIFitterBase> createFitter( 
-		DWIMethods methodType, const std::vector<mdm_Image3D> &inputImages)
+		DWIMethods methodType, const std::vector<mdm_Image3D> &inputImages,
+		const std::vector<double> &BvalsThresh)
   {
 		const auto &nSignals = inputImages.size();
 			
@@ -114,16 +125,32 @@ public:
 			for (auto img : inputImages)
 				B0s.push_back(img.info().B.value());
 
-      return std::make_unique<mdm_DWIFitterIVIM>(B0s);
+      return std::make_unique<mdm_DWIFitterADC>(B0s, false);
 		}
-    case IVIM:
+		case ADC_linear:
+		{
+			std::vector<double> B0s;
+			for (auto img : inputImages)
+				B0s.push_back(img.info().B.value());
+
+			return std::make_unique<mdm_DWIFitterADC>(B0s, true);
+		}
+		case IVIM:
     {
 			std::vector<double> B0s;
 			for (auto img : inputImages)
 				B0s.push_back(img.info().B.value());
 
-			return std::make_unique<mdm_DWIFitterIVIM>(B0s);
+			return std::make_unique<mdm_DWIFitterIVIM>(B0s, true, BvalsThresh);
     }
+		case IVIM_simple:
+		{
+			std::vector<double> B0s;
+			for (auto img : inputImages)
+				B0s.push_back(img.info().B.value());
+
+			return std::make_unique<mdm_DWIFitterIVIM>(B0s, false, BvalsThresh);
+		}
 		default:
       throw mdm_exception(__func__, "DWI method " + std::to_string(methodType) + " not valid");
 		}
@@ -138,23 +165,31 @@ public:
 	\param options set by user to configure mapping tool
 	\return shared pointer to DWI fitter using specified method
 	*/
-	MDM_API static std::unique_ptr<mdm_DWIFitterBase> createFitter(DWIMethods method,
-		const mdm_InputOptions &options)
+	MDM_API static std::unique_ptr<mdm_DWIFitterBase> createFitter(DWIMethods method)
 	{
+		std::vector<double> empty;
 		switch (method)
 		{
 		case ADC:
 		{
-      std::vector<double> empty;
-      auto DWIFitter = std::make_unique<mdm_DWIFitterADC>(empty);
+      auto DWIFitter = std::make_unique<mdm_DWIFitterADC>(empty, false);
+			return DWIFitter;
+		}
+		case ADC_linear:
+		{
+			auto DWIFitter = std::make_unique<mdm_DWIFitterADC>(empty, true);
 			return DWIFitter;
 		}
     case IVIM:
     {
-      std::vector<double> empty;
-      auto DWIFitter = std::make_unique<mdm_DWIFitterIVIM>(empty);
+			auto DWIFitter = std::make_unique<mdm_DWIFitterIVIM>(empty, true, empty);
       return DWIFitter;
     }
+		case IVIM_simple:
+		{
+			auto DWIFitter = std::make_unique<mdm_DWIFitterIVIM>(empty, false, empty);
+			return DWIFitter;
+		}
 		default:
 			abort();
 		}

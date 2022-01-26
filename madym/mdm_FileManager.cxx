@@ -110,34 +110,64 @@ MDM_API void mdm_FileManager::loadModelResiduals(const std::string &path)
 
 }
 
-MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir,
-  const std::string &indexPattern,
-  const int startIndex, const int stepSize)
+MDM_API void mdm_FileManager::saveGeneralOutputMaps(const std::string& outputDir)
 {
   //Write out ROI (if used)
   saveROI(outputDir, volumeAnalysis_.MAP_NAME_ROI);
 
   //Write out error tracker
   saveErrorTracker(outputDir, volumeAnalysis_.MAP_NAME_ERROR_TRACKER);
+}
 
+MDM_API void mdm_FileManager::saveT1OutputMaps(const std::string& outputDir)
+{
   //Write out T1 and M0 maps (if M0 map used)
   if (volumeAnalysis_.T1Mapper().T1())
-    saveOutputMap(volumeAnalysis_.MAP_NAME_T1, 
+    saveOutputMap(volumeAnalysis_.MAP_NAME_T1,
       volumeAnalysis_.T1Mapper().T1(), outputDir, true);
-		
-	if (volumeAnalysis_.T1Mapper().M0())
-		saveOutputMap(volumeAnalysis_.MAP_NAME_M0, 
+
+  if (volumeAnalysis_.T1Mapper().M0())
+    saveOutputMap(volumeAnalysis_.MAP_NAME_M0,
       volumeAnalysis_.T1Mapper().M0(), outputDir, true);
+}
 
-  //Save any diffusion modelling maps
-  for (const auto paramName : volumeAnalysis_.DWIMapper().paramNames())
+MDM_API void mdm_FileManager::saveDynamicOutputMaps(const std::string& outputDir,
+  const std::string& indexPattern,
+  const int startIndex, const int stepSize)
+{
+  if (writeCtDataMaps_)
   {
-    const auto& map = volumeAnalysis_.DWIMapper().model_map(paramName);
-    if (map)
-      saveOutputMap(paramName, map, outputDir, false);
-  }
-      
+    const std::string& ctSigPrefix = volumeAnalysis_.MAP_NAME_CT_SIG;
+    auto ctOutputDir = fs::path(outputDir) / ctSigPrefix;
+    fs::create_directories(ctOutputDir);
 
+    for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
+    {
+      std::string ctName = mdm_SequenceNames::makeSequenceFilename(
+        "", ctSigPrefix, i + 1, indexPattern,
+        startIndex, stepSize);
+
+      saveOutputMap(ctName, volumeAnalysis_.CtDataMap(i), ctOutputDir.string(), true);
+    }
+  }
+  if (writeCtModelMaps_)
+  {
+    const std::string& ctModPrefix = volumeAnalysis_.MAP_NAME_CT_MOD;
+    auto ctOutputDir = fs::path(outputDir) / ctModPrefix;
+    fs::create_directories(ctOutputDir);
+
+    for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
+    {
+      std::string cmodName = mdm_SequenceNames::makeSequenceFilename(
+        "", ctModPrefix, i + 1, indexPattern,
+        startIndex, stepSize);
+      saveOutputMap(cmodName, volumeAnalysis_.CtModelMap(i), ctOutputDir.string(), false);
+    }
+  }
+}
+
+MDM_API void mdm_FileManager::saveDCEOutputMaps(const std::string& outputDir)
+{
   //Everything after this point is only applicable to analysis with a DCE model
   if (volumeAnalysis_.modelType().empty())
     return;
@@ -160,41 +190,22 @@ MDM_API void mdm_FileManager::saveOutputMaps(const std::string &outputDir,
     }
     saveOutputMap(volumeAnalysis_.MAP_NAME_ENHANCING, outputDir, false);
   }
-	
-	//Write error and enhancing voxels map
+
+  //Write error and enhancing voxels map
   saveModelResiduals(outputDir);
 
-	//Write output stats
-	saveSummaryStats(outputDir);
+  //Write output stats
+  saveSummaryStats(outputDir);
+}
 
-	if (writeCtDataMaps_)
-	{
-		const std::string &ctSigPrefix = volumeAnalysis_.MAP_NAME_CT_SIG;
-    auto ctOutputDir = fs::path(outputDir) / ctSigPrefix;
-    fs::create_directories(ctOutputDir);
-
-		for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
-		{
-			std::string ctName = mdm_SequenceNames::makeSequenceFilename(
-        "", ctSigPrefix, i+1, indexPattern,
-        startIndex, stepSize);
-
-			saveOutputMap(ctName, volumeAnalysis_.CtDataMap(i), ctOutputDir.string(), true);
-		}
-	}
-  if (writeCtModelMaps_)
+MDM_API void mdm_FileManager::saveDWIOutputMaps(const std::string& outputDir)
+{
+  //Save any diffusion modelling maps
+  for (const auto paramName : volumeAnalysis_.DWIMapper().paramNames())
   {
-    const std::string &ctModPrefix = volumeAnalysis_.MAP_NAME_CT_MOD;
-    auto ctOutputDir = fs::path(outputDir) / ctModPrefix;
-    fs::create_directories(ctOutputDir);
-
-    for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
-    {
-      std::string cmodName = mdm_SequenceNames::makeSequenceFilename(
-        "", ctModPrefix, i + 1, indexPattern,
-        startIndex, stepSize);
-      saveOutputMap(cmodName, volumeAnalysis_.CtModelMap(i), ctOutputDir.string(), false);
-    }
+    const auto& map = volumeAnalysis_.DWIMapper().model_map(paramName);
+    if (map)
+      saveOutputMap(paramName, map, outputDir, false);
   }
 }
 

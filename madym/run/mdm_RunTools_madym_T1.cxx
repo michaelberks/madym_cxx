@@ -54,7 +54,8 @@ MDM_API void mdm_RunTools_madym_T1::run()
   mapT1();
 
 	//Write output
-	writeOutput();
+	fileManager_.saveGeneralOutputMaps(outputPath_.string());
+	fileManager_.saveT1OutputMaps(outputPath_.string());
 
   //Reset the volume analysis
   volumeAnalysis_.reset();

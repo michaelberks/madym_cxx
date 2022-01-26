@@ -66,9 +66,6 @@ protected:
   //! Map T1 from input images using method specified in options
   MDM_API void mapT1();
 
-	//! Write all output maps
-	MDM_API void writeOutput();
-
 	//Variables:
 
 	//! Object for managing all image volume IO

@@ -174,12 +174,6 @@ void mdm_RunToolsVolumeAnalysis::mapT1()
   volumeAnalysis_.T1Mapper().mapT1();
 }
 
-MDM_API void mdm_RunToolsVolumeAnalysis::writeOutput()
-{
-  fileManager_.saveOutputMaps(outputPath_.string(),
-    options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
-}
-
 //
 
 

@@ -27,6 +27,7 @@ public:
 	/*!
 	\param errorTracker shared across the volume analysis objects
   \param ROI shared across the volume analysis objects
+	\param BvalsThresh 
 	*/
 	MDM_API mdm_DWIMapper(mdm_ErrorTracker &errorTracker, mdm_Image3D &ROI);
 		
@@ -105,19 +106,11 @@ public:
 	*/
 	MDM_API void  setMethod(mdm_DWIMethodGenerator::DWIMethods method);
 
-	//! Return current noise threshold
+	//!Set BvalsThresh
 	/*!
-	Mapping is only applied to voxels with input signal > threshold
-	\return noise threshold
+	\param BvalsThresh
 	*/
-	MDM_API double  noiseThreshold() const;
-
-	//! Set noise threshold
-	/*!
-	Mapping is only applied to voxels with input signal > threshold
-	\param t noise threshold
-	*/
-	MDM_API void  setNoiseThreshold(double t);
+	MDM_API void  setBvalsThresh(const std::vector<double>& BvalsThresh);
 
 protected:
 
@@ -139,9 +132,13 @@ private:
 	// a default empty image will be used
 	mdm_ErrorTracker &errorTracker_;
 
-	double noiseThreshold_;
-
 	mdm_DWIMethodGenerator::DWIMethods method_;
+
+	//Name of parameters associated with model maps
+	std::vector<std::string> paramNames_;
+
+	// Output image maps
+	std::vector<double> BvalsThresh_;
 
 };
 #endif /* mdm_T1VolumeAnalysis_HDR */

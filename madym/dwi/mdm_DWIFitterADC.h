@@ -21,7 +21,7 @@ public:
 	/*!
 	\param B0s vector of B0 values sin msecs
 	*/
-	MDM_API mdm_DWIFitterADC(const std::vector<double>& B0s);
+	MDM_API mdm_DWIFitterADC(const std::vector<double>& B0s, bool linearFit);
 
 	//! Default denstructor
 	/*!
@@ -64,8 +64,17 @@ public:
 	\param B0 B0 values in msecs
 	\return signal
 	*/
-	MDM_API static double modeltoSignal(
+	MDM_API static double modelToSignal(
 		const std::vector<double>& params, const double B0);
+
+	//! Compute signals using...
+	/*!
+	\params ADC model parameters
+	\param B0s B0 values in msecs
+	\return signal
+	*/
+	MDM_API static const std::vector<double> modelToSignals(
+		const std::vector<double>& params, const std::vector<double> B0s);
 
 
 private:
@@ -85,6 +94,8 @@ private:
 	}
 
 	void linearFit(double &S0, double &ADC, double& ssr);
+
+	bool linearFit_;
 
 };
 

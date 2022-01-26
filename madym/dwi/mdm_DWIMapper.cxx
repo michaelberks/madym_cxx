@@ -24,7 +24,6 @@ MDM_API mdm_DWIMapper::mdm_DWIMapper(mdm_ErrorTracker &errorTracker, mdm_Image3D
 	:inputImages_(0),
 	errorTracker_(errorTracker),
   ROI_(ROI),
-	noiseThreshold_(0),
 	method_(mdm_DWIMethodGenerator::DWIMethods::UNDEFINED)
 {}
 
@@ -62,11 +61,13 @@ MDM_API void  mdm_DWIMapper::mapDWI(mdm_DWIMethodGenerator::DWIMethods method)
 	auto nSignals = inputImages_.size();
 
 	//Instantiate DWI fitter object of required method type
-	auto DWIFitter = mdm_DWIMethodGenerator::createFitter(method, inputImages_);
+	auto DWIFitter = mdm_DWIMethodGenerator::createFitter(method, inputImages_, BvalsThresh_);
 	auto nParams = DWIFitter->nParams();
 
 	//Initialise maps
 	modelMaps_.resize(nParams);
+	paramNames_ = DWIFitter->paramNames();
+
 	for (auto& map : modelMaps_)
 	{
 		map.copy(inputImages_[0]);
@@ -150,19 +151,31 @@ MDM_API const mdm_Image3D& mdm_DWIMapper::inputImage(size_t i) const
 //
 MDM_API std::vector<std::string> mdm_DWIMapper::paramNames() const
 {
-	return {};
+	return paramNames_;
 }
 
 //
 MDM_API const mdm_Image3D& mdm_DWIMapper::model_map(const std::string& map_name) const
 {
-	return modelMaps_[0];
+	for (size_t i_p = 0; i_p < paramNames_.size(); i_p++)
+		if (paramNames_[i_p] == map_name)
+			return modelMaps_[i_p];
+
+	throw mdm_exception(__func__, boost::format(
+		"Map name %1% not found in DWI model paramter names")
+		% map_name % inputImages_.size());
 }
 
 //
 MDM_API double mdm_DWIMapper::model_map(const std::string& map_name, size_t voxel) const
 {
-	return modelMaps_[0].voxel(voxel);
+	for (size_t i_p = 0; i_p < paramNames_.size(); i_p++)
+		if (paramNames_[i_p] == map_name)
+			return modelMaps_[i_p].voxel(voxel);
+
+	throw mdm_exception(__func__, boost::format(
+		"Map name %1% not found in DWI model paramter names")
+		% map_name % inputImages_.size());
 }
 
 //
@@ -177,16 +190,9 @@ MDM_API void  mdm_DWIMapper::setMethod(mdm_DWIMethodGenerator::DWIMethods method
 	method_ = method;
 }
 
-//
-MDM_API double  mdm_DWIMapper::noiseThreshold() const
+MDM_API void  mdm_DWIMapper::setBvalsThresh(const std::vector<double>& BvalsThresh)
 {
-	return noiseThreshold_;
-}
-
-//
-MDM_API void  mdm_DWIMapper::setNoiseThreshold(double t)
-{
-	noiseThreshold_ = t;
+	BvalsThresh_ = BvalsThresh;
 }
 
 //******************************************************************
