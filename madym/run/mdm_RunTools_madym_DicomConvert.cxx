@@ -115,6 +115,7 @@ MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *a
   options_parser_.add_option(config_options, options_.imageDataType);
   options_parser_.add_option(config_options, options_.flipX);
   options_parser_.add_option(config_options, options_.flipY);
+  options_parser_.add_option(config_options, options_.flipZ);
 
   //Dicom options
   options_parser_.add_option(config_options, options_.dicomDir);
@@ -631,7 +632,7 @@ void mdm_RunTools_madym_DicomConvert::sortDicomDir()
       {
         seriesName = mdm_DicomFormat::getTextField(fileformat, DCM_SeriesDescription);
       }
-      catch (mdm_DicomMissingFieldException& e)
+      catch (mdm_DicomMissingFieldException)
       {
         seriesName = mdm_DicomFormat::getTextField(fileformat, DCM_ProtocolName);
       }
@@ -692,7 +693,7 @@ mdm_Image3D mdm_RunTools_madym_DicomConvert::loadDicomImage(
   //Make the image from the filenames
   auto img = mdm_DicomFormat::loadImageFromDicomSlices(
     dimensions, pixelSpacing, sliceNames, offset, scale,
-    options_.flipX(), options_.flipY());
+    options_.flipX(), options_.flipY(), options_.flipZ());
 
   //Now set meta data from DICOM fields
   if (series.FA)

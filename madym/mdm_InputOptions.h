@@ -90,6 +90,9 @@ struct mdm_InputOptions {
 	mdm_input_doubles BvalsThresh = mdm_input_doubles(
 		mdm_input_double_list(std::vector<double>{ 100.0 }), "Bvals_thresh", "",
 		"Used to separate B-values into high and low sets for initial IVIM fitting"); //!< See initial value
+	mdm_input_int nDWIInputs = mdm_input_int(
+		0, "n_DWI", "",
+		"Number of input signals for DWI models"); //!< See initial value
 
 	//Signal to concentration options
 	mdm_input_bool M0Ratio = mdm_input_bool(
@@ -335,6 +338,9 @@ struct mdm_InputOptions {
   mdm_input_bool flipY = mdm_input_bool(
     true, "flip_y", "",
     "Flip dicom slices vertically before copying into 3D image volume"); //!< See initial value
+	mdm_input_bool flipZ = mdm_input_bool(
+		true, "flip_z", "",
+		"Reverse order of dicom slices in 3D image volume"); //!< See initial value
 
   //Dicom options - scaling
   mdm_input_string autoScaleTag = mdm_input_string(

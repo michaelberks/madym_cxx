@@ -41,6 +41,8 @@ BOOST_AUTO_TEST_CASE(test_DWI_ADC) {
   auto signals = mdm_DWIFitterADC::modelToSignals({ S0, ADC }, Bvals);
   BOOST_CHECK_VECTORS(signals, signalsCalibration);
 
+  
+
   //Next fit the signals to recover S0 and ADC
   std::vector<double> ADCfit;
   double ssr;
@@ -93,20 +95,21 @@ BOOST_AUTO_TEST_CASE(test_DWI_IVIM) {
   //Next fit the signals to recover IVIM params
   std::vector<double> IVIMfit;
   double ssr;
-  std::vector<double> BvalsThresh = { 40, 60, 100, 150 };
+  std::vector<double> BvalsThresh = { 40.0, 60.0, 100.0, 150.0 };
   mdm_DWIFitterIVIM DWIFitterIVIM(Bvals, true, BvalsThresh);
+
   DWIFitterIVIM.setSignals(signalsCalibration);
   auto errCode = DWIFitterIVIM.fitModel(IVIMfit, ssr);
   BOOST_CHECK_MESSAGE(!errCode, "IVIM fit returned error " << errCode);
 
   BOOST_TEST_MESSAGE("Testing fitted S0 match");
-  BOOST_CHECK_CLOSE(IVIMfit[0], S0, 0.01);
+  BOOST_CHECK_CLOSE(IVIMfit[0], S0, 0.1);
   BOOST_TEST_MESSAGE("Testing fitted d match");
-  BOOST_CHECK_CLOSE(IVIMfit[1], d, 0.01);
+  BOOST_CHECK_CLOSE(IVIMfit[1], d, 0.5);
   BOOST_TEST_MESSAGE("Testing fitted d match");
-  BOOST_CHECK_CLOSE(IVIMfit[2], f, 0.01);
+  BOOST_CHECK_CLOSE(IVIMfit[2], f, 0.5);
   BOOST_TEST_MESSAGE("Testing fitted d match");
-  BOOST_CHECK_CLOSE(IVIMfit[3], dstar, 0.01);
+  BOOST_CHECK_CLOSE(IVIMfit[3], dstar, 0.5);
 
 }
 

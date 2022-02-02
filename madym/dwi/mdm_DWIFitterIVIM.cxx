@@ -21,7 +21,7 @@
 
 //
 MDM_API mdm_DWIFitterIVIM::mdm_DWIFitterIVIM(const std::vector<double> &Bvals,
-  bool fullModel, std::vector<double> BValsThresh)
+  bool fullModel, const std::vector<double> &BValsThresh)
   :
   mdm_DWIFitterBase(Bvals, { "S0", "d", "f", "dstar" }),
   ADCFitter_(Bvals, false),
@@ -30,11 +30,11 @@ MDM_API mdm_DWIFitterIVIM::mdm_DWIFitterIVIM(const std::vector<double> &Bvals,
 {
   //Pre-initialise the alglib state
   int nParams = 4;
-  std::vector<double> init = { 1, 1, 0.5, 1 };
+  std::vector<double> init = { 100, 1e-3, 0.5, 1e-2 };
   std::vector<double> lowerBounds = { 0, 1e-4, 0, 0 };
   std::vector<double> upperBounds = {1e6, 1e6, 1, 1e6};
 
-  std::vector<double> scale = { 1, 1, 1, 1 };
+  std::vector<double> scale = { 100, 1e-3, 1, 1e-2 };
   
 
   alglib::real_1d_array x;
@@ -60,12 +60,12 @@ MDM_API mdm_DWIFitterIVIM::mdm_DWIFitterIVIM(const std::vector<double> &Bvals,
   alglib::minbcsetbc(state_, bndl, bndu);
   alglib::minbcsetcond(state_, epsg, epsf, epsx, maxits);
   alglib::minbcsetscale(state_, s);
+
 #if _DEBUG
-  //REQUIRES UPDATE TO LATEST ALGLIB VERSION
   //Provides numerical check of analytic gradient, useful in debugging, but should not be
   //used in release versions
-  //alglib::minbcoptguardsmoothness(state_);
-  //alglib::minbcoptguardgradient(state_, 0.001);
+  alglib::minbcoptguardsmoothness(state_);
+  alglib::minbcoptguardgradient(state_, 0.001);
 #endif
 }
 
@@ -82,24 +82,26 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_DWIFitterIVIM::fitModel(
   auto fit = fitMultipleThresholds();
   params = fit.fitted_params;
   ssr = fit.ssr;
-
-	return mdm_ErrorTracker::ErrorCode::OK;
+	return fit.success;
 }
 
 //
 MDM_API bool mdm_DWIFitterIVIM::setInputsFromStream(std::istream& ifs,
 	const int nSignals)
 {
-	Bvals_.resize(nSignals);
-	signals_.resize(nSignals);
-	for (auto &b0 : Bvals_)
-	{
-		ifs >> b0;
-		if (ifs.eof())
-			return false;
-	}
-	for (auto &si : signals_)
-		ifs >> si;
+  Bvals_.resize(nSignals);
+  signals_.resize(nSignals);
+  for (auto& Bval : Bvals_)
+  {
+    ifs >> Bval;
+    if (ifs.eof())
+      return false;
+  }
+  for (auto& si : signals_)
+    ifs >> si;
+
+  signals_to_fit_ = signals_;
+  Bvals_to_fit_ = Bvals_;
 
 	return true;
 }
@@ -146,13 +148,13 @@ MDM_API double mdm_DWIFitterIVIM::modelToSignal(
 
   auto s0 = params[0];
   auto d = params[1];
-  auto dstar = params[2];
-  auto f = params[3];
+  auto f = params[2];
+  auto dstar = params[3];
 
   return s0 * ((1 - f) * std::exp(-d * Bval) + f * std::exp(-dstar * Bval));
 }
 
-MDM_API const std::vector<double> mdm_DWIFitterIVIM::modelToSignals(
+MDM_API std::vector<double> mdm_DWIFitterIVIM::modelToSignals(
   const std::vector<double>& params, const std::vector<double> B0s)
 {
   std::vector<double> sigs;
@@ -221,7 +223,7 @@ void mdm_DWIFitterIVIM::computeSSEGradient(
   }
 }
 
-mdm_ErrorTracker::ErrorCode mdm_DWIFitterIVIM::bcfitIVIM(
+void mdm_DWIFitterIVIM::bcfitIVIM(
   const std::vector<double>& initParams,
   bcfitOutput &fit)
 {
@@ -241,11 +243,26 @@ mdm_ErrorTracker::ErrorCode mdm_DWIFitterIVIM::bcfitIVIM(
     minbcrestartfrom(state_, x);
     minbcoptimize(state_, &computeSSEGradientAlglib, NULL, this);
     minbcresults(state_, x, rep_);
+
+    
+
+#if _DEBUG
+    //
+    // Check that OptGuard did not report errors
+    //
+    alglib::optguardreport ogrep;
+    alglib::minbcoptguardresults(state_, ogrep);
+    std::cout << "Optimisation guard results:\n";
+    std::cout << "Bad gradient suspected:" << (ogrep.badgradsuspected ? "true" : "false") << "\n"; // EXPECTED: false
+    std::cout << "Non c0 suspected:" << (ogrep.nonc0suspected ? "true" : "false") << "\n"; // EXPECTED: false
+    std::cout << "Non c1 suspected:" << (ogrep.nonc1suspected ? "true" : "false") << "\n"; // EXPECTED: false
+#endif
   }
   catch (alglib::ap_error e)
   {
     //setErrorValuesAndTidyUp(T1value, M0value);
-    return mdm_ErrorTracker::DWI_FIT_FAIL;
+    fit.success = mdm_ErrorTracker::DWI_FIT_FAIL;
+    return;
   }
   int iterations = int(rep_.iterationscount);
 
@@ -253,7 +270,8 @@ mdm_ErrorTracker::ErrorCode mdm_DWIFitterIVIM::bcfitIVIM(
   if (iterations >= maxIterations_)
   {
     setErrorValuesAndTidyUp(fit.fitted_params);
-    return mdm_ErrorTracker::DWI_MAX_ITER;
+    fit.success = mdm_ErrorTracker::DWI_MAX_ITER;
+    return;
   }
 
   fit.fitted_params[0] = x[0]; //s0
@@ -266,15 +284,16 @@ mdm_ErrorTracker::ErrorCode mdm_DWIFitterIVIM::bcfitIVIM(
   alglib::real_1d_array g;
   g.setlength(nParams);
   computeSSEGradient(x, fit.ssr, g);
-  return mdm_ErrorTracker::OK;
+  fit.success = mdm_ErrorTracker::OK;
+  return;
 }
 
 bcfitOutput setNan()
 {
   bcfitOutput fit;
-  for (auto& p : fit.fitted_params)
-    p = NAN;
+  fit.fitted_params = std::vector<double>(4, NAN);
   fit.ssr = NAN;
+  fit.success = mdm_ErrorTracker::DWI_FIT_FAIL;
   return fit;
 }
 
@@ -344,18 +363,17 @@ Fit IVIM - biexponential decay with b-value.
 bcfitOutput mdm_DWIFitterIVIM::fitMultipleThresholds()
 {
   auto nBvals = Bvals_.size();
+  bcfitOutput best_fit = setNan();
 
   // Only peform fit if all signals are non - zero
   for (auto s : signals_)
   {
     if (s <= 0)
-    {
-      return setNan();
-    }   
+      return best_fit;
   }
 
   // Loop over starting values generated for different thresholds
-  double min_ssr = 1e10;
+  double min_ssr = INFINITY;
   std::vector<double> signals_fitted;
   std::vector<double> bvals_fitted;
 
@@ -363,8 +381,9 @@ bcfitOutput mdm_DWIFitterIVIM::fitMultipleThresholds()
   
   // Get starting values from fit to subset of bvals
   // Use high bvals for S0 interceptand D starting value
-  bcfitOutput best_fit;
+  
   for (auto bthresh : BValsThresh_)
+    
   {
     // Collect all starting values
     std::vector<double> starting_vals(4);
@@ -449,18 +468,13 @@ bcfitOutput mdm_DWIFitterIVIM::fitMultipleThresholds()
 
     if (fit.ssr < min_ssr)
     {
+      //std::cout << "Fit " << bthresh << " is new best fit\n";
       min_ssr = fit.ssr;
       best_fit = fit;
       signals_fitted = signals_to_fit_;
       bvals_fitted = Bvals_to_fit_;
     }
   }
-
-  // Output
-  if (!best_fit.success)
-  {
-    return setNan();
-  } 
   
   // Calculate corrected AIC(AICc)
   //correctAic(best_fit);

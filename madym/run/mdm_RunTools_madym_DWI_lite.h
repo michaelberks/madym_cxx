@@ -1,6 +1,6 @@
 /*!
 *  @file    mdm_RunTools_madym_DWI_lite.h
-*  @brief   Defines class mdm_RunTools_madym_DWI_lite to run the lite version of the T1 mapping tool
+*  @brief   Defines class mdm_RunTools_madym_DWI_lite to run the lite version of the DWI modelling tool
 *  @details More info...
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 */
@@ -8,12 +8,12 @@
 #ifndef MDM_RUNTOOLS_MADYM_DWI_LITE_HDR
 #define MDM_RUNTOOLS_MADYM_DWI_LITE_HDR
 #include "mdm_api.h"
-#include <madym/run/mdm_RunToolsT1Fit.h>
+#include <madym/mdm_RunTools.h>
 
-//! Class to run the lite version of the T1 mapping tool
+//! Class to run the lite version of the DWI models tool
 /*!
 */
-class mdm_RunTools_madym_DWI_lite : public mdm_RunToolsT1Fit {
+class mdm_RunTools_madym_DWI_lite : public mdm_RunTools {
 
 public:
 
@@ -28,7 +28,7 @@ public:
 	*/
 	MDM_API ~mdm_RunTools_madym_DWI_lite();
 
-	//! parse user inputs specific to T1 mapping
+	//! parse user inputs specific to DWI tool
 	/*!
 	\param argc count of command line arguments from main exe
 	\param argv list of arguments from main exe
@@ -46,12 +46,12 @@ public:
   MDM_API std::string who() const;
 	
 protected:
-  //! Runs the lite version of T1 mapping
+  //! Runs the lite version of DWI modelling
   /*!
   1. Parses and validates input options
-  2. Sets specified T1 method
+  2. Sets specified DWI method
   3. Opens input data file
-  4. Processes each line in input data file, mapping T1 from input signals, writing T1 and M0 values to output file
+  4. Processes each line in input data file, fitting DWI model to input signals, writing fitted parameters values to output file
   5. Closes input/output file and reports the number of samples processed.
   
   Throws mdm_exception if errors encountered

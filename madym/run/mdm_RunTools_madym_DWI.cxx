@@ -157,6 +157,7 @@ void mdm_RunTools_madym_DWI::mapDWI()
 
 	//FA images loaded, try computing DWI maps
 	volumeAnalysis_.DWIMapper().setMethod(methodType);
+
 	volumeAnalysis_.DWIMapper().mapDWI();
 }
 

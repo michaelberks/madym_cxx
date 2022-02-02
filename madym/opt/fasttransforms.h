@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.13.0 (source code generated 2017-12-29)
+ALGLIB 3.18.0 (source code generated 2021-10-25)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -94,8 +94,8 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 29.05.2009 by Bochkanov Sergey
 *************************************************************************/
-void fftc1d(complex_1d_array &a, const ae_int_t n);
-void fftc1d(complex_1d_array &a);
+void fftc1d(complex_1d_array &a, const ae_int_t n, const xparams _xparams = alglib::xdefault);
+void fftc1d(complex_1d_array &a, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -118,8 +118,8 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 29.05.2009 by Bochkanov Sergey
 *************************************************************************/
-void fftc1dinv(complex_1d_array &a, const ae_int_t n);
-void fftc1dinv(complex_1d_array &a);
+void fftc1dinv(complex_1d_array &a, const ae_int_t n, const xparams _xparams = alglib::xdefault);
+void fftc1dinv(complex_1d_array &a, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -145,8 +145,8 @@ other FFT-related subroutines.
   -- ALGLIB --
      Copyright 01.06.2009 by Bochkanov Sergey
 *************************************************************************/
-void fftr1d(const real_1d_array &a, const ae_int_t n, complex_1d_array &f);
-void fftr1d(const real_1d_array &a, complex_1d_array &f);
+void fftr1d(const real_1d_array &a, const ae_int_t n, complex_1d_array &f, const xparams _xparams = alglib::xdefault);
+void fftr1d(const real_1d_array &a, complex_1d_array &f, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -184,8 +184,8 @@ not used) because array size is used to automatically determine FFT length
   -- ALGLIB --
      Copyright 01.06.2009 by Bochkanov Sergey
 *************************************************************************/
-void fftr1dinv(const complex_1d_array &f, const ae_int_t n, real_1d_array &a);
-void fftr1dinv(const complex_1d_array &f, real_1d_array &a);
+void fftr1dinv(const complex_1d_array &f, const ae_int_t n, real_1d_array &a, const xparams _xparams = alglib::xdefault);
+void fftr1dinv(const complex_1d_array &f, real_1d_array &a, const xparams _xparams = alglib::xdefault);
 #endif
 
 #if defined(AE_COMPILE_FHT) || !defined(AE_PARTIAL_BUILD)
@@ -206,7 +206,7 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 04.06.2009 by Bochkanov Sergey
 *************************************************************************/
-void fhtr1d(real_1d_array &a, const ae_int_t n);
+void fhtr1d(real_1d_array &a, const ae_int_t n, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -225,7 +225,7 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 29.05.2009 by Bochkanov Sergey
 *************************************************************************/
-void fhtr1dinv(real_1d_array &a, const ae_int_t n);
+void fhtr1dinv(real_1d_array &a, const ae_int_t n, const xparams _xparams = alglib::xdefault);
 #endif
 
 #if defined(AE_COMPILE_CONV) || !defined(AE_PARTIAL_BUILD)
@@ -258,7 +258,7 @@ subroutine - just shift its result correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convc1d(const complex_1d_array &a, const ae_int_t m, const complex_1d_array &b, const ae_int_t n, complex_1d_array &r);
+void convc1d(const complex_1d_array &a, const ae_int_t m, const complex_1d_array &b, const ae_int_t n, complex_1d_array &r, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -287,7 +287,7 @@ subroutine - just shift its result correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convc1dinv(const complex_1d_array &a, const ae_int_t m, const complex_1d_array &b, const ae_int_t n, complex_1d_array &r);
+void convc1dinv(const complex_1d_array &a, const ae_int_t m, const complex_1d_array &b, const ae_int_t n, complex_1d_array &r, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -318,7 +318,7 @@ correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convc1dcircular(const complex_1d_array &s, const ae_int_t m, const complex_1d_array &r, const ae_int_t n, complex_1d_array &c);
+void convc1dcircular(const complex_1d_array &s, const ae_int_t m, const complex_1d_array &r, const ae_int_t n, complex_1d_array &c, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -347,7 +347,7 @@ correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convc1dcircularinv(const complex_1d_array &a, const ae_int_t m, const complex_1d_array &b, const ae_int_t n, complex_1d_array &r);
+void convc1dcircularinv(const complex_1d_array &a, const ae_int_t m, const complex_1d_array &b, const ae_int_t n, complex_1d_array &r, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -372,7 +372,7 @@ subroutine - just shift its result correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convr1d(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, const ae_int_t n, real_1d_array &r);
+void convr1d(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, const ae_int_t n, real_1d_array &r, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -401,7 +401,7 @@ subroutine - just shift its result correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convr1dinv(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, const ae_int_t n, real_1d_array &r);
+void convr1dinv(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, const ae_int_t n, real_1d_array &r, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -426,7 +426,7 @@ correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convr1dcircular(const real_1d_array &s, const ae_int_t m, const real_1d_array &r, const ae_int_t n, real_1d_array &c);
+void convr1dcircular(const real_1d_array &s, const ae_int_t m, const real_1d_array &r, const ae_int_t n, real_1d_array &c, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -455,7 +455,7 @@ correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convr1dcircularinv(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, const ae_int_t n, real_1d_array &r);
+void convr1dcircularinv(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, const ae_int_t n, real_1d_array &r, const xparams _xparams = alglib::xdefault);
 #endif
 
 #if defined(AE_COMPILE_CORR) || !defined(AE_PARTIAL_BUILD)
@@ -495,7 +495,7 @@ on [-K..M-1],  you can still use this subroutine, just shift result by K.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void corrc1d(const complex_1d_array &signal, const ae_int_t n, const complex_1d_array &pattern, const ae_int_t m, complex_1d_array &r);
+void corrc1d(const complex_1d_array &signal, const ae_int_t n, const complex_1d_array &pattern, const ae_int_t m, complex_1d_array &r, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -525,7 +525,7 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void corrc1dcircular(const complex_1d_array &signal, const ae_int_t m, const complex_1d_array &pattern, const ae_int_t n, complex_1d_array &c);
+void corrc1dcircular(const complex_1d_array &signal, const ae_int_t m, const complex_1d_array &pattern, const ae_int_t n, complex_1d_array &c, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -564,7 +564,7 @@ on [-K..M-1],  you can still use this subroutine, just shift result by K.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void corrr1d(const real_1d_array &signal, const ae_int_t n, const real_1d_array &pattern, const ae_int_t m, real_1d_array &r);
+void corrr1d(const real_1d_array &signal, const ae_int_t n, const real_1d_array &pattern, const ae_int_t m, real_1d_array &r, const xparams _xparams = alglib::xdefault);
 
 
 /*************************************************************************
@@ -594,7 +594,7 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void corrr1dcircular(const real_1d_array &signal, const ae_int_t m, const real_1d_array &pattern, const ae_int_t n, real_1d_array &c);
+void corrr1dcircular(const real_1d_array &signal, const ae_int_t m, const real_1d_array &pattern, const ae_int_t n, real_1d_array &c, const xparams _xparams = alglib::xdefault);
 #endif
 }
 

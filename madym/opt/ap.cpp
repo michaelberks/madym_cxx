@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.13.0 (source code generated 2017-12-29)
+ALGLIB 3.18.0 (source code generated 2021-10-25)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -17,10 +17,30 @@ A copy of the GNU General Public License is available at
 http://www.fsf.org/licensing/licenses
 >>> END OF LICENSE >>>
 *************************************************************************/
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 #include "stdafx.h"
+
+//
+// if AE_OS==AE_LINUX (will be redefined to AE_POSIX in ap.h),
+// set _GNU_SOURCE flag BEFORE any #includes to get affinity
+// management functions
+//
+#if (AE_OS==AE_LINUX) && !defined(_GNU_SOURCE)
+#define _GNU_SOURCE
+#endif
+
+//
+// Must be defined before we include ap.h
+//
+#define _ALGLIB_IMPL_DEFINES
+#define _ALGLIB_INTEGRITY_CHECKS_ONCE
+
 #include "ap.h"
 #include <limits>
 #include <locale.h>
+#include <ctype.h>
 
 #if defined(AE_CPU)
 #if (AE_CPU==AE_INTEL)
@@ -56,17 +76,18 @@ namespace alglib_impl
 #ifdef AE_USE_CPP
 }
 #endif
-#if AE_OS==AE_WINDOWS
+#if AE_OS==AE_WINDOWS || defined(AE_DEBUG4WINDOWS)
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
 #endif
 #include <windows.h>
 #include <process.h>
-#elif AE_OS==AE_POSIX
+#elif AE_OS==AE_POSIX || defined(AE_DEBUG4POSIX)
 #include <time.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <sched.h>
+#include <sys/time.h>
 #endif
 /* Debugging helpers for Windows */
 #ifdef AE_DEBUG4WINDOWS
@@ -104,7 +125,10 @@ namespace alglib_impl
 #define AE_LOCK_CYCLES 512
 #define AE_LOCK_TESTS_BEFORE_YIELD 16
 #define AE_CRITICAL_ASSERT(x) if( !(x) ) abort()
-    
+
+/* IDs for set_dbg_value */
+#define _ALGLIB_USE_ALLOC_COUNTER             0
+#define _ALGLIB_USE_DBG_COUNTERS              1
 #define _ALGLIB_USE_VENDOR_KERNELS          100
 #define _ALGLIB_VENDOR_MEMSTAT              101
 
@@ -112,6 +136,18 @@ namespace alglib_impl
 #define _ALGLIB_WSDBG_NCORES                201
 #define _ALGLIB_WSDBG_PUSHROOT_OK           202
 #define _ALGLIB_WSDBG_PUSHROOT_FAILED       203
+
+#define _ALGLIB_SET_GLOBAL_THREADING       1001
+#define _ALGLIB_SET_NWORKERS               1002
+
+/* IDs for get_dbg_value */
+#define _ALGLIB_GET_ALLOC_COUNTER             0
+#define _ALGLIB_GET_CUMULATIVE_ALLOC_SIZE     1
+#define _ALGLIB_GET_CUMULATIVE_ALLOC_COUNT    2
+
+#define _ALGLIB_GET_CORES_COUNT            1000
+#define _ALGLIB_GET_GLOBAL_THREADING       1001
+#define _ALGLIB_GET_NWORKERS               1002
 
 /*************************************************************************
 Lock.
@@ -132,22 +168,62 @@ typedef struct
 
 
 
+
+/*
+ * Error tracking facilities; this fields are modified every time ae_set_error_flag()
+ * is called with non-zero cond. Thread unsafe access, but it does not matter actually.
+ */
+static const char * sef_file  = "";
+static int          sef_line  = 0;
+static const char * sef_xdesc = "";
+
+/*
+ * Global flags, split into several char-sized variables in order
+ * to avoid problem with non-atomic reads/writes (single-byte ops
+ * are atomic on all modern architectures);
+ *
+ * Following variables are included:
+ * * threading-related settings
+ */
+unsigned char _alglib_global_threading_flags = _ALGLIB_FLG_THREADING_SERIAL>>_ALGLIB_FLG_THREADING_SHIFT;
+
+/*
+ * DESCRIPTION: recommended number of active workers:
+ *              * positive value >=1 is used to specify exact number of active workers
+ *              * 0 means that ALL available cores are used
+ *              * negative value means that all cores EXCEPT for cores_to_use will be used
+ *                (say, -1 means that all cores except for one will be used). At least one
+ *                core will be used in this case, even if you assign -9999999 to this field.
+ *
+ *              Default value =  0 (fully parallel execution) when AE_NWORKERS is not defined
+ *                            =  0 for manually defined number of cores (AE_NWORKERS is defined)
+ * PROTECTION:  not needed; runtime modification is possible, but we do not need exact
+ *              synchronization.
+ */
+#if defined(AE_NWORKERS) && (AE_NWORKERS<=0)
+#error AE_NWORKERS must be positive number or not defined at all.
+#endif
+#if defined(AE_NWORKERS)
+ae_int_t _alglib_cores_to_use = 0;
+#else
+ae_int_t _alglib_cores_to_use = 0;
+#endif
+
 /*
  * Debug counters
  */
-ae_int64_t _alloc_counter = 0;
-ae_int64_t _alloc_counter_total = 0;
+ae_int_t   _alloc_counter = 0;
+ae_int_t   _alloc_counter_total = 0;
 ae_bool    _use_alloc_counter = ae_false;
 
-ae_int64_t _dbg_alloc_total = 0;
+ae_int_t   _dbg_alloc_total = 0;
 ae_bool    _use_dbg_counters  = ae_false;
 
 ae_bool    _use_vendor_kernels          = ae_true;
-ae_bool    _vendor_kernels_initialized  = ae_false;
 
 ae_bool    debug_workstealing           = ae_false; /* debug workstealing environment? False by default */
-ae_int64_t dbgws_pushroot_ok            = 0;
-ae_int64_t dbgws_pushroot_failed        = 0;
+ae_int_t   dbgws_pushroot_ok            = 0;
+ae_int_t   dbgws_pushroot_failed        = 0;
 
 #ifdef AE_SMP_DEBUGCOUNTERS
 __declspec(align(AE_LOCK_ALIGNMENT)) volatile ae_int64_t _ae_dbg_lock_acquisitions = 0;
@@ -159,7 +235,28 @@ __declspec(align(AE_LOCK_ALIGNMENT)) volatile ae_int64_t _ae_dbg_lock_yields = 0
  * Allocation debugging
  */
 ae_bool     _force_malloc_failure = ae_false;
-ae_int64_t  _malloc_failure_after = 0;
+ae_int_t    _malloc_failure_after = 0;
+
+
+/*
+ * Trace-related declarations:
+ * alglib_trace_type    -   trace output type
+ * alglib_trace_file    -   file descriptor (to be used by ALGLIB code which
+ *                          sends messages to trace log
+ * alglib_fclose_trace  -   whether we have to call fclose() when disabling or
+ *                          changing trace output
+ * alglib_trace_tags    -   string buffer used to store tags + two additional
+ *                          characters (leading and trailing commas) + null
+ *                          terminator
+ */
+#define ALGLIB_TRACE_NONE 0
+#define ALGLIB_TRACE_FILE 1
+#define ALGLIB_TRACE_TAGS_LEN 2048
+#define ALGLIB_TRACE_BUFFER_LEN (ALGLIB_TRACE_TAGS_LEN+2+1)
+static ae_int_t  alglib_trace_type = ALGLIB_TRACE_NONE;
+FILE            *alglib_trace_file = NULL;
+static ae_bool   alglib_fclose_trace = ae_false;
+static char      alglib_trace_tags[ALGLIB_TRACE_BUFFER_LEN];
 
 /*
  * Fields for memory allocation over static array
@@ -182,10 +279,11 @@ static unsigned char    *sm_mem      = NULL;
  * you can remove them, if you want - they are not used anywhere.
  *
  */
-static char     _ae_bool_must_be_8_bits_wide[1-2*((int)(sizeof(ae_bool))-1)*((int)(sizeof(ae_bool))-1)];
-static char _ae_int32_t_must_be_32_bits_wide[1-2*((int)(sizeof(ae_int32_t))-4)*((int)(sizeof(ae_int32_t))-4)];
-static char _ae_int64_t_must_be_64_bits_wide[1-2*((int)(sizeof(ae_int64_t))-8)*((int)(sizeof(ae_int64_t))-8)];
-static char _ae_int_t_must_be_pointer_sized [1-2*((int)(sizeof(ae_int_t))-(int)sizeof(void*))*((int)(sizeof(ae_int_t))-(int)(sizeof(void*)))];  
+static char     _ae_bool_must_be_8_bits_wide [1-2*((int)(sizeof(ae_bool))-1)*((int)(sizeof(ae_bool))-1)];
+static char  _ae_int32_t_must_be_32_bits_wide[1-2*((int)(sizeof(ae_int32_t))-4)*((int)(sizeof(ae_int32_t))-4)];
+static char  _ae_int64_t_must_be_64_bits_wide[1-2*((int)(sizeof(ae_int64_t))-8)*((int)(sizeof(ae_int64_t))-8)];
+static char _ae_uint64_t_must_be_64_bits_wide[1-2*((int)(sizeof(ae_uint64_t))-8)*((int)(sizeof(ae_uint64_t))-8)];
+static char  _ae_int_t_must_be_pointer_sized [1-2*((int)(sizeof(ae_int_t))-(int)sizeof(void*))*((int)(sizeof(ae_int_t))-(int)(sizeof(void*)))];  
 
 /*
  * This variable is used to prevent some tricky optimizations which may degrade multithreaded performance.
@@ -203,17 +301,42 @@ void ae_never_call_it()
     ae_touch_ptr((void*)_ae_bool_must_be_8_bits_wide);
     ae_touch_ptr((void*)_ae_int32_t_must_be_32_bits_wide);
     ae_touch_ptr((void*)_ae_int64_t_must_be_64_bits_wide);
+    ae_touch_ptr((void*)_ae_uint64_t_must_be_64_bits_wide);
     ae_touch_ptr((void*)_ae_int_t_must_be_pointer_sized);
 }
 
+/*************************************************************************
+Standard function wrappers for better GLIBC portability
+*************************************************************************/
+#if defined(X_FOR_LINUX)
+__asm__(".symver exp,exp@GLIBC_2.2.5");
+__asm__(".symver log,log@GLIBC_2.2.5");
+__asm__(".symver pow,pow@GLIBC_2.2.5");
+
+double __wrap_exp(double x)
+{
+    return exp(x);
+}
+
+double __wrap_log(double x)
+{
+    return log(x);
+}
+
+double __wrap_pow(double x, double y)
+{
+    return pow(x, y);
+}
+#endif
+
 void ae_set_dbg_flag(ae_int64_t flag_id, ae_int64_t flag_val)
 {
-    if( flag_id==0 )
+    if( flag_id==_ALGLIB_USE_ALLOC_COUNTER )
     {
         _use_alloc_counter = flag_val!=0;
         return;
     }
-    if( flag_id==1 )
+    if( flag_id==_ALGLIB_USE_DBG_COUNTERS )
     {
         _use_dbg_counters  = flag_val!=0;
         return;
@@ -228,15 +351,25 @@ void ae_set_dbg_flag(ae_int64_t flag_id, ae_int64_t flag_val)
         debug_workstealing = flag_val!=0;
         return;
     }
+    if( flag_id==_ALGLIB_SET_GLOBAL_THREADING )
+    {
+        ae_set_global_threading((ae_uint64_t)flag_val);
+        return;
+    }
+    if( flag_id==_ALGLIB_SET_NWORKERS )
+    {
+        _alglib_cores_to_use = (ae_int_t)flag_val;
+        return;
+    }
 }
 
 ae_int64_t ae_get_dbg_value(ae_int64_t id)
 {
-    if( id==0 )
+    if( id==_ALGLIB_GET_ALLOC_COUNTER )
         return _alloc_counter;
-    if( id==1 )
+    if( id==_ALGLIB_GET_CUMULATIVE_ALLOC_SIZE )
         return _dbg_alloc_total;
-    if( id==2 )
+    if( id==_ALGLIB_GET_CUMULATIVE_ALLOC_COUNT )
         return _alloc_counter_total;
     
     if( id==_ALGLIB_VENDOR_MEMSTAT )
@@ -250,7 +383,7 @@ ae_int64_t ae_get_dbg_value(ae_int64_t id)
     
     /* workstealing counters */
     if( id==_ALGLIB_WSDBG_NCORES )
-#if defined(AE_MKL)
+#if defined(AE_SMP)
         return ae_cores_count();
 #else
         return 0;
@@ -260,8 +393,89 @@ ae_int64_t ae_get_dbg_value(ae_int64_t id)
     if( id==_ALGLIB_WSDBG_PUSHROOT_FAILED )
         return dbgws_pushroot_failed;
     
+    if( id==_ALGLIB_GET_CORES_COUNT )
+#if defined(AE_SMP)
+        return ae_cores_count();
+#else
+        return 0;
+#endif
+    if( id==_ALGLIB_GET_GLOBAL_THREADING )
+        return (ae_int64_t)ae_get_global_threading();
+    if( id==_ALGLIB_GET_NWORKERS )
+        return (ae_int64_t)_alglib_cores_to_use;
+    
     /* unknown value */
     return 0;
+}
+
+/************************************************************************
+This function sets default (global) threading model:
+* serial execution
+* multithreading, if cores_to_use allows it
+
+************************************************************************/
+void ae_set_global_threading(ae_uint64_t flg_value)
+{
+    flg_value = flg_value&_ALGLIB_FLG_THREADING_MASK;
+    AE_CRITICAL_ASSERT(flg_value==_ALGLIB_FLG_THREADING_SERIAL || flg_value==_ALGLIB_FLG_THREADING_PARALLEL);
+    _alglib_global_threading_flags = (unsigned char)(flg_value>>_ALGLIB_FLG_THREADING_SHIFT);
+}
+
+/************************************************************************
+This function gets default (global) threading model:
+* serial execution
+* multithreading, if cores_to_use allows it
+
+************************************************************************/
+ae_uint64_t ae_get_global_threading()
+{
+    return ((ae_uint64_t)_alglib_global_threading_flags)<<_ALGLIB_FLG_THREADING_SHIFT;
+}
+
+void ae_set_error_flag(ae_bool *p_flag, ae_bool cond, const char *filename, int lineno, const char *xdesc)
+{
+    if( cond )
+    {
+        *p_flag = ae_true;
+        sef_file = filename;
+        sef_line = lineno;
+        sef_xdesc= xdesc;
+#ifdef ALGLIB_ABORT_ON_ERROR_FLAG
+        printf("[ALGLIB] aborting on ae_set_error_flag(cond=true)\n");
+        printf("[ALGLIB] %s:%d\n", filename, lineno);
+        printf("[ALGLIB] %s\n", xdesc);
+        fflush(stdout);
+        if( alglib_trace_file!=NULL ) fflush(alglib_trace_file);
+        abort();
+#endif
+    }
+}
+
+/************************************************************************
+This function returns file name for the last call of ae_set_error_flag()
+with non-zero cond parameter.
+************************************************************************/
+const char * ae_get_last_error_file()
+{
+    return sef_file;
+}
+
+/************************************************************************
+This function returns line number for the last call of ae_set_error_flag()
+with non-zero cond parameter.
+************************************************************************/
+int ae_get_last_error_line()
+{
+    return sef_line;
+}
+
+/************************************************************************
+This function returns extra description for the last call of ae_set_error_flag()
+with non-zero cond parameter.
+************************************************************************/
+const char * ae_get_last_error_xdesc()
+{
+    return sef_xdesc;
 }
 
 ae_int_t ae_misalignment(const void *ptr, size_t alignment)
@@ -283,6 +497,43 @@ void* ae_align(void *ptr, size_t alignment)
     return result;
 }
 
+/************************************************************************
+This function maps nworkers  number  (which  can  be  positive,  zero  or
+negative with 0 meaning "all cores", -1 meaning "all cores -1" and so on)
+to "effective", strictly positive workers count.
+
+This  function  is  intended  to  be used by debugging/testing code which
+tests different number of worker threads. It is NOT aligned  in  any  way
+with ALGLIB multithreading framework (i.e. it can return  non-zero worker
+count even for single-threaded GPLed ALGLIB).
+************************************************************************/
+ae_int_t ae_get_effective_workers(ae_int_t nworkers)
+{
+    ae_int_t ncores;
+    
+    /* determine cores count */
+#if defined(AE_NWORKERS)
+    ncores = AE_NWORKERS;
+#elif AE_OS==AE_WINDOWS
+    SYSTEM_INFO sysInfo;
+    GetSystemInfo(&sysInfo);
+    ncores = (ae_int_t)(sysInfo.dwNumberOfProcessors);
+#elif AE_OS==AE_POSIX
+    {
+        long r = sysconf(_SC_NPROCESSORS_ONLN);
+        ncores = r<=0 ? 1 : r;
+    }
+#else
+    ncores = 1;
+#endif
+    AE_CRITICAL_ASSERT(ncores>=1);
+
+    /* map nworkers to its effective value */
+    if( nworkers>=1 )
+        return nworkers>ncores ? ncores : nworkers;
+    return ncores+nworkers>=1 ? ncores+nworkers : 1;
+}
+
 /*************************************************************************
 This function belongs to the family of  "optional  atomics",  i.e.  atomic
 functions which either perform atomic changes - or do nothing at  all,  if
@@ -291,48 +542,102 @@ current compiler settings do not allow us to generate atomic code.
 All "optional atomics" are synchronized, i.e. either all of them work - or
 no one of the works.
 
-This particular function performs atomic addition on 64-bit  value,  which
-must be 64-bit aligned.
+This particular function performs atomic addition on pointer-sized  value,
+which must be pointer-size aligned.
 
 NOTE: this function is not intended to be extremely high performance  one,
       so use it only when necessary.
 *************************************************************************/
-void  ae_optional_atomic_add(ae_int64_t *p, ae_int64_t v)
+void  ae_optional_atomic_add_i(ae_int_t *p, ae_int_t v)
 {
-    AE_CRITICAL_ASSERT(ae_misalignment(p,8)==0);
+    AE_CRITICAL_ASSERT(ae_misalignment(p,sizeof(void*))==0);
 #if AE_OS==AE_WINDOWS
     for(;;)
     {
+        /* perform conversion between ae_int_t* and void**
+           without compiler warnings about indirection levels */
+        union _u
+        {
+            PVOID volatile * volatile ptr;
+            volatile ae_int_t * volatile iptr;
+        } u;
+        u.iptr = p;
+    
         /* atomic read for initial value */
-        ae_int64_t v0 = (ae_int64_t)InterlockedCompareExchange64((LONGLONG volatile *)p, 0, 0);
+        PVOID v0 = InterlockedCompareExchangePointer(u.ptr, NULL, NULL);
     
         /* increment cached value and store */
-        if( (ae_int64_t)InterlockedCompareExchange64((LONGLONG volatile *)p, v0+v, v0)==v0 )
+        if( InterlockedCompareExchangePointer(u.ptr, (PVOID)(((char*)v0)+v), v0)==v0 )
             break;
     }
+#elif defined(__clang__) && (AE_CPU==AE_INTEL)
+    __atomic_fetch_add(p, v, __ATOMIC_RELAXED);
 #elif (AE_COMPILER==AE_GNUC) && (AE_CPU==AE_INTEL) && (__GNUC__*100+__GNUC__>=470)
-    __atomic_add_fetch((ae_int64_t*)p, v, __ATOMIC_RELAXED);
+    __atomic_add_fetch(p, v, __ATOMIC_RELAXED);
 #else
 #endif
 }
 
-void  ae_optional_atomic_sub(ae_int64_t *p, ae_int64_t v)
+/*************************************************************************
+This function belongs to the family of  "optional  atomics",  i.e.  atomic
+functions which either perform atomic changes - or do nothing at  all,  if
+current compiler settings do not allow us to generate atomic code.
+
+All "optional atomics" are synchronized, i.e. either all of them work - or
+no one of the works.
+
+This  particular  function  performs  atomic  subtraction on pointer-sized
+value, which must be pointer-size aligned.
+
+NOTE: this function is not intended to be extremely high performance  one,
+      so use it only when necessary.
+*************************************************************************/
+void  ae_optional_atomic_sub_i(ae_int_t *p, ae_int_t v)
 {
-    AE_CRITICAL_ASSERT(ae_misalignment(p,8)==0);
+    AE_CRITICAL_ASSERT(ae_misalignment(p,sizeof(void*))==0);
 #if AE_OS==AE_WINDOWS
     for(;;)
     {
-        /* atomic read for initial value */
-        ae_int64_t v0 = (ae_int64_t)InterlockedCompareExchange64((LONGLONG volatile *)p, 0, 0);
+        /* perform conversion between ae_int_t* and void**
+           without compiler warnings about indirection levels */
+        union _u
+        {
+            PVOID volatile * volatile ptr;
+            volatile ae_int_t * volatile iptr;
+        } u;
+        u.iptr = p;
+        
+        /* atomic read for initial value, convert it to 1-byte pointer */
+        PVOID v0 = InterlockedCompareExchangePointer(u.ptr, NULL, NULL);
     
         /* increment cached value and store */
-        if( (ae_int64_t)InterlockedCompareExchange64((LONGLONG volatile *)p, v0-v, v0)==v0 )
+        if( InterlockedCompareExchangePointer(u.ptr, (PVOID)(((char*)v0)-v), v0)==v0 )
             break;
     }
+#elif defined(__clang__) && (AE_CPU==AE_INTEL)
+    __atomic_fetch_sub(p, v, __ATOMIC_RELAXED);
 #elif (AE_COMPILER==AE_GNUC) && (AE_CPU==AE_INTEL) && (__GNUC__*100+__GNUC__>=470)
-    __atomic_sub_fetch((ae_int64_t*)p, v, __ATOMIC_RELAXED);
+    __atomic_sub_fetch(p, v, __ATOMIC_RELAXED);
 #else
 #endif
+}
+
+
+/*************************************************************************
+This function cleans up automatically managed memory before caller terminates
+ALGLIB executing by ae_break() or by simply stopping calling callback.
+
+For state!=NULL it calls thread_exception_handler() and the ae_state_clear().
+For state==NULL it does nothing.
+*************************************************************************/
+void ae_clean_up_before_breaking(ae_state *state)
+{
+    if( state!=NULL )
+    {
+        if( state->thread_exception_handler!=NULL )
+            state->thread_exception_handler(state);
+        ae_state_clear(state);
+    }
 }
 
 /*************************************************************************
@@ -352,9 +657,9 @@ void ae_break(ae_state *state, ae_error_type error_type, const char *msg)
 {
     if( state!=NULL )
     {
-        if( state->thread_exception_handler!=NULL )
-            state->thread_exception_handler(state);
-        ae_state_clear(state);
+        if( alglib_trace_type!=ALGLIB_TRACE_NONE )
+            ae_trace("---!!! CRITICAL ERROR !!!--- exception with message '%s' was generated\n", msg!=NULL ? msg : "");
+        ae_clean_up_before_breaking(state);
         state->last_error = error_type;
         state->error_msg = msg;
         if( state->break_jump!=NULL )
@@ -443,11 +748,11 @@ void* ae_static_malloc(size_t size, size_t alignment)
             /* update counters (if flag is set) */
             if( _use_alloc_counter )
             {
-                ae_optional_atomic_add(&_alloc_counter, 1);
-                ae_optional_atomic_add(&_alloc_counter_total, 1);
+                ae_optional_atomic_add_i(&_alloc_counter, 1);
+                ae_optional_atomic_add_i(&_alloc_counter_total, 1);
             }
             if( _use_dbg_counters )
-                ae_optional_atomic_add(&_dbg_alloc_total, (ae_int64_t)size);
+                ae_optional_atomic_add_i(&_dbg_alloc_total, size);
             
             /* mark pages and return */
             for(j=0; j<rq_pages; j++)
@@ -479,7 +784,37 @@ void ae_static_free(void *block)
     
     /* update counters (if flag is set) */
     if( _use_alloc_counter )
-        ae_optional_atomic_sub(&_alloc_counter, 1);
+        ae_optional_atomic_sub_i(&_alloc_counter, 1);
+}
+
+void memory_pool_stats(ae_int_t *bytes_used, ae_int_t *bytes_free)
+{
+    int i;
+    
+    AE_CRITICAL_ASSERT(sm_page_size>0);
+    AE_CRITICAL_ASSERT(sm_page_cnt>0);
+    AE_CRITICAL_ASSERT(sm_page_tbl!=NULL);
+    AE_CRITICAL_ASSERT(sm_mem!=NULL);
+    
+    /* scan page table */
+    *bytes_used = 0;
+    *bytes_free = 0;
+    for(i=0; i<sm_page_cnt;)
+    {
+        if( sm_page_tbl[i]==0 )
+        {
+            (*bytes_free)++;
+            i++;
+        }
+        else
+        {
+            AE_CRITICAL_ASSERT(sm_page_tbl[i]>0);
+            *bytes_used += sm_page_tbl[i];
+            i += sm_page_tbl[i];
+        }
+    }
+    *bytes_used *= sm_page_size;
+    *bytes_free *= sm_page_size;
 }
 #endif
 
@@ -527,14 +862,25 @@ void* aligned_malloc(size_t size, size_t alignment)
     /* update counters (if flag is set) */
     if( _use_alloc_counter )
     {
-        ae_optional_atomic_add(&_alloc_counter, 1);
-        ae_optional_atomic_add(&_alloc_counter_total, 1);
+        ae_optional_atomic_add_i(&_alloc_counter, 1);
+        ae_optional_atomic_add_i(&_alloc_counter_total, 1);
     }
     if( _use_dbg_counters )
-        ae_optional_atomic_add(&_dbg_alloc_total, (ae_int64_t)size);
+        ae_optional_atomic_add_i(&_dbg_alloc_total, (ae_int64_t)size);
     
     /* return */
     return (void*)result;
+#endif
+}
+
+void* aligned_extract_ptr(void *block)
+{
+#if AE_MALLOC==AE_BASIC_STATIC_MALLOC
+    return NULL;
+#else
+    if( block==NULL )
+        return NULL;
+    return *((void**)((char*)block-sizeof(void*)));
 #endif
 }
 
@@ -546,10 +892,10 @@ void aligned_free(void *block)
     void *p;
     if( block==NULL )
         return;
-    p = *((void**)((char*)block-sizeof(void*)));
+    p = aligned_extract_ptr(block);
     free(p);
     if( _use_alloc_counter )
-        ae_optional_atomic_sub(&_alloc_counter, 1);
+        ae_optional_atomic_sub_i(&_alloc_counter, 1);
 #endif
 }
 
@@ -638,11 +984,40 @@ on entry are correctly initialized by zeros.
 ************************************************************************/
 ae_bool ae_check_zeros(const void *ptr, ae_int_t n)
 {
-    const unsigned char *p = (const unsigned char*)ptr;
-    unsigned char c = 0x0;
-    ae_int_t i;
-    for(i=0; i<n; i++)
-        c |= p[i];
+    ae_int_t nu, nr, i;
+    unsigned long long c = 0x0;
+    
+    /*
+     * determine leading and trailing lengths
+     */
+    nu = n/sizeof(unsigned long long);
+    nr = n%sizeof(unsigned long long);
+    
+    /*
+     * handle leading nu long long elements
+     */
+    if( nu>0 )
+    {
+        const unsigned long long *p_ull;
+        p_ull = (const unsigned long long *)ptr;
+        for(i=0; i<nu; i++)
+            c |= p_ull[i];
+    }
+    
+    /*
+     * handle trailing nr char elements
+     */
+    if( nr>0 )
+    {
+        const unsigned char *p_uc;
+        p_uc  = ((const unsigned char *)ptr)+nu*sizeof(unsigned long long);
+        for(i=0; i<nr; i++)
+            c |= p_uc[i];
+    }
+    
+    /*
+     * done
+     */
     return c==0x0;
 }
 
@@ -673,6 +1048,11 @@ NOTES:
 void ae_state_init(ae_state *state)
 {
     ae_int32_t *vp;
+    
+    /*
+     * Set flags
+     */
+    state->flags = 0x0;
 
     /*
      * p_next points to itself because:
@@ -747,6 +1127,17 @@ buf may be NULL.
 void ae_state_set_break_jump(ae_state *state, jmp_buf *buf)
 {
     state->break_jump = buf;
+}
+
+
+/************************************************************************
+This function sets flags member of the ae_state structure
+
+buf may be NULL.
+************************************************************************/
+void ae_state_set_flags(ae_state *state, ae_uint64_t flags)
+{
+    state->flags = flags;
 }
 
 
@@ -835,13 +1226,18 @@ void ae_db_init(ae_dyn_block *block, ae_int_t size, ae_state *state, ae_bool mak
      */
     ae_assert(size>=0, "ae_db_init(): negative size", state);
     block->ptr = NULL;
+    block->valgrind_hint = NULL;
     ae_touch_ptr(block->ptr);
+    ae_touch_ptr(block->valgrind_hint);
     if( make_automatic )
         ae_db_attach(block, state);
     else
         block->p_next = NULL;
     if( size!=0 )
+    {
         block->ptr = ae_malloc((size_t)size, state);
+        block->valgrind_hint = aligned_extract_ptr(block->ptr);
+    }
     block->deallocator = ae_free;
 }
 
@@ -879,8 +1275,10 @@ void ae_db_realloc(ae_dyn_block *block, ae_int_t size, ae_state *state)
     {
         ((ae_deallocator)block->deallocator)(block->ptr);
         block->ptr = NULL;
+        block->valgrind_hint = NULL;
     }
     block->ptr = ae_malloc((size_t)size, state);
+    block->valgrind_hint = aligned_extract_ptr(block->ptr);
     block->deallocator = ae_free;
 }
 
@@ -900,6 +1298,7 @@ void ae_db_free(ae_dyn_block *block)
     if( block->ptr!=NULL )
         ((ae_deallocator)block->deallocator)(block->ptr);
     block->ptr = NULL;
+    block->valgrind_hint = NULL;
     block->deallocator = ae_free;
 }
 
@@ -915,11 +1314,18 @@ void ae_db_swap(ae_dyn_block *block1, ae_dyn_block *block2)
 {
     void (*deallocator)(void*) = NULL;
     void * volatile ptr;
+    void * valgrind_hint;
+    
     ptr = block1->ptr;
+    valgrind_hint = block1->valgrind_hint;
     deallocator = block1->deallocator;
+    
     block1->ptr = block2->ptr;
+    block1->valgrind_hint = block2->valgrind_hint;
     block1->deallocator = block2->deallocator;
+    
     block2->ptr = ptr;
+    block2->valgrind_hint = valgrind_hint;
     block2->deallocator = deallocator;
 }
 
@@ -1014,7 +1420,7 @@ void ae_vector_init_from_x(ae_vector *dst, x_vector *src, ae_state *state, ae_bo
     
     ae_vector_init(dst, (ae_int_t)src->cnt, (ae_datatype)src->datatype, state, make_automatic);
     if( src->cnt>0 )
-        memmove(dst->ptr.p_ptr, src->ptr, (size_t)(((ae_int_t)src->cnt)*ae_sizeof((ae_datatype)src->datatype)));
+        memmove(dst->ptr.p_ptr, src->x_ptr.p_ptr, (size_t)(((ae_int_t)src->cnt)*ae_sizeof((ae_datatype)src->datatype)));
 }
 
 /************************************************************************
@@ -1064,7 +1470,7 @@ void ae_vector_init_attach_to_x(ae_vector *dst, x_vector *src, ae_state *state, 
     
     /* init */
     dst->cnt = cnt;
-    dst->ptr.p_ptr = src->ptr;
+    dst->ptr.p_ptr = src->x_ptr.p_ptr;
     dst->is_attached = ae_true;
 }
 
@@ -1095,6 +1501,34 @@ void ae_vector_set_length(ae_vector *dst, ae_int_t newsize, ae_state *state)
     ae_db_realloc(&dst->data, newsize*ae_sizeof(dst->datatype), state);
     dst->cnt = newsize;
     dst->ptr.p_ptr = dst->data.ptr;
+}
+
+/************************************************************************
+This function resized ae_vector, preserving previously existing elements.
+Values of elements added during vector growth is undefined.
+
+dst                 destination vector
+newsize             vector size, may be zero
+state               ALGLIB environment state, can not be NULL
+
+Error handling: calls ae_break() on allocation error
+
+NOTES:
+* vector must be initialized
+* new size may be zero.
+************************************************************************/
+void ae_vector_resize(ae_vector *dst, ae_int_t newsize, ae_state *state)
+{
+    ae_vector tmp;
+    ae_int_t bytes_total;
+    
+    memset(&tmp, 0, sizeof(tmp));
+    ae_vector_init(&tmp, newsize, dst->datatype, state, ae_false);
+    bytes_total = (dst->cnt<newsize ? dst->cnt : newsize)*ae_sizeof(dst->datatype);
+    if( bytes_total>0 )
+        memmove(tmp.ptr.p_ptr, dst->ptr.p_ptr, bytes_total);
+    ae_swap_vectors(dst, &tmp);
+    ae_vector_clear(&tmp);
 }
 
 
@@ -1270,7 +1704,7 @@ void ae_matrix_init_from_x(ae_matrix *dst, x_matrix *src, ae_state *state, ae_bo
     ae_matrix_init(dst, (ae_int_t)src->rows, (ae_int_t)src->cols, (ae_datatype)src->datatype, state, make_automatic);
     if( src->rows!=0 && src->cols!=0 )
     {
-        p_src_row = (char*)src->ptr;
+        p_src_row = (char*)src->x_ptr.p_ptr;
         p_dst_row = (char*)(dst->ptr.pp_void[0]);
         row_size = ae_sizeof((ae_datatype)src->datatype)*(ae_int_t)src->cols;
         for(i=0; i<src->rows; i++, p_src_row+=src->stride*ae_sizeof((ae_datatype)src->datatype), p_dst_row+=dst->stride*ae_sizeof((ae_datatype)src->datatype))
@@ -1341,7 +1775,7 @@ void ae_matrix_init_attach_to_x(ae_matrix *dst, x_matrix *src, ae_state *state, 
         char *p_row;
         void **pp_ptr;
         
-        p_row = (char*)src->ptr;
+        p_row = (char*)src->x_ptr.p_ptr;
         rowsize = dst->stride*ae_sizeof(dst->datatype);
         pp_ptr  = (void**)dst->data.ptr;
         dst->ptr.pp_void = pp_ptr;
@@ -1639,7 +2073,7 @@ NOTES:
 ************************************************************************/
 void ae_x_set_vector(x_vector *dst, ae_vector *src, ae_state *state)
 {
-    if( src->ptr.p_ptr == dst->ptr )
+    if( src->ptr.p_ptr == dst->x_ptr.p_ptr )
     {
         /* src->ptr points to the beginning of dst, attached matrices, no need to copy */
         return;
@@ -1647,9 +2081,9 @@ void ae_x_set_vector(x_vector *dst, ae_vector *src, ae_state *state)
     if( dst->cnt!=src->cnt || dst->datatype!=src->datatype )
     {
         if( dst->owner==OWN_AE )
-            ae_free(dst->ptr);
-        dst->ptr = ae_malloc((size_t)(src->cnt*ae_sizeof(src->datatype)), state);
-        if( src->cnt!=0 && dst->ptr==NULL )
+            ae_free(dst->x_ptr.p_ptr);
+        dst->x_ptr.p_ptr = ae_malloc((size_t)(src->cnt*ae_sizeof(src->datatype)), state);
+        if( src->cnt!=0 && dst->x_ptr.p_ptr==NULL )
             ae_break(state, ERR_OUT_OF_MEMORY, "ae_malloc(): out of memory");
         dst->last_action = ACT_NEW_LOCATION;
         dst->cnt = src->cnt;
@@ -1668,7 +2102,7 @@ void ae_x_set_vector(x_vector *dst, ae_vector *src, ae_state *state)
             ae_assert(ae_false, "ALGLIB: internal error in ae_x_set_vector()", state);
     }
     if( src->cnt )
-        memmove(dst->ptr, src->ptr.p_ptr, (size_t)(src->cnt*ae_sizeof(src->datatype)));
+        memmove(dst->x_ptr.p_ptr, src->ptr.p_ptr, (size_t)(src->cnt*ae_sizeof(src->datatype)));
 }
 
 /************************************************************************
@@ -1703,7 +2137,7 @@ void ae_x_set_matrix(x_matrix *dst, ae_matrix *src, ae_state *state)
     char *p_dst_row;
     ae_int_t i;
     ae_int_t row_size;
-    if( src->ptr.pp_void!=NULL && src->ptr.pp_void[0] == dst->ptr )
+    if( src->ptr.pp_void!=NULL && src->ptr.pp_void[0] == dst->x_ptr.p_ptr )
     {
         /* src->ptr points to the beginning of dst, attached matrices, no need to copy */
         return;
@@ -1711,13 +2145,13 @@ void ae_x_set_matrix(x_matrix *dst, ae_matrix *src, ae_state *state)
     if( dst->rows!=src->rows || dst->cols!=src->cols || dst->datatype!=src->datatype )
     {
         if( dst->owner==OWN_AE )
-            ae_free(dst->ptr);
+            ae_free(dst->x_ptr.p_ptr);
         dst->rows = src->rows;
         dst->cols = src->cols;
         dst->stride = src->cols;
         dst->datatype = src->datatype;
-        dst->ptr = ae_malloc((size_t)(dst->rows*((ae_int_t)dst->stride)*ae_sizeof(src->datatype)), state);
-        if( dst->rows!=0 && dst->stride!=0 && dst->ptr==NULL )
+        dst->x_ptr.p_ptr = ae_malloc((size_t)(dst->rows*((ae_int_t)dst->stride)*ae_sizeof(src->datatype)), state);
+        if( dst->rows!=0 && dst->stride!=0 && dst->x_ptr.p_ptr==NULL )
             ae_break(state, ERR_OUT_OF_MEMORY, "ae_malloc(): out of memory");
         dst->last_action = ACT_NEW_LOCATION;
         dst->owner = OWN_AE;
@@ -1736,7 +2170,7 @@ void ae_x_set_matrix(x_matrix *dst, ae_matrix *src, ae_state *state)
     if( src->rows!=0 && src->cols!=0 )
     {
         p_src_row = (char*)(src->ptr.pp_void[0]);
-        p_dst_row = (char*)dst->ptr;
+        p_dst_row = (char*)dst->x_ptr.p_ptr;
         row_size = ae_sizeof(src->datatype)*src->cols;
         for(i=0; i<src->rows; i++, p_src_row+=src->stride*ae_sizeof(src->datatype), p_dst_row+=dst->stride*ae_sizeof(src->datatype))
             memmove(p_dst_row, p_src_row, (size_t)(row_size));
@@ -1761,8 +2195,8 @@ NOTES:
 void ae_x_attach_to_vector(x_vector *dst, ae_vector *src)
 {
     if( dst->owner==OWN_AE )
-        ae_free(dst->ptr);
-    dst->ptr = src->ptr.p_ptr;
+        ae_free(dst->x_ptr.p_ptr);
+    dst->x_ptr.p_ptr = src->ptr.p_ptr;
     dst->last_action = ACT_NEW_LOCATION;
     dst->cnt = src->cnt;
     dst->datatype = src->datatype;
@@ -1787,12 +2221,12 @@ NOTES:
 void ae_x_attach_to_matrix(x_matrix *dst, ae_matrix *src)
 {
     if( dst->owner==OWN_AE )
-            ae_free(dst->ptr);
+            ae_free(dst->x_ptr.p_ptr);
     dst->rows = src->rows;
     dst->cols = src->cols;
     dst->stride = src->stride;
     dst->datatype = src->datatype;
-    dst->ptr = &(src->ptr.pp_double[0][0]);
+    dst->x_ptr.p_ptr = &(src->ptr.pp_double[0][0]);
     dst->last_action = ACT_NEW_LOCATION;
     dst->owner = OWN_CALLER;
 }
@@ -1806,8 +2240,8 @@ dst                 vector
 void x_vector_clear(x_vector *dst)
 {
     if( dst->owner==OWN_AE )
-        aligned_free(dst->ptr);
-    dst->ptr = NULL;
+        aligned_free(dst->x_ptr.p_ptr);
+    dst->x_ptr.p_ptr = NULL;
     dst->cnt = 0;
 }
 
@@ -1843,6 +2277,8 @@ corresponding flag.
 ************************************************************************/
 static volatile ae_bool _ae_cpuid_initialized = ae_false;
 static volatile ae_bool _ae_cpuid_has_sse2 = ae_false;
+static volatile ae_bool _ae_cpuid_has_avx2 = ae_false;
+static volatile ae_bool _ae_cpuid_has_fma  = ae_false;
 ae_int_t ae_cpuid()
 {
     /*
@@ -1865,20 +2301,86 @@ ae_int_t ae_cpuid()
          * SSE2
          */
 #if defined(AE_CPU)
-#if (AE_CPU==AE_INTEL) && defined(AE_HAS_SSE2_INTRINSICS)
+#if (AE_CPU==AE_INTEL)
 #if AE_COMPILER==AE_MSVC
         {
+            /* SSE2 support */
+            #if defined(_ALGLIB_HAS_SSE2_INTRINSICS)
             int CPUInfo[4];
             __cpuid(CPUInfo, 1);
             if( (CPUInfo[3]&0x04000000)!=0 )
                 _ae_cpuid_has_sse2 = ae_true;
+            #endif
+            
+            /* check OS support for XSAVE XGETBV */
+           #if defined(_ALGLIB_HAS_AVX2_INTRINSICS)
+            __cpuid(CPUInfo, 1);
+            if( (CPUInfo[2]&(0x1<<27))!=0 )
+                if( (_xgetbv(0)&0x6)==0x6 )
+                {
+                    /* AVX2 support */
+                    #if defined(_ALGLIB_HAS_AVX2_INTRINSICS) && (_MSC_VER>=1600)
+                    if( _ae_cpuid_has_sse2 )
+                    {
+                        __cpuidex(CPUInfo, 7, 0);
+                        if( (CPUInfo[1]&(0x1<<5))!=0 )
+                            _ae_cpuid_has_avx2 = ae_true;
+                    }
+                    #endif
+                    
+                    /* FMA support */
+                    #if defined(_ALGLIB_HAS_FMA_INTRINSICS) && (_MSC_VER>=1600)
+                    if( _ae_cpuid_has_avx2 )
+                    {
+                        __cpuid(CPUInfo, 1);
+                        if( (CPUInfo[2]&(0x1<<12))!=0 )
+                            _ae_cpuid_has_fma = ae_true;
+                    }
+                    #endif
+                }
+            #endif
         }
 #elif AE_COMPILER==AE_GNUC
         {
             ae_int_t a,b,c,d;
+            
+            /* SSE2 support */
+            #if defined(_ALGLIB_HAS_SSE2_INTRINSICS)
             __asm__ __volatile__ ("cpuid": "=a" (a), "=b" (b), "=c" (c), "=d" (d) : "a" (1));
             if( (d&0x04000000)!=0 )
                 _ae_cpuid_has_sse2 = ae_true;
+            #endif
+            
+            /* check OS support for XSAVE XGETBV */
+           #if defined(_ALGLIB_HAS_AVX2_INTRINSICS)
+            __asm__ __volatile__ ("cpuid": "=a" (a), "=b" (b), "=c" (c), "=d" (d) : "a" (1));
+            if( (c&(0x1<<27))!=0 )
+            {
+                __asm__ volatile ("xgetbv" : "=a" (a), "=d" (d) : "c" (0));
+                if( (a&0x6)==0x6 )
+                {
+                    /* AVX2 support */
+                    #if defined(_ALGLIB_HAS_AVX2_INTRINSICS)
+                    if( _ae_cpuid_has_sse2 )
+                    {
+                        __asm__ __volatile__ ("cpuid": "=a" (a), "=b" (b), "=c" (c), "=d" (d) : "a" (7), "c" (0) );
+                        if( (b&(0x1<<5))!=0 )
+                            _ae_cpuid_has_avx2 = ae_true;
+                    }
+                    #endif
+                    
+                    /* FMA support */
+                    #if defined(_ALGLIB_HAS_FMA_INTRINSICS)
+                    if( _ae_cpuid_has_avx2 )
+                    {
+                        __asm__ __volatile__ ("cpuid": "=a" (a), "=b" (b), "=c" (c), "=d" (d) : "a" (1) );
+                        if( (c&(0x1<<12))!=0 )
+                            _ae_cpuid_has_fma = ae_true;
+                    }
+                    #endif
+                }
+            }
+           #endif
         }
 #elif AE_COMPILER==AE_SUNC
         {
@@ -1917,8 +2419,137 @@ ae_int_t ae_cpuid()
     result = 0;
     if( _ae_cpuid_has_sse2 )
         result = result|CPU_SSE2;
+    if( _ae_cpuid_has_avx2 )
+        result = result|CPU_AVX2;
+    if( _ae_cpuid_has_fma )
+        result = result|CPU_FMA;
     return result;
 }
+
+/************************************************************************
+Activates tracing to file
+
+IMPORTANT: this function is NOT thread-safe!  Calling  it  from  multiple
+           threads will result in undefined  behavior.  Calling  it  when
+           some thread calls ALGLIB functions  may  result  in  undefined
+           behavior.
+************************************************************************/
+void ae_trace_file(const char *tags, const char *filename)
+{
+    /*
+     * clean up previous call
+     */
+    if( alglib_fclose_trace )
+    {
+        if( alglib_trace_file!=NULL )
+            fclose(alglib_trace_file);
+        alglib_trace_file = NULL;
+        alglib_fclose_trace = ae_false;
+    }
+    
+    /*
+     * store ",tags," to buffer. Leading and trailing commas allow us
+     * to perform checks for various tags by simply calling strstr().
+     */
+    memset(alglib_trace_tags, 0, ALGLIB_TRACE_BUFFER_LEN);
+    strcat(alglib_trace_tags, ",");
+    strncat(alglib_trace_tags, tags, ALGLIB_TRACE_TAGS_LEN);
+    strcat(alglib_trace_tags, ",");
+    for(int i=0; alglib_trace_tags[i]!=0; i++)
+        alglib_trace_tags[i] = tolower(alglib_trace_tags[i]);
+    
+    /*
+     * set up trace
+     */
+    alglib_trace_type = ALGLIB_TRACE_FILE;
+    alglib_trace_file = fopen(filename, "ab");
+    alglib_fclose_trace = ae_true;
+}
+
+/************************************************************************
+Disables tracing
+************************************************************************/
+void ae_trace_disable()
+{
+    alglib_trace_type = ALGLIB_TRACE_NONE;
+    if( alglib_fclose_trace )
+        fclose(alglib_trace_file);
+    alglib_trace_file = NULL;
+    alglib_fclose_trace = ae_false;
+}
+
+/************************************************************************
+Checks whether specific kind of tracing is enabled
+************************************************************************/
+ae_bool ae_is_trace_enabled(const char *tag)
+{
+    char buf[ALGLIB_TRACE_BUFFER_LEN];
+    
+    /* check global trace status */
+    if( alglib_trace_type==ALGLIB_TRACE_NONE || alglib_trace_file==NULL )
+        return ae_false;
+    
+    /* copy tag to buffer, lowercase it */
+    memset(buf, 0, ALGLIB_TRACE_BUFFER_LEN);
+    strcat(buf, ",");
+    strncat(buf, tag, ALGLIB_TRACE_TAGS_LEN);
+    strcat(buf, "?");
+    for(int i=0; buf[i]!=0; i++)
+        buf[i] = tolower(buf[i]);
+            
+    /* contains tag (followed by comma, which means exact match) */
+    buf[strlen(buf)-1] = ',';
+    if( strstr(alglib_trace_tags,buf)!=NULL )
+        return ae_true;
+            
+    /* contains tag (followed by dot, which means match with child) */
+    buf[strlen(buf)-1] = '.';
+    if( strstr(alglib_trace_tags,buf)!=NULL )
+        return ae_true;
+            
+    /* nothing */
+    return ae_false;
+}
+
+void ae_trace(const char * printf_fmt, ...)
+{   
+    /* check global trace status */
+    if( alglib_trace_type==ALGLIB_TRACE_FILE && alglib_trace_file!=NULL )
+    {
+        va_list args;
+    
+        /* fprintf() */
+        va_start(args, printf_fmt);
+        vfprintf(alglib_trace_file, printf_fmt, args);
+        va_end(args);
+        
+        /* flush output */
+        fflush(alglib_trace_file);
+    }
+}
+
+int ae_tickcount()
+{
+#if AE_OS==AE_WINDOWS || defined(AE_DEBUG4WINDOWS)
+    return (int)GetTickCount();
+#elif AE_OS==AE_POSIX || defined(AE_DEBUG4POSIX)
+    struct timeval now;
+    ae_int64_t r, v;
+    gettimeofday(&now, NULL);
+    v = now.tv_sec;
+    r = v*1000;
+    v = now.tv_usec/1000;
+    r = r+v;
+    return r;
+    /*struct timespec now;
+    if (clock_gettime(CLOCK_MONOTONIC, &now) )
+        return 0;
+    return now.tv_sec * 1000.0 + now.tv_nsec / 1000000.0;*/
+#else
+    return 0;
+#endif
+}
+
 
 /************************************************************************
 Real math functions
@@ -2369,8 +3000,8 @@ static void is_symmetric_rec_off_stat(x_matrix *a, ae_int_t offset0, ae_int_t of
         double v;
         ae_int_t i, j;
 
-        p1 = (double*)(a->ptr)+offset0*a->stride+offset1;
-        p2 = (double*)(a->ptr)+offset1*a->stride+offset0;
+        p1 = (double*)(a->x_ptr.p_ptr)+offset0*a->stride+offset1;
+        p2 = (double*)(a->x_ptr.p_ptr)+offset1*a->stride+offset0;
         for(i=0; i<len0; i++)
         {
             pcol = p2+i;
@@ -2428,7 +3059,7 @@ static void is_symmetric_rec_diag_stat(x_matrix *a, ae_int_t offset, ae_int_t le
     }
     
     /* base case */
-    p = (double*)(a->ptr)+offset*a->stride+offset;
+    p = (double*)(a->x_ptr.p_ptr)+offset*a->stride+offset;
     for(i=0; i<len; i++)
     {
         pcol = p+i;
@@ -2495,8 +3126,8 @@ static void is_hermitian_rec_off_stat(x_matrix *a, ae_int_t offset0, ae_int_t of
         double v;
         ae_int_t i, j;
 
-        p1 = (ae_complex*)(a->ptr)+offset0*a->stride+offset1;
-        p2 = (ae_complex*)(a->ptr)+offset1*a->stride+offset0;
+        p1 = (ae_complex*)(a->x_ptr.p_ptr)+offset0*a->stride+offset1;
+        p2 = (ae_complex*)(a->x_ptr.p_ptr)+offset1*a->stride+offset0;
         for(i=0; i<len0; i++)
         {
             pcol = p2+i;
@@ -2554,7 +3185,7 @@ static void is_hermitian_rec_diag_stat(x_matrix *a, ae_int_t offset, ae_int_t le
     }
     
     /* base case */
-    p = (ae_complex*)(a->ptr)+offset*a->stride+offset;
+    p = (ae_complex*)(a->x_ptr.p_ptr)+offset*a->stride+offset;
     for(i=0; i<len; i++)
     {
         pcol = p+i;
@@ -2625,8 +3256,8 @@ static void force_symmetric_rec_off_stat(x_matrix *a, ae_int_t offset0, ae_int_t
         double *p1, *p2, *prow, *pcol;
         ae_int_t i, j;
 
-        p1 = (double*)(a->ptr)+offset0*a->stride+offset1;
-        p2 = (double*)(a->ptr)+offset1*a->stride+offset0;
+        p1 = (double*)(a->x_ptr.p_ptr)+offset0*a->stride+offset1;
+        p2 = (double*)(a->x_ptr.p_ptr)+offset1*a->stride+offset0;
         for(i=0; i<len0; i++)
         {
             pcol = p2+i;
@@ -2667,7 +3298,7 @@ static void force_symmetric_rec_diag_stat(x_matrix *a, ae_int_t offset, ae_int_t
     }
     
     /* base case */
-    p = (double*)(a->ptr)+offset*a->stride+offset;
+    p = (double*)(a->x_ptr.p_ptr)+offset*a->stride+offset;
     for(i=0; i<len; i++)
     {
         pcol = p+i;
@@ -2712,8 +3343,8 @@ static void force_hermitian_rec_off_stat(x_matrix *a, ae_int_t offset0, ae_int_t
         ae_complex *p1, *p2, *prow, *pcol;
         ae_int_t i, j;
 
-        p1 = (ae_complex*)(a->ptr)+offset0*a->stride+offset1;
-        p2 = (ae_complex*)(a->ptr)+offset1*a->stride+offset0;
+        p1 = (ae_complex*)(a->x_ptr.p_ptr)+offset0*a->stride+offset1;
+        p2 = (ae_complex*)(a->x_ptr.p_ptr)+offset1*a->stride+offset0;
         for(i=0; i<len0; i++)
         {
             pcol = p2+i;
@@ -2754,7 +3385,7 @@ static void force_hermitian_rec_diag_stat(x_matrix *a, ae_int_t offset, ae_int_t
     }
     
     /* base case */
-    p = (ae_complex*)(a->ptr)+offset*a->stride+offset;
+    p = (ae_complex*)(a->x_ptr.p_ptr)+offset*a->stride+offset;
     for(i=0; i<len; i++)
     {
         pcol = p+i;
@@ -3077,6 +3708,60 @@ void ae_int2str(ae_int_t v, char *buf, ae_state *state)
 }
 
 /************************************************************************
+This function serializes 64-bit integer value into buffer
+
+v           integer value to be serialized
+buf         buffer, at least 12 characters wide 
+            (11 chars for value, one for trailing zero)
+state       ALGLIB environment state
+************************************************************************/
+void ae_int642str(ae_int64_t v, char *buf, ae_state *state)
+{
+    unsigned char bytes[9];
+    ae_int_t i;
+    ae_int_t sixbits[12];
+    
+    /*
+     * copy v to array of chars, sign extending it and 
+     * converting to little endian order
+     *
+     * because we don't want to mention size of ae_int_t explicitly, 
+     * we do it as follows:
+     * 1. we fill bytes by zeros or ones (depending on sign of v)
+     * 2. we memmove v to bytes
+     * 3. if we run on big endian architecture, we reorder bytes
+     * 4. now we have signed 64-bit representation of v stored in bytes
+     * 5. additionally, we set 9th byte of bytes to zero in order to
+     *    simplify conversion to six-bit representation
+     */
+    memset(bytes, v<0 ? 0xFF : 0x00, 8);
+    memmove(bytes, &v, 8);
+    bytes[8] = 0;
+    if( state->endianness==AE_BIG_ENDIAN )
+    {
+        for(i=0; i<(ae_int_t)(sizeof(ae_int_t)/2); i++)
+        {
+            unsigned char tc;
+            tc = bytes[i];
+            bytes[i] = bytes[sizeof(ae_int_t)-1-i];
+            bytes[sizeof(ae_int_t)-1-i] = tc;
+        }
+    }
+    
+    /*
+     * convert to six-bit representation, output
+     *
+     * NOTE: last 12th element of sixbits is always zero, we do not output it
+     */
+    ae_threebytes2foursixbits(bytes+0, sixbits+0);
+    ae_threebytes2foursixbits(bytes+3, sixbits+4);
+    ae_threebytes2foursixbits(bytes+6, sixbits+8);        
+    for(i=0; i<AE_SER_ENTRY_LENGTH; i++)
+        buf[i] = ae_sixbits2char(sixbits[i]);
+    buf[AE_SER_ENTRY_LENGTH] = 0x00;
+}
+
+/************************************************************************
 This function unserializes integer value from string
 
 buf         buffer which contains value; leading spaces/tabs/newlines are 
@@ -3135,6 +3820,66 @@ ae_int_t ae_str2int(const char *buf, ae_state *state, const char **pasttheend)
         }
     }
     return u.ival;
+}
+
+/************************************************************************
+This function unserializes 64-bit integer value from string
+
+buf         buffer which contains value; leading spaces/tabs/newlines are 
+            ignored, traling spaces/tabs/newlines are treated as  end  of
+            the boolean value.
+state       ALGLIB environment state
+
+This function raises an error in case unexpected symbol is found
+************************************************************************/
+ae_int64_t ae_str2int64(const char *buf, ae_state *state, const char **pasttheend)
+{
+    const char *emsg = "ALGLIB: unable to read integer value from stream";
+    ae_int_t sixbits[12];
+    ae_int_t sixbitsread, i;
+    unsigned char bytes[9];
+    ae_int64_t result;
+    
+    /* 
+     * 1. skip leading spaces
+     * 2. read and decode six-bit digits
+     * 3. set trailing digits to zeros
+     * 4. convert to little endian 64-bit integer representation
+     * 5. convert to big endian representation, if needed
+     */
+    while( *buf==' ' || *buf=='\t' || *buf=='\n' || *buf=='\r' )
+        buf++;
+    sixbitsread = 0;
+    while( *buf!=' ' && *buf!='\t' && *buf!='\n' && *buf!='\r' && *buf!=0 )
+    {
+        ae_int_t d;
+        d = ae_char2sixbits(*buf);
+        if( d<0 || sixbitsread>=AE_SER_ENTRY_LENGTH )
+            ae_break(state, ERR_ASSERTION_FAILED, emsg);
+        sixbits[sixbitsread] = d;
+        sixbitsread++;
+        buf++;
+    }
+    *pasttheend = buf;
+    if( sixbitsread==0 )
+        ae_break(state, ERR_ASSERTION_FAILED, emsg);
+    for(i=sixbitsread; i<12; i++)
+        sixbits[i] = 0;
+    ae_foursixbits2threebytes(sixbits+0, bytes+0);
+    ae_foursixbits2threebytes(sixbits+4, bytes+3);
+    ae_foursixbits2threebytes(sixbits+8, bytes+6);
+    if( state->endianness==AE_BIG_ENDIAN )
+    {
+        for(i=0; i<(ae_int_t)(sizeof(ae_int_t)/2); i++)
+        {
+            unsigned char tc;
+            tc = bytes[i];
+            bytes[i] = bytes[sizeof(ae_int_t)-1-i];
+            bytes[sizeof(ae_int_t)-1-i] = tc;
+        }
+    }
+    memmove(&result, bytes, sizeof(result));
+    return result;
 }
 
 
@@ -4094,6 +4839,14 @@ void ae_serializer_alloc_entry(ae_serializer *serializer)
     serializer->entries_needed++;
 }
 
+void ae_serializer_alloc_byte_array(ae_serializer *serializer, ae_vector *bytes)
+{
+    ae_int_t n;
+    n = bytes->cnt;
+    n = n/8 + (n%8>0 ? 1 : 0);
+    serializer->entries_needed += 1+n;
+}
+
 /************************************************************************
 After allocation phase is done, this function returns  required  size  of
 the output string buffer (including trailing zero symbol). Actual size of
@@ -4305,6 +5058,45 @@ void ae_serializer_serialize_int(ae_serializer *serializer, ae_int_t v, ae_state
     ae_break(state, ERR_ASSERTION_FAILED, emsg);
 }
 
+void ae_serializer_serialize_int64(ae_serializer *serializer, ae_int64_t v, ae_state *state)
+{
+    char buf[AE_SER_ENTRY_LENGTH+2+1];
+    const char *emsg = "ALGLIB: serialization integrity error";
+    ae_int_t bytes_appended;
+    
+    /* prepare serialization, check consistency */
+    ae_int642str(v, buf, state);
+    serializer->entries_saved++;
+    if( serializer->entries_saved%AE_SER_ENTRIES_PER_ROW )
+        strcat(buf, " ");
+    else
+        strcat(buf, "\r\n");
+    bytes_appended = (ae_int_t)strlen(buf);
+    ae_assert(serializer->bytes_written+bytes_appended<serializer->bytes_asked, emsg, state); /* strict "less" because we need space for trailing zero */
+    serializer->bytes_written += bytes_appended;
+        
+    /* append to buffer */
+#ifdef AE_USE_CPP_SERIALIZATION
+    if( serializer->mode==AE_SM_TO_CPPSTRING )
+    {
+        *(serializer->out_cppstr) += buf;
+        return;
+    }
+#endif
+    if( serializer->mode==AE_SM_TO_STRING )
+    {
+        strcat(serializer->out_str, buf);
+        serializer->out_str += bytes_appended;
+        return;
+    }
+    if( serializer->mode==AE_SM_TO_STREAM )
+    {
+        ae_assert(serializer->stream_writer(buf, serializer->stream_aux)==0, "serializer: error writing to stream", state);
+        return;
+    }
+    ae_break(state, ERR_ASSERTION_FAILED, emsg);
+}
+
 void ae_serializer_serialize_double(ae_serializer *serializer, double v, ae_state *state)
 {
     char buf[AE_SER_ENTRY_LENGTH+2+1];
@@ -4344,6 +5136,29 @@ void ae_serializer_serialize_double(ae_serializer *serializer, double v, ae_stat
     ae_break(state, ERR_ASSERTION_FAILED, emsg);
 }
 
+void ae_serializer_serialize_byte_array(ae_serializer *serializer, ae_vector *bytes, ae_state *state)
+{
+    ae_int_t chunk_size, entries_count;
+    
+    chunk_size = 8;
+    
+    /* save array length */
+    ae_serializer_serialize_int(serializer, bytes->cnt, state);
+            
+    /* determine entries count */
+    entries_count = bytes->cnt/chunk_size + (bytes->cnt%chunk_size>0 ? 1 : 0);
+    for(ae_int_t eidx=0; eidx<entries_count; eidx++)
+    {
+        ae_int64_t tmpi;
+        ae_int_t elen;
+        elen = bytes->cnt - eidx*chunk_size;
+        elen = elen>chunk_size ? chunk_size : elen;
+        memset(&tmpi, 0, sizeof(tmpi));
+        memmove(&tmpi, bytes->ptr.p_ubyte + eidx*chunk_size, elen);
+        ae_serializer_serialize_int64(serializer, tmpi, state);
+    }
+}
+
 void ae_serializer_unserialize_bool(ae_serializer *serializer, ae_bool *v, ae_state *state)
 {
     if( serializer->mode==AE_SM_FROM_STRING )
@@ -4380,6 +5195,24 @@ void ae_serializer_unserialize_int(ae_serializer *serializer, ae_int_t *v, ae_st
     ae_break(state, ERR_ASSERTION_FAILED, "ae_serializer: integrity check failed");
 }
 
+void ae_serializer_unserialize_int64(ae_serializer *serializer, ae_int64_t *v, ae_state *state)
+{
+    if( serializer->mode==AE_SM_FROM_STRING )
+    {
+        *v = ae_str2int64(serializer->in_str, state, &serializer->in_str);
+        return;
+    }
+    if( serializer->mode==AE_SM_FROM_STREAM )
+    {
+        char buf[AE_SER_ENTRY_LENGTH+2+1];
+        const char *p = buf;
+        ae_assert(serializer->stream_reader(serializer->stream_aux, AE_SER_ENTRY_LENGTH, buf)==0, "serializer: error reading from stream", state);
+        *v = ae_str2int64(buf, state, &p);
+        return;
+    }
+    ae_break(state, ERR_ASSERTION_FAILED, "ae_serializer: integrity check failed");
+}
+
 void ae_serializer_unserialize_double(ae_serializer *serializer, double *v, ae_state *state)
 {
     if( serializer->mode==AE_SM_FROM_STRING )
@@ -4396,6 +5229,30 @@ void ae_serializer_unserialize_double(ae_serializer *serializer, double *v, ae_s
         return;
     }
     ae_break(state, ERR_ASSERTION_FAILED, "ae_serializer: integrity check failed");
+}
+
+void ae_serializer_unserialize_byte_array(ae_serializer *serializer, ae_vector *bytes, ae_state *state)
+{
+    ae_int_t chunk_size, n, entries_count;
+    
+    chunk_size = 8;
+            
+    /* read array length, allocate output */
+    ae_serializer_unserialize_int(serializer, &n, state);
+    ae_vector_set_length(bytes, n, state);
+            
+    /* determine entries count, read entries */
+    entries_count = n/chunk_size + (n%chunk_size>0 ? 1 : 0);
+    for(ae_int_t eidx=0; eidx<entries_count; eidx++)
+    {
+        ae_int_t elen;
+        ae_int64_t tmp64;
+        
+        elen = n-eidx*chunk_size;
+        elen = elen>chunk_size ? chunk_size : elen;
+        ae_serializer_unserialize_int64(serializer, &tmp64, state);
+        memmove(bytes->ptr.p_ubyte+eidx*chunk_size, &tmp64, elen);
+    }
 }
 
 void ae_serializer_stop(ae_serializer *serializer, ae_state *state)
@@ -5466,32 +6323,6 @@ void _rcommstate_destroy(rcommstate* p)
     _rcommstate_clear(p);
 }
 
-#ifdef AE_DEBUG4WINDOWS
-int _tickcount()
-{
-    return GetTickCount();
-}
-#endif
-
-#ifdef AE_DEBUG4POSIX
-#include <sys/time.h>
-int _tickcount()
-{
-    struct timeval now;
-    ae_int64_t r, v;
-    gettimeofday(&now, NULL);
-    v = now.tv_sec;
-    r = v*1000;
-    v = now.tv_usec/1000;
-    r = r+v;
-    return r;
-    /*struct timespec now;
-    if (clock_gettime(CLOCK_MONOTONIC, &now) )
-        return 0;
-    return now.tv_sec * 1000.0 + now.tv_nsec / 1000000.0;*/
-}
-#endif
-
 
 }
 
@@ -5538,6 +6369,12 @@ const double alglib::fp_neginf      =  alglib::get_aenv_neginf();
 #if defined(AE_NO_EXCEPTIONS)
 static const char *_alglib_last_error = NULL;
 #endif
+static const alglib_impl::ae_uint64_t _i64_xdefault  = 0x0;
+static const alglib_impl::ae_uint64_t _i64_xserial   = _ALGLIB_FLG_THREADING_SERIAL;
+static const alglib_impl::ae_uint64_t _i64_xparallel = _ALGLIB_FLG_THREADING_PARALLEL;
+const alglib::xparams &alglib::xdefault = *((const alglib::xparams *)(&_i64_xdefault));
+const alglib::xparams &alglib::serial   = *((const alglib::xparams *)(&_i64_xserial));
+const alglib::xparams &alglib::parallel = *((const alglib::xparams *)(&_i64_xparallel));
 
 
 
@@ -5866,6 +6703,48 @@ void alglib::setnworkers(alglib::ae_int_t nworkers)
     alglib_impl::ae_set_cores_to_use(nworkers);
 #endif
 }
+
+void alglib::setglobalthreading(const alglib::xparams settings)
+{
+#ifdef AE_HPC
+    alglib_impl::ae_set_global_threading(settings.flags);
+#endif
+}
+
+alglib::ae_int_t alglib::getnworkers()
+{
+#ifdef AE_HPC
+    return alglib_impl::ae_get_cores_to_use();
+#else
+    return 1;
+#endif
+}
+
+alglib::ae_int_t alglib::_ae_cores_count()
+{
+#ifdef AE_HPC
+    return alglib_impl::ae_cores_count();
+#else
+    return 1;
+#endif
+}
+
+void alglib::_ae_set_global_threading(alglib_impl::ae_uint64_t flg_value)
+{
+#ifdef AE_HPC
+    alglib_impl::ae_set_global_threading(flg_value);
+#endif
+}
+
+alglib_impl::ae_uint64_t alglib::_ae_get_global_threading()
+{
+#ifdef AE_HPC
+    return alglib_impl::ae_get_global_threading();
+#else
+    return _ALGLIB_FLG_THREADING_SERIAL;
+#endif
+}
+
 
 /********************************************************************
 Level 1 BLAS functions
@@ -7170,7 +8049,7 @@ void alglib::real_1d_array::attach_to_ptr(ae_int_t iLen, double *pContent ) // T
     x.datatype = alglib_impl::DT_REAL;
     x.owner = alglib_impl::OWN_CALLER;
     x.last_action = alglib_impl::ACT_UNCHANGED;
-    x.ptr = pContent;
+    x.x_ptr.p_ptr = pContent;
     attach_to(&x, &_state);
     ae_state_clear(&_state);
 }
@@ -7753,7 +8632,7 @@ void alglib::real_2d_array::attach_to_ptr(ae_int_t irows, ae_int_t icols, double
     x.datatype = alglib_impl::DT_REAL;
     x.owner = alglib_impl::OWN_CALLER;
     x.last_action = alglib_impl::ACT_UNCHANGED;
-    x.ptr = pContent;
+    x.x_ptr.p_ptr = pContent;
     attach_to(&x, &_state);
     ae_state_clear(&_state);
 }
@@ -8277,8 +9156,9 @@ std::string alglib::arraytostring(const double *ptr, ae_int_t n, int _dps)
     ae_int_t i;
     char buf[64];
     char mask1[64];
-    char mask2[64];
+    char mask2[80];
     int dps = _dps>=0 ? _dps : -_dps;
+    dps = dps<=50 ? dps : 50;
     result = "[";
     if( sprintf(mask1, "%%.%d%s", dps, _dps>=0 ? "f" : "e")>=(int)sizeof(mask1) )
         _ALGLIB_CPP_EXCEPTION("arraytostring(): buffer overflow");
@@ -8589,12 +9469,36 @@ void alglib::read_csv(const char *filename, char separator, int flags, alglib::r
 
 
 
+/********************************************************************
+Trace functions
+********************************************************************/
+void alglib::trace_file(std::string tags, std::string filename)
+{
+    alglib_impl::ae_trace_file(tags.c_str(), filename.c_str());
+}
+
+void alglib::trace_disable()
+{
+    alglib_impl::ae_trace_disable();
+}
+
+
+
 /////////////////////////////////////////////////////////////////////////
 //
 // THIS SECTIONS CONTAINS OPTIMIZED LINEAR ALGEBRA CODE
 // IT IS SHARED BETWEEN C++ AND PURE C LIBRARIES
 //
 /////////////////////////////////////////////////////////////////////////
+#if defined(_ALGLIB_HAS_SSE2_INTRINSICS)
+#include "kernels_sse2.h"
+#endif
+#if defined(_ALGLIB_HAS_AVX2_INTRINSICS)
+#include "kernels_avx2.h"
+#endif
+#if defined(_ALGLIB_HAS_FMA_INTRINSICS)
+#include "kernels_fma.h"
+#endif
 namespace alglib_impl
 {
 #define alglib_simd_alignment 16
@@ -8603,9 +9507,11 @@ namespace alglib_impl
 #define alglib_half_r_block   16
 #define alglib_twice_r_block  64
 
-#define alglib_c_block        24
-#define alglib_half_c_block   12
-#define alglib_twice_c_block  48
+#define alglib_c_block        16
+#define alglib_half_c_block    8
+#define alglib_twice_c_block  32
+
+
 
 
 /********************************************************************
@@ -10613,17 +11519,18 @@ ae_bool _ialglib_cmatrixrank1(ae_int_t m,
      ae_complex *_v)
 {
     /*
-     * Quick exit
-     */
-    if( m<=0 || n<=0 )
-        return ae_false;
-    
-    /*
      * Locals
      */
     ae_complex *arow, *pu, *pv, *vtmp, *dst;
     ae_int_t n2 = n/2;
     ae_int_t i, j;
+    
+    /*
+     * Quick exit
+     */
+    if( m<=0 || n<=0 )
+        return ae_false;
+    
 
     /*
      * update pairs of rows
@@ -10679,12 +11586,6 @@ ae_bool _ialglib_rmatrixrank1(ae_int_t m,
      double *_v)
 {
     /*
-     * Quick exit
-     */
-    if( m<=0 || n<=0 )
-        return ae_false;
-    
-    /*
      * Locals
      */
     double *arow0, *arow1, *pu, *pv, *vtmp, *dst0, *dst1;
@@ -10694,6 +11595,12 @@ ae_bool _ialglib_rmatrixrank1(ae_int_t m,
     ae_int_t stride2 = 2*_a_stride;
     ae_int_t i, j;
 
+    /*
+     * Quick exit
+     */
+    if( m<=0 || n<=0 )
+        return ae_false;
+    
     /*
      * update pairs of rows
      */
@@ -10762,12 +11669,6 @@ ae_bool _ialglib_rmatrixger(ae_int_t m,
      double *_v)
 {
     /*
-     * Quick exit
-     */
-    if( m<=0 || n<=0 || alpha==0.0 )
-        return ae_false;
-    
-    /*
      * Locals
      */
     double *arow0, *arow1, *pu, *pv, *vtmp, *dst0, *dst1;
@@ -10777,6 +11678,12 @@ ae_bool _ialglib_rmatrixger(ae_int_t m,
     ae_int_t stride2 = 2*_a_stride;
     ae_int_t i, j;
 
+    /*
+     * Quick exit
+     */
+    if( m<=0 || n<=0 || alpha==0.0 )
+        return ae_false;
+    
     /*
      * update pairs of rows
      */
@@ -11615,6 +12522,2737 @@ void _ialglib_mm22x2_sse2(double alpha, const double *a, const double *b0, const
     }    
 }
 #endif
+
+#if !defined(ALGLIB_NO_FAST_KERNELS)
+
+/*************************************************************************
+Computes dot product (X,Y) for elements [0,N) of X[] and Y[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   array[N], vector to process
+    Y       -   array[N], vector to process
+
+RESULT:
+    (X,Y)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+double rdotv(ae_int_t n,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double result;
+    
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_RETURN_SSE2_AVX2_FMA(rdotv,(n,x->ptr.p_double,y->ptr.p_double,_state)) /* use _ALGLIB_KERNEL_VOID_ for a kernel that does not return result */
+
+    /*
+     * Original generic C implementation
+     */
+    result = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        result = result+x->ptr.p_double[i]*y->ptr.p_double[i];
+    }
+    return result;
+}
+
+
+
+/*************************************************************************
+Computes dot product (X,A[i]) for elements [0,N) of vector X[] and row A[i,*]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   array[N], vector to process
+    A       -   array[?,N], matrix to process
+    I       -   row index
+
+RESULT:
+    (X,Ai)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+double rdotvr(ae_int_t n,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_matrix* a,
+     ae_int_t i,
+     ae_state *_state)
+{
+    ae_int_t j;
+    double result;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_RETURN_SSE2_AVX2_FMA(rdotv,(n,x->ptr.p_double,a->ptr.pp_double[i],_state))
+
+    result = (double)(0);
+    for(j=0; j<=n-1; j++)
+    {
+        result = result+x->ptr.p_double[j]*a->ptr.pp_double[i][j];
+    }
+    return result;
+}
+
+
+/*************************************************************************
+Computes dot product (X,A[i]) for rows A[ia,*] and B[ib,*]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   array[N], vector to process
+    A       -   array[?,N], matrix to process
+    I       -   row index
+
+RESULT:
+    (X,Ai)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+double rdotrr(ae_int_t n,
+     /* Real    */ ae_matrix* a,
+     ae_int_t ia,
+     /* Real    */ ae_matrix* b,
+     ae_int_t ib,
+     ae_state *_state)
+{
+    ae_int_t j;
+    double result;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_RETURN_SSE2_AVX2_FMA(rdotv,(n,a->ptr.pp_double[ia],b->ptr.pp_double[ib],_state))
+
+    result = (double)(0);
+    for(j=0; j<=n-1; j++)
+    {
+        result = result+a->ptr.pp_double[ia][j]*b->ptr.pp_double[ib][j];
+    }
+    return result;
+}
+
+
+/*************************************************************************
+Computes dot product (X,X) for elements [0,N) of X[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   array[N], vector to process
+
+RESULT:
+    (X,X)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+double rdotv2(ae_int_t n, /* Real    */ ae_vector* x, ae_state *_state)
+{
+    ae_int_t i;
+    double v;
+    double result;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_RETURN_SSE2_AVX2_FMA(rdotv2,(n,x->ptr.p_double,_state))
+
+    result = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        v = x->ptr.p_double[i];
+        result = result+v*v;
+    }
+    return result;
+}
+
+
+/*************************************************************************
+Copies vector X[] to Y[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   array[N], source
+    Y       -   preallocated array[N]
+
+OUTPUT PARAMETERS:
+    Y       -   leading N elements are replaced by X
+
+    
+NOTE: destination and source should NOT overlap
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rcopyv(ae_int_t n,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rcopyv,
+            (n,x->ptr.p_double,y->ptr.p_double,_state))
+
+
+    for(j=0; j<=n-1; j++)
+    {
+        y->ptr.p_double[j] = x->ptr.p_double[j];
+    }
+}
+
+/*************************************************************************
+Copies vector X[] to row I of A[,]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   array[N], source
+    A       -   preallocated 2D array large enough to store result
+    I       -   destination row index
+
+OUTPUT PARAMETERS:
+    A       -   leading N elements of I-th row are replaced by X
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rcopyvr(ae_int_t n,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_matrix* a,
+     ae_int_t i,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rcopyv,
+            (n, x->ptr.p_double, a->ptr.pp_double[i], _state))
+
+    for(j=0; j<=n-1; j++)
+    {
+        a->ptr.pp_double[i][j] = x->ptr.p_double[j];
+    }
+}
+
+
+/*************************************************************************
+Copies row I of A[,] to vector X[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    A       -   2D array, source
+    I       -   source row index
+    X       -   preallocated destination
+
+OUTPUT PARAMETERS:
+    X       -   array[N], destination
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rcopyrv(ae_int_t n,
+     /* Real    */ ae_matrix* a,
+     ae_int_t i,
+     /* Real    */ ae_vector* x,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rcopyv,
+            (n, a->ptr.pp_double[i], x->ptr.p_double, _state))
+
+    for(j=0; j<=n-1; j++)
+    {
+        x->ptr.p_double[j] = a->ptr.pp_double[i][j];
+    }
+}
+
+
+/*************************************************************************
+Copies row I of A[,] to row K of B[,].
+
+A[i,...] and B[k,...] may overlap.
+
+INPUT PARAMETERS:
+    N       -   vector length
+    A       -   2D array, source
+    I       -   source row index
+    B       -   preallocated destination
+    K       -   destination row index
+
+OUTPUT PARAMETERS:
+    B       -   row K overwritten
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rcopyrr(ae_int_t n,
+     /* Real    */ ae_matrix* a,
+     ae_int_t i,
+     /* Real    */ ae_matrix* b,
+     ae_int_t k,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rcopyv,
+            (n, a->ptr.pp_double[i], b->ptr.pp_double[k], _state))
+
+    for(j=0; j<=n-1; j++)
+    {
+        b->ptr.pp_double[k][j] = a->ptr.pp_double[i][j];
+    }
+}
+
+/*************************************************************************
+Performs copying with multiplication of V*X[] to Y[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    V       -   multiplier
+    X       -   array[N], source
+    Y       -   preallocated array[N]
+
+OUTPUT PARAMETERS:
+    Y       -   array[N], Y = V*X
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rcopymulv(ae_int_t n,
+     double v,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_vector* y,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rcopymulv,
+            (n,v,x->ptr.p_double,y->ptr.p_double,_state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        y->ptr.p_double[i] = v*x->ptr.p_double[i];
+    }
+}
+
+
+/*************************************************************************
+Performs copying with multiplication of V*X[] to Y[I,*]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    V       -   multiplier
+    X       -   array[N], source
+    Y       -   preallocated array[?,N]
+    RIdx    -   destination row index
+
+OUTPUT PARAMETERS:
+    Y       -   Y[RIdx,...] = V*X
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rcopymulvr(ae_int_t n,
+     double v,
+     /* Real    */ ae_vector* x,
+     /* Real    */ ae_matrix* y,
+     ae_int_t ridx,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rcopymulv,
+            (n,v,x->ptr.p_double,y->ptr.pp_double[ridx],_state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        y->ptr.pp_double[ridx][i] = v*x->ptr.p_double[i];
+    }
+}
+
+/*************************************************************************
+Copies vector X[] to Y[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   source array
+    Y       -   preallocated array[N]
+
+OUTPUT PARAMETERS:
+    Y       -   X copied to Y
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void icopyv(ae_int_t n,
+     /* Integer */ ae_vector* x,
+     /* Integer */ ae_vector* y,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(icopyv,
+            (n, x->ptr.p_int, y->ptr.p_int, _state))
+
+    for(j=0; j<=n-1; j++)
+    {
+        y->ptr.p_int[j] = x->ptr.p_int[j];
+    }
+}
+
+/*************************************************************************
+Copies vector X[] to Y[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   array[N], source
+    Y       -   preallocated array[N]
+
+OUTPUT PARAMETERS:
+    Y       -   leading N elements are replaced by X
+
+    
+NOTE: destination and source should NOT overlap
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void bcopyv(ae_int_t n,
+     /* Boolean */ ae_vector* x,
+     /* Boolean */ ae_vector* y,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1*8 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(bcopyv,
+            (n, x->ptr.p_bool, y->ptr.p_bool, _state))
+
+    for(j=0; j<=n-1; j++)
+    {
+        y->ptr.p_bool[j] = x->ptr.p_bool[j];
+    }
+}
+
+
+/*************************************************************************
+Sets vector X[] to V
+
+INPUT PARAMETERS:
+    N       -   vector length
+    V       -   value to set
+    X       -   array[N]
+
+OUTPUT PARAMETERS:
+    X       -   leading N elements are replaced by V
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rsetv(ae_int_t n,
+     double v,
+     /* Real    */ ae_vector* x,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rsetv,
+            (n, v, x->ptr.p_double, _state))
+
+    for(j=0; j<=n-1; j++)
+    {
+        x->ptr.p_double[j] = v;
+    }
+}
+
+/*************************************************************************
+Sets row I of A[,] to V
+
+INPUT PARAMETERS:
+    N       -   vector length
+    V       -   value to set
+    A       -   array[N,N] or larger
+    I       -   row index
+
+OUTPUT PARAMETERS:
+    A       -   leading N elements of I-th row are replaced by V
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rsetr(ae_int_t n,
+     double v,
+     /* Real    */ ae_matrix* a,
+     ae_int_t i,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rsetv,
+            (n, v, a->ptr.pp_double[i], _state))
+
+    for(j=0; j<=n-1; j++)
+    {
+        a->ptr.pp_double[i][j] = v;
+    }
+}
+
+
+/*************************************************************************
+Sets X[OffsX:OffsX+N-1] to V
+
+INPUT PARAMETERS:
+    N       -   subvector length
+    V       -   value to set
+    X       -   array[N]
+
+OUTPUT PARAMETERS:
+    X       -   X[OffsX:OffsX+N-1] is replaced by V
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rsetvx(ae_int_t n,
+     double v,
+     /* Real    */ ae_vector* x,
+     ae_int_t offsx,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rsetvx,
+            (n, v, x->ptr.p_double+offsx, _state))
+
+    for(j=0; j<=n-1; j++)
+    {
+        x->ptr.p_double[offsx+j] = v;
+    }
+}
+
+
+/*************************************************************************
+Sets matrix A[] to V
+
+INPUT PARAMETERS:
+    M, N    -   rows/cols count
+    V       -   value to set
+    A       -   array[M,N]
+
+OUTPUT PARAMETERS:
+    A       -   leading M rows, N cols are replaced by V
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+static void rsetm_simd(const ae_int_t n, const double v, double *pDest, ae_state *_state)
+{
+    _ALGLIB_KERNEL_VOID_SSE2_AVX2(rsetv, (n, v, pDest, _state));
+
+    ae_int_t j;
+    for(j=0; j<=n-1; j++) {
+        pDest[j] = v;
+    }
+}
+
+void rsetm(ae_int_t m,
+     ae_int_t n,
+     double v,
+     /* Real    */ ae_matrix* a,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n >=_ABLASF_KERNEL_SIZE1 ) {
+        for(i=0; i<m; i++) {
+            rsetm_simd(n, v, a->ptr.pp_double[i], _state);
+        }
+        return;
+    }
+
+    for(i=0; i<=m-1; i++)
+    {
+        for(j=0; j<=n-1; j++)
+        {
+            a->ptr.pp_double[i][j] = v;
+        }
+    }
+}
+
+
+/*************************************************************************
+Sets vector X[] to V
+
+INPUT PARAMETERS:
+    N       -   vector length
+    V       -   value to set
+    X       -   array[N]
+
+OUTPUT PARAMETERS:
+    X       -   leading N elements are replaced by V
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void isetv(ae_int_t n,
+     ae_int_t v,
+     /* Integer */ ae_vector* x,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(isetv,
+            (n, v, x->ptr.p_int, _state))
+
+    for(j=0; j<=n-1; j++)
+    {
+        x->ptr.p_int[j] = v;
+    }
+}
+
+/*************************************************************************
+Sets vector X[] to V
+
+INPUT PARAMETERS:
+    N       -   vector length
+    V       -   value to set
+    X       -   array[N]
+
+OUTPUT PARAMETERS:
+    X       -   leading N elements are replaced by V
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void bsetv(ae_int_t n,
+     ae_bool v,
+     /* Boolean */ ae_vector* x,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1*8 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(bsetv,
+            (n, v, x->ptr.p_bool, _state))
+
+    for(j=0; j<=n-1; j++)
+    {
+        x->ptr.p_bool[j] = v;
+    }
+}
+
+
+/*************************************************************************
+Performs inplace multiplication of X[] by V
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   array[N], vector to process
+    V       -   multiplier
+
+OUTPUT PARAMETERS:
+    X       -   elements 0...N-1 multiplied by V
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rmulv(ae_int_t n,
+     double v,
+     /* Real    */ ae_vector* x,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rmulv,
+            (n,v,x->ptr.p_double,_state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.p_double[i] = x->ptr.p_double[i]*v;
+    }
+}
+
+
+/*************************************************************************
+Performs inplace multiplication of X[] by V
+
+INPUT PARAMETERS:
+    N       -   row length
+    X       -   array[?,N], row to process
+    V       -   multiplier
+
+OUTPUT PARAMETERS:
+    X       -   elements 0...N-1 of row RowIdx are multiplied by V
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rmulr(ae_int_t n,
+     double v,
+     /* Real    */ ae_matrix* x,
+     ae_int_t rowidx,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rmulv,
+            (n, v, x->ptr.pp_double[rowidx], _state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.pp_double[rowidx][i] = x->ptr.pp_double[rowidx][i]*v;
+    }
+}
+
+
+/*************************************************************************
+Performs inplace multiplication of X[OffsX:OffsX+N-1] by V
+
+INPUT PARAMETERS:
+    N       -   subvector length
+    X       -   vector to process
+    V       -   multiplier
+
+OUTPUT PARAMETERS:
+    X       -   elements OffsX:OffsX+N-1 multiplied by V
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rmulvx(ae_int_t n,
+     double v,
+     /* Real    */ ae_vector* x,
+     ae_int_t offsx,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rmulvx,
+            (n, v, x->ptr.p_double+offsx, _state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.p_double[offsx+i] = x->ptr.p_double[offsx+i]*v;
+    }
+}
+
+
+/*************************************************************************
+Performs inplace addition of Y[] to X[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    Alpha   -   multiplier
+    Y       -   array[N], vector to process
+    X       -   array[N], vector to process
+
+RESULT:
+    X := X + alpha*Y
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void raddv(ae_int_t n,
+     double alpha,
+     /* Real    */ ae_vector* y,
+     /* Real    */ ae_vector* x,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2_FMA(raddv,
+            (n,alpha,y->ptr.p_double,x->ptr.p_double,_state))
+
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.p_double[i] = x->ptr.p_double[i]+alpha*y->ptr.p_double[i];
+    }
+}
+
+
+/*************************************************************************
+Performs inplace addition of vector Y[] to row X[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    Alpha   -   multiplier
+    Y       -   vector to add
+    X       -   target row RowIdx
+
+RESULT:
+    X := X + alpha*Y
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void raddvr(ae_int_t n,
+     double alpha,
+     /* Real    */ ae_vector* y,
+     /* Real    */ ae_matrix* x,
+     ae_int_t rowidx,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2_FMA(raddv,
+            (n,alpha,y->ptr.p_double,x->ptr.pp_double[rowidx],_state))
+
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.pp_double[rowidx][i] = x->ptr.pp_double[rowidx][i]+alpha*y->ptr.p_double[i];
+    }
+}
+
+
+/*************************************************************************
+Performs inplace addition of Y[RIdx,...] to X[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    Alpha   -   multiplier
+    Y       -   array[?,N], matrix whose RIdx-th row is added
+    RIdx    -   row index
+    X       -   array[N], vector to process
+
+RESULT:
+    X := X + alpha*Y
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void raddrv(ae_int_t n,
+     double alpha,
+     /* Real    */ ae_matrix* y,
+     ae_int_t ridx,
+     /* Real    */ ae_vector* x,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2_FMA(raddv,
+            (n,alpha,y->ptr.pp_double[ridx],x->ptr.p_double,_state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.p_double[i] = x->ptr.p_double[i]+alpha*y->ptr.pp_double[ridx][i];
+    }
+}
+
+
+/*************************************************************************
+Performs inplace addition of Y[RIdx,...] to X[RIdxDst]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    Alpha   -   multiplier
+    Y       -   array[?,N], matrix whose RIdxSrc-th row is added
+    RIdxSrc -   source row index
+    X       -   array[?,N], matrix whose RIdxDst-th row is target
+    RIdxDst -   destination row index
+
+RESULT:
+    X := X + alpha*Y
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void raddrr(ae_int_t n,
+     double alpha,
+     /* Real    */ ae_matrix* y,
+     ae_int_t ridxsrc,
+     /* Real    */ ae_matrix* x,
+     ae_int_t ridxdst,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2_FMA(raddv,
+            (n,alpha,y->ptr.pp_double[ridxsrc],x->ptr.pp_double[ridxdst],_state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.pp_double[ridxdst][i] = x->ptr.pp_double[ridxdst][i]+alpha*y->ptr.pp_double[ridxsrc][i];
+    }
+}
+
+
+/*************************************************************************
+Performs inplace addition of Y[] to X[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    Alpha   -   multiplier
+    Y       -   source vector
+    OffsY   -   source offset
+    X       -   destination vector
+    OffsX   -   destination offset
+
+RESULT:
+    X := X + alpha*Y
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void raddvx(ae_int_t n,
+     double alpha,
+     /* Real    */ ae_vector* y,
+     ae_int_t offsy,
+     /* Real    */ ae_vector* x,
+     ae_int_t offsx,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2_FMA(raddvx,
+            (n, alpha, y->ptr.p_double+offsy, x->ptr.p_double+offsx, _state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.p_double[offsx+i] = x->ptr.p_double[offsx+i]+alpha*y->ptr.p_double[offsy+i];
+    }
+}
+
+
+/*************************************************************************
+Performs componentwise multiplication of vector X[] by vector Y[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    Y       -   vector to multiply by
+    X       -   target vector
+
+RESULT:
+    X := componentwise(X*Y)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rmergemulv(ae_int_t n,
+     /* Real    */ ae_vector* y,
+     /* Real    */ ae_vector* x,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rmergemulv,
+            (n,y->ptr.p_double,x->ptr.p_double,_state))
+
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.p_double[i] = x->ptr.p_double[i]*y->ptr.p_double[i];
+    }
+}
+
+
+/*************************************************************************
+Performs componentwise multiplication of row X[] by vector Y[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    Y       -   vector to multiply by
+    X       -   target row RowIdx
+
+RESULT:
+    X := componentwise(X*Y)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rmergemulvr(ae_int_t n,
+     /* Real    */ ae_vector* y,
+     /* Real    */ ae_matrix* x,
+     ae_int_t rowidx,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rmergemulv,
+            (n,y->ptr.p_double,x->ptr.pp_double[rowidx],_state))
+
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.pp_double[rowidx][i] = x->ptr.pp_double[rowidx][i]*y->ptr.p_double[i];
+    }
+}
+
+
+/*************************************************************************
+Performs componentwise multiplication of row X[] by vector Y[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    Y       -   vector to multiply by
+    X       -   target row RowIdx
+
+RESULT:
+    X := componentwise(X*Y)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rmergemulrv(ae_int_t n,
+     /* Real    */ ae_matrix* y,
+     ae_int_t rowidx,
+     /* Real    */ ae_vector* x,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rmergemulv,
+            (n,y->ptr.pp_double[rowidx],x->ptr.p_double,_state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.p_double[i] = x->ptr.p_double[i]*y->ptr.pp_double[rowidx][i];
+    }
+}
+
+/*************************************************************************
+Performs componentwise max of vector X[] and vector Y[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    Y       -   vector to multiply by
+    X       -   target vector
+
+RESULT:
+    X := componentwise_max(X,Y)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rmergemaxv(ae_int_t n,
+     /* Real    */ ae_vector* y,
+     /* Real    */ ae_vector* x,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rmergemaxv,
+            (n,y->ptr.p_double,x->ptr.p_double,_state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.p_double[i] = ae_maxreal(x->ptr.p_double[i], y->ptr.p_double[i], _state);
+    }
+}
+
+
+/*************************************************************************
+Performs componentwise max of row X[] and vector Y[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    Y       -   vector to multiply by
+    X       -   target row RowIdx
+
+RESULT:
+    X := componentwise_max(X,Y)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rmergemaxvr(ae_int_t n,
+     /* Real    */ ae_vector* y,
+     /* Real    */ ae_matrix* x,
+     ae_int_t rowidx,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rmergemaxv,
+            (n,y->ptr.p_double,x->ptr.pp_double[rowidx],_state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.pp_double[rowidx][i] = ae_maxreal(x->ptr.pp_double[rowidx][i], y->ptr.p_double[i], _state);
+    }
+}
+
+
+/*************************************************************************
+Performs componentwise max of row X[I] and vector Y[] 
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   matrix, I-th row is source
+    rowidx  -   target row RowIdx
+
+RESULT:
+    Y := componentwise_max(X,Y)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rmergemaxrv(ae_int_t n,
+     /* Real    */ ae_matrix* x,
+     ae_int_t rowidx,
+     /* Real    */ ae_vector* y,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rmergemaxv,
+            (n,x->ptr.pp_double[rowidx],y->ptr.p_double,_state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        y->ptr.p_double[i] = ae_maxreal(y->ptr.p_double[i], x->ptr.pp_double[rowidx][i], _state);
+    }
+}
+
+/*************************************************************************
+Performs componentwise min of vector X[] and vector Y[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    Y       -   source vector
+    X       -   target vector
+
+RESULT:
+    X := componentwise_max(X,Y)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rmergeminv(ae_int_t n,
+     /* Real    */ ae_vector* y,
+     /* Real    */ ae_vector* x,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rmergeminv,
+            (n,y->ptr.p_double,x->ptr.p_double,_state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.p_double[i] = ae_minreal(x->ptr.p_double[i], y->ptr.p_double[i], _state);
+    }
+}
+
+
+/*************************************************************************
+Performs componentwise max of row X[] and vector Y[]
+
+INPUT PARAMETERS:
+    N       -   vector length
+    Y       -   vector to multiply by
+    X       -   target row RowIdx
+
+RESULT:
+    X := componentwise_max(X,Y)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rmergeminvr(ae_int_t n,
+     /* Real    */ ae_vector* y,
+     /* Real    */ ae_matrix* x,
+     ae_int_t rowidx,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rmergeminv,
+            (n,y->ptr.p_double,x->ptr.pp_double[rowidx],_state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        x->ptr.pp_double[rowidx][i] = ae_minreal(x->ptr.pp_double[rowidx][i], y->ptr.p_double[i], _state);
+    }
+}
+
+
+/*************************************************************************
+Performs componentwise max of row X[I] and vector Y[] 
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   matrix, I-th row is source
+    X       -   target row RowIdx
+
+RESULT:
+    X := componentwise_max(X,Y)
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rmergeminrv(ae_int_t n,
+     /* Real    */ ae_matrix* x,
+     ae_int_t rowidx,
+     /* Real    */ ae_vector* y,
+     ae_state *_state)
+{
+    ae_int_t i;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rmergeminv,
+            (n,x->ptr.pp_double[rowidx],y->ptr.p_double,_state))
+
+    for(i=0; i<=n-1; i++)
+    {
+        y->ptr.p_double[i] = ae_minreal(y->ptr.p_double[i], x->ptr.pp_double[rowidx][i], _state);
+    }
+}
+/*************************************************************************
+Returns maximum X
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   array[N], vector to process
+
+OUTPUT PARAMETERS:
+    max(X[i])
+    zero for N=0
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+double rmaxv(ae_int_t n, /* Real    */ ae_vector* x, ae_state *_state)
+{
+    ae_int_t i;
+    double v;
+    double result;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_RETURN_SSE2_AVX2(rmaxv, (n, x->ptr.p_double, _state));
+    
+    if(n == 0)
+        return 0.0;
+    result = x->ptr.p_double[0];
+    for(i=1; i<=n-1; i++)
+    {
+        v = x->ptr.p_double[i];
+        if( v>result )
+        {
+            result = v;
+        }
+    }
+    return result;
+}
+
+/*************************************************************************
+Returns maximum X
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   matrix to process, RowIdx-th row is processed
+
+OUTPUT PARAMETERS:
+    max(X[RowIdx,i])
+    zero for N=0
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+double rmaxr(ae_int_t n,
+     /* Real    */ ae_matrix* x,
+     ae_int_t rowidx,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double v;
+    double result;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_RETURN_SSE2_AVX2(rmaxv,(n, x->ptr.pp_double[rowidx], _state))
+    
+    if(n == 0)
+        return 0.0;
+    result = x->ptr.pp_double[rowidx][0];
+    for(i=1; i<=n-1; i++)
+    {
+        v = x->ptr.pp_double[rowidx][i];
+        if( v>result )
+        {
+            result = v;
+        }
+    }
+    return result;
+}
+
+/*************************************************************************
+Returns maximum |X|
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   array[N], vector to process
+
+OUTPUT PARAMETERS:
+    max(|X[i]|)
+    zero for N=0
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+double rmaxabsv(ae_int_t n, /* Real    */ ae_vector* x, ae_state *_state)
+{
+    ae_int_t i;
+    double v;
+    double result;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_RETURN_SSE2_AVX2(rmaxabsv, (n, x->ptr.p_double, _state))
+
+    result = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        v = ae_fabs(x->ptr.p_double[i], _state);
+        if( v>result )
+        {
+            result = v;
+        }
+    }
+    return result;
+}
+
+
+/*************************************************************************
+Returns maximum |X|
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   matrix to process, RowIdx-th row is processed
+
+OUTPUT PARAMETERS:
+    max(|X[RowIdx,i]|)
+    zero for N=0
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+double rmaxabsr(ae_int_t n,
+     /* Real    */ ae_matrix* x,
+     ae_int_t rowidx,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double v;
+    double result;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_RETURN_SSE2_AVX2(rmaxabsv,(n, x->ptr.pp_double[rowidx], _state))
+
+    result = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        v = ae_fabs(x->ptr.pp_double[rowidx][i], _state);
+        if( v>result )
+        {
+            result = v;
+        }
+    }
+    return result;
+}
+
+/*************************************************************************
+Copies vector X[] to Y[], extended version
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   source array
+    OffsX   -   source offset
+    Y       -   preallocated array[N]
+    OffsY   -   destination offset
+
+OUTPUT PARAMETERS:
+    Y       -   N elements starting from OffsY are replaced by X[OffsX:OffsX+N-1]
+    
+NOTE: destination and source should NOT overlap
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void rcopyvx(ae_int_t n,
+     /* Real    */ ae_vector* x,
+     ae_int_t offsx,
+     /* Real    */ ae_vector* y,
+     ae_int_t offsy,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(rcopyvx,(n, x->ptr.p_double+offsx, y->ptr.p_double+offsy, _state))
+
+    for(j=0; j<=n-1; j++)
+    {
+        y->ptr.p_double[offsy+j] = x->ptr.p_double[offsx+j];
+    }
+}
+
+/*************************************************************************
+Copies vector X[] to Y[], extended version
+
+INPUT PARAMETERS:
+    N       -   vector length
+    X       -   source array
+    OffsX   -   source offset
+    Y       -   preallocated array[N]
+    OffsY   -   destination offset
+
+OUTPUT PARAMETERS:
+    Y       -   N elements starting from OffsY are replaced by X[OffsX:OffsX+N-1]
+    
+NOTE: destination and source should NOT overlap
+
+  -- ALGLIB --
+     Copyright 20.01.2020 by Bochkanov Sergey
+*************************************************************************/
+void icopyvx(ae_int_t n,
+     /* Integer */ ae_vector* x,
+     ae_int_t offsx,
+     /* Integer */ ae_vector* y,
+     ae_int_t offsy,
+     ae_state *_state)
+{
+    ae_int_t j;
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    if( n>=_ABLASF_KERNEL_SIZE1 )
+        _ALGLIB_KERNEL_VOID_SSE2_AVX2(icopyvx,(n, x->ptr.p_int+offsx, y->ptr.p_int+offsy, _state))
+
+    for(j=0; j<=n-1; j++)
+    {
+        y->ptr.p_int[offsy+j] = x->ptr.p_int[offsx+j];
+    }
+}
+
+/*************************************************************************
+Matrix-vector product: y := alpha*op(A)*x + beta*y
+
+NOTE: this  function  expects  Y  to  be  large enough to store result. No
+      automatic preallocation happens for  smaller  arrays.  No  integrity
+      checks is performed for sizes of A, x, y.
+
+INPUT PARAMETERS:
+    M   -   number of rows of op(A)
+    N   -   number of columns of op(A)
+    Alpha-  coefficient
+    A   -   source matrix
+    OpA -   operation type:
+            * OpA=0     =>  op(A) = A
+            * OpA=1     =>  op(A) = A^T
+    X   -   input vector, has at least N elements
+    Beta-   coefficient
+    Y   -   preallocated output array, has at least M elements
+
+OUTPUT PARAMETERS:
+    Y   -   vector which stores result
+
+HANDLING OF SPECIAL CASES:
+    * if M=0, then subroutine does nothing. It does not even touch arrays.
+    * if N=0 or Alpha=0.0, then:
+      * if Beta=0, then Y is filled by zeros. A and X are  not  referenced
+        at all. Initial values of Y are ignored (we do not  multiply  Y by
+        zero, we just rewrite it by zeros)
+      * if Beta<>0, then Y is replaced by Beta*Y
+    * if M>0, N>0, Alpha<>0, but  Beta=0,  then  Y  is  replaced  by  A*x;
+       initial state of Y is ignored (rewritten by  A*x,  without  initial
+       multiplication by zeros).
+
+
+  -- ALGLIB routine --
+
+     01.09.2021
+     Bochkanov Sergey
+*************************************************************************/
+void rgemv(ae_int_t m,
+     ae_int_t n,
+     double alpha,
+     /* Real    */ ae_matrix* a,
+     ae_int_t opa,
+     /* Real    */ ae_vector* x,
+     double beta,
+     /* Real    */ ae_vector* y,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t j;
+    double v;
+
+
+    
+    /*
+     * Properly premultiply Y by Beta.
+     *
+     * Quick exit for M=0, N=0 or Alpha=0.
+     * After this block we have M>0, N>0, Alpha<>0.
+     */
+    if( m<=0 )
+    {
+        return;
+    }
+    if( ae_fp_neq(beta,(double)(0)) )
+    {
+        rmulv(m, beta, y, _state);
+    }
+    else
+    {
+        rsetv(m, 0.0, y, _state);
+    }
+    if( n<=0||ae_fp_eq(alpha,0.0) )
+    {
+        return;
+    }
+    
+    /*
+     * Straight or transposed?
+     */
+    if( opa==0 )
+    {
+        /*
+         * Try SIMD code
+         */
+        if( n>=_ABLASF_KERNEL_SIZE2 )
+            _ALGLIB_KERNEL_VOID_AVX2_FMA(rgemv_straight, (m, n, alpha, a,
+                x->ptr.p_double, y->ptr.p_double, _state))
+        
+        /*
+         * Generic C version: y += A*x
+         */
+        for(i=0; i<=m-1; i++)
+        {
+            v = (double)(0);
+            for(j=0; j<=n-1; j++)
+            {
+                v = v+a->ptr.pp_double[i][j]*x->ptr.p_double[j];
+            }
+            y->ptr.p_double[i] = alpha*v+y->ptr.p_double[i];
+        }
+        return;
+    }
+    if( opa==1 )
+    {
+        /*
+         * Try SIMD code
+         */
+        if( m>=_ABLASF_KERNEL_SIZE2 )
+            _ALGLIB_KERNEL_VOID_AVX2_FMA(rgemv_transposed, (m, n, alpha, a,
+                x->ptr.p_double, y->ptr.p_double, _state))
+
+
+        /*
+         * Generic C version: y += A^T*x
+         */
+        for(i=0; i<=n-1; i++)
+        {
+            v = alpha*x->ptr.p_double[i];
+            for(j=0; j<=m-1; j++)
+            {
+                y->ptr.p_double[j] = y->ptr.p_double[j]+v*a->ptr.pp_double[i][j];
+            }
+        }
+        return;
+    }
+}
+
+
+/*************************************************************************
+Matrix-vector product: y := alpha*op(A)*x + beta*y
+
+Here x, y, A are subvectors/submatrices of larger vectors/matrices.
+
+NOTE: this  function  expects  Y  to  be  large enough to store result. No
+      automatic preallocation happens for  smaller  arrays.  No  integrity
+      checks is performed for sizes of A, x, y.
+
+INPUT PARAMETERS:
+    M   -   number of rows of op(A)
+    N   -   number of columns of op(A)
+    Alpha-  coefficient
+    A   -   source matrix
+    IA  -   submatrix offset (row index)
+    JA  -   submatrix offset (column index)
+    OpA -   operation type:
+            * OpA=0     =>  op(A) = A
+            * OpA=1     =>  op(A) = A^T
+    X   -   input vector, has at least N+IX elements
+    IX  -   subvector offset
+    Beta-   coefficient
+    Y   -   preallocated output array, has at least M+IY elements
+    IY  -   subvector offset
+
+OUTPUT PARAMETERS:
+    Y   -   vector which stores result
+
+HANDLING OF SPECIAL CASES:
+    * if M=0, then subroutine does nothing. It does not even touch arrays.
+    * if N=0 or Alpha=0.0, then:
+      * if Beta=0, then Y is filled by zeros. A and X are  not  referenced
+        at all. Initial values of Y are ignored (we do not  multiply  Y by
+        zero, we just rewrite it by zeros)
+      * if Beta<>0, then Y is replaced by Beta*Y
+    * if M>0, N>0, Alpha<>0, but  Beta=0,  then  Y  is  replaced  by  A*x;
+       initial state of Y is ignored (rewritten by  A*x,  without  initial
+       multiplication by zeros).
+
+
+  -- ALGLIB routine --
+
+     01.09.2021
+     Bochkanov Sergey
+*************************************************************************/
+void rgemvx(ae_int_t m,
+     ae_int_t n,
+     double alpha,
+     /* Real    */ ae_matrix* a,
+     ae_int_t ia,
+     ae_int_t ja,
+     ae_int_t opa,
+     /* Real    */ ae_vector* x,
+     ae_int_t ix,
+     double beta,
+     /* Real    */ ae_vector* y,
+     ae_int_t iy,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t j;
+    double v;
+
+
+    
+    /*
+     * Properly premultiply Y by Beta.
+     *
+     * Quick exit for M=0, N=0 or Alpha=0.
+     * After this block we have M>0, N>0, Alpha<>0.
+     */
+    if( m<=0 )
+    {
+        return;
+    }
+    if( ae_fp_neq(beta,(double)(0)) )
+    {
+        rmulvx(m, beta, y, iy, _state);
+    }
+    else
+    {
+        rsetvx(m, 0.0, y, iy, _state);
+    }
+    if( n<=0||ae_fp_eq(alpha,0.0) )
+    {
+        return;
+    }
+    
+    /*
+     * Straight or transposed?
+     */
+    if( opa==0 )
+    {
+        /*
+         * Try SIMD code
+         */
+        if( n>=_ABLASF_KERNEL_SIZE2 )
+            _ALGLIB_KERNEL_VOID_AVX2_FMA(rgemvx_straight, (m, n, alpha, a, ia, ja,
+                x->ptr.p_double + ix, y->ptr.p_double + iy, _state))
+
+        
+        /*
+         * Generic C code: y += A*x
+         */
+        for(i=0; i<=m-1; i++)
+        {
+            v = (double)(0);
+            for(j=0; j<=n-1; j++)
+            {
+                v = v+a->ptr.pp_double[ia+i][ja+j]*x->ptr.p_double[ix+j];
+            }
+            y->ptr.p_double[iy+i] = alpha*v+y->ptr.p_double[iy+i];
+        }
+        return;
+    }
+    if( opa==1 )
+    {
+        /*
+         * Try SIMD code
+         */
+        if( m>=_ABLASF_KERNEL_SIZE2 )
+            _ALGLIB_KERNEL_VOID_AVX2_FMA(rgemvx_transposed, (m, n, alpha, a, ia, ja,
+                x->ptr.p_double+ix, y->ptr.p_double+iy, _state))
+
+        /*
+         * Generic C code: y += A^T*x
+         */
+        for(i=0; i<=n-1; i++)
+        {
+            v = alpha*x->ptr.p_double[ix+i];
+            for(j=0; j<=m-1; j++)
+            {
+                y->ptr.p_double[iy+j] = y->ptr.p_double[iy+j]+v*a->ptr.pp_double[ia+i][ja+j];
+            }
+        }
+        return;
+    }
+}
+
+
+/*************************************************************************
+Rank-1 correction: A := A + alpha*u*v'
+
+NOTE: this  function  expects  A  to  be  large enough to store result. No
+      automatic preallocation happens for  smaller  arrays.  No  integrity
+      checks is performed for sizes of A, u, v.
+
+INPUT PARAMETERS:
+    M   -   number of rows
+    N   -   number of columns
+    A   -   target MxN matrix
+    Alpha-  coefficient
+    U   -   vector #1
+    V   -   vector #2
+
+
+  -- ALGLIB routine --
+     07.09.2021
+     Bochkanov Sergey
+*************************************************************************/
+void rger(ae_int_t m,
+     ae_int_t n,
+     double alpha,
+     /* Real    */ ae_vector* u,
+     /* Real    */ ae_vector* v,
+     /* Real    */ ae_matrix* a,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t j;
+    double s;
+
+
+    if( (m<=0||n<=0)||ae_fp_eq(alpha,(double)(0)) )
+    {
+        return;
+    }
+    for(i=0; i<=m-1; i++)
+    {
+        s = alpha*u->ptr.p_double[i];
+        for(j=0; j<=n-1; j++)
+        {
+            a->ptr.pp_double[i][j] = a->ptr.pp_double[i][j]+s*v->ptr.p_double[j];
+        }
+    }
+}
+
+
+/*************************************************************************
+This subroutine solves linear system op(A)*x=b where:
+* A is NxN upper/lower triangular/unitriangular matrix
+* X and B are Nx1 vectors
+* "op" may be identity transformation or transposition
+
+Solution replaces X.
+
+IMPORTANT: * no overflow/underflow/denegeracy tests is performed.
+           * no integrity checks for operand sizes, out-of-bounds accesses
+             and so on is performed
+
+INPUT PARAMETERS
+    N   -   matrix size, N>=0
+    A       -   matrix, actial matrix is stored in A[IA:IA+N-1,JA:JA+N-1]
+    IA      -   submatrix offset
+    JA      -   submatrix offset
+    IsUpper -   whether matrix is upper triangular
+    IsUnit  -   whether matrix is unitriangular
+    OpType  -   transformation type:
+                * 0 - no transformation
+                * 1 - transposition
+    X       -   right part, actual vector is stored in X[IX:IX+N-1]
+    IX      -   offset
+    
+OUTPUT PARAMETERS
+    X       -   solution replaces elements X[IX:IX+N-1]
+
+  -- ALGLIB routine --
+     (c) 07.09.2021 Bochkanov Sergey
+*************************************************************************/
+void rtrsvx(ae_int_t n,
+     /* Real    */ ae_matrix* a,
+     ae_int_t ia,
+     ae_int_t ja,
+     ae_bool isupper,
+     ae_bool isunit,
+     ae_int_t optype,
+     /* Real    */ ae_vector* x,
+     ae_int_t ix,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t j;
+    double v;
+
+
+    if( n<=0 )
+    {
+        return;
+    }
+    if( optype==0&&isupper )
+    {
+        for(i=n-1; i>=0; i--)
+        {
+            v = x->ptr.p_double[ix+i];
+            for(j=i+1; j<=n-1; j++)
+            {
+                v = v-a->ptr.pp_double[ia+i][ja+j]*x->ptr.p_double[ix+j];
+            }
+            if( !isunit )
+            {
+                v = v/a->ptr.pp_double[ia+i][ja+i];
+            }
+            x->ptr.p_double[ix+i] = v;
+        }
+        return;
+    }
+    if( optype==0&&!isupper )
+    {
+        for(i=0; i<=n-1; i++)
+        {
+            v = x->ptr.p_double[ix+i];
+            for(j=0; j<=i-1; j++)
+            {
+                v = v-a->ptr.pp_double[ia+i][ja+j]*x->ptr.p_double[ix+j];
+            }
+            if( !isunit )
+            {
+                v = v/a->ptr.pp_double[ia+i][ja+i];
+            }
+            x->ptr.p_double[ix+i] = v;
+        }
+        return;
+    }
+    if( optype==1&&isupper )
+    {
+        for(i=0; i<=n-1; i++)
+        {
+            v = x->ptr.p_double[ix+i];
+            if( !isunit )
+            {
+                v = v/a->ptr.pp_double[ia+i][ja+i];
+            }
+            x->ptr.p_double[ix+i] = v;
+            if( v==0 )
+            {
+                continue;
+            }
+            for(j=i+1; j<=n-1; j++)
+            {
+                x->ptr.p_double[ix+j] = x->ptr.p_double[ix+j]-v*a->ptr.pp_double[ia+i][ja+j];
+            }
+        }
+        return;
+    }
+    if( optype==1&&!isupper )
+    {
+        for(i=n-1; i>=0; i--)
+        {
+            v = x->ptr.p_double[ix+i];
+            if( !isunit )
+            {
+                v = v/a->ptr.pp_double[ia+i][ja+i];
+            }
+            x->ptr.p_double[ix+i] = v;
+            if( v==0 )
+            {
+                continue;
+            }
+            for(j=0; j<=i-1; j++)
+            {
+                x->ptr.p_double[ix+j] = x->ptr.p_double[ix+j]-v*a->ptr.pp_double[ia+i][ja+j];
+            }
+        }
+        return;
+    }
+    ae_assert(ae_false, "rTRSVX: unexpected operation type", _state);
+}
+
+/*************************************************************************
+Fast rGEMM kernel with AVX2/FMA support
+
+  -- ALGLIB routine --
+     19.09.2021
+     Bochkanov Sergey
+*************************************************************************/
+ae_bool ablasf_rgemm32basecase(
+     ae_int_t m,
+     ae_int_t n,
+     ae_int_t k,
+     double alpha,
+     /* Real    */ ae_matrix* _a,
+     ae_int_t ia,
+     ae_int_t ja,
+     ae_int_t optypea,
+     /* Real    */ ae_matrix* _b,
+     ae_int_t ib,
+     ae_int_t jb,
+     ae_int_t optypeb,
+     double beta,
+     /* Real    */ ae_matrix* _c,
+     ae_int_t ic,
+     ae_int_t jc,
+     ae_state *_state)
+{
+#if !defined(_ALGLIB_HAS_AVX2_INTRINSICS)
+    return ae_false;
+#else
+    const ae_int_t block_size = _ABLASF_BLOCK_SIZE;
+    const ae_int_t micro_size = _ABLASF_MICRO_SIZE;
+    ae_int_t out0, out1;
+    double *c;
+    ae_int_t stride_c;
+    ae_int_t cpu_id = ae_cpuid();
+    ae_int_t (*ablasf_packblk)(const double*, ae_int_t, ae_int_t, ae_int_t, ae_int_t, double*, ae_int_t, ae_int_t) = (k==32 && block_size==32) ? ablasf_packblkh32_avx2 : ablasf_packblkh_avx2;
+    void     (*ablasf_dotblk)(const double *, const double *, ae_int_t, ae_int_t, ae_int_t, double *, ae_int_t)    = ablasf_dotblkh_avx2;
+    void     (*ablasf_daxpby)(ae_int_t, double, const double *, double, double*) = ablasf_daxpby_avx2;
+
+    /*
+     * Determine CPU and kernel support
+     */
+    if( m>block_size || n>block_size || k>block_size || m==0 || n==0 || !(cpu_id&CPU_AVX2) )
+        return ae_false;
+#if defined(_ALGLIB_HAS_FMA_INTRINSICS)
+    if( cpu_id&CPU_FMA )
+        ablasf_dotblk  = ablasf_dotblkh_fma;
+#endif
+    
+    /*
+     * Prepare C
+     */
+    c = _c->ptr.pp_double[ic]+jc;
+    stride_c = _c->stride;
+    
+    /*
+     * Do we have alpha*A*B ?
+     */
+    if( alpha!=0 && k>0 )
+    {
+        /*
+         * Prepare structures
+         */
+        ae_int_t base0, base1, offs0;
+        double *a = _a->ptr.pp_double[ia]+ja;
+        double *b = _b->ptr.pp_double[ib]+jb;
+        ae_int_t stride_a = _a->stride;
+        ae_int_t stride_b = _b->stride;
+        double      _blka[_ABLASF_BLOCK_SIZE*_ABLASF_MICRO_SIZE+_ALGLIB_SIMD_ALIGNMENT_DOUBLES];
+        double _blkb_long[_ABLASF_BLOCK_SIZE*_ABLASF_BLOCK_SIZE+_ALGLIB_SIMD_ALIGNMENT_DOUBLES];
+        double      _blkc[_ABLASF_MICRO_SIZE*_ABLASF_BLOCK_SIZE+_ALGLIB_SIMD_ALIGNMENT_DOUBLES];
+        double *blka          = (double*)ae_align(_blka,     _ALGLIB_SIMD_ALIGNMENT_BYTES);
+        double *storageb_long = (double*)ae_align(_blkb_long,_ALGLIB_SIMD_ALIGNMENT_BYTES);
+        double *blkc          = (double*)ae_align(_blkc,     _ALGLIB_SIMD_ALIGNMENT_BYTES);
+        
+        /*
+         * Pack transform(B) into precomputed block form
+         */
+        for(base1=0; base1<n; base1+=micro_size)
+        {
+            const ae_int_t lim1 = n-base1<micro_size ? n-base1 : micro_size;
+            double *curb = storageb_long+base1*block_size;
+            ablasf_packblk(
+                b + (optypeb==0 ? base1 : base1*stride_b), stride_b, optypeb==0 ? 1 : 0, k, lim1,
+                curb, block_size, micro_size);
+        }
+        
+        /*
+         * Output
+         */
+        for(base0=0; base0<m; base0+=micro_size)
+        {
+            /*
+             * Load block row of transform(A)
+             */
+            const ae_int_t lim0    = m-base0<micro_size ? m-base0 : micro_size;
+            const ae_int_t round_k = ablasf_packblk(
+                a + (optypea==0 ? base0*stride_a : base0), stride_a, optypea, k, lim0,
+                blka, block_size, micro_size);
+                
+            /*
+             * Compute block(A)'*entire(B)
+             */
+            for(base1=0; base1<n; base1+=micro_size)
+                ablasf_dotblk(blka, storageb_long+base1*block_size, round_k, block_size, micro_size, blkc+base1, block_size);
+
+            /*
+             * Output block row of block(A)'*entire(B)
+             */
+            for(offs0=0; offs0<lim0; offs0++)
+                ablasf_daxpby(n, alpha, blkc+offs0*block_size, beta, c+(base0+offs0)*stride_c);
+        }
+    }
+    else
+    {
+        /*
+         * No A*B, just beta*C (degenerate case, not optimized)
+         */
+        if( beta==0 )
+        {
+            for(out0=0; out0<m; out0++)
+                for(out1=0; out1<n; out1++)
+                    c[out0*stride_c+out1] = 0.0;
+        }
+        else if( beta!=1 )
+        {
+            for(out0=0; out0<m; out0++)
+                for(out1=0; out1<n; out1++)
+                    c[out0*stride_c+out1] *= beta;
+        }
+    }
+    return ae_true;
+#endif
+}
+
+
+/*************************************************************************
+Returns recommended width of the SIMD-friendly buffer
+*************************************************************************/
+ae_int_t spchol_spsymmgetmaxsimd(ae_state *_state)
+{
+#if AE_CPU==AE_INTEL
+    return 4;
+#else
+    return 1;
+#endif
+}
+
+/*************************************************************************
+Solving linear system: propagating computed supernode.
+
+Propagates computed supernode to the rest of the RHS  using  SIMD-friendly
+RHS storage format.
+
+INPUT PARAMETERS:
+
+OUTPUT PARAMETERS:
+
+  -- ALGLIB routine --
+     08.09.2021
+     Bochkanov Sergey
+*************************************************************************/
+void spchol_propagatefwd(/* Real    */ ae_vector* x,
+     ae_int_t cols0,
+     ae_int_t blocksize,
+     /* Integer */ ae_vector* superrowidx,
+     ae_int_t rbase,
+     ae_int_t offdiagsize,
+     /* Real    */ ae_vector* rowstorage,
+     ae_int_t offss,
+     ae_int_t sstride,
+     /* Real    */ ae_vector* simdbuf,
+     ae_int_t simdwidth,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_int_t j;
+    ae_int_t k;
+    ae_int_t baseoffs;
+    double v;
+    
+    /*
+     * Try SIMD kernels
+     */
+#if defined(_ALGLIB_HAS_FMA_INTRINSICS)
+    if( sstride==4 || (blocksize==2 && sstride==2) )
+        if( ae_cpuid()&CPU_FMA )
+        {
+            spchol_propagatefwd_fma(x, cols0, blocksize, superrowidx, rbase, offdiagsize, rowstorage, offss, sstride, simdbuf, simdwidth, _state);
+            return;
+        }
+#endif
+
+    /*
+     * Propagate rank-1 node (can not be accelerated with SIMD)
+     */
+    if( blocksize==1 && sstride==1 )
+    {
+        /*
+         * blocksize is 1, stride is 1
+         */
+        double vx = x->ptr.p_double[cols0];
+        double *p_mat_row  = rowstorage->ptr.p_double+offss+1*1;
+        double *p_simd_buf = simdbuf->ptr.p_double;
+        ae_int_t *p_rowidx = superrowidx->ptr.p_int+rbase;
+        if( simdwidth==4 )
+        {
+            for(k=0; k<offdiagsize; k++)
+                p_simd_buf[p_rowidx[k]*4] -= p_mat_row[k]*vx;
+        }
+        else
+        {
+            for(k=0; k<offdiagsize; k++)
+                p_simd_buf[p_rowidx[k]*simdwidth] -= p_mat_row[k]*vx;
+        }
+        return;
+    }
+
+    /*
+     * Generic C code for generic propagate
+     */
+    for(k=0; k<=offdiagsize-1; k++)
+    {
+        i = superrowidx->ptr.p_int[rbase+k];
+        baseoffs = offss+(k+blocksize)*sstride;
+        v = simdbuf->ptr.p_double[i*simdwidth];
+        for(j=0; j<=blocksize-1; j++)
+        {
+            v = v-rowstorage->ptr.p_double[baseoffs+j]*x->ptr.p_double[cols0+j];
+        }
+        simdbuf->ptr.p_double[i*simdwidth] = v;
+    }
+}
+
+
+/*************************************************************************
+Fast kernels for small supernodal updates: special 4x4x4x4 function.
+
+! See comments on UpdateSupernode() for information  on generic supernodal
+! updates, including notation used below.
+
+The generic update has following form:
+
+    S := S - scatter(U*D*Uc')
+
+This specialized function performs AxBxCx4 update, i.e.:
+* S is a tHeight*A matrix with row stride equal to 4 (usually it means that
+  it has 3 or 4 columns)
+* U is a uHeight*B matrix
+* Uc' is a B*C matrix, with C<=A
+* scatter() scatters rows and columns of U*Uc'
+  
+Return value:
+* True if update was applied
+* False if kernel refused to perform an update (quick exit for unsupported
+  combinations of input sizes)
+
+  -- ALGLIB routine --
+     20.09.2020
+     Bochkanov Sergey
+*************************************************************************/
+ae_bool spchol_updatekernelabc4(/* Real    */ ae_vector* rowstorage,
+     ae_int_t offss,
+     ae_int_t twidth,
+     ae_int_t offsu,
+     ae_int_t uheight,
+     ae_int_t urank,
+     ae_int_t urowstride,
+     ae_int_t uwidth,
+     /* Real    */ ae_vector* diagd,
+     ae_int_t offsd,
+     /* Integer */ ae_vector* raw2smap,
+     /* Integer */ ae_vector* superrowidx,
+     ae_int_t urbase,
+     ae_state *_state)
+{
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    _ALGLIB_KERNEL_RETURN_AVX2_FMA(spchol_updatekernelabc4,(rowstorage->ptr.p_double, offss, twidth, offsu, uheight, urank, urowstride, uwidth, diagd->ptr.p_double, offsd, raw2smap->ptr.p_int, superrowidx->ptr.p_int, urbase, _state))
+
+    /*
+     * Generic code
+     */
+    ae_int_t k;
+    ae_int_t targetrow;
+    ae_int_t targetcol;
+    ae_int_t offsk;
+    double d0;
+    double d1;
+    double d2;
+    double d3;
+    double u00;
+    double u01;
+    double u02;
+    double u03;
+    double u10;
+    double u11;
+    double u12;
+    double u13;
+    double u20;
+    double u21;
+    double u22;
+    double u23;
+    double u30;
+    double u31;
+    double u32;
+    double u33;
+    double uk0;
+    double uk1;
+    double uk2;
+    double uk3;
+    ae_int_t srccol0;
+    ae_int_t srccol1;
+    ae_int_t srccol2;
+    ae_int_t srccol3;
+    ae_bool result;
+
+
+    
+    /*
+     * Filter out unsupported combinations (ones that are too sparse for the non-SIMD code)
+     */
+    result = ae_false;
+    if( twidth<3||twidth>4 )
+    {
+        return result;
+    }
+    if( uwidth<1||uwidth>4 )
+    {
+        return result;
+    }
+    if( urank>4 )
+    {
+        return result;
+    }
+    
+    /*
+     * Determine source columns for target columns, -1 if target column
+     * is not updated.
+     */
+    srccol0 = -1;
+    srccol1 = -1;
+    srccol2 = -1;
+    srccol3 = -1;
+    for(k=0; k<=uwidth-1; k++)
+    {
+        targetcol = raw2smap->ptr.p_int[superrowidx->ptr.p_int[urbase+k]];
+        if( targetcol==0 )
+        {
+            srccol0 = k;
+        }
+        if( targetcol==1 )
+        {
+            srccol1 = k;
+        }
+        if( targetcol==2 )
+        {
+            srccol2 = k;
+        }
+        if( targetcol==3 )
+        {
+            srccol3 = k;
+        }
+    }
+    
+    /*
+     * Load update matrix into aligned/rearranged 4x4 storage
+     */
+    d0 = (double)(0);
+    d1 = (double)(0);
+    d2 = (double)(0);
+    d3 = (double)(0);
+    u00 = (double)(0);
+    u01 = (double)(0);
+    u02 = (double)(0);
+    u03 = (double)(0);
+    u10 = (double)(0);
+    u11 = (double)(0);
+    u12 = (double)(0);
+    u13 = (double)(0);
+    u20 = (double)(0);
+    u21 = (double)(0);
+    u22 = (double)(0);
+    u23 = (double)(0);
+    u30 = (double)(0);
+    u31 = (double)(0);
+    u32 = (double)(0);
+    u33 = (double)(0);
+    if( urank>=1 )
+    {
+        d0 = diagd->ptr.p_double[offsd+0];
+    }
+    if( urank>=2 )
+    {
+        d1 = diagd->ptr.p_double[offsd+1];
+    }
+    if( urank>=3 )
+    {
+        d2 = diagd->ptr.p_double[offsd+2];
+    }
+    if( urank>=4 )
+    {
+        d3 = diagd->ptr.p_double[offsd+3];
+    }
+    if( srccol0>=0 )
+    {
+        if( urank>=1 )
+        {
+            u00 = d0*rowstorage->ptr.p_double[offsu+srccol0*urowstride+0];
+        }
+        if( urank>=2 )
+        {
+            u01 = d1*rowstorage->ptr.p_double[offsu+srccol0*urowstride+1];
+        }
+        if( urank>=3 )
+        {
+            u02 = d2*rowstorage->ptr.p_double[offsu+srccol0*urowstride+2];
+        }
+        if( urank>=4 )
+        {
+            u03 = d3*rowstorage->ptr.p_double[offsu+srccol0*urowstride+3];
+        }
+    }
+    if( srccol1>=0 )
+    {
+        if( urank>=1 )
+        {
+            u10 = d0*rowstorage->ptr.p_double[offsu+srccol1*urowstride+0];
+        }
+        if( urank>=2 )
+        {
+            u11 = d1*rowstorage->ptr.p_double[offsu+srccol1*urowstride+1];
+        }
+        if( urank>=3 )
+        {
+            u12 = d2*rowstorage->ptr.p_double[offsu+srccol1*urowstride+2];
+        }
+        if( urank>=4 )
+        {
+            u13 = d3*rowstorage->ptr.p_double[offsu+srccol1*urowstride+3];
+        }
+    }
+    if( srccol2>=0 )
+    {
+        if( urank>=1 )
+        {
+            u20 = d0*rowstorage->ptr.p_double[offsu+srccol2*urowstride+0];
+        }
+        if( urank>=2 )
+        {
+            u21 = d1*rowstorage->ptr.p_double[offsu+srccol2*urowstride+1];
+        }
+        if( urank>=3 )
+        {
+            u22 = d2*rowstorage->ptr.p_double[offsu+srccol2*urowstride+2];
+        }
+        if( urank>=4 )
+        {
+            u23 = d3*rowstorage->ptr.p_double[offsu+srccol2*urowstride+3];
+        }
+    }
+    if( srccol3>=0 )
+    {
+        if( urank>=1 )
+        {
+            u30 = d0*rowstorage->ptr.p_double[offsu+srccol3*urowstride+0];
+        }
+        if( urank>=2 )
+        {
+            u31 = d1*rowstorage->ptr.p_double[offsu+srccol3*urowstride+1];
+        }
+        if( urank>=3 )
+        {
+            u32 = d2*rowstorage->ptr.p_double[offsu+srccol3*urowstride+2];
+        }
+        if( urank>=4 )
+        {
+            u33 = d3*rowstorage->ptr.p_double[offsu+srccol3*urowstride+3];
+        }
+    }
+    
+    /*
+     * Run update
+     */
+    if( urank==1 )
+    {
+        for(k=0; k<=uheight-1; k++)
+        {
+            targetrow = offss+raw2smap->ptr.p_int[superrowidx->ptr.p_int[urbase+k]]*4;
+            offsk = offsu+k*urowstride;
+            uk0 = rowstorage->ptr.p_double[offsk+0];
+            rowstorage->ptr.p_double[targetrow+0] = rowstorage->ptr.p_double[targetrow+0]-u00*uk0;
+            rowstorage->ptr.p_double[targetrow+1] = rowstorage->ptr.p_double[targetrow+1]-u10*uk0;
+            rowstorage->ptr.p_double[targetrow+2] = rowstorage->ptr.p_double[targetrow+2]-u20*uk0;
+            rowstorage->ptr.p_double[targetrow+3] = rowstorage->ptr.p_double[targetrow+3]-u30*uk0;
+        }
+    }
+    if( urank==2 )
+    {
+        for(k=0; k<=uheight-1; k++)
+        {
+            targetrow = offss+raw2smap->ptr.p_int[superrowidx->ptr.p_int[urbase+k]]*4;
+            offsk = offsu+k*urowstride;
+            uk0 = rowstorage->ptr.p_double[offsk+0];
+            uk1 = rowstorage->ptr.p_double[offsk+1];
+            rowstorage->ptr.p_double[targetrow+0] = rowstorage->ptr.p_double[targetrow+0]-u00*uk0-u01*uk1;
+            rowstorage->ptr.p_double[targetrow+1] = rowstorage->ptr.p_double[targetrow+1]-u10*uk0-u11*uk1;
+            rowstorage->ptr.p_double[targetrow+2] = rowstorage->ptr.p_double[targetrow+2]-u20*uk0-u21*uk1;
+            rowstorage->ptr.p_double[targetrow+3] = rowstorage->ptr.p_double[targetrow+3]-u30*uk0-u31*uk1;
+        }
+    }
+    if( urank==3 )
+    {
+        for(k=0; k<=uheight-1; k++)
+        {
+            targetrow = offss+raw2smap->ptr.p_int[superrowidx->ptr.p_int[urbase+k]]*4;
+            offsk = offsu+k*urowstride;
+            uk0 = rowstorage->ptr.p_double[offsk+0];
+            uk1 = rowstorage->ptr.p_double[offsk+1];
+            uk2 = rowstorage->ptr.p_double[offsk+2];
+            rowstorage->ptr.p_double[targetrow+0] = rowstorage->ptr.p_double[targetrow+0]-u00*uk0-u01*uk1-u02*uk2;
+            rowstorage->ptr.p_double[targetrow+1] = rowstorage->ptr.p_double[targetrow+1]-u10*uk0-u11*uk1-u12*uk2;
+            rowstorage->ptr.p_double[targetrow+2] = rowstorage->ptr.p_double[targetrow+2]-u20*uk0-u21*uk1-u22*uk2;
+            rowstorage->ptr.p_double[targetrow+3] = rowstorage->ptr.p_double[targetrow+3]-u30*uk0-u31*uk1-u32*uk2;
+        }
+    }
+    if( urank==4 )
+    {
+        for(k=0; k<=uheight-1; k++)
+        {
+            targetrow = offss+raw2smap->ptr.p_int[superrowidx->ptr.p_int[urbase+k]]*4;
+            offsk = offsu+k*urowstride;
+            uk0 = rowstorage->ptr.p_double[offsk+0];
+            uk1 = rowstorage->ptr.p_double[offsk+1];
+            uk2 = rowstorage->ptr.p_double[offsk+2];
+            uk3 = rowstorage->ptr.p_double[offsk+3];
+            rowstorage->ptr.p_double[targetrow+0] = rowstorage->ptr.p_double[targetrow+0]-u00*uk0-u01*uk1-u02*uk2-u03*uk3;
+            rowstorage->ptr.p_double[targetrow+1] = rowstorage->ptr.p_double[targetrow+1]-u10*uk0-u11*uk1-u12*uk2-u13*uk3;
+            rowstorage->ptr.p_double[targetrow+2] = rowstorage->ptr.p_double[targetrow+2]-u20*uk0-u21*uk1-u22*uk2-u23*uk3;
+            rowstorage->ptr.p_double[targetrow+3] = rowstorage->ptr.p_double[targetrow+3]-u30*uk0-u31*uk1-u32*uk2-u33*uk3;
+        }
+    }
+    result = ae_true;
+    return result;
+}
+
+
+/*************************************************************************
+Fast kernels for small supernodal updates: special 4x4x4x4 function.
+
+! See comments on UpdateSupernode() for information  on generic supernodal
+! updates, including notation used below.
+
+The generic update has following form:
+
+    S := S - scatter(U*D*Uc')
+
+This specialized function performs 4x4x4x4 update, i.e.:
+* S is a tHeight*4 matrix
+* U is a uHeight*4 matrix
+* Uc' is a 4*4 matrix
+* scatter() scatters rows of U*Uc', but does not scatter columns (they are
+  densely packed).
+  
+Return value:
+* True if update was applied
+* False if kernel refused to perform an update.
+
+  -- ALGLIB routine --
+     20.09.2020
+     Bochkanov Sergey
+*************************************************************************/
+ae_bool spchol_updatekernel4444(/* Real    */ ae_vector* rowstorage,
+     ae_int_t offss,
+     ae_int_t sheight,
+     ae_int_t offsu,
+     ae_int_t uheight,
+     /* Real    */ ae_vector* diagd,
+     ae_int_t offsd,
+     /* Integer */ ae_vector* raw2smap,
+     /* Integer */ ae_vector* superrowidx,
+     ae_int_t urbase,
+     ae_state *_state)
+{
+    ae_int_t k;
+    ae_int_t targetrow;
+    ae_int_t offsk;
+    double d0;
+    double d1;
+    double d2;
+    double d3;
+    double u00;
+    double u01;
+    double u02;
+    double u03;
+    double u10;
+    double u11;
+    double u12;
+    double u13;
+    double u20;
+    double u21;
+    double u22;
+    double u23;
+    double u30;
+    double u31;
+    double u32;
+    double u33;
+    double uk0;
+    double uk1;
+    double uk2;
+    double uk3;
+    ae_bool result;
+
+
+    /*
+     * Try fast kernels.
+     * On success this macro will return, on failure to find kernel it will pass execution to the generic C implementation
+     */
+    _ALGLIB_KERNEL_RETURN_AVX2_FMA(spchol_updatekernel4444,(rowstorage->ptr.p_double, offss, sheight, offsu, uheight, diagd->ptr.p_double, offsd, raw2smap->ptr.p_int, superrowidx->ptr.p_int, urbase, _state))
+
+    /*
+     * Generic C fallback code
+     */
+    d0 = diagd->ptr.p_double[offsd+0];
+    d1 = diagd->ptr.p_double[offsd+1];
+    d2 = diagd->ptr.p_double[offsd+2];
+    d3 = diagd->ptr.p_double[offsd+3];
+    u00 = d0*rowstorage->ptr.p_double[offsu+0*4+0];
+    u01 = d1*rowstorage->ptr.p_double[offsu+0*4+1];
+    u02 = d2*rowstorage->ptr.p_double[offsu+0*4+2];
+    u03 = d3*rowstorage->ptr.p_double[offsu+0*4+3];
+    u10 = d0*rowstorage->ptr.p_double[offsu+1*4+0];
+    u11 = d1*rowstorage->ptr.p_double[offsu+1*4+1];
+    u12 = d2*rowstorage->ptr.p_double[offsu+1*4+2];
+    u13 = d3*rowstorage->ptr.p_double[offsu+1*4+3];
+    u20 = d0*rowstorage->ptr.p_double[offsu+2*4+0];
+    u21 = d1*rowstorage->ptr.p_double[offsu+2*4+1];
+    u22 = d2*rowstorage->ptr.p_double[offsu+2*4+2];
+    u23 = d3*rowstorage->ptr.p_double[offsu+2*4+3];
+    u30 = d0*rowstorage->ptr.p_double[offsu+3*4+0];
+    u31 = d1*rowstorage->ptr.p_double[offsu+3*4+1];
+    u32 = d2*rowstorage->ptr.p_double[offsu+3*4+2];
+    u33 = d3*rowstorage->ptr.p_double[offsu+3*4+3];
+    if( sheight==uheight )
+    {
+        /*
+         * No row scatter, the most efficient code
+         */
+        for(k=0; k<=uheight-1; k++)
+        {
+            targetrow = offss+k*4;
+            offsk = offsu+k*4;
+            uk0 = rowstorage->ptr.p_double[offsk+0];
+            uk1 = rowstorage->ptr.p_double[offsk+1];
+            uk2 = rowstorage->ptr.p_double[offsk+2];
+            uk3 = rowstorage->ptr.p_double[offsk+3];
+            rowstorage->ptr.p_double[targetrow+0] = rowstorage->ptr.p_double[targetrow+0]-u00*uk0-u01*uk1-u02*uk2-u03*uk3;
+            rowstorage->ptr.p_double[targetrow+1] = rowstorage->ptr.p_double[targetrow+1]-u10*uk0-u11*uk1-u12*uk2-u13*uk3;
+            rowstorage->ptr.p_double[targetrow+2] = rowstorage->ptr.p_double[targetrow+2]-u20*uk0-u21*uk1-u22*uk2-u23*uk3;
+            rowstorage->ptr.p_double[targetrow+3] = rowstorage->ptr.p_double[targetrow+3]-u30*uk0-u31*uk1-u32*uk2-u33*uk3;
+        }
+    }
+    else
+    {
+        /*
+         * Row scatter is performed, less efficient code using double mapping to determine target row index
+         */
+        for(k=0; k<=uheight-1; k++)
+        {
+            targetrow = offss+raw2smap->ptr.p_int[superrowidx->ptr.p_int[urbase+k]]*4;
+            offsk = offsu+k*4;
+            uk0 = rowstorage->ptr.p_double[offsk+0];
+            uk1 = rowstorage->ptr.p_double[offsk+1];
+            uk2 = rowstorage->ptr.p_double[offsk+2];
+            uk3 = rowstorage->ptr.p_double[offsk+3];
+            rowstorage->ptr.p_double[targetrow+0] = rowstorage->ptr.p_double[targetrow+0]-u00*uk0-u01*uk1-u02*uk2-u03*uk3;
+            rowstorage->ptr.p_double[targetrow+1] = rowstorage->ptr.p_double[targetrow+1]-u10*uk0-u11*uk1-u12*uk2-u13*uk3;
+            rowstorage->ptr.p_double[targetrow+2] = rowstorage->ptr.p_double[targetrow+2]-u20*uk0-u21*uk1-u22*uk2-u23*uk3;
+            rowstorage->ptr.p_double[targetrow+3] = rowstorage->ptr.p_double[targetrow+3]-u30*uk0-u31*uk1-u32*uk2-u33*uk3;
+        }
+    }
+    result = ae_true;
+    return result;
+}
+
+/* ALGLIB_NO_FAST_KERNELS */
+#endif
+
+
 
 }
 

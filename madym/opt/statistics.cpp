@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.13.0 (source code generated 2017-12-29)
+ALGLIB 3.18.0 (source code generated 2021-10-25)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -17,6 +17,9 @@ A copy of the GNU General Public License is available at
 http://www.fsf.org/licensing/licenses
 >>> END OF LICENSE >>>
 *************************************************************************/
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 #include "stdafx.h"
 #include "statistics.h"
 
@@ -41,23 +44,7 @@ namespace alglib
 
 #endif
 
-#if defined(AE_COMPILE_WSR) || !defined(AE_PARTIAL_BUILD)
-
-#endif
-
-#if defined(AE_COMPILE_STEST) || !defined(AE_PARTIAL_BUILD)
-
-#endif
-
 #if defined(AE_COMPILE_CORRELATIONTESTS) || !defined(AE_PARTIAL_BUILD)
-
-#endif
-
-#if defined(AE_COMPILE_STUDENTTTESTS) || !defined(AE_PARTIAL_BUILD)
-
-#endif
-
-#if defined(AE_COMPILE_MANNWHITNEYU) || !defined(AE_PARTIAL_BUILD)
 
 #endif
 
@@ -66,6 +53,22 @@ namespace alglib
 #endif
 
 #if defined(AE_COMPILE_VARIANCETESTS) || !defined(AE_PARTIAL_BUILD)
+
+#endif
+
+#if defined(AE_COMPILE_WSR) || !defined(AE_PARTIAL_BUILD)
+
+#endif
+
+#if defined(AE_COMPILE_MANNWHITNEYU) || !defined(AE_PARTIAL_BUILD)
+
+#endif
+
+#if defined(AE_COMPILE_STEST) || !defined(AE_PARTIAL_BUILD)
+
+#endif
+
+#if defined(AE_COMPILE_STUDENTTTESTS) || !defined(AE_PARTIAL_BUILD)
 
 #endif
 
@@ -90,7 +93,7 @@ NOTE: variance is calculated by dividing sum of squares by N-1, not N.
   -- ALGLIB --
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
-void samplemoments(const real_1d_array &x, const ae_int_t n, double &mean, double &variance, double &skewness, double &kurtosis)
+void samplemoments(const real_1d_array &x, const ae_int_t n, double &mean, double &variance, double &skewness, double &kurtosis, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -105,6 +108,8 @@ void samplemoments(const real_1d_array &x, const ae_int_t n, double &mean, doubl
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::samplemoments(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &mean, &variance, &skewness, &kurtosis, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -131,7 +136,7 @@ NOTE: variance is calculated by dividing sum of squares by N-1, not N.
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void samplemoments(const real_1d_array &x, double &mean, double &variance, double &skewness, double &kurtosis)
+void samplemoments(const real_1d_array &x, double &mean, double &variance, double &skewness, double &kurtosis, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -142,6 +147,8 @@ void samplemoments(const real_1d_array &x, double &mean, double &variance, doubl
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::samplemoments(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &mean, &variance, &skewness, &kurtosis, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -167,7 +174,7 @@ and stored at 'Mean' variable.
   -- ALGLIB --
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
-double samplemean(const real_1d_array &x, const ae_int_t n)
+double samplemean(const real_1d_array &x, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -182,6 +189,8 @@ double samplemean(const real_1d_array &x, const ae_int_t n)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::samplemean(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return *(reinterpret_cast<double*>(&result));
@@ -206,7 +215,7 @@ and stored at 'Mean' variable.
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-double samplemean(const real_1d_array &x)
+double samplemean(const real_1d_array &x, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -217,6 +226,8 @@ double samplemean(const real_1d_array &x)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::samplemean(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -242,7 +253,7 @@ and stored at 'Variance' variable.
   -- ALGLIB --
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
-double samplevariance(const real_1d_array &x, const ae_int_t n)
+double samplevariance(const real_1d_array &x, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -257,6 +268,8 @@ double samplevariance(const real_1d_array &x, const ae_int_t n)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::samplevariance(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return *(reinterpret_cast<double*>(&result));
@@ -281,7 +294,7 @@ and stored at 'Variance' variable.
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-double samplevariance(const real_1d_array &x)
+double samplevariance(const real_1d_array &x, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -292,6 +305,8 @@ double samplevariance(const real_1d_array &x)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::samplevariance(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -317,7 +332,7 @@ and stored at 'Skewness' variable.
   -- ALGLIB --
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
-double sampleskewness(const real_1d_array &x, const ae_int_t n)
+double sampleskewness(const real_1d_array &x, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -332,6 +347,8 @@ double sampleskewness(const real_1d_array &x, const ae_int_t n)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::sampleskewness(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return *(reinterpret_cast<double*>(&result));
@@ -356,7 +373,7 @@ and stored at 'Skewness' variable.
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-double sampleskewness(const real_1d_array &x)
+double sampleskewness(const real_1d_array &x, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -367,6 +384,8 @@ double sampleskewness(const real_1d_array &x)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::sampleskewness(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -392,7 +411,7 @@ and stored at 'Kurtosis' variable.
   -- ALGLIB --
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
-double samplekurtosis(const real_1d_array &x, const ae_int_t n)
+double samplekurtosis(const real_1d_array &x, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -407,6 +426,8 @@ double samplekurtosis(const real_1d_array &x, const ae_int_t n)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::samplekurtosis(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return *(reinterpret_cast<double*>(&result));
@@ -431,7 +452,7 @@ and stored at 'Kurtosis' variable.
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-double samplekurtosis(const real_1d_array &x)
+double samplekurtosis(const real_1d_array &x, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -442,6 +463,8 @@ double samplekurtosis(const real_1d_array &x)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::samplekurtosis(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -464,7 +487,7 @@ Output parameters:
   -- ALGLIB --
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
-void sampleadev(const real_1d_array &x, const ae_int_t n, double &adev)
+void sampleadev(const real_1d_array &x, const ae_int_t n, double &adev, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -479,6 +502,8 @@ void sampleadev(const real_1d_array &x, const ae_int_t n, double &adev)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::sampleadev(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &adev, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -500,7 +525,7 @@ Output parameters:
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void sampleadev(const real_1d_array &x, double &adev)
+void sampleadev(const real_1d_array &x, double &adev, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -511,6 +536,8 @@ void sampleadev(const real_1d_array &x, double &adev)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::sampleadev(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &adev, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -533,7 +560,7 @@ Output parameters:
   -- ALGLIB --
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
-void samplemedian(const real_1d_array &x, const ae_int_t n, double &median)
+void samplemedian(const real_1d_array &x, const ae_int_t n, double &median, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -548,6 +575,8 @@ void samplemedian(const real_1d_array &x, const ae_int_t n, double &median)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::samplemedian(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &median, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -569,7 +598,7 @@ Output parameters:
      Copyright 06.09.2006 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void samplemedian(const real_1d_array &x, double &median)
+void samplemedian(const real_1d_array &x, double &median, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -580,6 +609,8 @@ void samplemedian(const real_1d_array &x, double &median)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::samplemedian(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &median, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -603,7 +634,7 @@ Output parameters:
   -- ALGLIB --
      Copyright 01.03.2008 by Bochkanov Sergey
 *************************************************************************/
-void samplepercentile(const real_1d_array &x, const ae_int_t n, const double p, double &v)
+void samplepercentile(const real_1d_array &x, const ae_int_t n, const double p, double &v, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -618,6 +649,8 @@ void samplepercentile(const real_1d_array &x, const ae_int_t n, const double p, 
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::samplepercentile(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, p, &v, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -640,7 +673,7 @@ Output parameters:
      Copyright 01.03.2008 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void samplepercentile(const real_1d_array &x, const double p, double &v)
+void samplepercentile(const real_1d_array &x, const double p, double &v, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -651,6 +684,8 @@ void samplepercentile(const real_1d_array &x, const double p, double &v)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::samplepercentile(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, p, &v, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -674,7 +709,7 @@ Result:
   -- ALGLIB --
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
-double cov2(const real_1d_array &x, const real_1d_array &y, const ae_int_t n)
+double cov2(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -689,6 +724,8 @@ double cov2(const real_1d_array &x, const real_1d_array &y, const ae_int_t n)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::cov2(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), const_cast<alglib_impl::ae_vector*>(y.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return *(reinterpret_cast<double*>(&result));
@@ -711,7 +748,7 @@ Result:
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-double cov2(const real_1d_array &x, const real_1d_array &y)
+double cov2(const real_1d_array &x, const real_1d_array &y, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -723,6 +760,8 @@ double cov2(const real_1d_array &x, const real_1d_array &y)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::cov2(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), const_cast<alglib_impl::ae_vector*>(y.c_ptr()), n, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -747,7 +786,7 @@ Result:
   -- ALGLIB --
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
-double pearsoncorr2(const real_1d_array &x, const real_1d_array &y, const ae_int_t n)
+double pearsoncorr2(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -762,6 +801,8 @@ double pearsoncorr2(const real_1d_array &x, const real_1d_array &y, const ae_int
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::pearsoncorr2(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), const_cast<alglib_impl::ae_vector*>(y.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return *(reinterpret_cast<double*>(&result));
@@ -785,7 +826,7 @@ Result:
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-double pearsoncorr2(const real_1d_array &x, const real_1d_array &y)
+double pearsoncorr2(const real_1d_array &x, const real_1d_array &y, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -797,6 +838,8 @@ double pearsoncorr2(const real_1d_array &x, const real_1d_array &y)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::pearsoncorr2(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), const_cast<alglib_impl::ae_vector*>(y.c_ptr()), n, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -821,7 +864,7 @@ Result:
   -- ALGLIB --
      Copyright 09.04.2007 by Bochkanov Sergey
 *************************************************************************/
-double spearmancorr2(const real_1d_array &x, const real_1d_array &y, const ae_int_t n)
+double spearmancorr2(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -836,6 +879,8 @@ double spearmancorr2(const real_1d_array &x, const real_1d_array &y, const ae_in
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::spearmancorr2(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), const_cast<alglib_impl::ae_vector*>(y.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return *(reinterpret_cast<double*>(&result));
@@ -859,7 +904,7 @@ Result:
      Copyright 09.04.2007 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-double spearmancorr2(const real_1d_array &x, const real_1d_array &y)
+double spearmancorr2(const real_1d_array &x, const real_1d_array &y, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -871,6 +916,8 @@ double spearmancorr2(const real_1d_array &x, const real_1d_array &y)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::spearmancorr2(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), const_cast<alglib_impl::ae_vector*>(y.c_ptr()), n, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -881,24 +928,18 @@ double spearmancorr2(const real_1d_array &x, const real_1d_array &y)
 /*************************************************************************
 Covariance matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with covariance matrices smaller than 128*128.
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M], sample matrix:
@@ -917,7 +958,7 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
-void covm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, real_2d_array &c)
+void covm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, real_2d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -932,28 +973,9 @@ void covm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, real_2d_ar
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::covm(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), n, m, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-
-
-void smp_covm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, real_2d_array &c)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_covm(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), n, m, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
 }
@@ -961,24 +983,18 @@ void smp_covm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, real_2
 /*************************************************************************
 Covariance matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with covariance matrices smaller than 128*128.
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M], sample matrix:
@@ -998,7 +1014,7 @@ OUTPUT PARAMETERS:
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void covm(const real_2d_array &x, real_2d_array &c)
+void covm(const real_2d_array &x, real_2d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -1011,6 +1027,8 @@ void covm(const real_2d_array &x, real_2d_array &c)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::covm(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), n, m, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -1018,49 +1036,21 @@ void covm(const real_2d_array &x, real_2d_array &c)
 }
 #endif
 
-
-#if !defined(AE_NO_EXCEPTIONS)
-void smp_covm(const real_2d_array &x, real_2d_array &c)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t n;
-    ae_int_t m;
-
-    n = x.rows();
-    m = x.cols();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_covm(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), n, m, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
-
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-#endif
-
 /*************************************************************************
 Pearson product-moment correlation matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with correlation matrices smaller than 128*128.
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M], sample matrix:
@@ -1079,7 +1069,7 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
-void pearsoncorrm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, real_2d_array &c)
+void pearsoncorrm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, real_2d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -1094,28 +1084,9 @@ void pearsoncorrm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, re
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::pearsoncorrm(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), n, m, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-
-
-void smp_pearsoncorrm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, real_2d_array &c)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_pearsoncorrm(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), n, m, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
 }
@@ -1123,24 +1094,18 @@ void smp_pearsoncorrm(const real_2d_array &x, const ae_int_t n, const ae_int_t m
 /*************************************************************************
 Pearson product-moment correlation matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with correlation matrices smaller than 128*128.
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M], sample matrix:
@@ -1160,7 +1125,7 @@ OUTPUT PARAMETERS:
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void pearsoncorrm(const real_2d_array &x, real_2d_array &c)
+void pearsoncorrm(const real_2d_array &x, real_2d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -1173,29 +1138,9 @@ void pearsoncorrm(const real_2d_array &x, real_2d_array &c)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::pearsoncorrm(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), n, m, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
-
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-#endif
-
-
-#if !defined(AE_NO_EXCEPTIONS)
-void smp_pearsoncorrm(const real_2d_array &x, real_2d_array &c)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t n;
-    ae_int_t m;
-
-    n = x.rows();
-    m = x.cols();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_pearsoncorrm(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), n, m, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -1205,24 +1150,18 @@ void smp_pearsoncorrm(const real_2d_array &x, real_2d_array &c)
 /*************************************************************************
 Spearman's rank correlation matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with correlation matrices smaller than 128*128.
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M], sample matrix:
@@ -1241,7 +1180,7 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
-void spearmancorrm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, real_2d_array &c)
+void spearmancorrm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, real_2d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -1256,28 +1195,9 @@ void spearmancorrm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, r
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::spearmancorrm(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), n, m, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-
-
-void smp_spearmancorrm(const real_2d_array &x, const ae_int_t n, const ae_int_t m, real_2d_array &c)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_spearmancorrm(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), n, m, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
 }
@@ -1285,24 +1205,18 @@ void smp_spearmancorrm(const real_2d_array &x, const ae_int_t n, const ae_int_t 
 /*************************************************************************
 Spearman's rank correlation matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with correlation matrices smaller than 128*128.
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M], sample matrix:
@@ -1322,7 +1236,7 @@ OUTPUT PARAMETERS:
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void spearmancorrm(const real_2d_array &x, real_2d_array &c)
+void spearmancorrm(const real_2d_array &x, real_2d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -1335,29 +1249,9 @@ void spearmancorrm(const real_2d_array &x, real_2d_array &c)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::spearmancorrm(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), n, m, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
-
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-#endif
-
-
-#if !defined(AE_NO_EXCEPTIONS)
-void smp_spearmancorrm(const real_2d_array &x, real_2d_array &c)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t n;
-    ae_int_t m;
-
-    n = x.rows();
-    m = x.cols();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_spearmancorrm(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), n, m, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -1367,24 +1261,18 @@ void smp_spearmancorrm(const real_2d_array &x, real_2d_array &c)
 /*************************************************************************
 Cross-covariance matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with covariance matrices smaller than 128*128.
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M1], sample matrix:
@@ -1409,7 +1297,7 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
-void covm2(const real_2d_array &x, const real_2d_array &y, const ae_int_t n, const ae_int_t m1, const ae_int_t m2, real_2d_array &c)
+void covm2(const real_2d_array &x, const real_2d_array &y, const ae_int_t n, const ae_int_t m1, const ae_int_t m2, real_2d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -1424,28 +1312,9 @@ void covm2(const real_2d_array &x, const real_2d_array &y, const ae_int_t n, con
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::covm2(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), const_cast<alglib_impl::ae_matrix*>(y.c_ptr()), n, m1, m2, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-
-
-void smp_covm2(const real_2d_array &x, const real_2d_array &y, const ae_int_t n, const ae_int_t m1, const ae_int_t m2, real_2d_array &c)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_covm2(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), const_cast<alglib_impl::ae_matrix*>(y.c_ptr()), n, m1, m2, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
 }
@@ -1453,24 +1322,18 @@ void smp_covm2(const real_2d_array &x, const real_2d_array &y, const ae_int_t n,
 /*************************************************************************
 Cross-covariance matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with covariance matrices smaller than 128*128.
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M1], sample matrix:
@@ -1496,7 +1359,7 @@ OUTPUT PARAMETERS:
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void covm2(const real_2d_array &x, const real_2d_array &y, real_2d_array &c)
+void covm2(const real_2d_array &x, const real_2d_array &y, real_2d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -1512,6 +1375,8 @@ void covm2(const real_2d_array &x, const real_2d_array &y, real_2d_array &c)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::covm2(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), const_cast<alglib_impl::ae_matrix*>(y.c_ptr()), n, m1, m2, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -1519,52 +1384,21 @@ void covm2(const real_2d_array &x, const real_2d_array &y, real_2d_array &c)
 }
 #endif
 
-
-#if !defined(AE_NO_EXCEPTIONS)
-void smp_covm2(const real_2d_array &x, const real_2d_array &y, real_2d_array &c)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t n;
-    ae_int_t m1;
-    ae_int_t m2;
-    if( (x.rows()!=y.rows()))
-        _ALGLIB_CPP_EXCEPTION("Error while calling 'covm2': looks like one of arguments has wrong size");
-    n = x.rows();
-    m1 = x.cols();
-    m2 = y.cols();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_covm2(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), const_cast<alglib_impl::ae_matrix*>(y.c_ptr()), n, m1, m2, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
-
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-#endif
-
 /*************************************************************************
 Pearson product-moment cross-correlation matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with correlation matrices smaller than 128*128.
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M1], sample matrix:
@@ -1589,7 +1423,7 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
-void pearsoncorrm2(const real_2d_array &x, const real_2d_array &y, const ae_int_t n, const ae_int_t m1, const ae_int_t m2, real_2d_array &c)
+void pearsoncorrm2(const real_2d_array &x, const real_2d_array &y, const ae_int_t n, const ae_int_t m1, const ae_int_t m2, real_2d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -1604,53 +1438,28 @@ void pearsoncorrm2(const real_2d_array &x, const real_2d_array &y, const ae_int_
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::pearsoncorrm2(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), const_cast<alglib_impl::ae_matrix*>(y.c_ptr()), n, m1, m2, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
 }
 
-
-void smp_pearsoncorrm2(const real_2d_array &x, const real_2d_array &y, const ae_int_t n, const ae_int_t m1, const ae_int_t m2, real_2d_array &c)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_pearsoncorrm2(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), const_cast<alglib_impl::ae_matrix*>(y.c_ptr()), n, m1, m2, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-
 /*************************************************************************
 Pearson product-moment cross-correlation matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with correlation matrices smaller than 128*128.
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M1], sample matrix:
@@ -1676,7 +1485,7 @@ OUTPUT PARAMETERS:
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void pearsoncorrm2(const real_2d_array &x, const real_2d_array &y, real_2d_array &c)
+void pearsoncorrm2(const real_2d_array &x, const real_2d_array &y, real_2d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -1692,6 +1501,8 @@ void pearsoncorrm2(const real_2d_array &x, const real_2d_array &y, real_2d_array
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::pearsoncorrm2(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), const_cast<alglib_impl::ae_matrix*>(y.c_ptr()), n, m1, m2, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -1699,52 +1510,21 @@ void pearsoncorrm2(const real_2d_array &x, const real_2d_array &y, real_2d_array
 }
 #endif
 
-
-#if !defined(AE_NO_EXCEPTIONS)
-void smp_pearsoncorrm2(const real_2d_array &x, const real_2d_array &y, real_2d_array &c)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t n;
-    ae_int_t m1;
-    ae_int_t m2;
-    if( (x.rows()!=y.rows()))
-        _ALGLIB_CPP_EXCEPTION("Error while calling 'pearsoncorrm2': looks like one of arguments has wrong size");
-    n = x.rows();
-    m1 = x.cols();
-    m2 = y.cols();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_pearsoncorrm2(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), const_cast<alglib_impl::ae_matrix*>(y.c_ptr()), n, m1, m2, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
-
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-#endif
-
 /*************************************************************************
 Spearman's rank cross-correlation matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with correlation matrices smaller than 128*128.
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M1], sample matrix:
@@ -1769,7 +1549,7 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
-void spearmancorrm2(const real_2d_array &x, const real_2d_array &y, const ae_int_t n, const ae_int_t m1, const ae_int_t m2, real_2d_array &c)
+void spearmancorrm2(const real_2d_array &x, const real_2d_array &y, const ae_int_t n, const ae_int_t m1, const ae_int_t m2, real_2d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -1784,28 +1564,9 @@ void spearmancorrm2(const real_2d_array &x, const real_2d_array &y, const ae_int
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::spearmancorrm2(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), const_cast<alglib_impl::ae_matrix*>(y.c_ptr()), n, m1, m2, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-
-
-void smp_spearmancorrm2(const real_2d_array &x, const real_2d_array &y, const ae_int_t n, const ae_int_t m1, const ae_int_t m2, real_2d_array &c)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_spearmancorrm2(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), const_cast<alglib_impl::ae_matrix*>(y.c_ptr()), n, m1, m2, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
 }
@@ -1813,24 +1574,18 @@ void smp_spearmancorrm2(const real_2d_array &x, const real_2d_array &y, const ae
 /*************************************************************************
 Spearman's rank cross-correlation matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with correlation matrices smaller than 128*128.
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M1], sample matrix:
@@ -1856,7 +1611,7 @@ OUTPUT PARAMETERS:
      Copyright 28.10.2010 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void spearmancorrm2(const real_2d_array &x, const real_2d_array &y, real_2d_array &c)
+void spearmancorrm2(const real_2d_array &x, const real_2d_array &y, real_2d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -1872,6 +1627,8 @@ void spearmancorrm2(const real_2d_array &x, const real_2d_array &y, real_2d_arra
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::spearmancorrm2(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), const_cast<alglib_impl::ae_matrix*>(y.c_ptr()), n, m1, m2, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -1879,31 +1636,6 @@ void spearmancorrm2(const real_2d_array &x, const real_2d_array &y, real_2d_arra
 }
 #endif
 
-
-#if !defined(AE_NO_EXCEPTIONS)
-void smp_spearmancorrm2(const real_2d_array &x, const real_2d_array &y, real_2d_array &c)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t n;
-    ae_int_t m1;
-    ae_int_t m2;
-    if( (x.rows()!=y.rows()))
-        _ALGLIB_CPP_EXCEPTION("Error while calling 'spearmancorrm2': looks like one of arguments has wrong size");
-    n = x.rows();
-    m1 = x.cols();
-    m2 = y.cols();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_spearmancorrm2(const_cast<alglib_impl::ae_matrix*>(x.c_ptr()), const_cast<alglib_impl::ae_matrix*>(y.c_ptr()), n, m1, m2, const_cast<alglib_impl::ae_matrix*>(c.c_ptr()), &_alglib_env_state);
-
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-#endif
-
 /*************************************************************************
 This function replaces data in XY by their ranks:
 * XY is processed row-by-row
@@ -1912,24 +1644,16 @@ This function replaces data in XY by their ranks:
 * ranking starts from 0, ends at NFeatures-1
 * sum of within-row values is equal to (NFeatures-1)*NFeatures/2
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! ones where expected operations count is less than 100.000
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     XY      -   array[NPoints,NFeatures], dataset
@@ -1943,7 +1667,7 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 18.04.2013 by Bochkanov Sergey
 *************************************************************************/
-void rankdata(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures)
+void rankdata(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -1958,28 +1682,9 @@ void rankdata(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nf
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::rankdata(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-
-
-void smp_rankdata(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_rankdata(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
 }
@@ -1992,24 +1697,16 @@ This function replaces data in XY by their ranks:
 * ranking starts from 0, ends at NFeatures-1
 * sum of within-row values is equal to (NFeatures-1)*NFeatures/2
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! ones where expected operations count is less than 100.000
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     XY      -   array[NPoints,NFeatures], dataset
@@ -2024,7 +1721,7 @@ OUTPUT PARAMETERS:
      Copyright 18.04.2013 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void rankdata(real_2d_array &xy)
+void rankdata(real_2d_array &xy, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -2037,29 +1734,9 @@ void rankdata(real_2d_array &xy)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::rankdata(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, &_alglib_env_state);
-
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-#endif
-
-
-#if !defined(AE_NO_EXCEPTIONS)
-void smp_rankdata(real_2d_array &xy)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t npoints;
-    ae_int_t nfeatures;
-
-    npoints = xy.rows();
-    nfeatures = xy.cols();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_rankdata(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -2076,24 +1753,16 @@ This function replaces data in XY by their CENTERED ranks:
 * centering is performed by subtracting mean from each row, i.e it changes
   mean value, but does NOT change higher moments
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! ones where expected operations count is less than 100.000
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     XY      -   array[NPoints,NFeatures], dataset
@@ -2107,7 +1776,7 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 18.04.2013 by Bochkanov Sergey
 *************************************************************************/
-void rankdatacentered(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures)
+void rankdatacentered(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -2122,28 +1791,9 @@ void rankdatacentered(const real_2d_array &xy, const ae_int_t npoints, const ae_
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::rankdatacentered(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-
-
-void smp_rankdatacentered(const real_2d_array &xy, const ae_int_t npoints, const ae_int_t nfeatures)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_rankdatacentered(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
 }
@@ -2158,24 +1808,16 @@ This function replaces data in XY by their CENTERED ranks:
 * centering is performed by subtracting mean from each row, i.e it changes
   mean value, but does NOT change higher moments
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   !
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
   !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! ones where expected operations count is less than 100.000
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     XY      -   array[NPoints,NFeatures], dataset
@@ -2190,7 +1832,7 @@ OUTPUT PARAMETERS:
      Copyright 18.04.2013 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void rankdatacentered(real_2d_array &xy)
+void rankdatacentered(real_2d_array &xy, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -2203,29 +1845,9 @@ void rankdatacentered(real_2d_array &xy)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::rankdatacentered(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, &_alglib_env_state);
-
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-#endif
-
-
-#if !defined(AE_NO_EXCEPTIONS)
-void smp_rankdatacentered(real_2d_array &xy)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;    
-    ae_int_t npoints;
-    ae_int_t nfeatures;
-
-    npoints = xy.rows();
-    nfeatures = xy.cols();
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::_pexec_rankdatacentered(const_cast<alglib_impl::ae_matrix*>(xy.c_ptr()), npoints, nfeatures, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -2238,7 +1860,7 @@ Obsolete function, we recommend to use PearsonCorr2().
   -- ALGLIB --
      Copyright 09.04.2007 by Bochkanov Sergey
 *************************************************************************/
-double pearsoncorrelation(const real_1d_array &x, const real_1d_array &y, const ae_int_t n)
+double pearsoncorrelation(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -2253,6 +1875,8 @@ double pearsoncorrelation(const real_1d_array &x, const real_1d_array &y, const 
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::pearsoncorrelation(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), const_cast<alglib_impl::ae_vector*>(y.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return *(reinterpret_cast<double*>(&result));
@@ -2264,7 +1888,7 @@ Obsolete function, we recommend to use SpearmanCorr2().
     -- ALGLIB --
     Copyright 09.04.2007 by Bochkanov Sergey
 *************************************************************************/
-double spearmanrankcorrelation(const real_1d_array &x, const real_1d_array &y, const ae_int_t n)
+double spearmanrankcorrelation(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -2279,9 +1903,301 @@ double spearmanrankcorrelation(const real_1d_array &x, const real_1d_array &y, c
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     double result = alglib_impl::spearmanrankcorrelation(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), const_cast<alglib_impl::ae_vector*>(y.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return *(reinterpret_cast<double*>(&result));
+}
+#endif
+
+#if defined(AE_COMPILE_CORRELATIONTESTS) || !defined(AE_PARTIAL_BUILD)
+/*************************************************************************
+Pearson's correlation coefficient significance test
+
+This test checks hypotheses about whether X  and  Y  are  samples  of  two
+continuous  distributions  having  zero  correlation  or   whether   their
+correlation is non-zero.
+
+The following tests are performed:
+    * two-tailed test (null hypothesis - X and Y have zero correlation)
+    * left-tailed test (null hypothesis - the correlation  coefficient  is
+      greater than or equal to 0)
+    * right-tailed test (null hypothesis - the correlation coefficient  is
+      less than or equal to 0).
+
+Requirements:
+    * the number of elements in each sample is not less than 5
+    * normality of distributions of X and Y.
+
+Input parameters:
+    R   -   Pearson's correlation coefficient for X and Y
+    N   -   number of elements in samples, N>=5.
+
+Output parameters:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+  -- ALGLIB --
+     Copyright 09.04.2007 by Bochkanov Sergey
+*************************************************************************/
+void pearsoncorrelationsignificance(const double r, const ae_int_t n, double &bothtails, double &lefttail, double &righttail, const xparams _xparams)
+{
+    jmp_buf _break_jump;
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    if( setjmp(_break_jump) )
+    {
+#if !defined(AE_NO_EXCEPTIONS)
+        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
+#else
+        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
+        return;
+#endif
+    }
+    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
+    alglib_impl::pearsoncorrelationsignificance(r, n, &bothtails, &lefttail, &righttail, &_alglib_env_state);
+    alglib_impl::ae_state_clear(&_alglib_env_state);
+    return;
+}
+
+/*************************************************************************
+Spearman's rank correlation coefficient significance test
+
+This test checks hypotheses about whether X  and  Y  are  samples  of  two
+continuous  distributions  having  zero  correlation  or   whether   their
+correlation is non-zero.
+
+The following tests are performed:
+    * two-tailed test (null hypothesis - X and Y have zero correlation)
+    * left-tailed test (null hypothesis - the correlation  coefficient  is
+      greater than or equal to 0)
+    * right-tailed test (null hypothesis - the correlation coefficient  is
+      less than or equal to 0).
+
+Requirements:
+    * the number of elements in each sample is not less than 5.
+
+The test is non-parametric and doesn't require distributions X and Y to be
+normal.
+
+Input parameters:
+    R   -   Spearman's rank correlation coefficient for X and Y
+    N   -   number of elements in samples, N>=5.
+
+Output parameters:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+  -- ALGLIB --
+     Copyright 09.04.2007 by Bochkanov Sergey
+*************************************************************************/
+void spearmanrankcorrelationsignificance(const double r, const ae_int_t n, double &bothtails, double &lefttail, double &righttail, const xparams _xparams)
+{
+    jmp_buf _break_jump;
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    if( setjmp(_break_jump) )
+    {
+#if !defined(AE_NO_EXCEPTIONS)
+        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
+#else
+        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
+        return;
+#endif
+    }
+    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
+    alglib_impl::spearmanrankcorrelationsignificance(r, n, &bothtails, &lefttail, &righttail, &_alglib_env_state);
+    alglib_impl::ae_state_clear(&_alglib_env_state);
+    return;
+}
+#endif
+
+#if defined(AE_COMPILE_JARQUEBERA) || !defined(AE_PARTIAL_BUILD)
+/*************************************************************************
+Jarque-Bera test
+
+This test checks hypotheses about the fact that a  given  sample  X  is  a
+sample of normal random variable.
+
+Requirements:
+    * the number of elements in the sample is not less than 5.
+
+Input parameters:
+    X   -   sample. Array whose index goes from 0 to N-1.
+    N   -   size of the sample. N>=5
+
+Output parameters:
+    P           -   p-value for the test
+
+Accuracy of the approximation used (5<=N<=1951):
+
+p-value  	    relative error (5<=N<=1951)
+[1, 0.1]            < 1%
+[0.1, 0.01]         < 2%
+[0.01, 0.001]       < 6%
+[0.001, 0]          wasn't measured
+
+For N>1951 accuracy wasn't measured but it shouldn't be sharply  different
+from table values.
+
+  -- ALGLIB --
+     Copyright 09.04.2007 by Bochkanov Sergey
+*************************************************************************/
+void jarqueberatest(const real_1d_array &x, const ae_int_t n, double &p, const xparams _xparams)
+{
+    jmp_buf _break_jump;
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    if( setjmp(_break_jump) )
+    {
+#if !defined(AE_NO_EXCEPTIONS)
+        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
+#else
+        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
+        return;
+#endif
+    }
+    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
+    alglib_impl::jarqueberatest(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &p, &_alglib_env_state);
+    alglib_impl::ae_state_clear(&_alglib_env_state);
+    return;
+}
+#endif
+
+#if defined(AE_COMPILE_VARIANCETESTS) || !defined(AE_PARTIAL_BUILD)
+/*************************************************************************
+Two-sample F-test
+
+This test checks three hypotheses about dispersions of the given  samples.
+The following tests are performed:
+    * two-tailed test (null hypothesis - the dispersions are equal)
+    * left-tailed test (null hypothesis  -  the  dispersion  of  the first
+      sample is greater than or equal to  the  dispersion  of  the  second
+      sample).
+    * right-tailed test (null hypothesis - the  dispersion  of  the  first
+      sample is less than or equal to the dispersion of the second sample)
+
+The test is based on the following assumptions:
+    * the given samples have normal distributions
+    * the samples are independent.
+
+Input parameters:
+    X   -   sample 1. Array whose index goes from 0 to N-1.
+    N   -   sample size.
+    Y   -   sample 2. Array whose index goes from 0 to M-1.
+    M   -   sample size.
+
+Output parameters:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+  -- ALGLIB --
+     Copyright 19.09.2006 by Bochkanov Sergey
+*************************************************************************/
+void ftest(const real_1d_array &x, const ae_int_t n, const real_1d_array &y, const ae_int_t m, double &bothtails, double &lefttail, double &righttail, const xparams _xparams)
+{
+    jmp_buf _break_jump;
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    if( setjmp(_break_jump) )
+    {
+#if !defined(AE_NO_EXCEPTIONS)
+        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
+#else
+        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
+        return;
+#endif
+    }
+    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
+    alglib_impl::ftest(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(y.c_ptr()), m, &bothtails, &lefttail, &righttail, &_alglib_env_state);
+    alglib_impl::ae_state_clear(&_alglib_env_state);
+    return;
+}
+
+/*************************************************************************
+One-sample chi-square test
+
+This test checks three hypotheses about the dispersion of the given sample
+The following tests are performed:
+    * two-tailed test (null hypothesis - the dispersion equals  the  given
+      number)
+    * left-tailed test (null hypothesis - the dispersion is  greater  than
+      or equal to the given number)
+    * right-tailed test (null hypothesis  -  dispersion is  less  than  or
+      equal to the given number).
+
+Test is based on the following assumptions:
+    * the given sample has a normal distribution.
+
+Input parameters:
+    X           -   sample 1. Array whose index goes from 0 to N-1.
+    N           -   size of the sample.
+    Variance    -   dispersion value to compare with.
+
+Output parameters:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+  -- ALGLIB --
+     Copyright 19.09.2006 by Bochkanov Sergey
+*************************************************************************/
+void onesamplevariancetest(const real_1d_array &x, const ae_int_t n, const double variance, double &bothtails, double &lefttail, double &righttail, const xparams _xparams)
+{
+    jmp_buf _break_jump;
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    if( setjmp(_break_jump) )
+    {
+#if !defined(AE_NO_EXCEPTIONS)
+        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
+#else
+        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
+        return;
+#endif
+    }
+    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
+    alglib_impl::onesamplevariancetest(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, variance, &bothtails, &lefttail, &righttail, &_alglib_env_state);
+    alglib_impl::ae_state_clear(&_alglib_env_state);
+    return;
 }
 #endif
 
@@ -2335,7 +2251,7 @@ the significance level outlies this interval, the test returns 0.0001.
   -- ALGLIB --
      Copyright 08.09.2006 by Bochkanov Sergey
 *************************************************************************/
-void wilcoxonsignedranktest(const real_1d_array &x, const ae_int_t n, const double e, double &bothtails, double &lefttail, double &righttail)
+void wilcoxonsignedranktest(const real_1d_array &x, const ae_int_t n, const double e, double &bothtails, double &lefttail, double &righttail, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -2350,373 +2266,9 @@ void wilcoxonsignedranktest(const real_1d_array &x, const ae_int_t n, const doub
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::wilcoxonsignedranktest(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, e, &bothtails, &lefttail, &righttail, &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-#endif
-
-#if defined(AE_COMPILE_STEST) || !defined(AE_PARTIAL_BUILD)
-/*************************************************************************
-Sign test
-
-This test checks three hypotheses about the median of  the  given  sample.
-The following tests are performed:
-    * two-tailed test (null hypothesis - the median is equal to the  given
-      value)
-    * left-tailed test (null hypothesis - the median is  greater  than  or
-      equal to the given value)
-    * right-tailed test (null hypothesis - the  median  is  less  than  or
-      equal to the given value)
-
-Requirements:
-    * the scale of measurement should be ordinal, interval or ratio  (i.e.
-      the test could not be applied to nominal variables).
-
-The test is non-parametric and doesn't require distribution X to be normal
-
-Input parameters:
-    X       -   sample. Array whose index goes from 0 to N-1.
-    N       -   size of the sample.
-    Median  -   assumed median value.
-
-Output parameters:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-While   calculating   p-values   high-precision   binomial    distribution
-approximation is used, so significance levels have about 15 exact digits.
-
-  -- ALGLIB --
-     Copyright 08.09.2006 by Bochkanov Sergey
-*************************************************************************/
-void onesamplesigntest(const real_1d_array &x, const ae_int_t n, const double median, double &bothtails, double &lefttail, double &righttail)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::onesamplesigntest(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, median, &bothtails, &lefttail, &righttail, &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-#endif
-
-#if defined(AE_COMPILE_CORRELATIONTESTS) || !defined(AE_PARTIAL_BUILD)
-/*************************************************************************
-Pearson's correlation coefficient significance test
-
-This test checks hypotheses about whether X  and  Y  are  samples  of  two
-continuous  distributions  having  zero  correlation  or   whether   their
-correlation is non-zero.
-
-The following tests are performed:
-    * two-tailed test (null hypothesis - X and Y have zero correlation)
-    * left-tailed test (null hypothesis - the correlation  coefficient  is
-      greater than or equal to 0)
-    * right-tailed test (null hypothesis - the correlation coefficient  is
-      less than or equal to 0).
-
-Requirements:
-    * the number of elements in each sample is not less than 5
-    * normality of distributions of X and Y.
-
-Input parameters:
-    R   -   Pearson's correlation coefficient for X and Y
-    N   -   number of elements in samples, N>=5.
-
-Output parameters:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-  -- ALGLIB --
-     Copyright 09.04.2007 by Bochkanov Sergey
-*************************************************************************/
-void pearsoncorrelationsignificance(const double r, const ae_int_t n, double &bothtails, double &lefttail, double &righttail)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::pearsoncorrelationsignificance(r, n, &bothtails, &lefttail, &righttail, &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-
-/*************************************************************************
-Spearman's rank correlation coefficient significance test
-
-This test checks hypotheses about whether X  and  Y  are  samples  of  two
-continuous  distributions  having  zero  correlation  or   whether   their
-correlation is non-zero.
-
-The following tests are performed:
-    * two-tailed test (null hypothesis - X and Y have zero correlation)
-    * left-tailed test (null hypothesis - the correlation  coefficient  is
-      greater than or equal to 0)
-    * right-tailed test (null hypothesis - the correlation coefficient  is
-      less than or equal to 0).
-
-Requirements:
-    * the number of elements in each sample is not less than 5.
-
-The test is non-parametric and doesn't require distributions X and Y to be
-normal.
-
-Input parameters:
-    R   -   Spearman's rank correlation coefficient for X and Y
-    N   -   number of elements in samples, N>=5.
-
-Output parameters:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-  -- ALGLIB --
-     Copyright 09.04.2007 by Bochkanov Sergey
-*************************************************************************/
-void spearmanrankcorrelationsignificance(const double r, const ae_int_t n, double &bothtails, double &lefttail, double &righttail)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::spearmanrankcorrelationsignificance(r, n, &bothtails, &lefttail, &righttail, &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-#endif
-
-#if defined(AE_COMPILE_STUDENTTTESTS) || !defined(AE_PARTIAL_BUILD)
-/*************************************************************************
-One-sample t-test
-
-This test checks three hypotheses about the mean of the given sample.  The
-following tests are performed:
-    * two-tailed test (null hypothesis - the mean is equal  to  the  given
-      value)
-    * left-tailed test (null hypothesis - the  mean  is  greater  than  or
-      equal to the given value)
-    * right-tailed test (null hypothesis - the mean is less than or  equal
-      to the given value).
-
-The test is based on the assumption that  a  given  sample  has  a  normal
-distribution and  an  unknown  dispersion.  If  the  distribution  sharply
-differs from normal, the test will work incorrectly.
-
-INPUT PARAMETERS:
-    X       -   sample. Array whose index goes from 0 to N-1.
-    N       -   size of sample, N>=0
-    Mean    -   assumed value of the mean.
-
-OUTPUT PARAMETERS:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-NOTE: this function correctly handles degenerate cases:
-      * when N=0, all p-values are set to 1.0
-      * when variance of X[] is exactly zero, p-values are set
-        to 1.0 or 0.0, depending on difference between sample mean and
-        value of mean being tested.
-
-
-  -- ALGLIB --
-     Copyright 08.09.2006 by Bochkanov Sergey
-*************************************************************************/
-void studentttest1(const real_1d_array &x, const ae_int_t n, const double mean, double &bothtails, double &lefttail, double &righttail)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::studentttest1(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, mean, &bothtails, &lefttail, &righttail, &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-
-/*************************************************************************
-Two-sample pooled test
-
-This test checks three hypotheses about the mean of the given samples. The
-following tests are performed:
-    * two-tailed test (null hypothesis - the means are equal)
-    * left-tailed test (null hypothesis - the mean of the first sample  is
-      greater than or equal to the mean of the second sample)
-    * right-tailed test (null hypothesis - the mean of the first sample is
-      less than or equal to the mean of the second sample).
-
-Test is based on the following assumptions:
-    * given samples have normal distributions
-    * dispersions are equal
-    * samples are independent.
-
-Input parameters:
-    X       -   sample 1. Array whose index goes from 0 to N-1.
-    N       -   size of sample.
-    Y       -   sample 2. Array whose index goes from 0 to M-1.
-    M       -   size of sample.
-
-Output parameters:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-NOTE: this function correctly handles degenerate cases:
-      * when N=0 or M=0, all p-values are set to 1.0
-      * when both samples has exactly zero variance, p-values are set
-        to 1.0 or 0.0, depending on difference between means.
-
-  -- ALGLIB --
-     Copyright 18.09.2006 by Bochkanov Sergey
-*************************************************************************/
-void studentttest2(const real_1d_array &x, const ae_int_t n, const real_1d_array &y, const ae_int_t m, double &bothtails, double &lefttail, double &righttail)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::studentttest2(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(y.c_ptr()), m, &bothtails, &lefttail, &righttail, &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-
-/*************************************************************************
-Two-sample unpooled test
-
-This test checks three hypotheses about the mean of the given samples. The
-following tests are performed:
-    * two-tailed test (null hypothesis - the means are equal)
-    * left-tailed test (null hypothesis - the mean of the first sample  is
-      greater than or equal to the mean of the second sample)
-    * right-tailed test (null hypothesis - the mean of the first sample is
-      less than or equal to the mean of the second sample).
-
-Test is based on the following assumptions:
-    * given samples have normal distributions
-    * samples are independent.
-Equality of variances is NOT required.
-
-Input parameters:
-    X - sample 1. Array whose index goes from 0 to N-1.
-    N - size of the sample.
-    Y - sample 2. Array whose index goes from 0 to M-1.
-    M - size of the sample.
-
-Output parameters:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-NOTE: this function correctly handles degenerate cases:
-      * when N=0 or M=0, all p-values are set to 1.0
-      * when both samples has zero variance, p-values are set
-        to 1.0 or 0.0, depending on difference between means.
-      * when only one sample has zero variance, test reduces to 1-sample
-        version.
-
-  -- ALGLIB --
-     Copyright 18.09.2006 by Bochkanov Sergey
-*************************************************************************/
-void unequalvariancettest(const real_1d_array &x, const ae_int_t n, const real_1d_array &y, const ae_int_t m, double &bothtails, double &lefttail, double &righttail)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::unequalvariancettest(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(y.c_ptr()), m, &bothtails, &lefttail, &righttail, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
 }
@@ -2791,7 +2343,7 @@ NOTE: P-value approximation was  optimized  for  0.0001<=p<=0.2500.  Thus,
   -- ALGLIB --
      Copyright 09.04.2007 by Bochkanov Sergey
 *************************************************************************/
-void mannwhitneyutest(const real_1d_array &x, const ae_int_t n, const real_1d_array &y, const ae_int_t m, double &bothtails, double &lefttail, double &righttail)
+void mannwhitneyutest(const real_1d_array &x, const ae_int_t n, const real_1d_array &y, const ae_int_t m, double &bothtails, double &lefttail, double &righttail, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -2806,86 +2358,37 @@ void mannwhitneyutest(const real_1d_array &x, const ae_int_t n, const real_1d_ar
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::mannwhitneyutest(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(y.c_ptr()), m, &bothtails, &lefttail, &righttail, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
 }
 #endif
 
-#if defined(AE_COMPILE_JARQUEBERA) || !defined(AE_PARTIAL_BUILD)
+#if defined(AE_COMPILE_STEST) || !defined(AE_PARTIAL_BUILD)
 /*************************************************************************
-Jarque-Bera test
+Sign test
 
-This test checks hypotheses about the fact that a  given  sample  X  is  a
-sample of normal random variable.
+This test checks three hypotheses about the median of  the  given  sample.
+The following tests are performed:
+    * two-tailed test (null hypothesis - the median is equal to the  given
+      value)
+    * left-tailed test (null hypothesis - the median is  greater  than  or
+      equal to the given value)
+    * right-tailed test (null hypothesis - the  median  is  less  than  or
+      equal to the given value)
 
 Requirements:
-    * the number of elements in the sample is not less than 5.
+    * the scale of measurement should be ordinal, interval or ratio  (i.e.
+      the test could not be applied to nominal variables).
+
+The test is non-parametric and doesn't require distribution X to be normal
 
 Input parameters:
-    X   -   sample. Array whose index goes from 0 to N-1.
-    N   -   size of the sample. N>=5
-
-Output parameters:
-    P           -   p-value for the test
-
-Accuracy of the approximation used (5<=N<=1951):
-
-p-value  	    relative error (5<=N<=1951)
-[1, 0.1]            < 1%
-[0.1, 0.01]         < 2%
-[0.01, 0.001]       < 6%
-[0.001, 0]          wasn't measured
-
-For N>1951 accuracy wasn't measured but it shouldn't be sharply  different
-from table values.
-
-  -- ALGLIB --
-     Copyright 09.04.2007 by Bochkanov Sergey
-*************************************************************************/
-void jarqueberatest(const real_1d_array &x, const ae_int_t n, double &p)
-{
-    jmp_buf _break_jump;
-    alglib_impl::ae_state _alglib_env_state;
-    alglib_impl::ae_state_init(&_alglib_env_state);
-    if( setjmp(_break_jump) )
-    {
-#if !defined(AE_NO_EXCEPTIONS)
-        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
-#else
-        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
-        return;
-#endif
-    }
-    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::jarqueberatest(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, &p, &_alglib_env_state);
-    alglib_impl::ae_state_clear(&_alglib_env_state);
-    return;
-}
-#endif
-
-#if defined(AE_COMPILE_VARIANCETESTS) || !defined(AE_PARTIAL_BUILD)
-/*************************************************************************
-Two-sample F-test
-
-This test checks three hypotheses about dispersions of the given  samples.
-The following tests are performed:
-    * two-tailed test (null hypothesis - the dispersions are equal)
-    * left-tailed test (null hypothesis  -  the  dispersion  of  the first
-      sample is greater than or equal to  the  dispersion  of  the  second
-      sample).
-    * right-tailed test (null hypothesis - the  dispersion  of  the  first
-      sample is less than or equal to the dispersion of the second sample)
-
-The test is based on the following assumptions:
-    * the given samples have normal distributions
-    * the samples are independent.
-
-Input parameters:
-    X   -   sample 1. Array whose index goes from 0 to N-1.
-    N   -   sample size.
-    Y   -   sample 2. Array whose index goes from 0 to M-1.
-    M   -   sample size.
+    X       -   sample. Array whose index goes from 0 to N-1.
+    N       -   size of the sample.
+    Median  -   assumed median value.
 
 Output parameters:
     BothTails   -   p-value for two-tailed test.
@@ -2898,10 +2401,13 @@ Output parameters:
                     If RightTail is less than the given significance level
                     the null hypothesis is rejected.
 
+While   calculating   p-values   high-precision   binomial    distribution
+approximation is used, so significance levels have about 15 exact digits.
+
   -- ALGLIB --
-     Copyright 19.09.2006 by Bochkanov Sergey
+     Copyright 08.09.2006 by Bochkanov Sergey
 *************************************************************************/
-void ftest(const real_1d_array &x, const ae_int_t n, const real_1d_array &y, const ae_int_t m, double &bothtails, double &lefttail, double &righttail)
+void onesamplesigntest(const real_1d_array &x, const ae_int_t n, const double median, double &bothtails, double &lefttail, double &righttail, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -2916,30 +2422,100 @@ void ftest(const real_1d_array &x, const ae_int_t n, const real_1d_array &y, con
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::ftest(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(y.c_ptr()), m, &bothtails, &lefttail, &righttail, &_alglib_env_state);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
+    alglib_impl::onesamplesigntest(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, median, &bothtails, &lefttail, &righttail, &_alglib_env_state);
+    alglib_impl::ae_state_clear(&_alglib_env_state);
+    return;
+}
+#endif
+
+#if defined(AE_COMPILE_STUDENTTTESTS) || !defined(AE_PARTIAL_BUILD)
+/*************************************************************************
+One-sample t-test
+
+This test checks three hypotheses about the mean of the given sample.  The
+following tests are performed:
+    * two-tailed test (null hypothesis - the mean is equal  to  the  given
+      value)
+    * left-tailed test (null hypothesis - the  mean  is  greater  than  or
+      equal to the given value)
+    * right-tailed test (null hypothesis - the mean is less than or  equal
+      to the given value).
+
+The test is based on the assumption that  a  given  sample  has  a  normal
+distribution and  an  unknown  dispersion.  If  the  distribution  sharply
+differs from normal, the test will work incorrectly.
+
+INPUT PARAMETERS:
+    X       -   sample. Array whose index goes from 0 to N-1.
+    N       -   size of sample, N>=0
+    Mean    -   assumed value of the mean.
+
+OUTPUT PARAMETERS:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+NOTE: this function correctly handles degenerate cases:
+      * when N=0, all p-values are set to 1.0
+      * when variance of X[] is exactly zero, p-values are set
+        to 1.0 or 0.0, depending on difference between sample mean and
+        value of mean being tested.
+
+
+  -- ALGLIB --
+     Copyright 08.09.2006 by Bochkanov Sergey
+*************************************************************************/
+void studentttest1(const real_1d_array &x, const ae_int_t n, const double mean, double &bothtails, double &lefttail, double &righttail, const xparams _xparams)
+{
+    jmp_buf _break_jump;
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    if( setjmp(_break_jump) )
+    {
+#if !defined(AE_NO_EXCEPTIONS)
+        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
+#else
+        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
+        return;
+#endif
+    }
+    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
+    alglib_impl::studentttest1(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, mean, &bothtails, &lefttail, &righttail, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
 }
 
 /*************************************************************************
-One-sample chi-square test
+Two-sample pooled test
 
-This test checks three hypotheses about the dispersion of the given sample
-The following tests are performed:
-    * two-tailed test (null hypothesis - the dispersion equals  the  given
-      number)
-    * left-tailed test (null hypothesis - the dispersion is  greater  than
-      or equal to the given number)
-    * right-tailed test (null hypothesis  -  dispersion is  less  than  or
-      equal to the given number).
+This test checks three hypotheses about the mean of the given samples. The
+following tests are performed:
+    * two-tailed test (null hypothesis - the means are equal)
+    * left-tailed test (null hypothesis - the mean of the first sample  is
+      greater than or equal to the mean of the second sample)
+    * right-tailed test (null hypothesis - the mean of the first sample is
+      less than or equal to the mean of the second sample).
 
 Test is based on the following assumptions:
-    * the given sample has a normal distribution.
+    * given samples have normal distributions
+    * dispersions are equal
+    * samples are independent.
 
 Input parameters:
-    X           -   sample 1. Array whose index goes from 0 to N-1.
-    N           -   size of the sample.
-    Variance    -   dispersion value to compare with.
+    X       -   sample 1. Array whose index goes from 0 to N-1.
+    N       -   size of sample.
+    Y       -   sample 2. Array whose index goes from 0 to M-1.
+    M       -   size of sample.
 
 Output parameters:
     BothTails   -   p-value for two-tailed test.
@@ -2952,10 +2528,15 @@ Output parameters:
                     If RightTail is less than the given significance level
                     the null hypothesis is rejected.
 
+NOTE: this function correctly handles degenerate cases:
+      * when N=0 or M=0, all p-values are set to 1.0
+      * when both samples has exactly zero variance, p-values are set
+        to 1.0 or 0.0, depending on difference between means.
+
   -- ALGLIB --
-     Copyright 19.09.2006 by Bochkanov Sergey
+     Copyright 18.09.2006 by Bochkanov Sergey
 *************************************************************************/
-void onesamplevariancetest(const real_1d_array &x, const ae_int_t n, const double variance, double &bothtails, double &lefttail, double &righttail)
+void studentttest2(const real_1d_array &x, const ae_int_t n, const real_1d_array &y, const ae_int_t m, double &bothtails, double &lefttail, double &righttail, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -2970,7 +2551,74 @@ void onesamplevariancetest(const real_1d_array &x, const ae_int_t n, const doubl
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
-    alglib_impl::onesamplevariancetest(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, variance, &bothtails, &lefttail, &righttail, &_alglib_env_state);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
+    alglib_impl::studentttest2(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(y.c_ptr()), m, &bothtails, &lefttail, &righttail, &_alglib_env_state);
+    alglib_impl::ae_state_clear(&_alglib_env_state);
+    return;
+}
+
+/*************************************************************************
+Two-sample unpooled test
+
+This test checks three hypotheses about the mean of the given samples. The
+following tests are performed:
+    * two-tailed test (null hypothesis - the means are equal)
+    * left-tailed test (null hypothesis - the mean of the first sample  is
+      greater than or equal to the mean of the second sample)
+    * right-tailed test (null hypothesis - the mean of the first sample is
+      less than or equal to the mean of the second sample).
+
+Test is based on the following assumptions:
+    * given samples have normal distributions
+    * samples are independent.
+Equality of variances is NOT required.
+
+Input parameters:
+    X - sample 1. Array whose index goes from 0 to N-1.
+    N - size of the sample.
+    Y - sample 2. Array whose index goes from 0 to M-1.
+    M - size of the sample.
+
+Output parameters:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+NOTE: this function correctly handles degenerate cases:
+      * when N=0 or M=0, all p-values are set to 1.0
+      * when both samples has zero variance, p-values are set
+        to 1.0 or 0.0, depending on difference between means.
+      * when only one sample has zero variance, test reduces to 1-sample
+        version.
+
+  -- ALGLIB --
+     Copyright 18.09.2006 by Bochkanov Sergey
+*************************************************************************/
+void unequalvariancettest(const real_1d_array &x, const ae_int_t n, const real_1d_array &y, const ae_int_t m, double &bothtails, double &lefttail, double &righttail, const xparams _xparams)
+{
+    jmp_buf _break_jump;
+    alglib_impl::ae_state _alglib_env_state;
+    alglib_impl::ae_state_init(&_alglib_env_state);
+    if( setjmp(_break_jump) )
+    {
+#if !defined(AE_NO_EXCEPTIONS)
+        _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
+#else
+        _ALGLIB_SET_ERROR_FLAG(_alglib_env_state.error_msg);
+        return;
+#endif
+    }
+    ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
+    alglib_impl::unequalvariancettest(const_cast<alglib_impl::ae_vector*>(x.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(y.c_ptr()), m, &bothtails, &lefttail, &righttail, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
 }
@@ -2993,6 +2641,13 @@ static void basestat_rankdatarec(/* Real    */ ae_matrix* xy,
      ae_shared_pool* pool,
      ae_int_t basecasecost,
      ae_state *_state);
+ae_bool _trypexec_basestat_rankdatarec(/* Real    */ ae_matrix* xy,
+    ae_int_t i0,
+    ae_int_t i1,
+    ae_int_t nfeatures,
+    ae_bool iscentered,
+    ae_shared_pool* pool,
+    ae_int_t basecasecost, ae_state *_state);
 static void basestat_rankdatabasecase(/* Real    */ ae_matrix* xy,
      ae_int_t i0,
      ae_int_t i1,
@@ -3001,6 +2656,72 @@ static void basestat_rankdatabasecase(/* Real    */ ae_matrix* xy,
      apbuffers* buf0,
      apbuffers* buf1,
      ae_state *_state);
+ae_bool _trypexec_basestat_rankdatabasecase(/* Real    */ ae_matrix* xy,
+    ae_int_t i0,
+    ae_int_t i1,
+    ae_int_t nfeatures,
+    ae_bool iscentered,
+    apbuffers* buf0,
+    apbuffers* buf1, ae_state *_state);
+
+
+#endif
+#if defined(AE_COMPILE_CORRELATIONTESTS) || !defined(AE_PARTIAL_BUILD)
+static double correlationtests_spearmantail5(double s, ae_state *_state);
+static double correlationtests_spearmantail6(double s, ae_state *_state);
+static double correlationtests_spearmantail7(double s, ae_state *_state);
+static double correlationtests_spearmantail8(double s, ae_state *_state);
+static double correlationtests_spearmantail9(double s, ae_state *_state);
+static double correlationtests_spearmantail(double t,
+     ae_int_t n,
+     ae_state *_state);
+
+
+#endif
+#if defined(AE_COMPILE_JARQUEBERA) || !defined(AE_PARTIAL_BUILD)
+static void jarquebera_jarqueberastatistic(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     double* s,
+     ae_state *_state);
+static double jarquebera_jarqueberaapprox(ae_int_t n,
+     double s,
+     ae_state *_state);
+static double jarquebera_jbtbl5(double s, ae_state *_state);
+static double jarquebera_jbtbl6(double s, ae_state *_state);
+static double jarquebera_jbtbl7(double s, ae_state *_state);
+static double jarquebera_jbtbl8(double s, ae_state *_state);
+static double jarquebera_jbtbl9(double s, ae_state *_state);
+static double jarquebera_jbtbl10(double s, ae_state *_state);
+static double jarquebera_jbtbl11(double s, ae_state *_state);
+static double jarquebera_jbtbl12(double s, ae_state *_state);
+static double jarquebera_jbtbl13(double s, ae_state *_state);
+static double jarquebera_jbtbl14(double s, ae_state *_state);
+static double jarquebera_jbtbl15(double s, ae_state *_state);
+static double jarquebera_jbtbl16(double s, ae_state *_state);
+static double jarquebera_jbtbl17(double s, ae_state *_state);
+static double jarquebera_jbtbl18(double s, ae_state *_state);
+static double jarquebera_jbtbl19(double s, ae_state *_state);
+static double jarquebera_jbtbl20(double s, ae_state *_state);
+static double jarquebera_jbtbl30(double s, ae_state *_state);
+static double jarquebera_jbtbl50(double s, ae_state *_state);
+static double jarquebera_jbtbl65(double s, ae_state *_state);
+static double jarquebera_jbtbl100(double s, ae_state *_state);
+static double jarquebera_jbtbl130(double s, ae_state *_state);
+static double jarquebera_jbtbl200(double s, ae_state *_state);
+static double jarquebera_jbtbl301(double s, ae_state *_state);
+static double jarquebera_jbtbl501(double s, ae_state *_state);
+static double jarquebera_jbtbl701(double s, ae_state *_state);
+static double jarquebera_jbtbl1401(double s, ae_state *_state);
+static void jarquebera_jbcheb(double x,
+     double c,
+     double* tj,
+     double* tj1,
+     double* r,
+     ae_state *_state);
+
+
+#endif
+#if defined(AE_COMPILE_VARIANCETESTS) || !defined(AE_PARTIAL_BUILD)
 
 
 #endif
@@ -3042,26 +2763,6 @@ static double wsr_w60(double s, ae_state *_state);
 static double wsr_w120(double s, ae_state *_state);
 static double wsr_w200(double s, ae_state *_state);
 static double wsr_wsigma(double s, ae_int_t n, ae_state *_state);
-
-
-#endif
-#if defined(AE_COMPILE_STEST) || !defined(AE_PARTIAL_BUILD)
-
-
-#endif
-#if defined(AE_COMPILE_CORRELATIONTESTS) || !defined(AE_PARTIAL_BUILD)
-static double correlationtests_spearmantail5(double s, ae_state *_state);
-static double correlationtests_spearmantail6(double s, ae_state *_state);
-static double correlationtests_spearmantail7(double s, ae_state *_state);
-static double correlationtests_spearmantail8(double s, ae_state *_state);
-static double correlationtests_spearmantail9(double s, ae_state *_state);
-static double correlationtests_spearmantail(double t,
-     ae_int_t n,
-     ae_state *_state);
-
-
-#endif
-#if defined(AE_COMPILE_STUDENTTTESTS) || !defined(AE_PARTIAL_BUILD)
 
 
 #endif
@@ -3207,50 +2908,11 @@ static double mannwhitneyu_usigma(double s,
 
 
 #endif
-#if defined(AE_COMPILE_JARQUEBERA) || !defined(AE_PARTIAL_BUILD)
-static void jarquebera_jarqueberastatistic(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     double* s,
-     ae_state *_state);
-static double jarquebera_jarqueberaapprox(ae_int_t n,
-     double s,
-     ae_state *_state);
-static double jarquebera_jbtbl5(double s, ae_state *_state);
-static double jarquebera_jbtbl6(double s, ae_state *_state);
-static double jarquebera_jbtbl7(double s, ae_state *_state);
-static double jarquebera_jbtbl8(double s, ae_state *_state);
-static double jarquebera_jbtbl9(double s, ae_state *_state);
-static double jarquebera_jbtbl10(double s, ae_state *_state);
-static double jarquebera_jbtbl11(double s, ae_state *_state);
-static double jarquebera_jbtbl12(double s, ae_state *_state);
-static double jarquebera_jbtbl13(double s, ae_state *_state);
-static double jarquebera_jbtbl14(double s, ae_state *_state);
-static double jarquebera_jbtbl15(double s, ae_state *_state);
-static double jarquebera_jbtbl16(double s, ae_state *_state);
-static double jarquebera_jbtbl17(double s, ae_state *_state);
-static double jarquebera_jbtbl18(double s, ae_state *_state);
-static double jarquebera_jbtbl19(double s, ae_state *_state);
-static double jarquebera_jbtbl20(double s, ae_state *_state);
-static double jarquebera_jbtbl30(double s, ae_state *_state);
-static double jarquebera_jbtbl50(double s, ae_state *_state);
-static double jarquebera_jbtbl65(double s, ae_state *_state);
-static double jarquebera_jbtbl100(double s, ae_state *_state);
-static double jarquebera_jbtbl130(double s, ae_state *_state);
-static double jarquebera_jbtbl200(double s, ae_state *_state);
-static double jarquebera_jbtbl301(double s, ae_state *_state);
-static double jarquebera_jbtbl501(double s, ae_state *_state);
-static double jarquebera_jbtbl701(double s, ae_state *_state);
-static double jarquebera_jbtbl1401(double s, ae_state *_state);
-static void jarquebera_jbcheb(double x,
-     double c,
-     double* tj,
-     double* tj1,
-     double* r,
-     ae_state *_state);
+#if defined(AE_COMPILE_STEST) || !defined(AE_PARTIAL_BUILD)
 
 
 #endif
-#if defined(AE_COMPILE_VARIANCETESTS) || !defined(AE_PARTIAL_BUILD)
+#if defined(AE_COMPILE_STUDENTTTESTS) || !defined(AE_PARTIAL_BUILD)
 
 
 #endif
@@ -3762,7 +3424,8 @@ void samplepercentile(/* Real    */ ae_vector* x,
 
     ae_frame_make(_state, &_frame_block);
     memset(&_x, 0, sizeof(_x));
-    memset(&rbuf, 0, sizeof(rbuf));    ae_vector_init_copy(&_x, x, _state, ae_true);
+    memset(&rbuf, 0, sizeof(rbuf));
+    ae_vector_init_copy(&_x, x, _state, ae_true);
     x = &_x;
     *v = 0;
     ae_vector_init(&rbuf, 0, DT_REAL, _state, ae_true);
@@ -4032,7 +3695,8 @@ double spearmancorr2(/* Real    */ ae_vector* x,
     ae_frame_make(_state, &_frame_block);
     memset(&_x, 0, sizeof(_x));
     memset(&_y, 0, sizeof(_y));
-    memset(&buf, 0, sizeof(buf));    ae_vector_init_copy(&_x, x, _state, ae_true);
+    memset(&buf, 0, sizeof(buf));
+    ae_vector_init_copy(&_x, x, _state, ae_true);
     x = &_x;
     ae_vector_init_copy(&_y, y, _state, ae_true);
     y = &_y;
@@ -4064,24 +3728,18 @@ double spearmancorr2(/* Real    */ ae_vector* x,
 /*************************************************************************
 Covariance matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   ! 
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
-  !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with covariance matrices smaller than 128*128.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
+  ! 
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M], sample matrix:
@@ -4117,7 +3775,10 @@ void covm(/* Real    */ ae_matrix* x,
 
     ae_frame_make(_state, &_frame_block);
     memset(&_x, 0, sizeof(_x));
-    memset(&t, 0, sizeof(t));    memset(&x0, 0, sizeof(x0));    memset(&same, 0, sizeof(same));    ae_matrix_init_copy(&_x, x, _state, ae_true);
+    memset(&t, 0, sizeof(t));
+    memset(&x0, 0, sizeof(x0));
+    memset(&same, 0, sizeof(same));
+    ae_matrix_init_copy(&_x, x, _state, ae_true);
     x = &_x;
     ae_matrix_clear(c);
     ae_vector_init(&t, 0, DT_REAL, _state, ae_true);
@@ -4196,38 +3857,20 @@ void covm(/* Real    */ ae_matrix* x,
 
 
 /*************************************************************************
-Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
-*************************************************************************/
-void _pexec_covm(/* Real    */ ae_matrix* x,
-    ae_int_t n,
-    ae_int_t m,
-    /* Real    */ ae_matrix* c, ae_state *_state)
-{
-    covm(x,n,m,c, _state);
-}
-
-
-/*************************************************************************
 Pearson product-moment correlation matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   ! 
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
-  !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with correlation matrices smaller than 128*128.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
+  ! 
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M], sample matrix:
@@ -4259,7 +3902,8 @@ void pearsoncorrm(/* Real    */ ae_matrix* x,
     double v;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&t, 0, sizeof(t));    ae_matrix_clear(c);
+    memset(&t, 0, sizeof(t));
+    ae_matrix_clear(c);
     ae_vector_init(&t, 0, DT_REAL, _state, ae_true);
 
     ae_assert(n>=0, "PearsonCorrM: N<0", _state);
@@ -4293,38 +3937,20 @@ void pearsoncorrm(/* Real    */ ae_matrix* x,
 
 
 /*************************************************************************
-Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
-*************************************************************************/
-void _pexec_pearsoncorrm(/* Real    */ ae_matrix* x,
-    ae_int_t n,
-    ae_int_t m,
-    /* Real    */ ae_matrix* c, ae_state *_state)
-{
-    pearsoncorrm(x,n,m,c, _state);
-}
-
-
-/*************************************************************************
 Spearman's rank correlation matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   ! 
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
-  !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with correlation matrices smaller than 128*128.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
+  ! 
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M], sample matrix:
@@ -4361,7 +3987,10 @@ void spearmancorrm(/* Real    */ ae_matrix* x,
     ae_bool b;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&buf, 0, sizeof(buf));    memset(&xc, 0, sizeof(xc));    memset(&t, 0, sizeof(t));    ae_matrix_clear(c);
+    memset(&buf, 0, sizeof(buf));
+    memset(&xc, 0, sizeof(xc));
+    memset(&t, 0, sizeof(t));
+    ae_matrix_clear(c);
     _apbuffers_init(&buf, _state, ae_true);
     ae_matrix_init(&xc, 0, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&t, 0, DT_REAL, _state, ae_true);
@@ -4491,38 +4120,20 @@ void spearmancorrm(/* Real    */ ae_matrix* x,
 
 
 /*************************************************************************
-Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
-*************************************************************************/
-void _pexec_spearmancorrm(/* Real    */ ae_matrix* x,
-    ae_int_t n,
-    ae_int_t m,
-    /* Real    */ ae_matrix* c, ae_state *_state)
-{
-    spearmancorrm(x,n,m,c, _state);
-}
-
-
-/*************************************************************************
 Cross-covariance matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   ! 
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
-  !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with covariance matrices smaller than 128*128.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
+  ! 
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M1], sample matrix:
@@ -4570,7 +4181,12 @@ void covm2(/* Real    */ ae_matrix* x,
     ae_frame_make(_state, &_frame_block);
     memset(&_x, 0, sizeof(_x));
     memset(&_y, 0, sizeof(_y));
-    memset(&t, 0, sizeof(t));    memset(&x0, 0, sizeof(x0));    memset(&y0, 0, sizeof(y0));    memset(&samex, 0, sizeof(samex));    memset(&samey, 0, sizeof(samey));    ae_matrix_init_copy(&_x, x, _state, ae_true);
+    memset(&t, 0, sizeof(t));
+    memset(&x0, 0, sizeof(x0));
+    memset(&y0, 0, sizeof(y0));
+    memset(&samex, 0, sizeof(samex));
+    memset(&samey, 0, sizeof(samey));
+    ae_matrix_init_copy(&_x, x, _state, ae_true);
     x = &_x;
     ae_matrix_init_copy(&_y, y, _state, ae_true);
     y = &_y;
@@ -4691,40 +4307,20 @@ void covm2(/* Real    */ ae_matrix* x,
 
 
 /*************************************************************************
-Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
-*************************************************************************/
-void _pexec_covm2(/* Real    */ ae_matrix* x,
-    /* Real    */ ae_matrix* y,
-    ae_int_t n,
-    ae_int_t m1,
-    ae_int_t m2,
-    /* Real    */ ae_matrix* c, ae_state *_state)
-{
-    covm2(x,y,n,m1,m2,c, _state);
-}
-
-
-/*************************************************************************
 Pearson product-moment cross-correlation matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   ! 
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
-  !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with correlation matrices smaller than 128*128.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
+  ! 
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M1], sample matrix:
@@ -4774,7 +4370,14 @@ void pearsoncorrm2(/* Real    */ ae_matrix* x,
     ae_frame_make(_state, &_frame_block);
     memset(&_x, 0, sizeof(_x));
     memset(&_y, 0, sizeof(_y));
-    memset(&t, 0, sizeof(t));    memset(&x0, 0, sizeof(x0));    memset(&y0, 0, sizeof(y0));    memset(&sx, 0, sizeof(sx));    memset(&sy, 0, sizeof(sy));    memset(&samex, 0, sizeof(samex));    memset(&samey, 0, sizeof(samey));    ae_matrix_init_copy(&_x, x, _state, ae_true);
+    memset(&t, 0, sizeof(t));
+    memset(&x0, 0, sizeof(x0));
+    memset(&y0, 0, sizeof(y0));
+    memset(&sx, 0, sizeof(sx));
+    memset(&sy, 0, sizeof(sy));
+    memset(&samex, 0, sizeof(samex));
+    memset(&samey, 0, sizeof(samey));
+    ae_matrix_init_copy(&_x, x, _state, ae_true);
     x = &_x;
     ae_matrix_init_copy(&_y, y, _state, ae_true);
     y = &_y;
@@ -4946,40 +4549,20 @@ void pearsoncorrm2(/* Real    */ ae_matrix* x,
 
 
 /*************************************************************************
-Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
-*************************************************************************/
-void _pexec_pearsoncorrm2(/* Real    */ ae_matrix* x,
-    /* Real    */ ae_matrix* y,
-    ae_int_t n,
-    ae_int_t m1,
-    ae_int_t m2,
-    /* Real    */ ae_matrix* c, ae_state *_state)
-{
-    pearsoncorrm2(x,y,n,m1,m2,c, _state);
-}
-
-
-/*************************************************************************
 Spearman's rank cross-correlation matrix
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   ! 
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
-  !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! with correlation matrices smaller than 128*128.
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! * hardware vendor (Intel) implementations of linear algebra primitives
+  !   (C++ and C# versions, x86/x64 platform)
+  ! 
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     X   -   array[N,M1], sample matrix:
@@ -5029,7 +4612,13 @@ void spearmancorrm2(/* Real    */ ae_matrix* x,
     apbuffers buf;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&t, 0, sizeof(t));    memset(&sx, 0, sizeof(sx));    memset(&sy, 0, sizeof(sy));    memset(&xc, 0, sizeof(xc));    memset(&yc, 0, sizeof(yc));    memset(&buf, 0, sizeof(buf));    ae_matrix_clear(c);
+    memset(&t, 0, sizeof(t));
+    memset(&sx, 0, sizeof(sx));
+    memset(&sy, 0, sizeof(sy));
+    memset(&xc, 0, sizeof(xc));
+    memset(&yc, 0, sizeof(yc));
+    memset(&buf, 0, sizeof(buf));
+    ae_matrix_clear(c);
     ae_vector_init(&t, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&sx, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&sy, 0, DT_REAL, _state, ae_true);
@@ -5200,20 +4789,6 @@ void spearmancorrm2(/* Real    */ ae_matrix* x,
 
 
 /*************************************************************************
-Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
-*************************************************************************/
-void _pexec_spearmancorrm2(/* Real    */ ae_matrix* x,
-    /* Real    */ ae_matrix* y,
-    ae_int_t n,
-    ae_int_t m1,
-    ae_int_t m2,
-    /* Real    */ ae_matrix* c, ae_state *_state)
-{
-    spearmancorrm2(x,y,n,m1,m2,c, _state);
-}
-
-
-/*************************************************************************
 This function replaces data in XY by their ranks:
 * XY is processed row-by-row
 * rows are processed separately
@@ -5221,24 +4796,16 @@ This function replaces data in XY by their ranks:
 * ranking starts from 0, ends at NFeatures-1
 * sum of within-row values is equal to (NFeatures-1)*NFeatures/2
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   ! 
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
-  !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! ones where expected operations count is less than 100.000
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! 
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     XY      -   array[NPoints,NFeatures], dataset
@@ -5264,7 +4831,10 @@ void rankdata(/* Real    */ ae_matrix* xy,
     ae_shared_pool pool;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&buf0, 0, sizeof(buf0));    memset(&buf1, 0, sizeof(buf1));    memset(&pool, 0, sizeof(pool));    _apbuffers_init(&buf0, _state, ae_true);
+    memset(&buf0, 0, sizeof(buf0));
+    memset(&buf1, 0, sizeof(buf1));
+    memset(&pool, 0, sizeof(pool));
+    _apbuffers_init(&buf0, _state, ae_true);
     _apbuffers_init(&buf1, _state, ae_true);
     ae_shared_pool_init(&pool, _state, ae_true);
 
@@ -5281,13 +4851,11 @@ void rankdata(/* Real    */ ae_matrix* xy,
      * Problem cost is assumed to be NPoints*NFeatures*log2(NFeatures),
      * which is proportional, but NOT equal to number of FLOPs required
      * to solve problem.
+     *
+     * Try to use serial code for basecase problems, no SMP functionality, no shared pools.
      */
     basecasecost = 10000;
-    
-    /*
-     * Try to use serial code, no SMP functionality, no shared pools.
-     */
-    if( ae_fp_less(inttoreal(npoints, _state)*inttoreal(nfeatures, _state)*logbase2((double)(nfeatures), _state),(double)(basecasecost)) )
+    if( ae_fp_less(rmul3((double)(npoints), (double)(nfeatures), logbase2((double)(nfeatures), _state), _state),(double)(basecasecost)) )
     {
         basestat_rankdatabasecase(xy, 0, npoints, nfeatures, ae_false, &buf0, &buf1, _state);
         ae_frame_leave(_state);
@@ -5304,13 +4872,14 @@ void rankdata(/* Real    */ ae_matrix* xy,
 
 
 /*************************************************************************
-Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
+Serial stub for GPL edition.
 *************************************************************************/
-void _pexec_rankdata(/* Real    */ ae_matrix* xy,
+ae_bool _trypexec_rankdata(/* Real    */ ae_matrix* xy,
     ae_int_t npoints,
-    ae_int_t nfeatures, ae_state *_state)
+    ae_int_t nfeatures,
+    ae_state *_state)
 {
-    rankdata(xy,npoints,nfeatures, _state);
+    return ae_false;
 }
 
 
@@ -5324,24 +4893,16 @@ This function replaces data in XY by their CENTERED ranks:
 * centering is performed by subtracting mean from each row, i.e it changes
   mean value, but does NOT change higher moments
 
-SMP EDITION OF ALGLIB:
-
-  ! This function can utilize multicore capabilities of  your system.  In
-  ! order to do this you have to call version with "smp_" prefix,   which
-  ! indicates that multicore code will be used.
+  ! COMMERCIAL EDITION OF ALGLIB:
   ! 
-  ! This note is given for users of SMP edition; if you use GPL  edition,
-  ! or commercial edition of ALGLIB without SMP support, you  still  will
-  ! be able to call smp-version of this function,  but  all  computations
-  ! will be done serially.
-  !
-  ! We recommend you to carefully read ALGLIB Reference  Manual,  section
-  ! called 'SMP support', before using parallel version of this function.
-  !
-  ! You should remember that starting/stopping worker thread always  have
-  ! non-zero cost. Although  multicore  version  is  pretty  efficient on
-  ! large problems, we do not recommend you to use it on small problems -
-  ! ones where expected operations count is less than 100.000
+  ! Commercial Edition of ALGLIB includes following important improvements
+  ! of this function:
+  ! * high-performance native backend with same C# interface (C# version)
+  ! * multithreading support (C++ and C# versions)
+  ! 
+  ! We recommend you to read 'Working with commercial version' section  of
+  ! ALGLIB Reference Manual in order to find out how to  use  performance-
+  ! related features provided by commercial edition of ALGLIB.
 
 INPUT PARAMETERS:
     XY      -   array[NPoints,NFeatures], dataset
@@ -5367,7 +4928,10 @@ void rankdatacentered(/* Real    */ ae_matrix* xy,
     ae_shared_pool pool;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&buf0, 0, sizeof(buf0));    memset(&buf1, 0, sizeof(buf1));    memset(&pool, 0, sizeof(pool));    _apbuffers_init(&buf0, _state, ae_true);
+    memset(&buf0, 0, sizeof(buf0));
+    memset(&buf1, 0, sizeof(buf1));
+    memset(&pool, 0, sizeof(pool));
+    _apbuffers_init(&buf0, _state, ae_true);
     _apbuffers_init(&buf1, _state, ae_true);
     ae_shared_pool_init(&pool, _state, ae_true);
 
@@ -5384,13 +4948,11 @@ void rankdatacentered(/* Real    */ ae_matrix* xy,
      * Problem cost is assumed to be NPoints*NFeatures*log2(NFeatures),
      * which is proportional, but NOT equal to number of FLOPs required
      * to solve problem.
-     */
-    basecasecost = 10000;
-    
-    /*
+     *
      * Try to use serial code, no SMP functionality, no shared pools.
      */
-    if( ae_fp_less(inttoreal(npoints, _state)*inttoreal(nfeatures, _state)*logbase2((double)(nfeatures), _state),(double)(basecasecost)) )
+    basecasecost = 10000;
+    if( ae_fp_less(rmul3((double)(npoints), (double)(nfeatures), logbase2((double)(nfeatures), _state), _state),(double)(basecasecost)) )
     {
         basestat_rankdatabasecase(xy, 0, npoints, nfeatures, ae_true, &buf0, &buf1, _state);
         ae_frame_leave(_state);
@@ -5407,13 +4969,14 @@ void rankdatacentered(/* Real    */ ae_matrix* xy,
 
 
 /*************************************************************************
-Single-threaded stub. HPC ALGLIB replaces it by multithreaded code.
+Serial stub for GPL edition.
 *************************************************************************/
-void _pexec_rankdatacentered(/* Real    */ ae_matrix* xy,
+ae_bool _trypexec_rankdatacentered(/* Real    */ ae_matrix* xy,
     ae_int_t npoints,
-    ae_int_t nfeatures, ae_state *_state)
+    ae_int_t nfeatures,
+    ae_state *_state)
 {
-    rankdatacentered(xy,npoints,nfeatures, _state);
+    return ae_false;
 }
 
 
@@ -5498,16 +5061,30 @@ static void basestat_rankdatarec(/* Real    */ ae_matrix* xy,
     ae_int_t im;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&_buf0, 0, sizeof(_buf0));    memset(&_buf1, 0, sizeof(_buf1));    ae_smart_ptr_init(&_buf0, (void**)&buf0, _state, ae_true);
+    memset(&_buf0, 0, sizeof(_buf0));
+    memset(&_buf1, 0, sizeof(_buf1));
+    ae_smart_ptr_init(&_buf0, (void**)&buf0, _state, ae_true);
     ae_smart_ptr_init(&_buf1, (void**)&buf1, _state, ae_true);
 
     ae_assert(i1>=i0, "RankDataRec: internal error", _state);
     
     /*
+     * Try to activate parallelism
+     */
+    if( i1-i0>=4&&ae_fp_greater_eq(rmul3((double)(i1-i0), (double)(nfeatures), logbase2((double)(nfeatures), _state), _state),smpactivationlevel(_state)) )
+    {
+        if( _trypexec_basestat_rankdatarec(xy,i0,i1,nfeatures,iscentered,pool,basecasecost, _state) )
+        {
+            ae_frame_leave(_state);
+            return;
+        }
+    }
+    
+    /*
      * Recursively split problem, if it is too large
      */
-    problemcost = inttoreal(i1-i0, _state)*inttoreal(nfeatures, _state)*logbase2((double)(nfeatures), _state);
-    if( i1-i0>=2&&ae_fp_greater(problemcost,(double)(basecasecost)) )
+    problemcost = rmul3((double)(i1-i0), (double)(nfeatures), logbase2((double)(nfeatures), _state), _state);
+    if( i1-i0>=2&&ae_fp_greater(problemcost,spawnlevel(_state)) )
     {
         im = (i1+i0)/2;
         basestat_rankdatarec(xy, i0, im, nfeatures, iscentered, pool, basecasecost, _state);
@@ -5525,6 +5102,22 @@ static void basestat_rankdatarec(/* Real    */ ae_matrix* xy,
     ae_shared_pool_recycle(pool, &_buf0, _state);
     ae_shared_pool_recycle(pool, &_buf1, _state);
     ae_frame_leave(_state);
+}
+
+
+/*************************************************************************
+Serial stub for GPL edition.
+*************************************************************************/
+ae_bool _trypexec_basestat_rankdatarec(/* Real    */ ae_matrix* xy,
+    ae_int_t i0,
+    ae_int_t i1,
+    ae_int_t nfeatures,
+    ae_bool iscentered,
+    ae_shared_pool* pool,
+    ae_int_t basecasecost,
+    ae_state *_state)
+{
+    return ae_false;
 }
 
 
@@ -5577,6 +5170,3208 @@ static void basestat_rankdatabasecase(/* Real    */ ae_matrix* xy,
         rankx(&buf1->ra0, nfeatures, iscentered, buf0, _state);
         ae_v_move(&xy->ptr.pp_double[i][0], 1, &buf1->ra0.ptr.p_double[0], 1, ae_v_len(0,nfeatures-1));
     }
+}
+
+
+/*************************************************************************
+Serial stub for GPL edition.
+*************************************************************************/
+ae_bool _trypexec_basestat_rankdatabasecase(/* Real    */ ae_matrix* xy,
+    ae_int_t i0,
+    ae_int_t i1,
+    ae_int_t nfeatures,
+    ae_bool iscentered,
+    apbuffers* buf0,
+    apbuffers* buf1,
+    ae_state *_state)
+{
+    return ae_false;
+}
+
+
+#endif
+#if defined(AE_COMPILE_CORRELATIONTESTS) || !defined(AE_PARTIAL_BUILD)
+
+
+/*************************************************************************
+Pearson's correlation coefficient significance test
+
+This test checks hypotheses about whether X  and  Y  are  samples  of  two
+continuous  distributions  having  zero  correlation  or   whether   their
+correlation is non-zero.
+
+The following tests are performed:
+    * two-tailed test (null hypothesis - X and Y have zero correlation)
+    * left-tailed test (null hypothesis - the correlation  coefficient  is
+      greater than or equal to 0)
+    * right-tailed test (null hypothesis - the correlation coefficient  is
+      less than or equal to 0).
+
+Requirements:
+    * the number of elements in each sample is not less than 5
+    * normality of distributions of X and Y.
+
+Input parameters:
+    R   -   Pearson's correlation coefficient for X and Y
+    N   -   number of elements in samples, N>=5.
+
+Output parameters:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+  -- ALGLIB --
+     Copyright 09.04.2007 by Bochkanov Sergey
+*************************************************************************/
+void pearsoncorrelationsignificance(double r,
+     ae_int_t n,
+     double* bothtails,
+     double* lefttail,
+     double* righttail,
+     ae_state *_state)
+{
+    double t;
+    double p;
+
+    *bothtails = 0;
+    *lefttail = 0;
+    *righttail = 0;
+
+    
+    /*
+     * Some special cases
+     */
+    if( ae_fp_greater_eq(r,(double)(1)) )
+    {
+        *bothtails = 0.0;
+        *lefttail = 1.0;
+        *righttail = 0.0;
+        return;
+    }
+    if( ae_fp_less_eq(r,(double)(-1)) )
+    {
+        *bothtails = 0.0;
+        *lefttail = 0.0;
+        *righttail = 1.0;
+        return;
+    }
+    if( n<5 )
+    {
+        *bothtails = 1.0;
+        *lefttail = 1.0;
+        *righttail = 1.0;
+        return;
+    }
+    
+    /*
+     * General case
+     */
+    t = r*ae_sqrt((n-2)/(1-ae_sqr(r, _state)), _state);
+    p = studenttdistribution(n-2, t, _state);
+    *bothtails = 2*ae_minreal(p, 1-p, _state);
+    *lefttail = p;
+    *righttail = 1-p;
+}
+
+
+/*************************************************************************
+Spearman's rank correlation coefficient significance test
+
+This test checks hypotheses about whether X  and  Y  are  samples  of  two
+continuous  distributions  having  zero  correlation  or   whether   their
+correlation is non-zero.
+
+The following tests are performed:
+    * two-tailed test (null hypothesis - X and Y have zero correlation)
+    * left-tailed test (null hypothesis - the correlation  coefficient  is
+      greater than or equal to 0)
+    * right-tailed test (null hypothesis - the correlation coefficient  is
+      less than or equal to 0).
+
+Requirements:
+    * the number of elements in each sample is not less than 5.
+
+The test is non-parametric and doesn't require distributions X and Y to be
+normal.
+
+Input parameters:
+    R   -   Spearman's rank correlation coefficient for X and Y
+    N   -   number of elements in samples, N>=5.
+
+Output parameters:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+  -- ALGLIB --
+     Copyright 09.04.2007 by Bochkanov Sergey
+*************************************************************************/
+void spearmanrankcorrelationsignificance(double r,
+     ae_int_t n,
+     double* bothtails,
+     double* lefttail,
+     double* righttail,
+     ae_state *_state)
+{
+    double t;
+    double p;
+
+    *bothtails = 0;
+    *lefttail = 0;
+    *righttail = 0;
+
+    
+    /*
+     * Special case
+     */
+    if( n<5 )
+    {
+        *bothtails = 1.0;
+        *lefttail = 1.0;
+        *righttail = 1.0;
+        return;
+    }
+    
+    /*
+     * General case
+     */
+    if( ae_fp_greater_eq(r,(double)(1)) )
+    {
+        t = 1.0E10;
+    }
+    else
+    {
+        if( ae_fp_less_eq(r,(double)(-1)) )
+        {
+            t = -1.0E10;
+        }
+        else
+        {
+            t = r*ae_sqrt((n-2)/(1-ae_sqr(r, _state)), _state);
+        }
+    }
+    if( ae_fp_less(t,(double)(0)) )
+    {
+        p = correlationtests_spearmantail(t, n, _state);
+        *bothtails = 2*p;
+        *lefttail = p;
+        *righttail = 1-p;
+    }
+    else
+    {
+        p = correlationtests_spearmantail(-t, n, _state);
+        *bothtails = 2*p;
+        *lefttail = 1-p;
+        *righttail = p;
+    }
+}
+
+
+/*************************************************************************
+Tail(S, 5)
+*************************************************************************/
+static double correlationtests_spearmantail5(double s, ae_state *_state)
+{
+    double result;
+
+
+    if( ae_fp_less(s,0.000e+00) )
+    {
+        result = studenttdistribution(3, -s, _state);
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.580e+00) )
+    {
+        result = 8.304e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.322e+00) )
+    {
+        result = 4.163e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.704e+00) )
+    {
+        result = 6.641e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.303e+00) )
+    {
+        result = 1.164e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.003e+00) )
+    {
+        result = 1.748e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,7.584e-01) )
+    {
+        result = 2.249e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,5.468e-01) )
+    {
+        result = 2.581e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.555e-01) )
+    {
+        result = 3.413e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.759e-01) )
+    {
+        result = 3.911e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.741e-03) )
+    {
+        result = 4.747e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,0.000e+00) )
+    {
+        result = 5.248e-01;
+        return result;
+    }
+    result = (double)(0);
+    return result;
+}
+
+
+/*************************************************************************
+Tail(S, 6)
+*************************************************************************/
+static double correlationtests_spearmantail6(double s, ae_state *_state)
+{
+    double result;
+
+
+    if( ae_fp_less(s,1.001e+00) )
+    {
+        result = studenttdistribution(4, -s, _state);
+        return result;
+    }
+    if( ae_fp_greater_eq(s,5.663e+00) )
+    {
+        result = 1.366e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.834e+00) )
+    {
+        result = 8.350e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.968e+00) )
+    {
+        result = 1.668e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.430e+00) )
+    {
+        result = 2.921e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.045e+00) )
+    {
+        result = 5.144e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.747e+00) )
+    {
+        result = 6.797e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.502e+00) )
+    {
+        result = 8.752e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.295e+00) )
+    {
+        result = 1.210e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.113e+00) )
+    {
+        result = 1.487e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.001e+00) )
+    {
+        result = 1.780e-01;
+        return result;
+    }
+    result = (double)(0);
+    return result;
+}
+
+
+/*************************************************************************
+Tail(S, 7)
+*************************************************************************/
+static double correlationtests_spearmantail7(double s, ae_state *_state)
+{
+    double result;
+
+
+    if( ae_fp_less(s,1.001e+00) )
+    {
+        result = studenttdistribution(5, -s, _state);
+        return result;
+    }
+    if( ae_fp_greater_eq(s,8.159e+00) )
+    {
+        result = 2.081e-04;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,5.620e+00) )
+    {
+        result = 1.393e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,4.445e+00) )
+    {
+        result = 3.398e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.728e+00) )
+    {
+        result = 6.187e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.226e+00) )
+    {
+        result = 1.200e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.844e+00) )
+    {
+        result = 1.712e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.539e+00) )
+    {
+        result = 2.408e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.285e+00) )
+    {
+        result = 3.320e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.068e+00) )
+    {
+        result = 4.406e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.879e+00) )
+    {
+        result = 5.478e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.710e+00) )
+    {
+        result = 6.946e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.559e+00) )
+    {
+        result = 8.331e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.420e+00) )
+    {
+        result = 1.001e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.292e+00) )
+    {
+        result = 1.180e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.173e+00) )
+    {
+        result = 1.335e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.062e+00) )
+    {
+        result = 1.513e-01;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.001e+00) )
+    {
+        result = 1.770e-01;
+        return result;
+    }
+    result = (double)(0);
+    return result;
+}
+
+
+/*************************************************************************
+Tail(S, 8)
+*************************************************************************/
+static double correlationtests_spearmantail8(double s, ae_state *_state)
+{
+    double result;
+
+
+    if( ae_fp_less(s,2.001e+00) )
+    {
+        result = studenttdistribution(6, -s, _state);
+        return result;
+    }
+    if( ae_fp_greater_eq(s,1.103e+01) )
+    {
+        result = 2.194e-05;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,7.685e+00) )
+    {
+        result = 2.008e-04;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,6.143e+00) )
+    {
+        result = 5.686e-04;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,5.213e+00) )
+    {
+        result = 1.138e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,4.567e+00) )
+    {
+        result = 2.310e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,4.081e+00) )
+    {
+        result = 3.634e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.697e+00) )
+    {
+        result = 5.369e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.381e+00) )
+    {
+        result = 7.708e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.114e+00) )
+    {
+        result = 1.087e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.884e+00) )
+    {
+        result = 1.397e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.682e+00) )
+    {
+        result = 1.838e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.502e+00) )
+    {
+        result = 2.288e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.340e+00) )
+    {
+        result = 2.883e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.192e+00) )
+    {
+        result = 3.469e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.057e+00) )
+    {
+        result = 4.144e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.001e+00) )
+    {
+        result = 4.804e-02;
+        return result;
+    }
+    result = (double)(0);
+    return result;
+}
+
+
+/*************************************************************************
+Tail(S, 9)
+*************************************************************************/
+static double correlationtests_spearmantail9(double s, ae_state *_state)
+{
+    double result;
+
+
+    if( ae_fp_less(s,2.001e+00) )
+    {
+        result = studenttdistribution(7, -s, _state);
+        return result;
+    }
+    if( ae_fp_greater_eq(s,9.989e+00) )
+    {
+        result = 2.306e-05;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,8.069e+00) )
+    {
+        result = 8.167e-05;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,6.890e+00) )
+    {
+        result = 1.744e-04;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,6.077e+00) )
+    {
+        result = 3.625e-04;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,5.469e+00) )
+    {
+        result = 6.450e-04;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,4.991e+00) )
+    {
+        result = 1.001e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,4.600e+00) )
+    {
+        result = 1.514e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,4.272e+00) )
+    {
+        result = 2.213e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.991e+00) )
+    {
+        result = 2.990e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.746e+00) )
+    {
+        result = 4.101e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.530e+00) )
+    {
+        result = 5.355e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.336e+00) )
+    {
+        result = 6.887e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.161e+00) )
+    {
+        result = 8.598e-03;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,3.002e+00) )
+    {
+        result = 1.065e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.855e+00) )
+    {
+        result = 1.268e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.720e+00) )
+    {
+        result = 1.552e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.595e+00) )
+    {
+        result = 1.836e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.477e+00) )
+    {
+        result = 2.158e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.368e+00) )
+    {
+        result = 2.512e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.264e+00) )
+    {
+        result = 2.942e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.166e+00) )
+    {
+        result = 3.325e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.073e+00) )
+    {
+        result = 3.800e-02;
+        return result;
+    }
+    if( ae_fp_greater_eq(s,2.001e+00) )
+    {
+        result = 4.285e-02;
+        return result;
+    }
+    result = (double)(0);
+    return result;
+}
+
+
+/*************************************************************************
+Tail(T,N), accepts T<0
+*************************************************************************/
+static double correlationtests_spearmantail(double t,
+     ae_int_t n,
+     ae_state *_state)
+{
+    double result;
+
+
+    if( n==5 )
+    {
+        result = correlationtests_spearmantail5(-t, _state);
+        return result;
+    }
+    if( n==6 )
+    {
+        result = correlationtests_spearmantail6(-t, _state);
+        return result;
+    }
+    if( n==7 )
+    {
+        result = correlationtests_spearmantail7(-t, _state);
+        return result;
+    }
+    if( n==8 )
+    {
+        result = correlationtests_spearmantail8(-t, _state);
+        return result;
+    }
+    if( n==9 )
+    {
+        result = correlationtests_spearmantail9(-t, _state);
+        return result;
+    }
+    result = studenttdistribution(n-2, t, _state);
+    return result;
+}
+
+
+#endif
+#if defined(AE_COMPILE_JARQUEBERA) || !defined(AE_PARTIAL_BUILD)
+
+
+/*************************************************************************
+Jarque-Bera test
+
+This test checks hypotheses about the fact that a  given  sample  X  is  a
+sample of normal random variable.
+
+Requirements:
+    * the number of elements in the sample is not less than 5.
+
+Input parameters:
+    X   -   sample. Array whose index goes from 0 to N-1.
+    N   -   size of the sample. N>=5
+
+Output parameters:
+    P           -   p-value for the test
+
+Accuracy of the approximation used (5<=N<=1951):
+
+p-value  	    relative error (5<=N<=1951)
+[1, 0.1]            < 1%
+[0.1, 0.01]         < 2%
+[0.01, 0.001]       < 6%
+[0.001, 0]          wasn't measured
+
+For N>1951 accuracy wasn't measured but it shouldn't be sharply  different
+from table values.
+
+  -- ALGLIB --
+     Copyright 09.04.2007 by Bochkanov Sergey
+*************************************************************************/
+void jarqueberatest(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     double* p,
+     ae_state *_state)
+{
+    double s;
+
+    *p = 0;
+
+    
+    /*
+     * N is too small
+     */
+    if( n<5 )
+    {
+        *p = 1.0;
+        return;
+    }
+    
+    /*
+     * N is large enough
+     */
+    jarquebera_jarqueberastatistic(x, n, &s, _state);
+    *p = jarquebera_jarqueberaapprox(n, s, _state);
+}
+
+
+static void jarquebera_jarqueberastatistic(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     double* s,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double v;
+    double v1;
+    double v2;
+    double stddev;
+    double mean;
+    double variance;
+    double skewness;
+    double kurtosis;
+
+    *s = 0;
+
+    mean = (double)(0);
+    variance = (double)(0);
+    skewness = (double)(0);
+    kurtosis = (double)(0);
+    stddev = (double)(0);
+    ae_assert(n>1, "Assertion failed", _state);
+    
+    /*
+     * Mean
+     */
+    for(i=0; i<=n-1; i++)
+    {
+        mean = mean+x->ptr.p_double[i];
+    }
+    mean = mean/n;
+    
+    /*
+     * Variance (using corrected two-pass algorithm)
+     */
+    if( n!=1 )
+    {
+        v1 = (double)(0);
+        for(i=0; i<=n-1; i++)
+        {
+            v1 = v1+ae_sqr(x->ptr.p_double[i]-mean, _state);
+        }
+        v2 = (double)(0);
+        for(i=0; i<=n-1; i++)
+        {
+            v2 = v2+(x->ptr.p_double[i]-mean);
+        }
+        v2 = ae_sqr(v2, _state)/n;
+        variance = (v1-v2)/(n-1);
+        if( ae_fp_less(variance,(double)(0)) )
+        {
+            variance = (double)(0);
+        }
+        stddev = ae_sqrt(variance, _state);
+    }
+    
+    /*
+     * Skewness and kurtosis
+     */
+    if( ae_fp_neq(stddev,(double)(0)) )
+    {
+        for(i=0; i<=n-1; i++)
+        {
+            v = (x->ptr.p_double[i]-mean)/stddev;
+            v2 = ae_sqr(v, _state);
+            skewness = skewness+v2*v;
+            kurtosis = kurtosis+ae_sqr(v2, _state);
+        }
+        skewness = skewness/n;
+        kurtosis = kurtosis/n-3;
+    }
+    
+    /*
+     * Statistic
+     */
+    *s = (double)n/(double)6*(ae_sqr(skewness, _state)+ae_sqr(kurtosis, _state)/4);
+}
+
+
+static double jarquebera_jarqueberaapprox(ae_int_t n,
+     double s,
+     ae_state *_state)
+{
+    ae_frame _frame_block;
+    ae_vector vx;
+    ae_vector vy;
+    ae_matrix ctbl;
+    double t1;
+    double t2;
+    double t3;
+    double t;
+    double f1;
+    double f2;
+    double f3;
+    double f12;
+    double f23;
+    double x;
+    double result;
+
+    ae_frame_make(_state, &_frame_block);
+    memset(&vx, 0, sizeof(vx));
+    memset(&vy, 0, sizeof(vy));
+    memset(&ctbl, 0, sizeof(ctbl));
+    ae_vector_init(&vx, 0, DT_REAL, _state, ae_true);
+    ae_vector_init(&vy, 0, DT_REAL, _state, ae_true);
+    ae_matrix_init(&ctbl, 0, 0, DT_REAL, _state, ae_true);
+
+    result = (double)(1);
+    x = s;
+    if( n<5 )
+    {
+        ae_frame_leave(_state);
+        return result;
+    }
+    
+    /*
+     * N = 5..20 are tabulated
+     */
+    if( n>=5&&n<=20 )
+    {
+        if( n==5 )
+        {
+            result = ae_exp(jarquebera_jbtbl5(x, _state), _state);
+        }
+        if( n==6 )
+        {
+            result = ae_exp(jarquebera_jbtbl6(x, _state), _state);
+        }
+        if( n==7 )
+        {
+            result = ae_exp(jarquebera_jbtbl7(x, _state), _state);
+        }
+        if( n==8 )
+        {
+            result = ae_exp(jarquebera_jbtbl8(x, _state), _state);
+        }
+        if( n==9 )
+        {
+            result = ae_exp(jarquebera_jbtbl9(x, _state), _state);
+        }
+        if( n==10 )
+        {
+            result = ae_exp(jarquebera_jbtbl10(x, _state), _state);
+        }
+        if( n==11 )
+        {
+            result = ae_exp(jarquebera_jbtbl11(x, _state), _state);
+        }
+        if( n==12 )
+        {
+            result = ae_exp(jarquebera_jbtbl12(x, _state), _state);
+        }
+        if( n==13 )
+        {
+            result = ae_exp(jarquebera_jbtbl13(x, _state), _state);
+        }
+        if( n==14 )
+        {
+            result = ae_exp(jarquebera_jbtbl14(x, _state), _state);
+        }
+        if( n==15 )
+        {
+            result = ae_exp(jarquebera_jbtbl15(x, _state), _state);
+        }
+        if( n==16 )
+        {
+            result = ae_exp(jarquebera_jbtbl16(x, _state), _state);
+        }
+        if( n==17 )
+        {
+            result = ae_exp(jarquebera_jbtbl17(x, _state), _state);
+        }
+        if( n==18 )
+        {
+            result = ae_exp(jarquebera_jbtbl18(x, _state), _state);
+        }
+        if( n==19 )
+        {
+            result = ae_exp(jarquebera_jbtbl19(x, _state), _state);
+        }
+        if( n==20 )
+        {
+            result = ae_exp(jarquebera_jbtbl20(x, _state), _state);
+        }
+        ae_frame_leave(_state);
+        return result;
+    }
+    
+    /*
+     * N = 20, 30, 50 are tabulated.
+     * In-between values are interpolated
+     * using interpolating polynomial of the second degree.
+     */
+    if( n>20&&n<=50 )
+    {
+        t1 = -1.0/20.0;
+        t2 = -1.0/30.0;
+        t3 = -1.0/50.0;
+        t = -1.0/n;
+        f1 = jarquebera_jbtbl20(x, _state);
+        f2 = jarquebera_jbtbl30(x, _state);
+        f3 = jarquebera_jbtbl50(x, _state);
+        f12 = ((t-t2)*f1+(t1-t)*f2)/(t1-t2);
+        f23 = ((t-t3)*f2+(t2-t)*f3)/(t2-t3);
+        result = ((t-t3)*f12+(t1-t)*f23)/(t1-t3);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        result = ae_exp(result, _state);
+        ae_frame_leave(_state);
+        return result;
+    }
+    
+    /*
+     * N = 50, 65, 100 are tabulated.
+     * In-between values are interpolated
+     * using interpolating polynomial of the second degree.
+     */
+    if( n>50&&n<=100 )
+    {
+        t1 = -1.0/50.0;
+        t2 = -1.0/65.0;
+        t3 = -1.0/100.0;
+        t = -1.0/n;
+        f1 = jarquebera_jbtbl50(x, _state);
+        f2 = jarquebera_jbtbl65(x, _state);
+        f3 = jarquebera_jbtbl100(x, _state);
+        f12 = ((t-t2)*f1+(t1-t)*f2)/(t1-t2);
+        f23 = ((t-t3)*f2+(t2-t)*f3)/(t2-t3);
+        result = ((t-t3)*f12+(t1-t)*f23)/(t1-t3);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        result = ae_exp(result, _state);
+        ae_frame_leave(_state);
+        return result;
+    }
+    
+    /*
+     * N = 100, 130, 200 are tabulated.
+     * In-between values are interpolated
+     * using interpolating polynomial of the second degree.
+     */
+    if( n>100&&n<=200 )
+    {
+        t1 = -1.0/100.0;
+        t2 = -1.0/130.0;
+        t3 = -1.0/200.0;
+        t = -1.0/n;
+        f1 = jarquebera_jbtbl100(x, _state);
+        f2 = jarquebera_jbtbl130(x, _state);
+        f3 = jarquebera_jbtbl200(x, _state);
+        f12 = ((t-t2)*f1+(t1-t)*f2)/(t1-t2);
+        f23 = ((t-t3)*f2+(t2-t)*f3)/(t2-t3);
+        result = ((t-t3)*f12+(t1-t)*f23)/(t1-t3);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        result = ae_exp(result, _state);
+        ae_frame_leave(_state);
+        return result;
+    }
+    
+    /*
+     * N = 200, 301, 501 are tabulated.
+     * In-between values are interpolated
+     * using interpolating polynomial of the second degree.
+     */
+    if( n>200&&n<=501 )
+    {
+        t1 = -1.0/200.0;
+        t2 = -1.0/301.0;
+        t3 = -1.0/501.0;
+        t = -1.0/n;
+        f1 = jarquebera_jbtbl200(x, _state);
+        f2 = jarquebera_jbtbl301(x, _state);
+        f3 = jarquebera_jbtbl501(x, _state);
+        f12 = ((t-t2)*f1+(t1-t)*f2)/(t1-t2);
+        f23 = ((t-t3)*f2+(t2-t)*f3)/(t2-t3);
+        result = ((t-t3)*f12+(t1-t)*f23)/(t1-t3);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        result = ae_exp(result, _state);
+        ae_frame_leave(_state);
+        return result;
+    }
+    
+    /*
+     * N = 501, 701, 1401 are tabulated.
+     * In-between values are interpolated
+     * using interpolating polynomial of the second degree.
+     */
+    if( n>501&&n<=1401 )
+    {
+        t1 = -1.0/501.0;
+        t2 = -1.0/701.0;
+        t3 = -1.0/1401.0;
+        t = -1.0/n;
+        f1 = jarquebera_jbtbl501(x, _state);
+        f2 = jarquebera_jbtbl701(x, _state);
+        f3 = jarquebera_jbtbl1401(x, _state);
+        f12 = ((t-t2)*f1+(t1-t)*f2)/(t1-t2);
+        f23 = ((t-t3)*f2+(t2-t)*f3)/(t2-t3);
+        result = ((t-t3)*f12+(t1-t)*f23)/(t1-t3);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        result = ae_exp(result, _state);
+        ae_frame_leave(_state);
+        return result;
+    }
+    
+    /*
+     * Asymptotic expansion
+     */
+    if( n>1401 )
+    {
+        result = -0.5*x+(jarquebera_jbtbl1401(x, _state)+0.5*x)*ae_sqrt((double)1401/(double)n, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        result = ae_exp(result, _state);
+        ae_frame_leave(_state);
+        return result;
+    }
+    ae_frame_leave(_state);
+    return result;
+}
+
+
+static double jarquebera_jbtbl5(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,0.4000) )
+    {
+        x = 2*(s-0.000000)/0.400000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.097885e-20, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.854501e-20, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.756616e-20, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,1.1000) )
+    {
+        x = 2*(s-0.400000)/0.700000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.324545e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.075941e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -9.772272e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.175686e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.576162e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.126861e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.434425e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.790359e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.809178e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.479704e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.717040e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.294170e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.880632e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.023344e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.601531e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.920403e-02, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -5.188419e+02*(s-1.100000e+00)-4.767297e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl6(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,0.2500) )
+    {
+        x = 2*(s-0.000000)/0.250000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -2.274707e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.700471e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.425764e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,1.3000) )
+    {
+        x = 2*(s-0.250000)/1.050000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.339000e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.011104e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.168177e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.085666e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.738606e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.022876e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.462402e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.908270e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.230772e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.006996e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.410222e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.893768e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 8.114564e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,1.8500) )
+    {
+        x = 2*(s-1.300000)/0.550000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.794311e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.578700e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.394664e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.928290e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.813273e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.076063e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.835380e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.013013e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.058903e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.856915e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.710887e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.770029e+02*(s-1.850000e+00)-1.371015e+01;
+    return result;
+}
+
+
+static double jarquebera_jbtbl7(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,1.4000) )
+    {
+        x = 2*(s-0.000000)/1.400000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.093681e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.695911e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.473192e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.203236e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.590379e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.291876e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.132007e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 9.411147e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.180067e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.487610e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.436561e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,3.0000) )
+    {
+        x = 2*(s-1.400000)/1.600000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -5.947854e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.772675e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.707912e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.691171e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.132795e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.481310e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.867536e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 8.772327e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.033387e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.378277e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.497964e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.636814e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -9.581640e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,3.2000) )
+    {
+        x = 2*(s-3.000000)/0.200000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -7.511008e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.140472e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.682053e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.568561e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.933930e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.140472e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.895025e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.140472e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.933930e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.568561e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.682053e+00, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.824116e+03*(s-3.200000e+00)-1.440330e+01;
+    return result;
+}
+
+
+static double jarquebera_jbtbl8(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,1.3000) )
+    {
+        x = 2*(s-0.000000)/1.300000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -7.199015e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.095921e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.736828e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.047438e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.484320e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.937923e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.810470e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.139780e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.708443e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,2.0000) )
+    {
+        x = 2*(s-1.300000)/0.700000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -3.378966e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.802461e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.547593e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.241042e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.203274e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.201990e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.125597e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.584426e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.546069e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,5.0000) )
+    {
+        x = 2*(s-2.000000)/3.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.828366e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.137533e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.016671e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.745637e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.189801e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.621610e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.741122e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.516368e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.552085e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.787029e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.359774e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -5.087028e+00*(s-5.000000e+00)-1.071300e+01;
+    return result;
+}
+
+
+static double jarquebera_jbtbl9(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,1.3000) )
+    {
+        x = 2*(s-0.000000)/1.300000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.279320e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -9.277151e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.669339e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.086149e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.333816e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.871249e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.007048e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.482245e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.355615e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,2.0000) )
+    {
+        x = 2*(s-1.300000)/0.700000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -2.981430e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.972248e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.747737e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.808530e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.888305e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 9.001302e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.378767e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.108510e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.915372e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,7.0000) )
+    {
+        x = 2*(s-2.000000)/5.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.387463e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.845231e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.809956e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.543461e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.880397e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.160074e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.356527e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.394428e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 9.619892e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.758763e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.790977e-05, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -2.020952e+00*(s-7.000000e+00)-9.516623e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl10(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,1.2000) )
+    {
+        x = 2*(s-0.000000)/1.200000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -4.590993e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.562730e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.353934e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.069933e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.849151e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 8.931406e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.636295e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.178340e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.917749e-05, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,2.0000) )
+    {
+        x = 2*(s-1.200000)/0.800000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -2.537658e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -9.962401e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.838715e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.055792e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.580316e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.781701e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.770362e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.838983e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.999052e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,7.0000) )
+    {
+        x = 2*(s-2.000000)/5.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -5.337524e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.877029e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.734650e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.249254e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.320250e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.432266e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -8.711035e-01*(s-7.000000e+00)-7.212811e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl11(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,1.2000) )
+    {
+        x = 2*(s-0.000000)/1.200000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -4.339517e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.051558e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.000992e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.022547e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -9.808401e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.592870e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.575081e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.086173e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.089011e-05, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,2.2500) )
+    {
+        x = 2*(s-1.200000)/1.050000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -2.523221e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.068388e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.179661e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.555524e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.238964e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.364320e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.895771e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.762774e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.201340e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,8.0000) )
+    {
+        x = 2*(s-2.250000)/5.750000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -5.212179e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.684579e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 8.299519e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.606261e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.310869e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.320115e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -5.715445e-01*(s-8.000000e+00)-6.845834e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl12(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,1.0000) )
+    {
+        x = 2*(s-0.000000)/1.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -2.736742e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.657836e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.047209e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.319599e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.545631e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 9.280445e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.815679e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.213519e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.256838e-05, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,3.0000) )
+    {
+        x = 2*(s-1.000000)/2.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -2.573947e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.515287e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.611880e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.271311e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.495815e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.141186e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.180886e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.388211e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.890761e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.233175e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.946156e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,12.0000) )
+    {
+        x = 2*(s-3.000000)/9.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -5.947819e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.034157e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.878986e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.078603e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.990977e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.866215e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.897866e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.512252e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.073743e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.022621e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.501343e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -2.877243e-01*(s-1.200000e+01)-7.936839e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl13(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,1.0000) )
+    {
+        x = 2*(s-0.000000)/1.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -2.713276e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.557541e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -9.459092e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.044145e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.546132e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.002374e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.349456e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.025669e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.590242e-05, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,3.0000) )
+    {
+        x = 2*(s-1.000000)/2.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -2.454383e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.467539e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.270774e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.075763e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.611647e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.990785e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 8.109212e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.135031e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.915919e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.522390e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.144701e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,13.0000) )
+    {
+        x = 2*(s-3.000000)/10.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -5.736127e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.920809e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.175858e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.002049e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.158966e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.157781e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.762172e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.780347e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.193310e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.442421e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.547756e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -2.799944e-01*(s-1.300000e+01)-7.566269e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl14(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,1.0000) )
+    {
+        x = 2*(s-0.000000)/1.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -2.698527e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.479081e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.640733e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.466899e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.469485e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.150009e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.965975e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.710210e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.327808e-05, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,3.0000) )
+    {
+        x = 2*(s-1.000000)/2.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -2.350359e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.421365e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.960468e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.149167e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.361109e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.976022e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.082700e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.563328e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.453123e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.917559e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.151067e-05, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,15.0000) )
+    {
+        x = 2*(s-3.000000)/12.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -5.746892e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.010441e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.566146e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.129690e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.929724e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.524227e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.192933e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.254730e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.620685e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.289618e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.112350e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -2.590621e-01*(s-1.500000e+01)-7.632238e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl15(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,2.0000) )
+    {
+        x = 2*(s-0.000000)/2.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.043660e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.361653e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.009497e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.951784e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.377903e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.003253e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.271309e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,5.0000) )
+    {
+        x = 2*(s-2.000000)/3.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -3.582778e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.349578e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 9.476514e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.717385e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.222591e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.635124e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.815993e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,17.0000) )
+    {
+        x = 2*(s-5.000000)/12.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.115476e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.655936e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 8.404310e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.663794e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 8.868618e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.381447e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 9.444801e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.581503e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -9.468696e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.728509e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.206470e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.927937e-01*(s-1.700000e+01)-7.700983e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl16(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,2.0000) )
+    {
+        x = 2*(s-0.000000)/2.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.002570e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.298141e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.832803e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.877026e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.539436e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 8.439658e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.756911e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,5.0000) )
+    {
+        x = 2*(s-2.000000)/3.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -3.486198e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.242944e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.020002e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.130531e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.512373e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.054876e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.556839e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,20.0000) )
+    {
+        x = 2*(s-5.000000)/15.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.241608e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.832655e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.340545e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.361143e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.283219e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.484549e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.805968e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.057243e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.454439e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.177513e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.819209e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -2.391580e-01*(s-2.000000e+01)-7.963205e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl17(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,3.0000) )
+    {
+        x = 2*(s-0.000000)/3.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.566973e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.810330e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.840039e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.337294e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.383549e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.556515e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.656965e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.404569e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.447867e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,6.0000) )
+    {
+        x = 2*(s-3.000000)/3.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -3.905684e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.222920e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.146667e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.809176e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.057028e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.211838e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.099683e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.161105e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.225465e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,24.0000) )
+    {
+        x = 2*(s-6.000000)/18.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.594282e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.917838e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.455980e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.999589e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.604263e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.484445e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.819937e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.930390e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.771761e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.232581e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.029083e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -2.127771e-01*(s-2.400000e+01)-8.400197e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl18(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,3.0000) )
+    {
+        x = 2*(s-0.000000)/3.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.526802e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.762373e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.598890e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.189437e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.971721e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.823067e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.064501e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.014932e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.953513e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,6.0000) )
+    {
+        x = 2*(s-3.000000)/3.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -3.818669e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.070918e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.277196e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.879817e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.887357e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.638451e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.502800e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.165796e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.034960e-05, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,20.0000) )
+    {
+        x = 2*(s-6.000000)/14.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.010656e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.496296e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.002227e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.338250e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.137036e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.586202e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -9.736384e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.332251e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.877982e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.160963e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.547247e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.684623e-01*(s-2.000000e+01)-7.428883e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl19(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,3.0000) )
+    {
+        x = 2*(s-0.000000)/3.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.490213e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.719633e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.459123e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.034878e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.113868e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.030922e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.054022e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.525623e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.277360e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,6.0000) )
+    {
+        x = 2*(s-3.000000)/3.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -3.744750e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.977749e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.223716e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.363889e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.711774e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.557257e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.254794e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 9.034207e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.498107e-05, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,20.0000) )
+    {
+        x = 2*(s-6.000000)/14.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -5.872768e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.430689e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.136575e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.726627e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.421110e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.581510e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.559520e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.838208e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 8.428839e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.170682e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.006647e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.539373e-01*(s-2.000000e+01)-7.206941e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl20(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,4.0000) )
+    {
+        x = 2*(s-0.000000)/4.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.854794e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.948947e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.632184e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.139397e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.006237e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.810031e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.573620e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 9.951242e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.274092e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.464196e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.882139e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.575144e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.822804e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.061348e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.908404e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.978353e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,15.0000) )
+    {
+        x = 2*(s-4.000000)/11.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -5.030989e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.327151e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.346404e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.840051e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.578551e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -9.813886e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.905973e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.358489e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.450795e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.941157e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.432418e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.070537e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 9.375654e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.367378e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 9.890859e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.679782e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,25.0000) )
+    {
+        x = 2*(s-15.000000)/10.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -7.015854e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.487737e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.244254e-02, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.318007e-01*(s-2.500000e+01)-7.742185e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl30(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,4.0000) )
+    {
+        x = 2*(s-0.000000)/4.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.630822e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.724298e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.872756e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.658268e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.573597e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.994157e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.994825e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.394303e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.785029e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.990264e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.037838e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.755546e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.774473e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.821395e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.392603e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.353313e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,15.0000) )
+    {
+        x = 2*(s-4.000000)/11.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -4.539322e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.197018e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.396848e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.804293e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.867928e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.768758e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.211792e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.925799e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.046235e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -9.536469e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.489642e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,25.0000) )
+    {
+        x = 2*(s-15.000000)/10.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.263462e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.177316e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.590637e-02, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.028212e-01*(s-2.500000e+01)-6.855288e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl50(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,4.0000) )
+    {
+        x = 2*(s-0.000000)/4.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.436279e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.519711e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.148699e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.001204e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.207620e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.034778e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.220322e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.033260e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.588280e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.851653e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.287733e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,15.0000) )
+    {
+        x = 2*(s-4.000000)/11.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -4.234645e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.189127e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.429738e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.058822e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 9.086776e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.445783e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.311671e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.261298e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.496987e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.605249e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 8.162282e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,25.0000) )
+    {
+        x = 2*(s-15.000000)/10.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -5.921095e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.888603e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.080113e-02, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -9.313116e-02*(s-2.500000e+01)-6.479154e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl65(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,4.0000) )
+    {
+        x = 2*(s-0.000000)/4.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.360024e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.434631e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.514580e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 7.332038e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.158197e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.121233e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.051056e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,15.0000) )
+    {
+        x = 2*(s-4.000000)/11.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -4.148601e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.214233e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.487977e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.424720e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.116715e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.043152e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.718149e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.313701e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.097305e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.181031e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.256975e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,25.0000) )
+    {
+        x = 2*(s-15.000000)/10.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -5.858951e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.895179e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.933237e-02, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -9.443768e-02*(s-2.500000e+01)-6.419137e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl100(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,4.0000) )
+    {
+        x = 2*(s-0.000000)/4.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.257021e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.313418e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.628931e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.264287e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.518487e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.499826e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.836044e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,15.0000) )
+    {
+        x = 2*(s-4.000000)/11.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -4.056508e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.279690e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.665746e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.290012e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.487632e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.704465e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.211669e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,25.0000) )
+    {
+        x = 2*(s-15.000000)/10.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -5.866099e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.399767e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.498208e-02, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.080097e-01*(s-2.500000e+01)-6.481094e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl130(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,4.0000) )
+    {
+        x = 2*(s-0.000000)/4.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.207999e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.253864e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.618032e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.112729e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.210546e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.732602e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.410527e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,15.0000) )
+    {
+        x = 2*(s-4.000000)/11.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -4.026324e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.331990e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.779129e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.674749e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.669077e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.679136e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 8.833221e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,25.0000) )
+    {
+        x = 2*(s-15.000000)/10.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -5.893951e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.475304e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.116734e-02, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.045722e-01*(s-2.500000e+01)-6.510314e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl200(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,4.0000) )
+    {
+        x = 2*(s-0.000000)/4.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.146155e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.177398e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.297970e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.869745e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.717288e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.982108e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.427636e-05, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,15.0000) )
+    {
+        x = 2*(s-4.000000)/11.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -4.034235e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.455006e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.942996e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.973795e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.418812e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.156778e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.896705e-05, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,25.0000) )
+    {
+        x = 2*(s-15.000000)/10.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.086071e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.152176e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.725393e-02, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.132404e-01*(s-2.500000e+01)-6.764034e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl301(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,4.0000) )
+    {
+        x = 2*(s-0.000000)/4.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.104290e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.125800e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -9.595847e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.219666e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.502210e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.414543e-05, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.754115e-05, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,15.0000) )
+    {
+        x = 2*(s-4.000000)/11.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -4.065955e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.582060e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.004472e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -4.709092e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.105779e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.197391e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.386780e-04, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,25.0000) )
+    {
+        x = 2*(s-15.000000)/10.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.311384e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.918763e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.626584e-02, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.293626e-01*(s-2.500000e+01)-7.066995e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl501(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,4.0000) )
+    {
+        x = 2*(s-0.000000)/4.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.067426e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.079765e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -5.463005e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 6.875659e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,15.0000) )
+    {
+        x = 2*(s-4.000000)/11.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -4.127574e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.740694e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.044502e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.746714e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 3.810594e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.197111e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,25.0000) )
+    {
+        x = 2*(s-15.000000)/10.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.628194e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -8.846221e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.386405e-02, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.418332e-01*(s-2.500000e+01)-7.468952e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl701(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,4.0000) )
+    {
+        x = 2*(s-0.000000)/4.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.050999e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.059769e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -3.922680e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 4.847054e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,15.0000) )
+    {
+        x = 2*(s-4.000000)/11.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -4.192182e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.860007e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.963942e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.838711e-02, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.893112e-04, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.159788e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,25.0000) )
+    {
+        x = 2*(s-15.000000)/10.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -6.917851e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -9.817020e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.383727e-02, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -1.532706e-01*(s-2.500000e+01)-7.845715e+00;
+    return result;
+}
+
+
+static double jarquebera_jbtbl1401(double s, ae_state *_state)
+{
+    double x;
+    double tj;
+    double tj1;
+    double result;
+
+
+    result = (double)(0);
+    if( ae_fp_less_eq(s,4.0000) )
+    {
+        x = 2*(s-0.000000)/4.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -1.026266e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.030061e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.259222e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 2.536254e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,15.0000) )
+    {
+        x = 2*(s-4.000000)/11.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -4.329849e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -2.095443e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 1.759363e-01, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -7.751359e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -6.124368e-03, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.793114e-03, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    if( ae_fp_less_eq(s,25.0000) )
+    {
+        x = 2*(s-15.000000)/10.000000-1;
+        tj = (double)(1);
+        tj1 = x;
+        jarquebera_jbcheb(x, -7.544330e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, -1.225382e+00, &tj, &tj1, &result, _state);
+        jarquebera_jbcheb(x, 5.392349e-02, &tj, &tj1, &result, _state);
+        if( ae_fp_greater(result,(double)(0)) )
+        {
+            result = (double)(0);
+        }
+        return result;
+    }
+    result = -2.019375e-01*(s-2.500000e+01)-8.715788e+00;
+    return result;
+}
+
+
+static void jarquebera_jbcheb(double x,
+     double c,
+     double* tj,
+     double* tj1,
+     double* r,
+     ae_state *_state)
+{
+    double t;
+
+
+    *r = *r+c*(*tj);
+    t = 2*x*(*tj1)-(*tj);
+    *tj = *tj1;
+    *tj1 = t;
+}
+
+
+#endif
+#if defined(AE_COMPILE_VARIANCETESTS) || !defined(AE_PARTIAL_BUILD)
+
+
+/*************************************************************************
+Two-sample F-test
+
+This test checks three hypotheses about dispersions of the given  samples.
+The following tests are performed:
+    * two-tailed test (null hypothesis - the dispersions are equal)
+    * left-tailed test (null hypothesis  -  the  dispersion  of  the first
+      sample is greater than or equal to  the  dispersion  of  the  second
+      sample).
+    * right-tailed test (null hypothesis - the  dispersion  of  the  first
+      sample is less than or equal to the dispersion of the second sample)
+
+The test is based on the following assumptions:
+    * the given samples have normal distributions
+    * the samples are independent.
+
+Input parameters:
+    X   -   sample 1. Array whose index goes from 0 to N-1.
+    N   -   sample size.
+    Y   -   sample 2. Array whose index goes from 0 to M-1.
+    M   -   sample size.
+
+Output parameters:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+  -- ALGLIB --
+     Copyright 19.09.2006 by Bochkanov Sergey
+*************************************************************************/
+void ftest(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     /* Real    */ ae_vector* y,
+     ae_int_t m,
+     double* bothtails,
+     double* lefttail,
+     double* righttail,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double xmean;
+    double ymean;
+    double xvar;
+    double yvar;
+    ae_int_t df1;
+    ae_int_t df2;
+    double stat;
+
+    *bothtails = 0;
+    *lefttail = 0;
+    *righttail = 0;
+
+    if( n<=2||m<=2 )
+    {
+        *bothtails = 1.0;
+        *lefttail = 1.0;
+        *righttail = 1.0;
+        return;
+    }
+    
+    /*
+     * Mean
+     */
+    xmean = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        xmean = xmean+x->ptr.p_double[i];
+    }
+    xmean = xmean/n;
+    ymean = (double)(0);
+    for(i=0; i<=m-1; i++)
+    {
+        ymean = ymean+y->ptr.p_double[i];
+    }
+    ymean = ymean/m;
+    
+    /*
+     * Variance (using corrected two-pass algorithm)
+     */
+    xvar = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        xvar = xvar+ae_sqr(x->ptr.p_double[i]-xmean, _state);
+    }
+    xvar = xvar/(n-1);
+    yvar = (double)(0);
+    for(i=0; i<=m-1; i++)
+    {
+        yvar = yvar+ae_sqr(y->ptr.p_double[i]-ymean, _state);
+    }
+    yvar = yvar/(m-1);
+    if( ae_fp_eq(xvar,(double)(0))||ae_fp_eq(yvar,(double)(0)) )
+    {
+        *bothtails = 1.0;
+        *lefttail = 1.0;
+        *righttail = 1.0;
+        return;
+    }
+    
+    /*
+     * Statistic
+     */
+    df1 = n-1;
+    df2 = m-1;
+    stat = ae_minreal(xvar/yvar, yvar/xvar, _state);
+    *bothtails = 1-(fdistribution(df1, df2, 1/stat, _state)-fdistribution(df1, df2, stat, _state));
+    *lefttail = fdistribution(df1, df2, xvar/yvar, _state);
+    *righttail = 1-(*lefttail);
+}
+
+
+/*************************************************************************
+One-sample chi-square test
+
+This test checks three hypotheses about the dispersion of the given sample
+The following tests are performed:
+    * two-tailed test (null hypothesis - the dispersion equals  the  given
+      number)
+    * left-tailed test (null hypothesis - the dispersion is  greater  than
+      or equal to the given number)
+    * right-tailed test (null hypothesis  -  dispersion is  less  than  or
+      equal to the given number).
+
+Test is based on the following assumptions:
+    * the given sample has a normal distribution.
+
+Input parameters:
+    X           -   sample 1. Array whose index goes from 0 to N-1.
+    N           -   size of the sample.
+    Variance    -   dispersion value to compare with.
+
+Output parameters:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+  -- ALGLIB --
+     Copyright 19.09.2006 by Bochkanov Sergey
+*************************************************************************/
+void onesamplevariancetest(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     double variance,
+     double* bothtails,
+     double* lefttail,
+     double* righttail,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double xmean;
+    double xvar;
+    double s;
+    double stat;
+
+    *bothtails = 0;
+    *lefttail = 0;
+    *righttail = 0;
+
+    if( n<=1 )
+    {
+        *bothtails = 1.0;
+        *lefttail = 1.0;
+        *righttail = 1.0;
+        return;
+    }
+    
+    /*
+     * Mean
+     */
+    xmean = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        xmean = xmean+x->ptr.p_double[i];
+    }
+    xmean = xmean/n;
+    
+    /*
+     * Variance
+     */
+    xvar = (double)(0);
+    for(i=0; i<=n-1; i++)
+    {
+        xvar = xvar+ae_sqr(x->ptr.p_double[i]-xmean, _state);
+    }
+    xvar = xvar/(n-1);
+    if( ae_fp_eq(xvar,(double)(0)) )
+    {
+        *bothtails = 1.0;
+        *lefttail = 1.0;
+        *righttail = 1.0;
+        return;
+    }
+    
+    /*
+     * Statistic
+     */
+    stat = (n-1)*xvar/variance;
+    s = chisquaredistribution((double)(n-1), stat, _state);
+    *bothtails = 2*ae_minreal(s, 1-s, _state);
+    *lefttail = s;
+    *righttail = 1-(*lefttail);
 }
 
 
@@ -5661,7 +8456,9 @@ void wilcoxonsignedranktest(/* Real    */ ae_vector* x,
 
     ae_frame_make(_state, &_frame_block);
     memset(&_x, 0, sizeof(_x));
-    memset(&r, 0, sizeof(r));    memset(&c, 0, sizeof(c));    ae_vector_init_copy(&_x, x, _state, ae_true);
+    memset(&r, 0, sizeof(r));
+    memset(&c, 0, sizeof(c));
+    ae_vector_init_copy(&_x, x, _state, ae_true);
     x = &_x;
     *bothtails = 0;
     *lefttail = 0;
@@ -11875,1361 +14672,6 @@ static double wsr_wsigma(double s, ae_int_t n, ae_state *_state)
 
 
 #endif
-#if defined(AE_COMPILE_STEST) || !defined(AE_PARTIAL_BUILD)
-
-
-/*************************************************************************
-Sign test
-
-This test checks three hypotheses about the median of  the  given  sample.
-The following tests are performed:
-    * two-tailed test (null hypothesis - the median is equal to the  given
-      value)
-    * left-tailed test (null hypothesis - the median is  greater  than  or
-      equal to the given value)
-    * right-tailed test (null hypothesis - the  median  is  less  than  or
-      equal to the given value)
-
-Requirements:
-    * the scale of measurement should be ordinal, interval or ratio  (i.e.
-      the test could not be applied to nominal variables).
-
-The test is non-parametric and doesn't require distribution X to be normal
-
-Input parameters:
-    X       -   sample. Array whose index goes from 0 to N-1.
-    N       -   size of the sample.
-    Median  -   assumed median value.
-
-Output parameters:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-While   calculating   p-values   high-precision   binomial    distribution
-approximation is used, so significance levels have about 15 exact digits.
-
-  -- ALGLIB --
-     Copyright 08.09.2006 by Bochkanov Sergey
-*************************************************************************/
-void onesamplesigntest(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     double median,
-     double* bothtails,
-     double* lefttail,
-     double* righttail,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_int_t gtcnt;
-    ae_int_t necnt;
-
-    *bothtails = 0;
-    *lefttail = 0;
-    *righttail = 0;
-
-    if( n<=1 )
-    {
-        *bothtails = 1.0;
-        *lefttail = 1.0;
-        *righttail = 1.0;
-        return;
-    }
-    
-    /*
-     * Calculate:
-     * GTCnt - count of x[i]>Median
-     * NECnt - count of x[i]<>Median
-     */
-    gtcnt = 0;
-    necnt = 0;
-    for(i=0; i<=n-1; i++)
-    {
-        if( ae_fp_greater(x->ptr.p_double[i],median) )
-        {
-            gtcnt = gtcnt+1;
-        }
-        if( ae_fp_neq(x->ptr.p_double[i],median) )
-        {
-            necnt = necnt+1;
-        }
-    }
-    if( necnt==0 )
-    {
-        
-        /*
-         * all x[i] are equal to Median.
-         * So we can conclude that Median is a true median :)
-         */
-        *bothtails = 1.0;
-        *lefttail = 1.0;
-        *righttail = 1.0;
-        return;
-    }
-    *bothtails = ae_minreal(2*binomialdistribution(ae_minint(gtcnt, necnt-gtcnt, _state), necnt, 0.5, _state), 1.0, _state);
-    *lefttail = binomialdistribution(gtcnt, necnt, 0.5, _state);
-    *righttail = binomialcdistribution(gtcnt-1, necnt, 0.5, _state);
-}
-
-
-#endif
-#if defined(AE_COMPILE_CORRELATIONTESTS) || !defined(AE_PARTIAL_BUILD)
-
-
-/*************************************************************************
-Pearson's correlation coefficient significance test
-
-This test checks hypotheses about whether X  and  Y  are  samples  of  two
-continuous  distributions  having  zero  correlation  or   whether   their
-correlation is non-zero.
-
-The following tests are performed:
-    * two-tailed test (null hypothesis - X and Y have zero correlation)
-    * left-tailed test (null hypothesis - the correlation  coefficient  is
-      greater than or equal to 0)
-    * right-tailed test (null hypothesis - the correlation coefficient  is
-      less than or equal to 0).
-
-Requirements:
-    * the number of elements in each sample is not less than 5
-    * normality of distributions of X and Y.
-
-Input parameters:
-    R   -   Pearson's correlation coefficient for X and Y
-    N   -   number of elements in samples, N>=5.
-
-Output parameters:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-  -- ALGLIB --
-     Copyright 09.04.2007 by Bochkanov Sergey
-*************************************************************************/
-void pearsoncorrelationsignificance(double r,
-     ae_int_t n,
-     double* bothtails,
-     double* lefttail,
-     double* righttail,
-     ae_state *_state)
-{
-    double t;
-    double p;
-
-    *bothtails = 0;
-    *lefttail = 0;
-    *righttail = 0;
-
-    
-    /*
-     * Some special cases
-     */
-    if( ae_fp_greater_eq(r,(double)(1)) )
-    {
-        *bothtails = 0.0;
-        *lefttail = 1.0;
-        *righttail = 0.0;
-        return;
-    }
-    if( ae_fp_less_eq(r,(double)(-1)) )
-    {
-        *bothtails = 0.0;
-        *lefttail = 0.0;
-        *righttail = 1.0;
-        return;
-    }
-    if( n<5 )
-    {
-        *bothtails = 1.0;
-        *lefttail = 1.0;
-        *righttail = 1.0;
-        return;
-    }
-    
-    /*
-     * General case
-     */
-    t = r*ae_sqrt((n-2)/(1-ae_sqr(r, _state)), _state);
-    p = studenttdistribution(n-2, t, _state);
-    *bothtails = 2*ae_minreal(p, 1-p, _state);
-    *lefttail = p;
-    *righttail = 1-p;
-}
-
-
-/*************************************************************************
-Spearman's rank correlation coefficient significance test
-
-This test checks hypotheses about whether X  and  Y  are  samples  of  two
-continuous  distributions  having  zero  correlation  or   whether   their
-correlation is non-zero.
-
-The following tests are performed:
-    * two-tailed test (null hypothesis - X and Y have zero correlation)
-    * left-tailed test (null hypothesis - the correlation  coefficient  is
-      greater than or equal to 0)
-    * right-tailed test (null hypothesis - the correlation coefficient  is
-      less than or equal to 0).
-
-Requirements:
-    * the number of elements in each sample is not less than 5.
-
-The test is non-parametric and doesn't require distributions X and Y to be
-normal.
-
-Input parameters:
-    R   -   Spearman's rank correlation coefficient for X and Y
-    N   -   number of elements in samples, N>=5.
-
-Output parameters:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-  -- ALGLIB --
-     Copyright 09.04.2007 by Bochkanov Sergey
-*************************************************************************/
-void spearmanrankcorrelationsignificance(double r,
-     ae_int_t n,
-     double* bothtails,
-     double* lefttail,
-     double* righttail,
-     ae_state *_state)
-{
-    double t;
-    double p;
-
-    *bothtails = 0;
-    *lefttail = 0;
-    *righttail = 0;
-
-    
-    /*
-     * Special case
-     */
-    if( n<5 )
-    {
-        *bothtails = 1.0;
-        *lefttail = 1.0;
-        *righttail = 1.0;
-        return;
-    }
-    
-    /*
-     * General case
-     */
-    if( ae_fp_greater_eq(r,(double)(1)) )
-    {
-        t = 1.0E10;
-    }
-    else
-    {
-        if( ae_fp_less_eq(r,(double)(-1)) )
-        {
-            t = -1.0E10;
-        }
-        else
-        {
-            t = r*ae_sqrt((n-2)/(1-ae_sqr(r, _state)), _state);
-        }
-    }
-    if( ae_fp_less(t,(double)(0)) )
-    {
-        p = correlationtests_spearmantail(t, n, _state);
-        *bothtails = 2*p;
-        *lefttail = p;
-        *righttail = 1-p;
-    }
-    else
-    {
-        p = correlationtests_spearmantail(-t, n, _state);
-        *bothtails = 2*p;
-        *lefttail = 1-p;
-        *righttail = p;
-    }
-}
-
-
-/*************************************************************************
-Tail(S, 5)
-*************************************************************************/
-static double correlationtests_spearmantail5(double s, ae_state *_state)
-{
-    double result;
-
-
-    if( ae_fp_less(s,0.000e+00) )
-    {
-        result = studenttdistribution(3, -s, _state);
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.580e+00) )
-    {
-        result = 8.304e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.322e+00) )
-    {
-        result = 4.163e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.704e+00) )
-    {
-        result = 6.641e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.303e+00) )
-    {
-        result = 1.164e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.003e+00) )
-    {
-        result = 1.748e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,7.584e-01) )
-    {
-        result = 2.249e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,5.468e-01) )
-    {
-        result = 2.581e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.555e-01) )
-    {
-        result = 3.413e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.759e-01) )
-    {
-        result = 3.911e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.741e-03) )
-    {
-        result = 4.747e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,0.000e+00) )
-    {
-        result = 5.248e-01;
-        return result;
-    }
-    result = (double)(0);
-    return result;
-}
-
-
-/*************************************************************************
-Tail(S, 6)
-*************************************************************************/
-static double correlationtests_spearmantail6(double s, ae_state *_state)
-{
-    double result;
-
-
-    if( ae_fp_less(s,1.001e+00) )
-    {
-        result = studenttdistribution(4, -s, _state);
-        return result;
-    }
-    if( ae_fp_greater_eq(s,5.663e+00) )
-    {
-        result = 1.366e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.834e+00) )
-    {
-        result = 8.350e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.968e+00) )
-    {
-        result = 1.668e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.430e+00) )
-    {
-        result = 2.921e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.045e+00) )
-    {
-        result = 5.144e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.747e+00) )
-    {
-        result = 6.797e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.502e+00) )
-    {
-        result = 8.752e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.295e+00) )
-    {
-        result = 1.210e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.113e+00) )
-    {
-        result = 1.487e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.001e+00) )
-    {
-        result = 1.780e-01;
-        return result;
-    }
-    result = (double)(0);
-    return result;
-}
-
-
-/*************************************************************************
-Tail(S, 7)
-*************************************************************************/
-static double correlationtests_spearmantail7(double s, ae_state *_state)
-{
-    double result;
-
-
-    if( ae_fp_less(s,1.001e+00) )
-    {
-        result = studenttdistribution(5, -s, _state);
-        return result;
-    }
-    if( ae_fp_greater_eq(s,8.159e+00) )
-    {
-        result = 2.081e-04;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,5.620e+00) )
-    {
-        result = 1.393e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,4.445e+00) )
-    {
-        result = 3.398e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.728e+00) )
-    {
-        result = 6.187e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.226e+00) )
-    {
-        result = 1.200e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.844e+00) )
-    {
-        result = 1.712e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.539e+00) )
-    {
-        result = 2.408e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.285e+00) )
-    {
-        result = 3.320e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.068e+00) )
-    {
-        result = 4.406e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.879e+00) )
-    {
-        result = 5.478e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.710e+00) )
-    {
-        result = 6.946e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.559e+00) )
-    {
-        result = 8.331e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.420e+00) )
-    {
-        result = 1.001e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.292e+00) )
-    {
-        result = 1.180e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.173e+00) )
-    {
-        result = 1.335e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.062e+00) )
-    {
-        result = 1.513e-01;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.001e+00) )
-    {
-        result = 1.770e-01;
-        return result;
-    }
-    result = (double)(0);
-    return result;
-}
-
-
-/*************************************************************************
-Tail(S, 8)
-*************************************************************************/
-static double correlationtests_spearmantail8(double s, ae_state *_state)
-{
-    double result;
-
-
-    if( ae_fp_less(s,2.001e+00) )
-    {
-        result = studenttdistribution(6, -s, _state);
-        return result;
-    }
-    if( ae_fp_greater_eq(s,1.103e+01) )
-    {
-        result = 2.194e-05;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,7.685e+00) )
-    {
-        result = 2.008e-04;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,6.143e+00) )
-    {
-        result = 5.686e-04;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,5.213e+00) )
-    {
-        result = 1.138e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,4.567e+00) )
-    {
-        result = 2.310e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,4.081e+00) )
-    {
-        result = 3.634e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.697e+00) )
-    {
-        result = 5.369e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.381e+00) )
-    {
-        result = 7.708e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.114e+00) )
-    {
-        result = 1.087e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.884e+00) )
-    {
-        result = 1.397e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.682e+00) )
-    {
-        result = 1.838e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.502e+00) )
-    {
-        result = 2.288e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.340e+00) )
-    {
-        result = 2.883e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.192e+00) )
-    {
-        result = 3.469e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.057e+00) )
-    {
-        result = 4.144e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.001e+00) )
-    {
-        result = 4.804e-02;
-        return result;
-    }
-    result = (double)(0);
-    return result;
-}
-
-
-/*************************************************************************
-Tail(S, 9)
-*************************************************************************/
-static double correlationtests_spearmantail9(double s, ae_state *_state)
-{
-    double result;
-
-
-    if( ae_fp_less(s,2.001e+00) )
-    {
-        result = studenttdistribution(7, -s, _state);
-        return result;
-    }
-    if( ae_fp_greater_eq(s,9.989e+00) )
-    {
-        result = 2.306e-05;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,8.069e+00) )
-    {
-        result = 8.167e-05;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,6.890e+00) )
-    {
-        result = 1.744e-04;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,6.077e+00) )
-    {
-        result = 3.625e-04;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,5.469e+00) )
-    {
-        result = 6.450e-04;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,4.991e+00) )
-    {
-        result = 1.001e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,4.600e+00) )
-    {
-        result = 1.514e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,4.272e+00) )
-    {
-        result = 2.213e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.991e+00) )
-    {
-        result = 2.990e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.746e+00) )
-    {
-        result = 4.101e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.530e+00) )
-    {
-        result = 5.355e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.336e+00) )
-    {
-        result = 6.887e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.161e+00) )
-    {
-        result = 8.598e-03;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,3.002e+00) )
-    {
-        result = 1.065e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.855e+00) )
-    {
-        result = 1.268e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.720e+00) )
-    {
-        result = 1.552e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.595e+00) )
-    {
-        result = 1.836e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.477e+00) )
-    {
-        result = 2.158e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.368e+00) )
-    {
-        result = 2.512e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.264e+00) )
-    {
-        result = 2.942e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.166e+00) )
-    {
-        result = 3.325e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.073e+00) )
-    {
-        result = 3.800e-02;
-        return result;
-    }
-    if( ae_fp_greater_eq(s,2.001e+00) )
-    {
-        result = 4.285e-02;
-        return result;
-    }
-    result = (double)(0);
-    return result;
-}
-
-
-/*************************************************************************
-Tail(T,N), accepts T<0
-*************************************************************************/
-static double correlationtests_spearmantail(double t,
-     ae_int_t n,
-     ae_state *_state)
-{
-    double result;
-
-
-    if( n==5 )
-    {
-        result = correlationtests_spearmantail5(-t, _state);
-        return result;
-    }
-    if( n==6 )
-    {
-        result = correlationtests_spearmantail6(-t, _state);
-        return result;
-    }
-    if( n==7 )
-    {
-        result = correlationtests_spearmantail7(-t, _state);
-        return result;
-    }
-    if( n==8 )
-    {
-        result = correlationtests_spearmantail8(-t, _state);
-        return result;
-    }
-    if( n==9 )
-    {
-        result = correlationtests_spearmantail9(-t, _state);
-        return result;
-    }
-    result = studenttdistribution(n-2, t, _state);
-    return result;
-}
-
-
-#endif
-#if defined(AE_COMPILE_STUDENTTTESTS) || !defined(AE_PARTIAL_BUILD)
-
-
-/*************************************************************************
-One-sample t-test
-
-This test checks three hypotheses about the mean of the given sample.  The
-following tests are performed:
-    * two-tailed test (null hypothesis - the mean is equal  to  the  given
-      value)
-    * left-tailed test (null hypothesis - the  mean  is  greater  than  or
-      equal to the given value)
-    * right-tailed test (null hypothesis - the mean is less than or  equal
-      to the given value).
-
-The test is based on the assumption that  a  given  sample  has  a  normal
-distribution and  an  unknown  dispersion.  If  the  distribution  sharply
-differs from normal, the test will work incorrectly.
-
-INPUT PARAMETERS:
-    X       -   sample. Array whose index goes from 0 to N-1.
-    N       -   size of sample, N>=0
-    Mean    -   assumed value of the mean.
-
-OUTPUT PARAMETERS:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-NOTE: this function correctly handles degenerate cases:
-      * when N=0, all p-values are set to 1.0
-      * when variance of X[] is exactly zero, p-values are set
-        to 1.0 or 0.0, depending on difference between sample mean and
-        value of mean being tested.
-
-
-  -- ALGLIB --
-     Copyright 08.09.2006 by Bochkanov Sergey
-*************************************************************************/
-void studentttest1(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     double mean,
-     double* bothtails,
-     double* lefttail,
-     double* righttail,
-     ae_state *_state)
-{
-    ae_int_t i;
-    double xmean;
-    double x0;
-    double v;
-    ae_bool samex;
-    double xvariance;
-    double xstddev;
-    double v1;
-    double v2;
-    double stat;
-    double s;
-
-    *bothtails = 0;
-    *lefttail = 0;
-    *righttail = 0;
-
-    if( n<=0 )
-    {
-        *bothtails = 1.0;
-        *lefttail = 1.0;
-        *righttail = 1.0;
-        return;
-    }
-    
-    /*
-     * Mean
-     */
-    xmean = (double)(0);
-    x0 = x->ptr.p_double[0];
-    samex = ae_true;
-    for(i=0; i<=n-1; i++)
-    {
-        v = x->ptr.p_double[i];
-        xmean = xmean+v;
-        samex = samex&&ae_fp_eq(v,x0);
-    }
-    if( samex )
-    {
-        xmean = x0;
-    }
-    else
-    {
-        xmean = xmean/n;
-    }
-    
-    /*
-     * Variance (using corrected two-pass algorithm)
-     */
-    xvariance = (double)(0);
-    xstddev = (double)(0);
-    if( n!=1&&!samex )
-    {
-        v1 = (double)(0);
-        for(i=0; i<=n-1; i++)
-        {
-            v1 = v1+ae_sqr(x->ptr.p_double[i]-xmean, _state);
-        }
-        v2 = (double)(0);
-        for(i=0; i<=n-1; i++)
-        {
-            v2 = v2+(x->ptr.p_double[i]-xmean);
-        }
-        v2 = ae_sqr(v2, _state)/n;
-        xvariance = (v1-v2)/(n-1);
-        if( ae_fp_less(xvariance,(double)(0)) )
-        {
-            xvariance = (double)(0);
-        }
-        xstddev = ae_sqrt(xvariance, _state);
-    }
-    if( ae_fp_eq(xstddev,(double)(0)) )
-    {
-        if( ae_fp_eq(xmean,mean) )
-        {
-            *bothtails = 1.0;
-        }
-        else
-        {
-            *bothtails = 0.0;
-        }
-        if( ae_fp_greater_eq(xmean,mean) )
-        {
-            *lefttail = 1.0;
-        }
-        else
-        {
-            *lefttail = 0.0;
-        }
-        if( ae_fp_less_eq(xmean,mean) )
-        {
-            *righttail = 1.0;
-        }
-        else
-        {
-            *righttail = 0.0;
-        }
-        return;
-    }
-    
-    /*
-     * Statistic
-     */
-    stat = (xmean-mean)/(xstddev/ae_sqrt((double)(n), _state));
-    s = studenttdistribution(n-1, stat, _state);
-    *bothtails = 2*ae_minreal(s, 1-s, _state);
-    *lefttail = s;
-    *righttail = 1-s;
-}
-
-
-/*************************************************************************
-Two-sample pooled test
-
-This test checks three hypotheses about the mean of the given samples. The
-following tests are performed:
-    * two-tailed test (null hypothesis - the means are equal)
-    * left-tailed test (null hypothesis - the mean of the first sample  is
-      greater than or equal to the mean of the second sample)
-    * right-tailed test (null hypothesis - the mean of the first sample is
-      less than or equal to the mean of the second sample).
-
-Test is based on the following assumptions:
-    * given samples have normal distributions
-    * dispersions are equal
-    * samples are independent.
-
-Input parameters:
-    X       -   sample 1. Array whose index goes from 0 to N-1.
-    N       -   size of sample.
-    Y       -   sample 2. Array whose index goes from 0 to M-1.
-    M       -   size of sample.
-
-Output parameters:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-NOTE: this function correctly handles degenerate cases:
-      * when N=0 or M=0, all p-values are set to 1.0
-      * when both samples has exactly zero variance, p-values are set
-        to 1.0 or 0.0, depending on difference between means.
-
-  -- ALGLIB --
-     Copyright 18.09.2006 by Bochkanov Sergey
-*************************************************************************/
-void studentttest2(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     /* Real    */ ae_vector* y,
-     ae_int_t m,
-     double* bothtails,
-     double* lefttail,
-     double* righttail,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_bool samex;
-    ae_bool samey;
-    double x0;
-    double y0;
-    double xmean;
-    double ymean;
-    double v;
-    double stat;
-    double s;
-    double p;
-
-    *bothtails = 0;
-    *lefttail = 0;
-    *righttail = 0;
-
-    if( n<=0||m<=0 )
-    {
-        *bothtails = 1.0;
-        *lefttail = 1.0;
-        *righttail = 1.0;
-        return;
-    }
-    
-    /*
-     * Mean
-     */
-    xmean = (double)(0);
-    x0 = x->ptr.p_double[0];
-    samex = ae_true;
-    for(i=0; i<=n-1; i++)
-    {
-        v = x->ptr.p_double[i];
-        xmean = xmean+v;
-        samex = samex&&ae_fp_eq(v,x0);
-    }
-    if( samex )
-    {
-        xmean = x0;
-    }
-    else
-    {
-        xmean = xmean/n;
-    }
-    ymean = (double)(0);
-    y0 = y->ptr.p_double[0];
-    samey = ae_true;
-    for(i=0; i<=m-1; i++)
-    {
-        v = y->ptr.p_double[i];
-        ymean = ymean+v;
-        samey = samey&&ae_fp_eq(v,y0);
-    }
-    if( samey )
-    {
-        ymean = y0;
-    }
-    else
-    {
-        ymean = ymean/m;
-    }
-    
-    /*
-     * S
-     */
-    s = (double)(0);
-    if( n+m>2 )
-    {
-        for(i=0; i<=n-1; i++)
-        {
-            s = s+ae_sqr(x->ptr.p_double[i]-xmean, _state);
-        }
-        for(i=0; i<=m-1; i++)
-        {
-            s = s+ae_sqr(y->ptr.p_double[i]-ymean, _state);
-        }
-        s = ae_sqrt(s*((double)1/(double)n+(double)1/(double)m)/(n+m-2), _state);
-    }
-    if( ae_fp_eq(s,(double)(0)) )
-    {
-        if( ae_fp_eq(xmean,ymean) )
-        {
-            *bothtails = 1.0;
-        }
-        else
-        {
-            *bothtails = 0.0;
-        }
-        if( ae_fp_greater_eq(xmean,ymean) )
-        {
-            *lefttail = 1.0;
-        }
-        else
-        {
-            *lefttail = 0.0;
-        }
-        if( ae_fp_less_eq(xmean,ymean) )
-        {
-            *righttail = 1.0;
-        }
-        else
-        {
-            *righttail = 0.0;
-        }
-        return;
-    }
-    
-    /*
-     * Statistic
-     */
-    stat = (xmean-ymean)/s;
-    p = studenttdistribution(n+m-2, stat, _state);
-    *bothtails = 2*ae_minreal(p, 1-p, _state);
-    *lefttail = p;
-    *righttail = 1-p;
-}
-
-
-/*************************************************************************
-Two-sample unpooled test
-
-This test checks three hypotheses about the mean of the given samples. The
-following tests are performed:
-    * two-tailed test (null hypothesis - the means are equal)
-    * left-tailed test (null hypothesis - the mean of the first sample  is
-      greater than or equal to the mean of the second sample)
-    * right-tailed test (null hypothesis - the mean of the first sample is
-      less than or equal to the mean of the second sample).
-
-Test is based on the following assumptions:
-    * given samples have normal distributions
-    * samples are independent.
-Equality of variances is NOT required.
-
-Input parameters:
-    X - sample 1. Array whose index goes from 0 to N-1.
-    N - size of the sample.
-    Y - sample 2. Array whose index goes from 0 to M-1.
-    M - size of the sample.
-
-Output parameters:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-NOTE: this function correctly handles degenerate cases:
-      * when N=0 or M=0, all p-values are set to 1.0
-      * when both samples has zero variance, p-values are set
-        to 1.0 or 0.0, depending on difference between means.
-      * when only one sample has zero variance, test reduces to 1-sample
-        version.
-
-  -- ALGLIB --
-     Copyright 18.09.2006 by Bochkanov Sergey
-*************************************************************************/
-void unequalvariancettest(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     /* Real    */ ae_vector* y,
-     ae_int_t m,
-     double* bothtails,
-     double* lefttail,
-     double* righttail,
-     ae_state *_state)
-{
-    ae_int_t i;
-    ae_bool samex;
-    ae_bool samey;
-    double x0;
-    double y0;
-    double xmean;
-    double ymean;
-    double xvar;
-    double yvar;
-    double v;
-    double df;
-    double p;
-    double stat;
-    double c;
-
-    *bothtails = 0;
-    *lefttail = 0;
-    *righttail = 0;
-
-    if( n<=0||m<=0 )
-    {
-        *bothtails = 1.0;
-        *lefttail = 1.0;
-        *righttail = 1.0;
-        return;
-    }
-    
-    /*
-     * Mean
-     */
-    xmean = (double)(0);
-    x0 = x->ptr.p_double[0];
-    samex = ae_true;
-    for(i=0; i<=n-1; i++)
-    {
-        v = x->ptr.p_double[i];
-        xmean = xmean+v;
-        samex = samex&&ae_fp_eq(v,x0);
-    }
-    if( samex )
-    {
-        xmean = x0;
-    }
-    else
-    {
-        xmean = xmean/n;
-    }
-    ymean = (double)(0);
-    y0 = y->ptr.p_double[0];
-    samey = ae_true;
-    for(i=0; i<=m-1; i++)
-    {
-        v = y->ptr.p_double[i];
-        ymean = ymean+v;
-        samey = samey&&ae_fp_eq(v,y0);
-    }
-    if( samey )
-    {
-        ymean = y0;
-    }
-    else
-    {
-        ymean = ymean/m;
-    }
-    
-    /*
-     * Variance (using corrected two-pass algorithm)
-     */
-    xvar = (double)(0);
-    if( n>=2&&!samex )
-    {
-        for(i=0; i<=n-1; i++)
-        {
-            xvar = xvar+ae_sqr(x->ptr.p_double[i]-xmean, _state);
-        }
-        xvar = xvar/(n-1);
-    }
-    yvar = (double)(0);
-    if( m>=2&&!samey )
-    {
-        for(i=0; i<=m-1; i++)
-        {
-            yvar = yvar+ae_sqr(y->ptr.p_double[i]-ymean, _state);
-        }
-        yvar = yvar/(m-1);
-    }
-    
-    /*
-     * Handle different special cases
-     * (one or both variances are zero).
-     */
-    if( ae_fp_eq(xvar,(double)(0))&&ae_fp_eq(yvar,(double)(0)) )
-    {
-        if( ae_fp_eq(xmean,ymean) )
-        {
-            *bothtails = 1.0;
-        }
-        else
-        {
-            *bothtails = 0.0;
-        }
-        if( ae_fp_greater_eq(xmean,ymean) )
-        {
-            *lefttail = 1.0;
-        }
-        else
-        {
-            *lefttail = 0.0;
-        }
-        if( ae_fp_less_eq(xmean,ymean) )
-        {
-            *righttail = 1.0;
-        }
-        else
-        {
-            *righttail = 0.0;
-        }
-        return;
-    }
-    if( ae_fp_eq(xvar,(double)(0)) )
-    {
-        
-        /*
-         * X is constant, unpooled 2-sample test reduces to 1-sample test.
-         *
-         * NOTE: right-tail and left-tail must be passed to 1-sample
-         *       t-test in reverse order because we reverse order of
-         *       of samples.
-         */
-        studentttest1(y, m, xmean, bothtails, righttail, lefttail, _state);
-        return;
-    }
-    if( ae_fp_eq(yvar,(double)(0)) )
-    {
-        
-        /*
-         * Y is constant, unpooled 2-sample test reduces to 1-sample test.
-         */
-        studentttest1(x, n, ymean, bothtails, lefttail, righttail, _state);
-        return;
-    }
-    
-    /*
-     * Statistic
-     */
-    stat = (xmean-ymean)/ae_sqrt(xvar/n+yvar/m, _state);
-    c = xvar/n/(xvar/n+yvar/m);
-    df = rmul2((double)(n-1), (double)(m-1), _state)/((m-1)*ae_sqr(c, _state)+(n-1)*ae_sqr(1-c, _state));
-    if( ae_fp_greater(stat,(double)(0)) )
-    {
-        p = 1-0.5*incompletebeta(df/2, 0.5, df/(df+ae_sqr(stat, _state)), _state);
-    }
-    else
-    {
-        p = 0.5*incompletebeta(df/2, 0.5, df/(df+ae_sqr(stat, _state)), _state);
-    }
-    *bothtails = 2*ae_minreal(p, 1-p, _state);
-    *lefttail = p;
-    *righttail = 1-p;
-}
-
-
-#endif
 #if defined(AE_COMPILE_MANNWHITNEYU) || !defined(AE_PARTIAL_BUILD)
 
 
@@ -13330,7 +14772,10 @@ void mannwhitneyutest(/* Real    */ ae_vector* x,
     ae_vector tiesize;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&r, 0, sizeof(r));    memset(&c, 0, sizeof(c));    memset(&tiesize, 0, sizeof(tiesize));    *bothtails = 0;
+    memset(&r, 0, sizeof(r));
+    memset(&c, 0, sizeof(c));
+    memset(&tiesize, 0, sizeof(tiesize));
+    *bothtails = 0;
     *lefttail = 0;
     *righttail = 0;
     ae_vector_init(&r, 0, DT_REAL, _state, ae_true);
@@ -17732,2289 +19177,31 @@ static double mannwhitneyu_usigma(double s,
 
 
 #endif
-#if defined(AE_COMPILE_JARQUEBERA) || !defined(AE_PARTIAL_BUILD)
+#if defined(AE_COMPILE_STEST) || !defined(AE_PARTIAL_BUILD)
 
 
 /*************************************************************************
-Jarque-Bera test
+Sign test
 
-This test checks hypotheses about the fact that a  given  sample  X  is  a
-sample of normal random variable.
+This test checks three hypotheses about the median of  the  given  sample.
+The following tests are performed:
+    * two-tailed test (null hypothesis - the median is equal to the  given
+      value)
+    * left-tailed test (null hypothesis - the median is  greater  than  or
+      equal to the given value)
+    * right-tailed test (null hypothesis - the  median  is  less  than  or
+      equal to the given value)
 
 Requirements:
-    * the number of elements in the sample is not less than 5.
+    * the scale of measurement should be ordinal, interval or ratio  (i.e.
+      the test could not be applied to nominal variables).
+
+The test is non-parametric and doesn't require distribution X to be normal
 
 Input parameters:
-    X   -   sample. Array whose index goes from 0 to N-1.
-    N   -   size of the sample. N>=5
-
-Output parameters:
-    P           -   p-value for the test
-
-Accuracy of the approximation used (5<=N<=1951):
-
-p-value  	    relative error (5<=N<=1951)
-[1, 0.1]            < 1%
-[0.1, 0.01]         < 2%
-[0.01, 0.001]       < 6%
-[0.001, 0]          wasn't measured
-
-For N>1951 accuracy wasn't measured but it shouldn't be sharply  different
-from table values.
-
-  -- ALGLIB --
-     Copyright 09.04.2007 by Bochkanov Sergey
-*************************************************************************/
-void jarqueberatest(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     double* p,
-     ae_state *_state)
-{
-    double s;
-
-    *p = 0;
-
-    
-    /*
-     * N is too small
-     */
-    if( n<5 )
-    {
-        *p = 1.0;
-        return;
-    }
-    
-    /*
-     * N is large enough
-     */
-    jarquebera_jarqueberastatistic(x, n, &s, _state);
-    *p = jarquebera_jarqueberaapprox(n, s, _state);
-}
-
-
-static void jarquebera_jarqueberastatistic(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     double* s,
-     ae_state *_state)
-{
-    ae_int_t i;
-    double v;
-    double v1;
-    double v2;
-    double stddev;
-    double mean;
-    double variance;
-    double skewness;
-    double kurtosis;
-
-    *s = 0;
-
-    mean = (double)(0);
-    variance = (double)(0);
-    skewness = (double)(0);
-    kurtosis = (double)(0);
-    stddev = (double)(0);
-    ae_assert(n>1, "Assertion failed", _state);
-    
-    /*
-     * Mean
-     */
-    for(i=0; i<=n-1; i++)
-    {
-        mean = mean+x->ptr.p_double[i];
-    }
-    mean = mean/n;
-    
-    /*
-     * Variance (using corrected two-pass algorithm)
-     */
-    if( n!=1 )
-    {
-        v1 = (double)(0);
-        for(i=0; i<=n-1; i++)
-        {
-            v1 = v1+ae_sqr(x->ptr.p_double[i]-mean, _state);
-        }
-        v2 = (double)(0);
-        for(i=0; i<=n-1; i++)
-        {
-            v2 = v2+(x->ptr.p_double[i]-mean);
-        }
-        v2 = ae_sqr(v2, _state)/n;
-        variance = (v1-v2)/(n-1);
-        if( ae_fp_less(variance,(double)(0)) )
-        {
-            variance = (double)(0);
-        }
-        stddev = ae_sqrt(variance, _state);
-    }
-    
-    /*
-     * Skewness and kurtosis
-     */
-    if( ae_fp_neq(stddev,(double)(0)) )
-    {
-        for(i=0; i<=n-1; i++)
-        {
-            v = (x->ptr.p_double[i]-mean)/stddev;
-            v2 = ae_sqr(v, _state);
-            skewness = skewness+v2*v;
-            kurtosis = kurtosis+ae_sqr(v2, _state);
-        }
-        skewness = skewness/n;
-        kurtosis = kurtosis/n-3;
-    }
-    
-    /*
-     * Statistic
-     */
-    *s = (double)n/(double)6*(ae_sqr(skewness, _state)+ae_sqr(kurtosis, _state)/4);
-}
-
-
-static double jarquebera_jarqueberaapprox(ae_int_t n,
-     double s,
-     ae_state *_state)
-{
-    ae_frame _frame_block;
-    ae_vector vx;
-    ae_vector vy;
-    ae_matrix ctbl;
-    double t1;
-    double t2;
-    double t3;
-    double t;
-    double f1;
-    double f2;
-    double f3;
-    double f12;
-    double f23;
-    double x;
-    double result;
-
-    ae_frame_make(_state, &_frame_block);
-    memset(&vx, 0, sizeof(vx));    memset(&vy, 0, sizeof(vy));    memset(&ctbl, 0, sizeof(ctbl));    ae_vector_init(&vx, 0, DT_REAL, _state, ae_true);
-    ae_vector_init(&vy, 0, DT_REAL, _state, ae_true);
-    ae_matrix_init(&ctbl, 0, 0, DT_REAL, _state, ae_true);
-
-    result = (double)(1);
-    x = s;
-    if( n<5 )
-    {
-        ae_frame_leave(_state);
-        return result;
-    }
-    
-    /*
-     * N = 5..20 are tabulated
-     */
-    if( n>=5&&n<=20 )
-    {
-        if( n==5 )
-        {
-            result = ae_exp(jarquebera_jbtbl5(x, _state), _state);
-        }
-        if( n==6 )
-        {
-            result = ae_exp(jarquebera_jbtbl6(x, _state), _state);
-        }
-        if( n==7 )
-        {
-            result = ae_exp(jarquebera_jbtbl7(x, _state), _state);
-        }
-        if( n==8 )
-        {
-            result = ae_exp(jarquebera_jbtbl8(x, _state), _state);
-        }
-        if( n==9 )
-        {
-            result = ae_exp(jarquebera_jbtbl9(x, _state), _state);
-        }
-        if( n==10 )
-        {
-            result = ae_exp(jarquebera_jbtbl10(x, _state), _state);
-        }
-        if( n==11 )
-        {
-            result = ae_exp(jarquebera_jbtbl11(x, _state), _state);
-        }
-        if( n==12 )
-        {
-            result = ae_exp(jarquebera_jbtbl12(x, _state), _state);
-        }
-        if( n==13 )
-        {
-            result = ae_exp(jarquebera_jbtbl13(x, _state), _state);
-        }
-        if( n==14 )
-        {
-            result = ae_exp(jarquebera_jbtbl14(x, _state), _state);
-        }
-        if( n==15 )
-        {
-            result = ae_exp(jarquebera_jbtbl15(x, _state), _state);
-        }
-        if( n==16 )
-        {
-            result = ae_exp(jarquebera_jbtbl16(x, _state), _state);
-        }
-        if( n==17 )
-        {
-            result = ae_exp(jarquebera_jbtbl17(x, _state), _state);
-        }
-        if( n==18 )
-        {
-            result = ae_exp(jarquebera_jbtbl18(x, _state), _state);
-        }
-        if( n==19 )
-        {
-            result = ae_exp(jarquebera_jbtbl19(x, _state), _state);
-        }
-        if( n==20 )
-        {
-            result = ae_exp(jarquebera_jbtbl20(x, _state), _state);
-        }
-        ae_frame_leave(_state);
-        return result;
-    }
-    
-    /*
-     * N = 20, 30, 50 are tabulated.
-     * In-between values are interpolated
-     * using interpolating polynomial of the second degree.
-     */
-    if( n>20&&n<=50 )
-    {
-        t1 = -1.0/20.0;
-        t2 = -1.0/30.0;
-        t3 = -1.0/50.0;
-        t = -1.0/n;
-        f1 = jarquebera_jbtbl20(x, _state);
-        f2 = jarquebera_jbtbl30(x, _state);
-        f3 = jarquebera_jbtbl50(x, _state);
-        f12 = ((t-t2)*f1+(t1-t)*f2)/(t1-t2);
-        f23 = ((t-t3)*f2+(t2-t)*f3)/(t2-t3);
-        result = ((t-t3)*f12+(t1-t)*f23)/(t1-t3);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        result = ae_exp(result, _state);
-        ae_frame_leave(_state);
-        return result;
-    }
-    
-    /*
-     * N = 50, 65, 100 are tabulated.
-     * In-between values are interpolated
-     * using interpolating polynomial of the second degree.
-     */
-    if( n>50&&n<=100 )
-    {
-        t1 = -1.0/50.0;
-        t2 = -1.0/65.0;
-        t3 = -1.0/100.0;
-        t = -1.0/n;
-        f1 = jarquebera_jbtbl50(x, _state);
-        f2 = jarquebera_jbtbl65(x, _state);
-        f3 = jarquebera_jbtbl100(x, _state);
-        f12 = ((t-t2)*f1+(t1-t)*f2)/(t1-t2);
-        f23 = ((t-t3)*f2+(t2-t)*f3)/(t2-t3);
-        result = ((t-t3)*f12+(t1-t)*f23)/(t1-t3);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        result = ae_exp(result, _state);
-        ae_frame_leave(_state);
-        return result;
-    }
-    
-    /*
-     * N = 100, 130, 200 are tabulated.
-     * In-between values are interpolated
-     * using interpolating polynomial of the second degree.
-     */
-    if( n>100&&n<=200 )
-    {
-        t1 = -1.0/100.0;
-        t2 = -1.0/130.0;
-        t3 = -1.0/200.0;
-        t = -1.0/n;
-        f1 = jarquebera_jbtbl100(x, _state);
-        f2 = jarquebera_jbtbl130(x, _state);
-        f3 = jarquebera_jbtbl200(x, _state);
-        f12 = ((t-t2)*f1+(t1-t)*f2)/(t1-t2);
-        f23 = ((t-t3)*f2+(t2-t)*f3)/(t2-t3);
-        result = ((t-t3)*f12+(t1-t)*f23)/(t1-t3);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        result = ae_exp(result, _state);
-        ae_frame_leave(_state);
-        return result;
-    }
-    
-    /*
-     * N = 200, 301, 501 are tabulated.
-     * In-between values are interpolated
-     * using interpolating polynomial of the second degree.
-     */
-    if( n>200&&n<=501 )
-    {
-        t1 = -1.0/200.0;
-        t2 = -1.0/301.0;
-        t3 = -1.0/501.0;
-        t = -1.0/n;
-        f1 = jarquebera_jbtbl200(x, _state);
-        f2 = jarquebera_jbtbl301(x, _state);
-        f3 = jarquebera_jbtbl501(x, _state);
-        f12 = ((t-t2)*f1+(t1-t)*f2)/(t1-t2);
-        f23 = ((t-t3)*f2+(t2-t)*f3)/(t2-t3);
-        result = ((t-t3)*f12+(t1-t)*f23)/(t1-t3);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        result = ae_exp(result, _state);
-        ae_frame_leave(_state);
-        return result;
-    }
-    
-    /*
-     * N = 501, 701, 1401 are tabulated.
-     * In-between values are interpolated
-     * using interpolating polynomial of the second degree.
-     */
-    if( n>501&&n<=1401 )
-    {
-        t1 = -1.0/501.0;
-        t2 = -1.0/701.0;
-        t3 = -1.0/1401.0;
-        t = -1.0/n;
-        f1 = jarquebera_jbtbl501(x, _state);
-        f2 = jarquebera_jbtbl701(x, _state);
-        f3 = jarquebera_jbtbl1401(x, _state);
-        f12 = ((t-t2)*f1+(t1-t)*f2)/(t1-t2);
-        f23 = ((t-t3)*f2+(t2-t)*f3)/(t2-t3);
-        result = ((t-t3)*f12+(t1-t)*f23)/(t1-t3);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        result = ae_exp(result, _state);
-        ae_frame_leave(_state);
-        return result;
-    }
-    
-    /*
-     * Asymptotic expansion
-     */
-    if( n>1401 )
-    {
-        result = -0.5*x+(jarquebera_jbtbl1401(x, _state)+0.5*x)*ae_sqrt((double)1401/(double)n, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        result = ae_exp(result, _state);
-        ae_frame_leave(_state);
-        return result;
-    }
-    ae_frame_leave(_state);
-    return result;
-}
-
-
-static double jarquebera_jbtbl5(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,0.4000) )
-    {
-        x = 2*(s-0.000000)/0.400000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.097885e-20, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.854501e-20, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.756616e-20, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,1.1000) )
-    {
-        x = 2*(s-0.400000)/0.700000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.324545e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.075941e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -9.772272e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.175686e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.576162e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.126861e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.434425e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.790359e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.809178e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.479704e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.717040e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.294170e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.880632e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.023344e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.601531e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.920403e-02, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -5.188419e+02*(s-1.100000e+00)-4.767297e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl6(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,0.2500) )
-    {
-        x = 2*(s-0.000000)/0.250000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -2.274707e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.700471e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.425764e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,1.3000) )
-    {
-        x = 2*(s-0.250000)/1.050000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.339000e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.011104e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.168177e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.085666e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.738606e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.022876e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.462402e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.908270e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.230772e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.006996e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.410222e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.893768e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 8.114564e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,1.8500) )
-    {
-        x = 2*(s-1.300000)/0.550000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.794311e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.578700e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.394664e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.928290e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.813273e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.076063e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.835380e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.013013e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.058903e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.856915e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.710887e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.770029e+02*(s-1.850000e+00)-1.371015e+01;
-    return result;
-}
-
-
-static double jarquebera_jbtbl7(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,1.4000) )
-    {
-        x = 2*(s-0.000000)/1.400000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.093681e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.695911e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.473192e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.203236e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.590379e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.291876e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.132007e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 9.411147e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.180067e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.487610e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.436561e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,3.0000) )
-    {
-        x = 2*(s-1.400000)/1.600000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -5.947854e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.772675e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.707912e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.691171e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.132795e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.481310e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.867536e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 8.772327e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.033387e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.378277e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.497964e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.636814e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -9.581640e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,3.2000) )
-    {
-        x = 2*(s-3.000000)/0.200000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -7.511008e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.140472e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.682053e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.568561e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.933930e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.140472e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.895025e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.140472e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.933930e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.568561e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.682053e+00, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.824116e+03*(s-3.200000e+00)-1.440330e+01;
-    return result;
-}
-
-
-static double jarquebera_jbtbl8(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,1.3000) )
-    {
-        x = 2*(s-0.000000)/1.300000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -7.199015e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.095921e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.736828e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.047438e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.484320e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.937923e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.810470e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.139780e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.708443e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,2.0000) )
-    {
-        x = 2*(s-1.300000)/0.700000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -3.378966e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.802461e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.547593e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.241042e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.203274e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.201990e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.125597e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.584426e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.546069e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,5.0000) )
-    {
-        x = 2*(s-2.000000)/3.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.828366e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.137533e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.016671e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.745637e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.189801e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.621610e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.741122e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.516368e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.552085e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.787029e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.359774e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -5.087028e+00*(s-5.000000e+00)-1.071300e+01;
-    return result;
-}
-
-
-static double jarquebera_jbtbl9(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,1.3000) )
-    {
-        x = 2*(s-0.000000)/1.300000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.279320e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -9.277151e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.669339e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.086149e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.333816e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.871249e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.007048e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.482245e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.355615e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,2.0000) )
-    {
-        x = 2*(s-1.300000)/0.700000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -2.981430e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.972248e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.747737e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.808530e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.888305e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 9.001302e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.378767e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.108510e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.915372e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,7.0000) )
-    {
-        x = 2*(s-2.000000)/5.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.387463e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.845231e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.809956e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.543461e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.880397e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.160074e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.356527e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.394428e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 9.619892e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.758763e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.790977e-05, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -2.020952e+00*(s-7.000000e+00)-9.516623e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl10(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,1.2000) )
-    {
-        x = 2*(s-0.000000)/1.200000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -4.590993e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.562730e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.353934e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.069933e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.849151e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 8.931406e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.636295e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.178340e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.917749e-05, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,2.0000) )
-    {
-        x = 2*(s-1.200000)/0.800000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -2.537658e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -9.962401e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.838715e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.055792e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.580316e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.781701e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.770362e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.838983e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.999052e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,7.0000) )
-    {
-        x = 2*(s-2.000000)/5.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -5.337524e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.877029e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.734650e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.249254e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.320250e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.432266e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -8.711035e-01*(s-7.000000e+00)-7.212811e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl11(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,1.2000) )
-    {
-        x = 2*(s-0.000000)/1.200000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -4.339517e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.051558e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.000992e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.022547e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -9.808401e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.592870e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.575081e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.086173e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.089011e-05, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,2.2500) )
-    {
-        x = 2*(s-1.200000)/1.050000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -2.523221e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.068388e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.179661e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.555524e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.238964e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.364320e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.895771e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.762774e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.201340e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,8.0000) )
-    {
-        x = 2*(s-2.250000)/5.750000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -5.212179e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.684579e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 8.299519e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.606261e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.310869e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.320115e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -5.715445e-01*(s-8.000000e+00)-6.845834e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl12(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,1.0000) )
-    {
-        x = 2*(s-0.000000)/1.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -2.736742e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.657836e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.047209e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.319599e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.545631e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 9.280445e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.815679e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.213519e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.256838e-05, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,3.0000) )
-    {
-        x = 2*(s-1.000000)/2.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -2.573947e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.515287e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.611880e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.271311e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.495815e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.141186e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.180886e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.388211e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.890761e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.233175e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.946156e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,12.0000) )
-    {
-        x = 2*(s-3.000000)/9.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -5.947819e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.034157e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.878986e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.078603e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.990977e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.866215e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.897866e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.512252e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.073743e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.022621e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.501343e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -2.877243e-01*(s-1.200000e+01)-7.936839e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl13(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,1.0000) )
-    {
-        x = 2*(s-0.000000)/1.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -2.713276e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.557541e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -9.459092e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.044145e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.546132e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.002374e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.349456e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.025669e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.590242e-05, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,3.0000) )
-    {
-        x = 2*(s-1.000000)/2.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -2.454383e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.467539e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.270774e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.075763e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.611647e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.990785e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 8.109212e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.135031e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.915919e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.522390e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.144701e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,13.0000) )
-    {
-        x = 2*(s-3.000000)/10.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -5.736127e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.920809e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.175858e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.002049e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.158966e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.157781e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.762172e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.780347e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.193310e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.442421e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.547756e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -2.799944e-01*(s-1.300000e+01)-7.566269e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl14(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,1.0000) )
-    {
-        x = 2*(s-0.000000)/1.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -2.698527e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.479081e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.640733e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.466899e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.469485e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.150009e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.965975e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.710210e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.327808e-05, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,3.0000) )
-    {
-        x = 2*(s-1.000000)/2.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -2.350359e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.421365e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.960468e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.149167e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.361109e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.976022e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.082700e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.563328e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.453123e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.917559e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.151067e-05, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,15.0000) )
-    {
-        x = 2*(s-3.000000)/12.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -5.746892e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.010441e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.566146e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.129690e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.929724e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.524227e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.192933e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.254730e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.620685e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.289618e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.112350e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -2.590621e-01*(s-1.500000e+01)-7.632238e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl15(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,2.0000) )
-    {
-        x = 2*(s-0.000000)/2.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.043660e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.361653e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.009497e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.951784e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.377903e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.003253e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.271309e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,5.0000) )
-    {
-        x = 2*(s-2.000000)/3.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -3.582778e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.349578e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 9.476514e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.717385e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.222591e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.635124e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.815993e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,17.0000) )
-    {
-        x = 2*(s-5.000000)/12.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.115476e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.655936e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 8.404310e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.663794e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 8.868618e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.381447e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 9.444801e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.581503e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -9.468696e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.728509e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.206470e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.927937e-01*(s-1.700000e+01)-7.700983e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl16(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,2.0000) )
-    {
-        x = 2*(s-0.000000)/2.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.002570e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.298141e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.832803e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.877026e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.539436e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 8.439658e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.756911e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,5.0000) )
-    {
-        x = 2*(s-2.000000)/3.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -3.486198e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.242944e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.020002e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.130531e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.512373e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.054876e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.556839e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,20.0000) )
-    {
-        x = 2*(s-5.000000)/15.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.241608e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.832655e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.340545e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.361143e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.283219e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.484549e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.805968e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.057243e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.454439e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.177513e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.819209e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -2.391580e-01*(s-2.000000e+01)-7.963205e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl17(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,3.0000) )
-    {
-        x = 2*(s-0.000000)/3.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.566973e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.810330e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.840039e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.337294e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.383549e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.556515e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.656965e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.404569e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.447867e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,6.0000) )
-    {
-        x = 2*(s-3.000000)/3.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -3.905684e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.222920e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.146667e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.809176e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.057028e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.211838e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.099683e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.161105e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.225465e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,24.0000) )
-    {
-        x = 2*(s-6.000000)/18.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.594282e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.917838e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.455980e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.999589e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.604263e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.484445e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.819937e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.930390e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.771761e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.232581e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.029083e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -2.127771e-01*(s-2.400000e+01)-8.400197e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl18(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,3.0000) )
-    {
-        x = 2*(s-0.000000)/3.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.526802e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.762373e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.598890e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.189437e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.971721e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.823067e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.064501e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.014932e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.953513e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,6.0000) )
-    {
-        x = 2*(s-3.000000)/3.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -3.818669e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.070918e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.277196e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.879817e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.887357e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.638451e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.502800e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.165796e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.034960e-05, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,20.0000) )
-    {
-        x = 2*(s-6.000000)/14.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.010656e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.496296e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.002227e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.338250e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.137036e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.586202e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -9.736384e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.332251e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.877982e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.160963e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.547247e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.684623e-01*(s-2.000000e+01)-7.428883e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl19(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,3.0000) )
-    {
-        x = 2*(s-0.000000)/3.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.490213e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.719633e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.459123e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.034878e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.113868e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.030922e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.054022e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.525623e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.277360e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,6.0000) )
-    {
-        x = 2*(s-3.000000)/3.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -3.744750e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.977749e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.223716e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.363889e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.711774e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.557257e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.254794e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 9.034207e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.498107e-05, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,20.0000) )
-    {
-        x = 2*(s-6.000000)/14.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -5.872768e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.430689e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.136575e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.726627e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.421110e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.581510e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.559520e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.838208e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 8.428839e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.170682e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.006647e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.539373e-01*(s-2.000000e+01)-7.206941e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl20(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,4.0000) )
-    {
-        x = 2*(s-0.000000)/4.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.854794e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.948947e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.632184e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.139397e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.006237e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.810031e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.573620e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 9.951242e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.274092e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.464196e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.882139e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.575144e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.822804e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.061348e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.908404e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.978353e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,15.0000) )
-    {
-        x = 2*(s-4.000000)/11.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -5.030989e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.327151e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.346404e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.840051e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.578551e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -9.813886e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.905973e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.358489e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.450795e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.941157e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.432418e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.070537e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 9.375654e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.367378e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 9.890859e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.679782e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,25.0000) )
-    {
-        x = 2*(s-15.000000)/10.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -7.015854e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.487737e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.244254e-02, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.318007e-01*(s-2.500000e+01)-7.742185e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl30(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,4.0000) )
-    {
-        x = 2*(s-0.000000)/4.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.630822e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.724298e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.872756e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.658268e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.573597e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.994157e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.994825e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.394303e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.785029e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.990264e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.037838e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.755546e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.774473e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.821395e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.392603e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.353313e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,15.0000) )
-    {
-        x = 2*(s-4.000000)/11.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -4.539322e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.197018e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.396848e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.804293e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.867928e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.768758e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.211792e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.925799e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.046235e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -9.536469e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.489642e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,25.0000) )
-    {
-        x = 2*(s-15.000000)/10.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.263462e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.177316e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.590637e-02, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.028212e-01*(s-2.500000e+01)-6.855288e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl50(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,4.0000) )
-    {
-        x = 2*(s-0.000000)/4.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.436279e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.519711e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.148699e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.001204e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.207620e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.034778e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.220322e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.033260e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.588280e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.851653e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.287733e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,15.0000) )
-    {
-        x = 2*(s-4.000000)/11.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -4.234645e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.189127e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.429738e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.058822e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 9.086776e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.445783e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.311671e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.261298e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.496987e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.605249e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 8.162282e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,25.0000) )
-    {
-        x = 2*(s-15.000000)/10.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -5.921095e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.888603e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.080113e-02, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -9.313116e-02*(s-2.500000e+01)-6.479154e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl65(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,4.0000) )
-    {
-        x = 2*(s-0.000000)/4.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.360024e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.434631e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.514580e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 7.332038e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.158197e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.121233e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.051056e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,15.0000) )
-    {
-        x = 2*(s-4.000000)/11.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -4.148601e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.214233e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.487977e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.424720e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.116715e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.043152e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.718149e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.313701e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.097305e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.181031e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.256975e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,25.0000) )
-    {
-        x = 2*(s-15.000000)/10.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -5.858951e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.895179e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.933237e-02, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -9.443768e-02*(s-2.500000e+01)-6.419137e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl100(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,4.0000) )
-    {
-        x = 2*(s-0.000000)/4.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.257021e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.313418e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.628931e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.264287e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.518487e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.499826e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.836044e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,15.0000) )
-    {
-        x = 2*(s-4.000000)/11.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -4.056508e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.279690e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.665746e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.290012e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.487632e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.704465e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.211669e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,25.0000) )
-    {
-        x = 2*(s-15.000000)/10.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -5.866099e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.399767e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.498208e-02, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.080097e-01*(s-2.500000e+01)-6.481094e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl130(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,4.0000) )
-    {
-        x = 2*(s-0.000000)/4.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.207999e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.253864e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.618032e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.112729e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.210546e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.732602e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.410527e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,15.0000) )
-    {
-        x = 2*(s-4.000000)/11.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -4.026324e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.331990e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.779129e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.674749e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.669077e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.679136e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 8.833221e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,25.0000) )
-    {
-        x = 2*(s-15.000000)/10.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -5.893951e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.475304e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.116734e-02, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.045722e-01*(s-2.500000e+01)-6.510314e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl200(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,4.0000) )
-    {
-        x = 2*(s-0.000000)/4.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.146155e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.177398e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.297970e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.869745e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.717288e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.982108e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.427636e-05, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,15.0000) )
-    {
-        x = 2*(s-4.000000)/11.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -4.034235e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.455006e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.942996e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.973795e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.418812e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.156778e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.896705e-05, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,25.0000) )
-    {
-        x = 2*(s-15.000000)/10.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.086071e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.152176e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.725393e-02, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.132404e-01*(s-2.500000e+01)-6.764034e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl301(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,4.0000) )
-    {
-        x = 2*(s-0.000000)/4.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.104290e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.125800e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -9.595847e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.219666e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.502210e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.414543e-05, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.754115e-05, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,15.0000) )
-    {
-        x = 2*(s-4.000000)/11.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -4.065955e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.582060e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.004472e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -4.709092e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.105779e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.197391e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.386780e-04, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,25.0000) )
-    {
-        x = 2*(s-15.000000)/10.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.311384e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.918763e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.626584e-02, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.293626e-01*(s-2.500000e+01)-7.066995e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl501(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,4.0000) )
-    {
-        x = 2*(s-0.000000)/4.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.067426e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.079765e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -5.463005e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 6.875659e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,15.0000) )
-    {
-        x = 2*(s-4.000000)/11.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -4.127574e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.740694e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.044502e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.746714e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 3.810594e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.197111e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,25.0000) )
-    {
-        x = 2*(s-15.000000)/10.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.628194e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -8.846221e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.386405e-02, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.418332e-01*(s-2.500000e+01)-7.468952e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl701(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,4.0000) )
-    {
-        x = 2*(s-0.000000)/4.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.050999e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.059769e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -3.922680e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 4.847054e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,15.0000) )
-    {
-        x = 2*(s-4.000000)/11.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -4.192182e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.860007e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.963942e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.838711e-02, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.893112e-04, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.159788e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,25.0000) )
-    {
-        x = 2*(s-15.000000)/10.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -6.917851e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -9.817020e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.383727e-02, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -1.532706e-01*(s-2.500000e+01)-7.845715e+00;
-    return result;
-}
-
-
-static double jarquebera_jbtbl1401(double s, ae_state *_state)
-{
-    double x;
-    double tj;
-    double tj1;
-    double result;
-
-
-    result = (double)(0);
-    if( ae_fp_less_eq(s,4.0000) )
-    {
-        x = 2*(s-0.000000)/4.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -1.026266e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.030061e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.259222e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 2.536254e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,15.0000) )
-    {
-        x = 2*(s-4.000000)/11.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -4.329849e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -2.095443e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 1.759363e-01, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -7.751359e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -6.124368e-03, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.793114e-03, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    if( ae_fp_less_eq(s,25.0000) )
-    {
-        x = 2*(s-15.000000)/10.000000-1;
-        tj = (double)(1);
-        tj1 = x;
-        jarquebera_jbcheb(x, -7.544330e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, -1.225382e+00, &tj, &tj1, &result, _state);
-        jarquebera_jbcheb(x, 5.392349e-02, &tj, &tj1, &result, _state);
-        if( ae_fp_greater(result,(double)(0)) )
-        {
-            result = (double)(0);
-        }
-        return result;
-    }
-    result = -2.019375e-01*(s-2.500000e+01)-8.715788e+00;
-    return result;
-}
-
-
-static void jarquebera_jbcheb(double x,
-     double c,
-     double* tj,
-     double* tj1,
-     double* r,
-     ae_state *_state)
-{
-    double t;
-
-
-    *r = *r+c*(*tj);
-    t = 2*x*(*tj1)-(*tj);
-    *tj = *tj1;
-    *tj1 = t;
-}
-
-
-#endif
-#if defined(AE_COMPILE_VARIANCETESTS) || !defined(AE_PARTIAL_BUILD)
-
-
-/*************************************************************************
-Two-sample F-test
-
-This test checks three hypotheses about dispersions of the given  samples.
-The following tests are performed:
-    * two-tailed test (null hypothesis - the dispersions are equal)
-    * left-tailed test (null hypothesis  -  the  dispersion  of  the first
-      sample is greater than or equal to  the  dispersion  of  the  second
-      sample).
-    * right-tailed test (null hypothesis - the  dispersion  of  the  first
-      sample is less than or equal to the dispersion of the second sample)
-
-The test is based on the following assumptions:
-    * the given samples have normal distributions
-    * the samples are independent.
-
-Input parameters:
-    X   -   sample 1. Array whose index goes from 0 to N-1.
-    N   -   sample size.
-    Y   -   sample 2. Array whose index goes from 0 to M-1.
-    M   -   sample size.
+    X       -   sample. Array whose index goes from 0 to N-1.
+    N       -   size of the sample.
+    Median  -   assumed median value.
 
 Output parameters:
     BothTails   -   p-value for two-tailed test.
@@ -20027,137 +19214,23 @@ Output parameters:
                     If RightTail is less than the given significance level
                     the null hypothesis is rejected.
 
+While   calculating   p-values   high-precision   binomial    distribution
+approximation is used, so significance levels have about 15 exact digits.
+
   -- ALGLIB --
-     Copyright 19.09.2006 by Bochkanov Sergey
+     Copyright 08.09.2006 by Bochkanov Sergey
 *************************************************************************/
-void ftest(/* Real    */ ae_vector* x,
+void onesamplesigntest(/* Real    */ ae_vector* x,
      ae_int_t n,
-     /* Real    */ ae_vector* y,
-     ae_int_t m,
+     double median,
      double* bothtails,
      double* lefttail,
      double* righttail,
      ae_state *_state)
 {
     ae_int_t i;
-    double xmean;
-    double ymean;
-    double xvar;
-    double yvar;
-    ae_int_t df1;
-    ae_int_t df2;
-    double stat;
-
-    *bothtails = 0;
-    *lefttail = 0;
-    *righttail = 0;
-
-    if( n<=2||m<=2 )
-    {
-        *bothtails = 1.0;
-        *lefttail = 1.0;
-        *righttail = 1.0;
-        return;
-    }
-    
-    /*
-     * Mean
-     */
-    xmean = (double)(0);
-    for(i=0; i<=n-1; i++)
-    {
-        xmean = xmean+x->ptr.p_double[i];
-    }
-    xmean = xmean/n;
-    ymean = (double)(0);
-    for(i=0; i<=m-1; i++)
-    {
-        ymean = ymean+y->ptr.p_double[i];
-    }
-    ymean = ymean/m;
-    
-    /*
-     * Variance (using corrected two-pass algorithm)
-     */
-    xvar = (double)(0);
-    for(i=0; i<=n-1; i++)
-    {
-        xvar = xvar+ae_sqr(x->ptr.p_double[i]-xmean, _state);
-    }
-    xvar = xvar/(n-1);
-    yvar = (double)(0);
-    for(i=0; i<=m-1; i++)
-    {
-        yvar = yvar+ae_sqr(y->ptr.p_double[i]-ymean, _state);
-    }
-    yvar = yvar/(m-1);
-    if( ae_fp_eq(xvar,(double)(0))||ae_fp_eq(yvar,(double)(0)) )
-    {
-        *bothtails = 1.0;
-        *lefttail = 1.0;
-        *righttail = 1.0;
-        return;
-    }
-    
-    /*
-     * Statistic
-     */
-    df1 = n-1;
-    df2 = m-1;
-    stat = ae_minreal(xvar/yvar, yvar/xvar, _state);
-    *bothtails = 1-(fdistribution(df1, df2, 1/stat, _state)-fdistribution(df1, df2, stat, _state));
-    *lefttail = fdistribution(df1, df2, xvar/yvar, _state);
-    *righttail = 1-(*lefttail);
-}
-
-
-/*************************************************************************
-One-sample chi-square test
-
-This test checks three hypotheses about the dispersion of the given sample
-The following tests are performed:
-    * two-tailed test (null hypothesis - the dispersion equals  the  given
-      number)
-    * left-tailed test (null hypothesis - the dispersion is  greater  than
-      or equal to the given number)
-    * right-tailed test (null hypothesis  -  dispersion is  less  than  or
-      equal to the given number).
-
-Test is based on the following assumptions:
-    * the given sample has a normal distribution.
-
-Input parameters:
-    X           -   sample 1. Array whose index goes from 0 to N-1.
-    N           -   size of the sample.
-    Variance    -   dispersion value to compare with.
-
-Output parameters:
-    BothTails   -   p-value for two-tailed test.
-                    If BothTails is less than the given significance level
-                    the null hypothesis is rejected.
-    LeftTail    -   p-value for left-tailed test.
-                    If LeftTail is less than the given significance level,
-                    the null hypothesis is rejected.
-    RightTail   -   p-value for right-tailed test.
-                    If RightTail is less than the given significance level
-                    the null hypothesis is rejected.
-
-  -- ALGLIB --
-     Copyright 19.09.2006 by Bochkanov Sergey
-*************************************************************************/
-void onesamplevariancetest(/* Real    */ ae_vector* x,
-     ae_int_t n,
-     double variance,
-     double* bothtails,
-     double* lefttail,
-     double* righttail,
-     ae_state *_state)
-{
-    ae_int_t i;
-    double xmean;
-    double xvar;
-    double s;
-    double stat;
+    ae_int_t gtcnt;
+    ae_int_t necnt;
 
     *bothtails = 0;
     *lefttail = 0;
@@ -20172,25 +19245,112 @@ void onesamplevariancetest(/* Real    */ ae_vector* x,
     }
     
     /*
-     * Mean
+     * Calculate:
+     * GTCnt - count of x[i]>Median
+     * NECnt - count of x[i]<>Median
      */
-    xmean = (double)(0);
+    gtcnt = 0;
+    necnt = 0;
     for(i=0; i<=n-1; i++)
     {
-        xmean = xmean+x->ptr.p_double[i];
+        if( ae_fp_greater(x->ptr.p_double[i],median) )
+        {
+            gtcnt = gtcnt+1;
+        }
+        if( ae_fp_neq(x->ptr.p_double[i],median) )
+        {
+            necnt = necnt+1;
+        }
     }
-    xmean = xmean/n;
-    
-    /*
-     * Variance
-     */
-    xvar = (double)(0);
-    for(i=0; i<=n-1; i++)
+    if( necnt==0 )
     {
-        xvar = xvar+ae_sqr(x->ptr.p_double[i]-xmean, _state);
+        
+        /*
+         * all x[i] are equal to Median.
+         * So we can conclude that Median is a true median :)
+         */
+        *bothtails = 1.0;
+        *lefttail = 1.0;
+        *righttail = 1.0;
+        return;
     }
-    xvar = xvar/(n-1);
-    if( ae_fp_eq(xvar,(double)(0)) )
+    *bothtails = ae_minreal(2*binomialdistribution(ae_minint(gtcnt, necnt-gtcnt, _state), necnt, 0.5, _state), 1.0, _state);
+    *lefttail = binomialdistribution(gtcnt, necnt, 0.5, _state);
+    *righttail = binomialcdistribution(gtcnt-1, necnt, 0.5, _state);
+}
+
+
+#endif
+#if defined(AE_COMPILE_STUDENTTTESTS) || !defined(AE_PARTIAL_BUILD)
+
+
+/*************************************************************************
+One-sample t-test
+
+This test checks three hypotheses about the mean of the given sample.  The
+following tests are performed:
+    * two-tailed test (null hypothesis - the mean is equal  to  the  given
+      value)
+    * left-tailed test (null hypothesis - the  mean  is  greater  than  or
+      equal to the given value)
+    * right-tailed test (null hypothesis - the mean is less than or  equal
+      to the given value).
+
+The test is based on the assumption that  a  given  sample  has  a  normal
+distribution and  an  unknown  dispersion.  If  the  distribution  sharply
+differs from normal, the test will work incorrectly.
+
+INPUT PARAMETERS:
+    X       -   sample. Array whose index goes from 0 to N-1.
+    N       -   size of sample, N>=0
+    Mean    -   assumed value of the mean.
+
+OUTPUT PARAMETERS:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+NOTE: this function correctly handles degenerate cases:
+      * when N=0, all p-values are set to 1.0
+      * when variance of X[] is exactly zero, p-values are set
+        to 1.0 or 0.0, depending on difference between sample mean and
+        value of mean being tested.
+
+
+  -- ALGLIB --
+     Copyright 08.09.2006 by Bochkanov Sergey
+*************************************************************************/
+void studentttest1(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     double mean,
+     double* bothtails,
+     double* lefttail,
+     double* righttail,
+     ae_state *_state)
+{
+    ae_int_t i;
+    double xmean;
+    double x0;
+    double v;
+    ae_bool samex;
+    double xvariance;
+    double xstddev;
+    double v1;
+    double v2;
+    double stat;
+    double s;
+
+    *bothtails = 0;
+    *lefttail = 0;
+    *righttail = 0;
+
+    if( n<=0 )
     {
         *bothtails = 1.0;
         *lefttail = 1.0;
@@ -20199,13 +19359,470 @@ void onesamplevariancetest(/* Real    */ ae_vector* x,
     }
     
     /*
+     * Mean
+     */
+    xmean = (double)(0);
+    x0 = x->ptr.p_double[0];
+    samex = ae_true;
+    for(i=0; i<=n-1; i++)
+    {
+        v = x->ptr.p_double[i];
+        xmean = xmean+v;
+        samex = samex&&ae_fp_eq(v,x0);
+    }
+    if( samex )
+    {
+        xmean = x0;
+    }
+    else
+    {
+        xmean = xmean/n;
+    }
+    
+    /*
+     * Variance (using corrected two-pass algorithm)
+     */
+    xvariance = (double)(0);
+    xstddev = (double)(0);
+    if( n!=1&&!samex )
+    {
+        v1 = (double)(0);
+        for(i=0; i<=n-1; i++)
+        {
+            v1 = v1+ae_sqr(x->ptr.p_double[i]-xmean, _state);
+        }
+        v2 = (double)(0);
+        for(i=0; i<=n-1; i++)
+        {
+            v2 = v2+(x->ptr.p_double[i]-xmean);
+        }
+        v2 = ae_sqr(v2, _state)/n;
+        xvariance = (v1-v2)/(n-1);
+        if( ae_fp_less(xvariance,(double)(0)) )
+        {
+            xvariance = (double)(0);
+        }
+        xstddev = ae_sqrt(xvariance, _state);
+    }
+    if( ae_fp_eq(xstddev,(double)(0)) )
+    {
+        if( ae_fp_eq(xmean,mean) )
+        {
+            *bothtails = 1.0;
+        }
+        else
+        {
+            *bothtails = 0.0;
+        }
+        if( ae_fp_greater_eq(xmean,mean) )
+        {
+            *lefttail = 1.0;
+        }
+        else
+        {
+            *lefttail = 0.0;
+        }
+        if( ae_fp_less_eq(xmean,mean) )
+        {
+            *righttail = 1.0;
+        }
+        else
+        {
+            *righttail = 0.0;
+        }
+        return;
+    }
+    
+    /*
      * Statistic
      */
-    stat = (n-1)*xvar/variance;
-    s = chisquaredistribution((double)(n-1), stat, _state);
+    stat = (xmean-mean)/(xstddev/ae_sqrt((double)(n), _state));
+    s = studenttdistribution(n-1, stat, _state);
     *bothtails = 2*ae_minreal(s, 1-s, _state);
     *lefttail = s;
-    *righttail = 1-(*lefttail);
+    *righttail = 1-s;
+}
+
+
+/*************************************************************************
+Two-sample pooled test
+
+This test checks three hypotheses about the mean of the given samples. The
+following tests are performed:
+    * two-tailed test (null hypothesis - the means are equal)
+    * left-tailed test (null hypothesis - the mean of the first sample  is
+      greater than or equal to the mean of the second sample)
+    * right-tailed test (null hypothesis - the mean of the first sample is
+      less than or equal to the mean of the second sample).
+
+Test is based on the following assumptions:
+    * given samples have normal distributions
+    * dispersions are equal
+    * samples are independent.
+
+Input parameters:
+    X       -   sample 1. Array whose index goes from 0 to N-1.
+    N       -   size of sample.
+    Y       -   sample 2. Array whose index goes from 0 to M-1.
+    M       -   size of sample.
+
+Output parameters:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+NOTE: this function correctly handles degenerate cases:
+      * when N=0 or M=0, all p-values are set to 1.0
+      * when both samples has exactly zero variance, p-values are set
+        to 1.0 or 0.0, depending on difference between means.
+
+  -- ALGLIB --
+     Copyright 18.09.2006 by Bochkanov Sergey
+*************************************************************************/
+void studentttest2(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     /* Real    */ ae_vector* y,
+     ae_int_t m,
+     double* bothtails,
+     double* lefttail,
+     double* righttail,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_bool samex;
+    ae_bool samey;
+    double x0;
+    double y0;
+    double xmean;
+    double ymean;
+    double v;
+    double stat;
+    double s;
+    double p;
+
+    *bothtails = 0;
+    *lefttail = 0;
+    *righttail = 0;
+
+    if( n<=0||m<=0 )
+    {
+        *bothtails = 1.0;
+        *lefttail = 1.0;
+        *righttail = 1.0;
+        return;
+    }
+    
+    /*
+     * Mean
+     */
+    xmean = (double)(0);
+    x0 = x->ptr.p_double[0];
+    samex = ae_true;
+    for(i=0; i<=n-1; i++)
+    {
+        v = x->ptr.p_double[i];
+        xmean = xmean+v;
+        samex = samex&&ae_fp_eq(v,x0);
+    }
+    if( samex )
+    {
+        xmean = x0;
+    }
+    else
+    {
+        xmean = xmean/n;
+    }
+    ymean = (double)(0);
+    y0 = y->ptr.p_double[0];
+    samey = ae_true;
+    for(i=0; i<=m-1; i++)
+    {
+        v = y->ptr.p_double[i];
+        ymean = ymean+v;
+        samey = samey&&ae_fp_eq(v,y0);
+    }
+    if( samey )
+    {
+        ymean = y0;
+    }
+    else
+    {
+        ymean = ymean/m;
+    }
+    
+    /*
+     * S
+     */
+    s = (double)(0);
+    if( n+m>2 )
+    {
+        for(i=0; i<=n-1; i++)
+        {
+            s = s+ae_sqr(x->ptr.p_double[i]-xmean, _state);
+        }
+        for(i=0; i<=m-1; i++)
+        {
+            s = s+ae_sqr(y->ptr.p_double[i]-ymean, _state);
+        }
+        s = ae_sqrt(s*((double)1/(double)n+(double)1/(double)m)/(n+m-2), _state);
+    }
+    if( ae_fp_eq(s,(double)(0)) )
+    {
+        if( ae_fp_eq(xmean,ymean) )
+        {
+            *bothtails = 1.0;
+        }
+        else
+        {
+            *bothtails = 0.0;
+        }
+        if( ae_fp_greater_eq(xmean,ymean) )
+        {
+            *lefttail = 1.0;
+        }
+        else
+        {
+            *lefttail = 0.0;
+        }
+        if( ae_fp_less_eq(xmean,ymean) )
+        {
+            *righttail = 1.0;
+        }
+        else
+        {
+            *righttail = 0.0;
+        }
+        return;
+    }
+    
+    /*
+     * Statistic
+     */
+    stat = (xmean-ymean)/s;
+    p = studenttdistribution(n+m-2, stat, _state);
+    *bothtails = 2*ae_minreal(p, 1-p, _state);
+    *lefttail = p;
+    *righttail = 1-p;
+}
+
+
+/*************************************************************************
+Two-sample unpooled test
+
+This test checks three hypotheses about the mean of the given samples. The
+following tests are performed:
+    * two-tailed test (null hypothesis - the means are equal)
+    * left-tailed test (null hypothesis - the mean of the first sample  is
+      greater than or equal to the mean of the second sample)
+    * right-tailed test (null hypothesis - the mean of the first sample is
+      less than or equal to the mean of the second sample).
+
+Test is based on the following assumptions:
+    * given samples have normal distributions
+    * samples are independent.
+Equality of variances is NOT required.
+
+Input parameters:
+    X - sample 1. Array whose index goes from 0 to N-1.
+    N - size of the sample.
+    Y - sample 2. Array whose index goes from 0 to M-1.
+    M - size of the sample.
+
+Output parameters:
+    BothTails   -   p-value for two-tailed test.
+                    If BothTails is less than the given significance level
+                    the null hypothesis is rejected.
+    LeftTail    -   p-value for left-tailed test.
+                    If LeftTail is less than the given significance level,
+                    the null hypothesis is rejected.
+    RightTail   -   p-value for right-tailed test.
+                    If RightTail is less than the given significance level
+                    the null hypothesis is rejected.
+
+NOTE: this function correctly handles degenerate cases:
+      * when N=0 or M=0, all p-values are set to 1.0
+      * when both samples has zero variance, p-values are set
+        to 1.0 or 0.0, depending on difference between means.
+      * when only one sample has zero variance, test reduces to 1-sample
+        version.
+
+  -- ALGLIB --
+     Copyright 18.09.2006 by Bochkanov Sergey
+*************************************************************************/
+void unequalvariancettest(/* Real    */ ae_vector* x,
+     ae_int_t n,
+     /* Real    */ ae_vector* y,
+     ae_int_t m,
+     double* bothtails,
+     double* lefttail,
+     double* righttail,
+     ae_state *_state)
+{
+    ae_int_t i;
+    ae_bool samex;
+    ae_bool samey;
+    double x0;
+    double y0;
+    double xmean;
+    double ymean;
+    double xvar;
+    double yvar;
+    double v;
+    double df;
+    double p;
+    double stat;
+    double c;
+
+    *bothtails = 0;
+    *lefttail = 0;
+    *righttail = 0;
+
+    if( n<=0||m<=0 )
+    {
+        *bothtails = 1.0;
+        *lefttail = 1.0;
+        *righttail = 1.0;
+        return;
+    }
+    
+    /*
+     * Mean
+     */
+    xmean = (double)(0);
+    x0 = x->ptr.p_double[0];
+    samex = ae_true;
+    for(i=0; i<=n-1; i++)
+    {
+        v = x->ptr.p_double[i];
+        xmean = xmean+v;
+        samex = samex&&ae_fp_eq(v,x0);
+    }
+    if( samex )
+    {
+        xmean = x0;
+    }
+    else
+    {
+        xmean = xmean/n;
+    }
+    ymean = (double)(0);
+    y0 = y->ptr.p_double[0];
+    samey = ae_true;
+    for(i=0; i<=m-1; i++)
+    {
+        v = y->ptr.p_double[i];
+        ymean = ymean+v;
+        samey = samey&&ae_fp_eq(v,y0);
+    }
+    if( samey )
+    {
+        ymean = y0;
+    }
+    else
+    {
+        ymean = ymean/m;
+    }
+    
+    /*
+     * Variance (using corrected two-pass algorithm)
+     */
+    xvar = (double)(0);
+    if( n>=2&&!samex )
+    {
+        for(i=0; i<=n-1; i++)
+        {
+            xvar = xvar+ae_sqr(x->ptr.p_double[i]-xmean, _state);
+        }
+        xvar = xvar/(n-1);
+    }
+    yvar = (double)(0);
+    if( m>=2&&!samey )
+    {
+        for(i=0; i<=m-1; i++)
+        {
+            yvar = yvar+ae_sqr(y->ptr.p_double[i]-ymean, _state);
+        }
+        yvar = yvar/(m-1);
+    }
+    
+    /*
+     * Handle different special cases
+     * (one or both variances are zero).
+     */
+    if( ae_fp_eq(xvar,(double)(0))&&ae_fp_eq(yvar,(double)(0)) )
+    {
+        if( ae_fp_eq(xmean,ymean) )
+        {
+            *bothtails = 1.0;
+        }
+        else
+        {
+            *bothtails = 0.0;
+        }
+        if( ae_fp_greater_eq(xmean,ymean) )
+        {
+            *lefttail = 1.0;
+        }
+        else
+        {
+            *lefttail = 0.0;
+        }
+        if( ae_fp_less_eq(xmean,ymean) )
+        {
+            *righttail = 1.0;
+        }
+        else
+        {
+            *righttail = 0.0;
+        }
+        return;
+    }
+    if( ae_fp_eq(xvar,(double)(0)) )
+    {
+        
+        /*
+         * X is constant, unpooled 2-sample test reduces to 1-sample test.
+         *
+         * NOTE: right-tail and left-tail must be passed to 1-sample
+         *       t-test in reverse order because we reverse order of
+         *       of samples.
+         */
+        studentttest1(y, m, xmean, bothtails, righttail, lefttail, _state);
+        return;
+    }
+    if( ae_fp_eq(yvar,(double)(0)) )
+    {
+        
+        /*
+         * Y is constant, unpooled 2-sample test reduces to 1-sample test.
+         */
+        studentttest1(x, n, ymean, bothtails, lefttail, righttail, _state);
+        return;
+    }
+    
+    /*
+     * Statistic
+     */
+    stat = (xmean-ymean)/ae_sqrt(xvar/n+yvar/m, _state);
+    c = xvar/n/(xvar/n+yvar/m);
+    df = rmul2((double)(n-1), (double)(m-1), _state)/((m-1)*ae_sqr(c, _state)+(n-1)*ae_sqr(1-c, _state));
+    if( ae_fp_greater(stat,(double)(0)) )
+    {
+        p = 1-0.5*incompletebeta(df/2, 0.5, df/(df+ae_sqr(stat, _state)), _state);
+    }
+    else
+    {
+        p = 0.5*incompletebeta(df/2, 0.5, df/(df+ae_sqr(stat, _state)), _state);
+    }
+    *bothtails = 2*ae_minreal(p, 1-p, _state);
+    *lefttail = p;
+    *righttail = 1-p;
 }
 
 

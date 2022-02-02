@@ -73,7 +73,7 @@ public:
 	\param B0s B0 values in msecs
 	\return signal
 	*/
-	MDM_API static const std::vector<double> modelToSignals(
+	MDM_API static std::vector<double> modelToSignals(
 		const std::vector<double>& params, const std::vector<double> B0s);
 
 

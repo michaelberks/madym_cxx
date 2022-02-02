@@ -24,7 +24,7 @@ struct bcfitOutput
 	double bic;
 	double rsq;
 
-	bool success;
+	mdm_ErrorTracker::ErrorCode success;
 };
 
 
@@ -39,7 +39,7 @@ public:
 	/*!
 	\param Bvals vector of B0 values sin msecs
 	*/
-	MDM_API mdm_DWIFitterIVIM(const std::vector<double> &Bvals, bool fullModel, std::vector<double> Bvalsthresh);
+	MDM_API mdm_DWIFitterIVIM(const std::vector<double> &Bvals, bool fullModel, const std::vector<double> &Bvalsthresh);
 
 	//! Default denstructor
 	/*!
@@ -91,13 +91,13 @@ public:
 	\param B0s B0 values in msecs
 	\return signal
 	*/
-	MDM_API static const std::vector<double> modelToSignals(
+	MDM_API static std::vector<double> modelToSignals(
 		const std::vector<double>& params, const std::vector<double> B0s);
 
 	
 private:
 
-	mdm_ErrorTracker::ErrorCode bcfitIVIM(
+	void bcfitIVIM(
 		const std::vector<double>& initParams,
 		bcfitOutput& fit);
 

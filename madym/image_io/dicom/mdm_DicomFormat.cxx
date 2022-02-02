@@ -82,7 +82,8 @@ MDM_API mdm_Image3D mdm_DicomFormat::loadImageFromDicomSlices(
   const double offset,
   const double scale,
   const bool flipX,
-  const bool flipY)
+  const bool flipY,
+  const bool flipZ)
 {
   //num slices should be the same as the number of dimensions
   assert(dimensions.size() == 3);
@@ -94,7 +95,7 @@ MDM_API mdm_Image3D mdm_DicomFormat::loadImageFromDicomSlices(
   img.setVoxelDims(voxelSize[0], voxelSize[1], voxelSize[2]);
 
   //Loop through filenames, loading each dicom file and extracting the pixel data
-  size_t currSlice = 0;
+  size_t currSlice = flipZ ? dimensions[2] - 1 : 0;
   size_t nSliceVoxels = dimensions[0] * dimensions[1];
   for (auto sliceName : sliceNames)
   {
@@ -169,7 +170,12 @@ MDM_API mdm_Image3D mdm_DicomFormat::loadImageFromDicomSlices(
     }
 
     //Set slice in the 3D image
-    img.setSlice(currSlice++, voxelValues);
+    img.setSlice(currSlice, voxelValues);
+
+    if (flipZ)
+      currSlice--;
+    else
+      currSlice++;
   }
 
   //Apply scaling if set

@@ -15,6 +15,8 @@ add_executable( test_mdm_tools
   test_madym_DCE_lite.cxx
   test_madym_T1.cxx
   test_madym_T1_lite.cxx
+  test_madym_DWI.cxx
+  test_madym_DWI_lite.cxx
 
 )
 

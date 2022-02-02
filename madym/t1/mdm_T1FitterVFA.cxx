@@ -32,6 +32,13 @@ MDM_API mdm_T1FitterVFA::mdm_T1FitterVFA(const std::vector<double> &FAs, const d
 {
 	if (!FAs_.empty())
 		initFAs();
+
+#if _DEBUG
+	//Provides numerical check of analytic gradient, useful in debugging, but should not be
+	//used in release versions
+	alglib::mincgoptguardsmoothness(state_);
+	alglib::mincgoptguardgradient(state_, 0.001);
+#endif
 }
 
 //
@@ -110,6 +117,18 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 		mincgrestartfrom(state_, x);
 		alglib::mincgoptimize(state_, &computeSSEGradientAlglib, NULL, this);
 		mincgresults(state_, x, rep_);
+
+#if _DEBUG
+		//
+		// Check that OptGuard did not report errors
+		//
+		alglib::optguardreport ogrep;
+		alglib::mincgoptguardresults(state_, ogrep);
+		std::cout << "Optimisation guard results:\n";
+		std::cout << "Bad gradient suspected:" << (ogrep.badgradsuspected ? "true" : "false") << "\n"; // EXPECTED: false
+		std::cout << "Non c0 suspected:" << (ogrep.nonc0suspected ? "true" : "false") << "\n"; // EXPECTED: false
+		std::cout << "Non c1 suspected:" << (ogrep.nonc1suspected ? "true" : "false") << "\n"; // EXPECTED: false
+#endif
 	}
 	catch (alglib::ap_error e)
 	{
@@ -171,7 +190,7 @@ MDM_API int mdm_T1FitterVFA::minimumInputs() const
 //
 MDM_API int mdm_T1FitterVFA::maximumInputs() const
 {
-	return 10;
+	return 50;
 }
 
 //

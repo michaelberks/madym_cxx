@@ -30,11 +30,11 @@ MDM_API mdm_DWIFitterADC::mdm_DWIFitterADC(const std::vector<double>& Bvals, boo
 	if (!linearFit_)
 	{
 		int nParams = 2;
-		std::vector<double> init = { 1, 1 };
+		std::vector<double> init = { 100, 1e-3 };
 		std::vector<double> lowerBounds = { 0, 1e-4 };
 		std::vector<double> upperBounds = { 1e6, 1e6 };
 
-		std::vector<double> scale = { 1, 1 };
+		std::vector<double> scale = { 100, 1e-3 };
 
 
 		alglib::real_1d_array x;
@@ -60,12 +60,12 @@ MDM_API mdm_DWIFitterADC::mdm_DWIFitterADC(const std::vector<double>& Bvals, boo
 		alglib::minbcsetbc(state_, bndl, bndu);
 		alglib::minbcsetcond(state_, epsg, epsf, epsx, maxits);
 		alglib::minbcsetscale(state_, s);
+
 #if _DEBUG
-		//REQUIRES UPDATE TO LATEST ALGLIB VERSION
 		//Provides numerical check of analytic gradient, useful in debugging, but should not be
 		//used in release versions
-		//alglib::minbcoptguardsmoothness(state_);
-		//alglib::minbcoptguardgradient(state_, 0.001);
+		alglib::minbcoptguardsmoothness(state_);
+		alglib::minbcoptguardgradient(state_, 0.001);
 #endif
 	}
 	
@@ -103,6 +103,18 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_DWIFitterADC::fitModel(
 		minbcrestartfrom(state_, x);
 		alglib::minbcoptimize(state_, &computeSSEGradientAlglib, NULL, this);
 		minbcresults(state_, x, rep_);
+
+#if _DEBUG
+		//
+		// Check that OptGuard did not report errors
+		//
+		alglib::optguardreport ogrep;
+		alglib::minbcoptguardresults(state_, ogrep);
+		std::cout << "Optimisation guard results:\n";
+		std::cout << "Bad gradient suspected:" << (ogrep.badgradsuspected ? "true" : "false") << "\n"; // EXPECTED: false
+		std::cout << "Non c0 suspected:" << (ogrep.nonc0suspected ? "true" : "false") << "\n"; // EXPECTED: false
+		std::cout << "Non c1 suspected:" << (ogrep.nonc1suspected ? "true" : "false") << "\n"; // EXPECTED: false
+#endif
 	}
 	catch (alglib::ap_error e)
 	{
@@ -170,7 +182,7 @@ MDM_API double mdm_DWIFitterADC::modelToSignal(
 	return s0 * std::exp(-adc * Bval);
 }
 
-MDM_API const std::vector<double> mdm_DWIFitterADC::modelToSignals(
+MDM_API std::vector<double> mdm_DWIFitterADC::modelToSignals(
 	const std::vector<double>& params, const std::vector<double> B0s)
 {
 	std::vector<double> sigs;
@@ -193,7 +205,7 @@ void mdm_DWIFitterADC::computeSignalGradient(
 	//signal and partial derivatives of signal by model param
 	signal_dS0 = Ed;
 	signal = S0 * signal_dS0;
-	signal_dADC = B;
+	signal_dADC = -B*signal;
 }
 
 void mdm_DWIFitterADC::computeSSEGradient(

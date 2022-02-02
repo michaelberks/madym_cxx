@@ -57,6 +57,7 @@ public:
   \param  scale optional value to scale the voxel values v_out = (v_in - offset)/scale
   \param flipX flip each slice horizontally before transferring data (default false)
   \param flipY flip each slice vertically before transferring data (default true)
+  \param flipZ reverse order of slices  (default false)
   \return   mdm_Image3D object
   */
   MDM_API static mdm_Image3D loadImageFromDicomSlices(
@@ -66,7 +67,8 @@ public:
     const double offset = 0,
     const double scale = 1.0,
     const bool flipX = false,
-    const bool flipY = true);
+    const bool flipY = true,
+    const bool flipZ = false);
 
   //! Get value of a numeric field from DICOM header
   /*!

@@ -18,7 +18,6 @@
 
 #include <madym/mdm_ProgramLogger.h>
 #include <madym/mdm_exception.h>
-
 //
 MDM_API mdm_T1FitterIR::mdm_T1FitterIR(const std::vector<double> &TIs, const double TR)
   :
@@ -26,6 +25,12 @@ MDM_API mdm_T1FitterIR::mdm_T1FitterIR(const std::vector<double> &TIs, const dou
   TIs_(TIs),
   TR_(TR)
 {
+#if _DEBUG
+	//Provides numerical check of analytic gradient, useful in debugging, but should not be
+	//used in release versions
+	alglib::mincgoptguardsmoothness(state_);
+	alglib::mincgoptguardgradient(state_, 0.001);
+#endif
 }
 
 //
@@ -82,6 +87,18 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
 		mincgrestartfrom(state_, x);
 		alglib::mincgoptimize(state_, &computeSSEGradientAlglib, NULL, this);
 		mincgresults(state_, x, rep_);
+
+#if _DEBUG
+		//
+		// Check that OptGuard did not report errors
+		//
+		alglib::optguardreport ogrep;
+		alglib::mincgoptguardresults(state_, ogrep);
+		std::cout << "Optimisation guard results:\n";
+		std::cout << "Bad gradient suspected:" << (ogrep.badgradsuspected ? "true" : "false") << "\n"; // EXPECTED: false
+		std::cout << "Non c0 suspected:" << (ogrep.nonc0suspected ? "true" : "false") << "\n"; // EXPECTED: false
+		std::cout << "Non c1 suspected:" << (ogrep.nonc1suspected ? "true" : "false") << "\n"; // EXPECTED: false
+#endif
 	}
 	catch (alglib::ap_error e)
 	{
@@ -138,7 +155,7 @@ MDM_API int mdm_T1FitterIR::minimumInputs() const
 //
 MDM_API int mdm_T1FitterIR::maximumInputs() const
 {
-	return 10;
+	return 50;
 }
 
 //

@@ -13,7 +13,7 @@
 #include "mdm_RunTools_madym_DWI_lite.h"
 
 #include <madym/mdm_ProgramLogger.h>
-#include <madym/t1/mdm_T1MethodGenerator.h>
+#include <madym/dwi/mdm_DWIMethodGenerator.h>
 #include <madym/mdm_exception.h>
 
 namespace fs = boost::filesystem;
@@ -35,30 +35,31 @@ MDM_API void mdm_RunTools_madym_DWI_lite::run()
 	if (options_.inputDataFile().empty())
     throw mdm_exception(__func__, "input data file (option --data) must be provided");
 	
-	const int &nSignals = options_.nT1Inputs();
+	const int &nSignals = options_.nDWIInputs();
 	if (!nSignals)
-    throw mdm_exception(__func__, "number of signals (option --n_T1) must be provided");
-	
-	if (!options_.TR())
-    throw mdm_exception(__func__, "TR (option --TR) must be provided");
+    throw mdm_exception(__func__, "number of signals (option --n_DWI) must be provided");
 
   //Set curent working dir
   set_up_cwd();
 
-	//Parse T1 method from string, will abort if method type not recognised
-	auto methodType = mdm_T1MethodGenerator::parseMethodName(options_.T1method(), options_.B1Correction());
+	//Parse DWI method from string, will abort if method type not recognised
+	auto methodType = mdm_DWIMethodGenerator::parseMethodName(options_.DWImethod());
 
-	//Instantiate T1 fitter of desired type
-	auto T1Fitter = mdm_T1MethodGenerator::createFitter(methodType, options_);
+	//Instantiate DWI fitter of desired type
+	auto DWIFitter = mdm_DWIMethodGenerator::createFitter(methodType, options_.BvalsThresh());
 
 	//Check number of inputs is valid
-	checkNumInputs(methodType, nSignals);
+	if (nSignals < DWIFitter->minimumInputs())
+		throw mdm_exception(__func__, "not enough signal inputs for DWI method " + options_.DWImethod());
+
+	else if (nSignals > DWIFitter->maximumInputs())
+		throw mdm_exception(__func__, "too many signal inputs for DWI method " + options_.DWImethod());
 
 	//Set up output path and output file
 	set_up_output_folder();
 
 	std::string outputDataFile = outputPath_.string() + "/" +
-		options_.T1method() + "_" + options_.outputName();
+		options_.DWImethod() + "_" + options_.outputName();
 
 	//Open the input data (FA and signals) file
 	std::ifstream inputData(options_.inputDataFile(), std::ios::in);
@@ -76,17 +77,17 @@ MDM_API void mdm_RunTools_madym_DWI_lite::run()
 	while (!inputData.eof())
 	{
 		//Get fitter to munch line of inputs from datastream, if EOF reached break
-		if (!T1Fitter->setInputsFromStream(inputData, nSignals))
+		if (!DWIFitter->setInputsFromStream(inputData, nSignals))
 			break;
 
-		//If valid inputs, fit T1 and write to output stream
-		double T1, M0;
-		int errCode = T1Fitter->fitT1(T1, M0);
+		//If valid inputs, fit DWI model and write to output stream
+		std::vector<double> params;
+		double ssr;
+		int errCode = DWIFitter->fitModel(params, ssr);
 
-		outputData <<
-			T1 << " " <<
-			M0 << " " <<
-			errCode << std::endl;
+		for (auto p : params)
+			outputData << p << " ";
+		outputData << ssr << " " << errCode << std::endl;
 
 		row_counter++;
 		if (!options_.quiet() && !fmod(row_counter, 1000))
@@ -108,16 +109,14 @@ MDM_API void mdm_RunTools_madym_DWI_lite::run()
 //
 MDM_API int mdm_RunTools_madym_DWI_lite::parseInputs(int argc, const char *argv[])
 {
-	po::options_description config_options("calculate_T1_lite config options_");
+	po::options_description config_options("madym_DWI_lite config options_");
 	
 	options_parser_.add_option(config_options, options_.dataDir);
 	options_parser_.add_option(config_options, options_.inputDataFile);
-	options_parser_.add_option(config_options, options_.T1method);
-	options_parser_.add_option(config_options, options_.FA);
-	options_parser_.add_option(config_options, options_.TR);
-  options_parser_.add_option(config_options, options_.B1Correction);
-	options_parser_.add_option(config_options, options_.T1noiseThresh);
-	options_parser_.add_option(config_options, options_.nT1Inputs);
+	options_parser_.add_option(config_options, options_.DWImethod);
+	options_parser_.add_option(config_options, options_.nDWIInputs);
+	options_parser_.add_option(config_options, options_.BvalsThresh);
+	
 	options_parser_.add_option(config_options, options_.outputDir);
 	options_parser_.add_option(config_options, options_.outputName);
   options_parser_.add_option(config_options, options_.quiet);
@@ -132,7 +131,7 @@ MDM_API int mdm_RunTools_madym_DWI_lite::parseInputs(int argc, const char *argv[
 
 MDM_API std::string mdm_RunTools_madym_DWI_lite::who() const
 {
-	return "madym_T1_lite";
+	return "madym_DWI_lite";
 }
 //*******************************************************************************
 // Private:

@@ -39,9 +39,9 @@ void mdm_RunToolsT1Fit::checkNumInputs(mdm_T1MethodGenerator::T1Methods methodTy
 	auto T1fitter = mdm_T1MethodGenerator::createFitter(methodType, options_);
 
 	if (numInputs < T1fitter->minimumInputs())
-    throw mdm_exception(__func__, "not enough variable flip angle file names");
+    throw mdm_exception(__func__, "not enough signal inputs for T1 method " + options_.T1method());
 	
 	else if (numInputs > T1fitter->maximumInputs())
-    throw mdm_exception(__func__, "too many variable flip angle file names");
+    throw mdm_exception(__func__, "too many signal inputs for T1 method " + options_.T1method());
 }
 

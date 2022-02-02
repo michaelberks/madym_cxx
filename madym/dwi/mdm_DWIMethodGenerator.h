@@ -165,7 +165,7 @@ public:
 	\param options set by user to configure mapping tool
 	\return shared pointer to DWI fitter using specified method
 	*/
-	MDM_API static std::unique_ptr<mdm_DWIFitterBase> createFitter(DWIMethods method)
+	MDM_API static std::unique_ptr<mdm_DWIFitterBase> createFitter(DWIMethods method, const std::vector<double> BValsThresh = {})
 	{
 		std::vector<double> empty;
 		switch (method)
@@ -182,12 +182,12 @@ public:
 		}
     case IVIM:
     {
-			auto DWIFitter = std::make_unique<mdm_DWIFitterIVIM>(empty, true, empty);
+			auto DWIFitter = std::make_unique<mdm_DWIFitterIVIM>(empty, true, BValsThresh);
       return DWIFitter;
     }
 		case IVIM_simple:
 		{
-			auto DWIFitter = std::make_unique<mdm_DWIFitterIVIM>(empty, false, empty);
+			auto DWIFitter = std::make_unique<mdm_DWIFitterIVIM>(empty, false, BValsThresh);
 			return DWIFitter;
 		}
 		default:
