@@ -6,7 +6,7 @@ import warnings
 import subprocess
 import numpy as np
 
-from QbiMadym.utils import local_madym_root
+from QbiMadym.utils import local_madym_root, add_option
 
 def run(
     config_file:str=None, 
@@ -15,10 +15,11 @@ def run(
     T1_vols:list = None,
     T1_dir:str = None,
     dynamic_basename:str = None,
+    dyn_dir:str = None,
     sequence_format:str = None,
     sequence_start:str = None,
     sequence_step:str = None,
-    n_dyns:int = 0,
+    n_dyns:int = None,
     img_fmt_w:str = None,
     dicom_dir : str = None,
     dicom_series_file : str = None,
@@ -35,6 +36,7 @@ def run(
     make_dyn_mean : bool = None,
     flip_x : bool = None,
     flip_y : bool = None,
+    flip_z : bool = None,
     scale_tag : str = None,
     offset_tag : str = None,
     dicom_scale : float = None,
@@ -79,6 +81,8 @@ def run(
             Folder to which T1 input volumes saved
         dynamic_basename : str default None, 
             Template name for dynamic sequences eg. dynamic/dyn_
+        dyn_dir : str default None, 
+            Folder containing dynamic volumes, can be omitted if inlcuded in dynamic_basename
         sequence_format : str default None, 
             Format for converting dynamic series index to string, eg %01u
         sequence_start : int default None, 
@@ -119,6 +123,8 @@ def run(
             Flip dicom slices horizontally before copying into 3D image volume
         flip_y : bool = None
             Flip dicom slices vertically before copying into 3D image volume
+        flip_z : bool = None
+            Reverse order of slices in 3D volume
         scale_tag : str = None
             Dicom tag key (group,element) for rescale slope, in hexideciaml form - for Philips this is (0x2005, 0x100e)
         offset_tag : str = None
@@ -203,135 +209,96 @@ def run(
     #Set up initial cmd string
     cmd_args = [cmd_exe]
     
-    if config_file:
-        cmd_args += ['-c', config_file]
-    
-    if output_dir:
-        cmd_args += ['-o', output_dir] 
+    #Set all the other commands
+    add_option('string', cmd_args, '--config', config_file)
 
-    #Set the dynamic names
-    if dynamic_basename:
-        cmd_args += ['--dyn', dynamic_basename]
+    add_option('string', cmd_args, '--cwd', working_directory)
 
-    if sequence_format:
-        cmd_args += ['--sequence_format', sequence_format]
+    add_option('string', cmd_args, '-o', output_dir)
 
-    if sequence_start is not None:
-        cmd_args += ['--sequence_start', str(sequence_start)]
+    add_option('string', cmd_args, '-d', dynamic_basename)
 
-    if sequence_step is not None:
-        cmd_args += ['--sequence_step', str(sequence_step)]
+    add_option('string', cmd_args, '--dyn_dir', dyn_dir)
 
-    if n_dyns > 0:
-        cmd_args += ['-n', str(n_dyns)]
+    add_option('string', cmd_args, '--sequence_format', sequence_format)
 
-    if T1_vols:
-        #Set VFA files in the options string
-        t1_str = ','.join(T1_vols)
-        cmd_args += ['--T1_vols', t1_str]
+    add_option('int', cmd_args, '--sequence_start', sequence_start)
 
-    if T1_dir:
-        cmd_args += ['--T1_dir', T1_dir]
+    add_option('int', cmd_args, '--sequence_step', sequence_step)
 
-    if img_fmt_w:
-        cmd_args += ['--img_fmt_w', img_fmt_w]
+    add_option('int', cmd_args, '--n_dyns', n_dyns)
 
-    if dicom_dir:
-        cmd_args += ['--dicom_dir', dicom_dir]
+    add_option('string', cmd_args, '--img_fmt_w', img_fmt_w)
 
-    if dicom_series_file:
-        cmd_args += ['--dicom_series_file', dicom_series_file]
+    add_option('string_list', cmd_args, '--T1_vols', T1_vols)
 
-    if T1_input_series:
-        T1_str = ','.join(str(i) for i in T1_input_series)
-        cmd_args += ['--T1_series', T1_str]
+    add_option('string', cmd_args, '--T1_dir', T1_dir)
 
-    if dyn_series:
-        cmd_args += ['--dyn_series', str(dyn_series)]
+    add_option('string', cmd_args, '--dicom_dir', dicom_dir)
 
-    if single_series:
-        cmd_args += ['--single_series', str(single_series)]
+    add_option('string', cmd_args, '--dicom_series_file', dicom_series_file)
 
-    if dicom_filter:
-        cmd_args += ['--dicom_filter', dicom_filter]
+    add_option('int_list', cmd_args, '--T1_series', T1_input_series)
 
-    if vol_name:
-        cmd_args += ['--vol_name', vol_name]
+    add_option('int', cmd_args, '--dyn_series', dyn_series)
 
-    if sort is not None:
-        cmd_args += ['--sort', str(int(sort))]
+    add_option('int', cmd_args, '--single_series', single_series)
 
-    if make_t1 is not None:
-        cmd_args += ['--make_t1', str(int(make_t1))]
+    add_option('string', cmd_args, '--dicom_filter', dicom_filter)
 
-    if make_single is not None:
-        cmd_args += ['--make_single', str(int(make_single))]
+    add_option('string', cmd_args, '--vol_name', vol_name)
 
-    if make_dyn is not None:
-        cmd_args += ['--make_dyn', str(int(make_dyn))]
+    add_option('bool', cmd_args, '--sort', sort)
 
-    if make_t1_means is not None:
-        cmd_args += ['--make_t1_means', str(int(make_t1_means))]
+    add_option('bool', cmd_args, '--make_t1', make_t1)
 
-    if make_dyn_mean is not None:
-        cmd_args += ['--make_dyn_mean', str(int(make_dyn_mean))]
+    add_option('bool', cmd_args, '--make_single', make_single)
 
-    if flip_x is not None:
-        cmd_args += ['--flip_x', str(int(flip_x))]
+    add_option('bool', cmd_args, '--make_dyn', make_dyn)
 
-    if flip_y is not None:
-        cmd_args += ['--flip_y', str(int(flip_y))]
+    add_option('bool', cmd_args, '--make_t1_means', make_t1_means)
 
-    if scale_tag:
-        cmd_args += ['--scale_tag', scale_tag]
+    add_option('bool', cmd_args, '--make_dyn_mean', make_dyn_mean)
 
-    if offset_tag:
-        cmd_args += ['--offset_tag', offset_tag]
+    add_option('bool', cmd_args, '--flip_x', flip_x)
 
-    if dicom_scale:
-        cmd_args += ['--dicom_scale', f'{dicom_scale:4.3f}']
+    add_option('bool', cmd_args, '--flip_y', flip_y)
 
-    if dicom_offset:
-        cmd_args += ['--dicom_offset', f'{dicom_offset:4.3f}']
+    add_option('bool', cmd_args, '--flip_z', flip_z)
 
-    if acquisition_time_tag:
-        cmd_args += ['--acquisition_time_tag', acquisition_time_tag]
+    add_option('string', cmd_args, '--scale_tag', scale_tag)
 
-    if temp_res:
-        cmd_args += ['--temp_res', f'{temp_res:4.3f}']
+    add_option('string', cmd_args, '--offset_tag', offset_tag)
 
-    if repeat_prefix:
-        cmd_args += ['--repeat_prefix', repeat_prefix]
+    add_option('float', cmd_args, '--dicom_scale', dicom_scale)
 
-    if mean_suffix:
-        cmd_args += ['--mean_suffix', mean_suffix]
+    add_option('float', cmd_args, '--dicom_offset', dicom_offset)
 
-    if program_log_name:
-        cmd_args += ['--log', program_log_name]
+    add_option('string', cmd_args, '--acquisition_time_tag', acquisition_time_tag)
 
-    if audit_name:
-        cmd_args += ['--audit', audit_name]
+    add_option('float', cmd_args, '--temp_res', temp_res)
 
-    if audit_dir:
-        cmd_args += ['--audit_dir', audit_dir]
+    add_option('string', cmd_args, '--repeat_prefix', repeat_prefix)
 
-    if config_out:
-        cmd_args += ['--config_out', config_out]
+    add_option('string', cmd_args, '--mean_suffix', mean_suffix)
 
-    if no_log is not None:
-        cmd_args += ['--no_log', str(int(no_log))]
+    add_option('bool', cmd_args, '--overwrite', overwrite)
 
-    if no_audit is not None:
-        cmd_args += ['--no_audit', str(int(no_audit))]
+    add_option('bool', cmd_args, '--no_audit', no_audit)
 
-    if quiet is not None:
-        cmd_args += ['--quiet', str(int(quiet))]
+    add_option('bool', cmd_args, '--no_log', no_log)
 
-    if error_name:
-        cmd_args += ['--err', error_name]
+    add_option('bool', cmd_args, '--quiet', quiet)
 
-    if overwrite is not None:
-        cmd_args += ['--overwrite', str(int(overwrite))]
+    add_option('string', cmd_args, '--program_log', program_log_name)
+
+    add_option('string', cmd_args, '--audit', audit_name)
+
+    add_option('string', cmd_args, '--audit_dir', audit_dir)
+
+    add_option('string', cmd_args, '--config_out', config_out)
+
+    add_option('string', cmd_args, '-E', error_name)
 
     #Args structure complete, convert to string for printing
     cmd_str = ' '.join(cmd_args)
@@ -346,7 +313,7 @@ def run(
     #Otherwise we can run the command:
     print('***********************Madym Dicom Convert running **********************')
     if working_directory:
-        print('Working directory = {working_directory}')
+        print(f'Working directory = {working_directory}')
         
     print(cmd_str)
     result = subprocess.Popen(cmd_args, shell=False, cwd=working_directory,

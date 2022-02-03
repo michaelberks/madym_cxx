@@ -77,7 +77,7 @@ MDM_API int mdm_RunTools_madym_DWI::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.errorTrackerName);
 
 	//DWI input options_
-	options_parser_.add_option(config_options, options_.DWImethod);
+	options_parser_.add_option(config_options, options_.DWImodel);
 	options_parser_.add_option(config_options, options_.DWIinputNames);
 	options_parser_.add_option(config_options, options_.BvalsThresh);
   
@@ -119,14 +119,14 @@ MDM_API std::string mdm_RunTools_madym_DWI::who() const
 //*******************************************************************************
 
 //
-void mdm_RunTools_madym_DWI::checkNumInputs(mdm_DWIMethodGenerator::DWIMethods methodType,
+void mdm_RunTools_madym_DWI::checkNumInputs(mdm_DWImodelGenerator::DWImodels methodType,
 	const int& numInputs)
 {
 	//This is a bit rubbish - instantiating a whole new object just to get
 	//some limits returned. But we want limits defined by the derived DWI method class,
 	//and want to check these to parse user input before the actual fitting objects
 	//get created.
-	auto DWIfitter = mdm_DWIMethodGenerator::createFitter(methodType);
+	auto DWIfitter = mdm_DWImodelGenerator::createFitter(methodType);
 
 	if (numInputs < DWIfitter->minimumInputs())
 		throw mdm_exception(__func__, "not enough DWI inputs");
@@ -143,11 +143,11 @@ void mdm_RunTools_madym_DWI::mapDWI()
 		throw mdm_exception(__func__, "input map names (option --DWI_vols) must be provided");
 
 	//Parse DWI method from string, will abort if method type not recognised
-	auto methodType = mdm_DWIMethodGenerator::parseMethodName(
-		options_.DWImethod());
+	auto model = mdm_DWImodelGenerator::parseModelName(
+		options_.DWImodel());
 
 	//Check number of signal inputs, will abort if too many/too few
-	checkNumInputs(methodType, (int)options_.DWIinputNames().size());
+	checkNumInputs(model, (int)options_.DWIinputNames().size());
 
 	//Set B-vals thresh - only needed for ivim but negligible cost to set for all methods
 	volumeAnalysis_.DWIMapper().setBvalsThresh(options_.BvalsThresh());
@@ -156,7 +156,7 @@ void mdm_RunTools_madym_DWI::mapDWI()
 	loadDWIInputs();
 
 	//FA images loaded, try computing DWI maps
-	volumeAnalysis_.DWIMapper().setMethod(methodType);
+	volumeAnalysis_.DWIMapper().setModel(model);
 
 	volumeAnalysis_.DWIMapper().mapDWI();
 }

@@ -24,7 +24,7 @@ MDM_API mdm_DWIMapper::mdm_DWIMapper(mdm_ErrorTracker &errorTracker, mdm_Image3D
 	:inputImages_(0),
 	errorTracker_(errorTracker),
   ROI_(ROI),
-	method_(mdm_DWIMethodGenerator::DWIMethods::UNDEFINED)
+	model_(mdm_DWImodelGenerator::DWImodels::UNDEFINED)
 {}
 
 //
@@ -55,13 +55,13 @@ MDM_API void mdm_DWIMapper::addInputImage(mdm_Image3D img)
 }
 
 //
-MDM_API void  mdm_DWIMapper::mapDWI(mdm_DWIMethodGenerator::DWIMethods method)
+MDM_API void  mdm_DWIMapper::mapDWI(mdm_DWImodelGenerator::DWImodels method)
 {
 	//
 	auto nSignals = inputImages_.size();
 
 	//Instantiate DWI fitter object of required method type
-	auto DWIFitter = mdm_DWIMethodGenerator::createFitter(method, inputImages_, BvalsThresh_);
+	auto DWIFitter = mdm_DWImodelGenerator::createFitter(method, inputImages_, BvalsThresh_);
 	auto nParams = DWIFitter->nParams();
 
 	//Initialise maps
@@ -128,7 +128,7 @@ MDM_API void  mdm_DWIMapper::mapDWI(mdm_DWIMethodGenerator::DWIMethods method)
 MDM_API void mdm_DWIMapper::mapDWI()
 {
 	//Just call the overload mapT1 with the method- member variable
-	mapDWI(method_);
+	mapDWI(model_);
 }
 
 //
@@ -179,15 +179,15 @@ MDM_API double mdm_DWIMapper::model_map(const std::string& map_name, size_t voxe
 }
 
 //
-MDM_API mdm_DWIMethodGenerator::DWIMethods  mdm_DWIMapper::method() const
+MDM_API mdm_DWImodelGenerator::DWImodels  mdm_DWIMapper::model() const
 {
-	return method_;
+	return model_;
 }
 
 //
-MDM_API void  mdm_DWIMapper::setMethod(mdm_DWIMethodGenerator::DWIMethods method)
+MDM_API void  mdm_DWIMapper::setModel(mdm_DWImodelGenerator::DWImodels model)
 {
-	method_ = method;
+	model_ = model;
 }
 
 MDM_API void  mdm_DWIMapper::setBvalsThresh(const std::vector<double>& BvalsThresh)

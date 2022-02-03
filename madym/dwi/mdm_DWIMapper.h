@@ -1,7 +1,7 @@
 /*!
 *  @file    mdm_DWIMapper.h
-*  @brief   Class for mapping T1 for a full volume from input signal images
-*  @details Currently only variable flip angle method supported
+*  @brief   Class for fitting diffusion models to 3D image volumes
+*  @details Currently ADC and IVIM models supported
 *  @author MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 */
 
@@ -11,13 +11,10 @@
 
 #include "mdm_Image3D.h"
 #include "mdm_ErrorTracker.h"
-#include "dwi/mdm_DWIMethodGenerator.h"
+#include "dwi/mdm_DWImodelGenerator.h"
 
-//!Mapping T1 for a full volume from input signal images
+//!Fits diffusion models to 3D image volumes and stores the resulting model parameter maps
 /*!
-	Also store the resulting T1 and M0 maps, which can also be set from externally precomputed maps.
-
-	Currently only variable flip angle method supported
 */
 class mdm_DWIMapper {
 
@@ -39,21 +36,20 @@ public:
   //! Reset all the maps to empty
   MDM_API void reset();
 
-	//! Add input image from which to map T1
+	//! Add input signal image
 	/*!	
-	\param img input image (eg aquired at specific flip-angle for the VFA method)
+	\param img input image (eg aquired at specific B-value)
 	*/
 	MDM_API void addInputImage(mdm_Image3D img);
 
-	//! Map baseline T1 using specified method
+	//! Fit diffusion model to each voxel in volume
 	/*!
-	\param method selected T1 mapping method
+	\param model selected diffusion model (eg ADC or IVIM)
 	*/
-	MDM_API void  mapDWI(mdm_DWIMethodGenerator::DWIMethods method);
+	MDM_API void  mapDWI(mdm_DWImodelGenerator::DWImodels model);
 
-	//! Map baseline T1 using default class method
+	//! Fit diffusion model to each voxel in volume using default class model
 	/*!
-	\param method selected T1 mapping method
 	*/
 	MDM_API void  mapDWI();
 
@@ -71,18 +67,18 @@ public:
 	MDM_API const mdm_Image3D& inputImage(size_t idx) const;
 		
 	
-	//! Return read-only reference to T1 map
+	//! Return read-only reference to model parameter map
 	/*!
 	\param map_name
-	\return read-only reference to T1 map
+	\return read-only reference to model parameter map
 	*/
 	MDM_API const mdm_Image3D& model_map(const std::string &map_name) const;
 
-	//! Return T1 value at specified voxel
+	//! Return model parameter at specified voxel
 	/*!
 	\param map_name
-	\param voxel index, must be >=0 and < T1Map_.numVoxels()
-	\return T1 value at voxel
+	\param voxel index, must be >=0 and < numVoxels()
+	\return model parameter value at voxel
 	*/
 	MDM_API double model_map(const std::string& map_name, size_t voxel) const;
 
@@ -92,19 +88,19 @@ public:
 	*/
 	MDM_API std::vector<std::string> paramNames() const;
 
-	//! Return default T1 mapping method
+	//! Return default model
 	/*!
-	\return T1 method used if no method specified in mapT1
-	\see mapT1
+	\return model used if no model specified in mapDWI
+	\see mapDWI
 	*/
-	MDM_API mdm_DWIMethodGenerator::DWIMethods  method() const;
+	MDM_API mdm_DWImodelGenerator::DWImodels  model() const;
 
-	//! Set default T1 mapping method
+	//! Set diffusion model
 	/*!
-	\param method used if no method specified in mapT1
+	\param model used if no model specified in mapDWI
 	\see mapT1
 	*/
-	MDM_API void  setMethod(mdm_DWIMethodGenerator::DWIMethods method);
+	MDM_API void  setModel(mdm_DWImodelGenerator::DWImodels model);
 
 	//!Set BvalsThresh
 	/*!
@@ -132,7 +128,7 @@ private:
 	// a default empty image will be used
 	mdm_ErrorTracker &errorTracker_;
 
-	mdm_DWIMethodGenerator::DWIMethods method_;
+	mdm_DWImodelGenerator::DWImodels model_;
 
 	//Name of parameters associated with model maps
 	std::vector<std::string> paramNames_;

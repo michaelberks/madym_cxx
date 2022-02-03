@@ -319,6 +319,7 @@ MDM_API int mdm_RunTools_madym_DCE_lite::parseInputs(int argc, const char *argv[
 	options_parser_.add_option(config_options, options_.outputCt_sig);
 	options_parser_.add_option(config_options, options_.outputCt_mod);
 	options_parser_.add_option(config_options, options_.IAUCTimes);
+	options_parser_.add_option(config_options, options_.IAUCAtPeak);
 
 		//General output options_
 	options_parser_.add_option(config_options, options_.outputName);

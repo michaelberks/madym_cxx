@@ -40,7 +40,7 @@ void run_DWI_lite_ADC_test()
   std::string outputName = "madym_analysis.dat";
   std::stringstream cmd;
   cmd << mdm_test_utils::tools_exe_dir() << "madym_DWI_lite"
-    << " --DWI_method ADC "
+    << " --DWI_model ADC "
     << " --data " << inputDataFile
     << " --n_DWI " << nBvals
     << " -o " << DWI_output_dir
@@ -121,7 +121,7 @@ void run_DWI_lite_IVIM_test()
   std::string outputName = "madym_analysis.dat";
   std::stringstream cmd;
   cmd << mdm_test_utils::tools_exe_dir() << "madym_DWI_lite"
-    << " --DWI_method IVIM "
+    << " --DWI_model IVIM "
     << " --data " << inputDataFile
     << " --n_DWI " << nBvals
     << " --Bvals_thresh 40.0,60.0,100.0,150.0"

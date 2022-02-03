@@ -181,7 +181,7 @@ target_link_libraries( mdm_t1
 
 set(mdm_dwi_sources
 	dwi/mdm_DWIMapper.cxx	        dwi/mdm_DWIMapper.h
-	dwi/mdm_DWIMethodGenerator.h
+	dwi/mdm_DWImodelGenerator.h
 	dwi/mdm_DWIFitterBase.cxx			dwi/mdm_DWIFitterBase.h
 	dwi/mdm_DWIFitterADC.cxx			dwi/mdm_DWIFitterADC.h
   dwi/mdm_DWIFitterIVIM.cxx			dwi/mdm_DWIFitterIVIM.h

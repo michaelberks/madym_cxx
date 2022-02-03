@@ -2,56 +2,32 @@
 Wrapper to C++ tool madym_DicomConvert
 '''
 import os
+from tempfile import TemporaryDirectory
 import warnings
 import subprocess
 import numpy as np
 
-from QbiMadym.utils import local_madym_root
+from QbiMadym.utils import local_madym_root, add_option
 
 def run(
     config_file:str=None, 
-    output_dir:str = None,
     cmd_exe:str = None,
+    T1_method:str = None,
     T1_vols:list = None,
     T1_dir:str = None,
     dynamic_basename:str = None,
+    dyn_dir:str = None,
     sequence_format:str = None,
     sequence_start:str = None,
     sequence_step:str = None,
-    n_dyns:int = 0,
-    img_fmt_w:str = None,
-    dicom_dir : str = None,
-    dicom_series_file : str = None,
-    T1_input_series : list = None,
-    dyn_series : int = None,
-    single_series : int = None,
-    dicom_filter : str = None,
-    vol_name : str = None,
-    sort : bool = None,
+    n_dyns:int = None,
     make_t1 : bool = None,
-    make_single : bool = None,
     make_dyn : bool = None,
-    make_t1_means : bool = None,
-    make_dyn_mean : bool = None,
-    flip_x : bool = None,
-    flip_y : bool = None,
-    scale_tag : str = None,
-    offset_tag : str = None,
-    dicom_scale : float = None,
-    dicom_offset : float = None,
-    acquisition_time_tag : str = None,
     temp_res : float = None,
-    repeat_prefix : str = None,
-    mean_suffix : str = None,
-    overwrite:bool = None,
-    program_log_name:str = None,
-    audit_dir:str = None,
-    audit_name:str = None,
-    config_out:str = None,
-    error_name:str = None,
-    no_log:bool = None,
-    no_audit:bool = None,
-    quiet:bool = None,
+    TR : float = None,
+    FA : float = None,
+    VFAs : list = None,
+    dyn_times:np.array = None,
     working_directory:str = None,
     dummy_run:bool = None):
     '''
@@ -87,72 +63,20 @@ def run(
             Step between indexes of filenames in dynamic series
         n_dyns : int default 0, 
             Number of dynamic sequence maps to load. If <=0, loads all maps in dynamic dir matching -dyn pattern
-        img_fmt_w : str = None
-            Image format for writing output
-        dicom_dir : str = None
-            Folder containing DICOM data
-        dicom_series_file : str = None
-            Filename to/from which dicom series data is written/read
-        T1_input_series : list(int) = None
-            Indices of the dicom series for each T1 input
-        dyn_series : int = None
-            Index of the dicom series for the dynamic DCE time-series
-        single_series : int = None
-            Index of the dicom series for converting a generic single volume
-        dicom_filter : str = None
-            File filter for dicom sort (eg IM_)
-        vol_name : str = None
-            Output filename for converting a single dicom volume
-        sort : bool = None
-            "Sort the files in Dicom dir into separate series, writing out the series information")
         make_t1 : bool = None
             Make T1 input images from dicom series
-        make_single : bool = None
-            Make single 3D image from dicom series
         make_dyn : bool = None
             Make dynamic images from dynamic series
-        make_t1_means : bool = None
-            Make mean of each set of T1 input repeats
-        make_dyn_mean : bool = None
-            Make temporal mean of dynamic images
-        flip_x : bool = None
-            Flip dicom slices horizontally before copying into 3D image volume
-        flip_y : bool = None
-            Flip dicom slices vertically before copying into 3D image volume
-        scale_tag : str = None
-            Dicom tag key (group,element) for rescale slope, in hexideciaml form - for Philips this is (0x2005, 0x100e)
-        offset_tag : str = None
-            Dicom tag key (group,element) for rescale intercept, in hexideciaml form - for Philips this is (0x2005, 0x100d)
-        dicom_scale : float = None
-            Additional scaling factor applied to the dicom data
-        dicom_offset : float = None
-            Additional offset factor applied to the dicom data
-        acquisition_time_tag : str = None
-            Dicom tag key (group,element) for acquisition time, if empty uses DCM_AcquisitionTime
         temp_res : float = None
             Time in seconds between volumes in the DCE sequence, used to fill acquisition time not set in dynTimeTag
-        repeat_prefix : str = None
-            Prefix of image name for repeats in DICOM series, appended with sequence_format index and stored in series name folder")
-        mean_suffix : str = None
-            Suffix of image name for mean of repeats in DICOM series, appended to series name
-        overwrite : bool = None,
-            Set overwrite existing analysis in output dir
-        program_log_name : str = None, 
-            Program log file name
-        audit_dir : str = None,
-            Folder in which audit output is saved
-        audit_name : str = None, 
-            Audit file name
-        error_name : str = None,
-            Error codes image file name
-        config_out : str = None,
-            Filename of output config file, will be appended with datetime
-        no_log arg : bool = None,
-            Switch off program logging
-        no_audit : bool = None,
-            Switch off audit logging
-        quiet : bool = None,
-            Do not display logging messages in cout
+        TR : float = None,
+            Repetition time
+        FA : float = None,
+            Flip-angle of dynamic series
+        VFAs : list = None,
+            List of flip-angles for baseline T1 mapping images
+        dyn_times:np.array = None,
+            Time associated with each dynamic signal (in mins)
         working_directory : str = None,
             Sets the current working directory for the system call, allows setting relative input paths for data
         dummy_run : bool = None
@@ -203,135 +127,46 @@ def run(
     #Set up initial cmd string
     cmd_args = [cmd_exe]
     
-    if config_file:
-        cmd_args += ['-c', config_file]
-    
-    if output_dir:
-        cmd_args += ['-o', output_dir] 
+    add_option('string', cmd_args, '--config', config_file);
 
-    #Set the dynamic names
-    if dynamic_basename:
-        cmd_args += ['--dyn', dynamic_basename]
+    add_option('string', cmd_args, '--cwd', working_directory);
 
-    if sequence_format:
-        cmd_args += ['--sequence_format', sequence_format]
+    add_option('string', cmd_args, '--T1_method', T1_method);
 
-    if sequence_start is not None:
-        cmd_args += ['--sequence_start', str(sequence_start)]
+    add_option('string_list', cmd_args, '--T1_vols', T1_vols);
 
-    if sequence_step is not None:
-        cmd_args += ['--sequence_step', str(sequence_step)]
+    add_option('string', cmd_args, '--T1_dir', T1_dir);
 
-    if n_dyns > 0:
-        cmd_args += ['-n', str(n_dyns)]
+    add_option('string', cmd_args, '-d', dynamic_basename);
 
-    if T1_vols:
-        #Set VFA files in the options string
-        t1_str = ','.join(T1_vols)
-        cmd_args += ['--T1_vols', t1_str]
+    add_option('string', cmd_args, '--dyn_dir', dyn_dir);
 
-    if T1_dir:
-        cmd_args += ['--T1_dir', T1_dir]
+    add_option('string', cmd_args, '--sequence_format', sequence_format);
 
-    if img_fmt_w:
-        cmd_args += ['--img_fmt_w', img_fmt_w]
+    add_option('int', cmd_args, '--sequence_start', sequence_start);
 
-    if dicom_dir:
-        cmd_args += ['--dicom_dir', dicom_dir]
+    add_option('int', cmd_args, '--sequence_step', sequence_step);
 
-    if dicom_series_file:
-        cmd_args += ['--dicom_series_file', dicom_series_file]
+    add_option('int', cmd_args, '--n_dyns', n_dyns);
 
-    if T1_input_series:
-        T1_str = ','.join(str(i) for i in T1_input_series)
-        cmd_args += ['--T1_series', T1_str]
+    add_option('bool', cmd_args, '--make_t1', make_t1);
 
-    if dyn_series:
-        cmd_args += ['--dyn_series', str(dyn_series)]
+    add_option('bool', cmd_args, '--make_dyn', make_dyn);
 
-    if single_series:
-        cmd_args += ['--single_series', str(single_series)]
+    add_option('float', cmd_args, '--temp_res', temp_res);
 
-    if dicom_filter:
-        cmd_args += ['--dicom_filter', dicom_filter]
+    add_option('float', cmd_args, '--TR', TR);
 
-    if vol_name:
-        cmd_args += ['--vol_name', vol_name]
+    add_option('float', cmd_args, '--FA', FA);
 
-    if sort is not None:
-        cmd_args += ['--sort', str(int(sort))]
+    add_option('float_list', cmd_args, '--VFAs', VFAs);
 
-    if make_t1 is not None:
-        cmd_args += ['--make_t1', str(int(make_t1))]
-
-    if make_single is not None:
-        cmd_args += ['--make_single', str(int(make_single))]
-
-    if make_dyn is not None:
-        cmd_args += ['--make_dyn', str(int(make_dyn))]
-
-    if make_t1_means is not None:
-        cmd_args += ['--make_t1_means', str(int(make_t1_means))]
-
-    if make_dyn_mean is not None:
-        cmd_args += ['--make_dyn_mean', str(int(make_dyn_mean))]
-
-    if flip_x is not None:
-        cmd_args += ['--flip_x', str(int(flip_x))]
-
-    if flip_y is not None:
-        cmd_args += ['--flip_y', str(int(flip_y))]
-
-    if scale_tag:
-        cmd_args += ['--scale_tag', scale_tag]
-
-    if offset_tag:
-        cmd_args += ['--offset_tag', offset_tag]
-
-    if dicom_scale:
-        cmd_args += ['--dicom_scale', f'{dicom_scale:4.3f}']
-
-    if dicom_offset:
-        cmd_args += ['--dicom_offset', f'{dicom_offset:4.3f}']
-
-    if acquisition_time_tag:
-        cmd_args += ['--acquisition_time_tag', acquisition_time_tag]
-
-    if temp_res:
-        cmd_args += ['--temp_res', f'{temp_res:4.3f}']
-
-    if repeat_prefix:
-        cmd_args += ['--repeat_prefix', repeat_prefix]
-
-    if mean_suffix:
-        cmd_args += ['--mean_suffix', mean_suffix]
-
-    if program_log_name:
-        cmd_args += ['--log', program_log_name]
-
-    if audit_name:
-        cmd_args += ['--audit', audit_name]
-
-    if audit_dir:
-        cmd_args += ['--audit_dir', audit_dir]
-
-    if config_out:
-        cmd_args += ['--config_out', config_out]
-
-    if no_log is not None:
-        cmd_args += ['--no_log', str(int(no_log))]
-
-    if no_audit is not None:
-        cmd_args += ['--no_audit', str(int(no_audit))]
-
-    if quiet is not None:
-        cmd_args += ['--quiet', str(int(quiet))]
-
-    if error_name:
-        cmd_args += ['--err', error_name]
-
-    if overwrite is not None:
-        cmd_args += ['--overwrite', str(int(overwrite))]
+    if dyn_times is not None:
+        #Get a name for the temporary file we'll write times to (we'll hold
+        #off writing anything until we know this isn't a dummy run
+        t_dir = TemporaryDirectory()
+        dyn_times_file = os.path.join(t_dir.name, 'dyn_times.dat')
+        add_option('string', cmd_args, '-t', dyn_times_file);
 
     #Args structure complete, convert to string for printing
     cmd_str = ' '.join(cmd_args)
@@ -343,10 +178,14 @@ def run(
         result = []
         return result
 
+    #Write dynamic times to a temporary file if we need to
+    if dyn_times is not None:
+        np.savetxt(dyn_times_file, dyn_times, fmt='%6.5f')
+
     #Otherwise we can run the command:
     print('***********************Madym Dicom Convert running **********************')
     if working_directory:
-        print('Working directory = {working_directory}')
+        print(f'Working directory = {working_directory}')
         
     print(cmd_str)
     result = subprocess.Popen(cmd_args, shell=False, cwd=working_directory,
@@ -357,6 +196,9 @@ def run(
             break
         if out:
             print(f"{out}", end='')
+
+    if dyn_times is not None:
+        t_dir.cleanup()
 
     #Given we don't actually need to process the result, it might be better here
     #to throw a warning on non-zero return, and just let the caller decide what to

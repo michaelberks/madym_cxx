@@ -13,7 +13,7 @@
 #include "mdm_RunTools_madym_DWI_lite.h"
 
 #include <madym/mdm_ProgramLogger.h>
-#include <madym/dwi/mdm_DWIMethodGenerator.h>
+#include <madym/dwi/mdm_DWImodelGenerator.h>
 #include <madym/mdm_exception.h>
 
 namespace fs = boost::filesystem;
@@ -42,24 +42,24 @@ MDM_API void mdm_RunTools_madym_DWI_lite::run()
   //Set curent working dir
   set_up_cwd();
 
-	//Parse DWI method from string, will abort if method type not recognised
-	auto methodType = mdm_DWIMethodGenerator::parseMethodName(options_.DWImethod());
+	//Parse DWI model from string, will abort if model type not recognised
+	auto modelType = mdm_DWImodelGenerator::parseModelName(options_.DWImodel());
 
 	//Instantiate DWI fitter of desired type
-	auto DWIFitter = mdm_DWIMethodGenerator::createFitter(methodType, options_.BvalsThresh());
+	auto DWIFitter = mdm_DWImodelGenerator::createFitter(modelType, options_.BvalsThresh());
 
 	//Check number of inputs is valid
 	if (nSignals < DWIFitter->minimumInputs())
-		throw mdm_exception(__func__, "not enough signal inputs for DWI method " + options_.DWImethod());
+		throw mdm_exception(__func__, "not enough signal inputs for DWI model " + options_.DWImodel());
 
 	else if (nSignals > DWIFitter->maximumInputs())
-		throw mdm_exception(__func__, "too many signal inputs for DWI method " + options_.DWImethod());
+		throw mdm_exception(__func__, "too many signal inputs for DWI model " + options_.DWImodel());
 
 	//Set up output path and output file
 	set_up_output_folder();
 
 	std::string outputDataFile = outputPath_.string() + "/" +
-		options_.DWImethod() + "_" + options_.outputName();
+		options_.DWImodel() + "_" + options_.outputName();
 
 	//Open the input data (FA and signals) file
 	std::ifstream inputData(options_.inputDataFile(), std::ios::in);
@@ -113,7 +113,7 @@ MDM_API int mdm_RunTools_madym_DWI_lite::parseInputs(int argc, const char *argv[
 	
 	options_parser_.add_option(config_options, options_.dataDir);
 	options_parser_.add_option(config_options, options_.inputDataFile);
-	options_parser_.add_option(config_options, options_.DWImethod);
+	options_parser_.add_option(config_options, options_.DWImodel);
 	options_parser_.add_option(config_options, options_.nDWIInputs);
 	options_parser_.add_option(config_options, options_.BvalsThresh);
 	
@@ -121,7 +121,7 @@ MDM_API int mdm_RunTools_madym_DWI_lite::parseInputs(int argc, const char *argv[
 	options_parser_.add_option(config_options, options_.outputName);
   options_parser_.add_option(config_options, options_.quiet);
 
-	//Always set overwrite true for lite methods
+	//Always set overwrite true for lite tools
 	options_.overwrite.set(true);
 
 	return options_parser_.parseInputs(

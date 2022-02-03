@@ -3,7 +3,7 @@ Runs the integrated tests for the wrappers
 '''
 
 import sys
-from QbiMadym import madym_DCE, madym_DCE_lite, madym_T1
+from QbiMadym import madym_DCE, madym_DCE_lite, madym_T1, madym_DWI_lite
 def run_madym_tests(test_level=1, plot_output=True):
     '''RUN_MADYM_TESTS run set of tests tests on C++ madym_DCE tools.
        [] = run_madym_tests()
@@ -35,6 +35,7 @@ def run_madym_tests(test_level=1, plot_output=True):
     madym_DCE_lite.test(plot_output)
     madym_DCE.test(plot_output)
     madym_T1.test(plot_output)
+    madym_DWI_lite.test(plot_output)
 
     if test_level > 1:
         #Apply extended tests

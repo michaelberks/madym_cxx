@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DWI_ADC) {
 	std::string DWI_output_dir = test_dir + "/madym_DWI/";
 	std::stringstream cmd;
 	cmd << mdm_test_utils::tools_exe_dir() << "madym_DWI"
-		<< " --DWI_method ADC "
+		<< " --DWI_model ADC "
 		<< " --DWI_vols " << Bvals_str
 		<< " -o " << DWI_output_dir
 		<< " --overwrite"
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DWI_IVIM) {
 	std::string DWI_output_dir = test_dir + "/madym_DWI/";
 	std::stringstream cmd;
 	cmd << mdm_test_utils::tools_exe_dir() << "madym_DWI"
-		<< " --DWI_method IVIM "
+		<< " --DWI_model IVIM "
 		<< " --DWI_vols " << Bvals_str
 		<< " --Bvals_thresh 40.0,60.0,100.0,150.0"
 		<< " -o " << DWI_output_dir

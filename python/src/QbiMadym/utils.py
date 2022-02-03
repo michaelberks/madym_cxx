@@ -276,7 +276,81 @@ def check_madym_updates():
         print(
             f'Your madym version {local_version} does not match the latest available version {latest_version}')
         print('Run install_madym to update')
+
+#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
+def add_option(option_type, cmd_args, option_str, option):
+    '''
+    Update command list with a new option, based on the option type
+
+    Inputs:
+
+    Ouptuts:
+
+    '''
+
+    if option_type == 'bool':
+        option_bool(cmd_args, option_str, option);
+        
+    elif option_type == 'int':
+        option_int(cmd_args, option_str, option);
+        
+    elif option_type == 'float':
+        option_float(cmd_args, option_str, option);
+        
+    elif option_type == 'string':
+        option_string(cmd_args, option_str, option);
+        
+    elif option_type == 'int_list':
+        option_int_list(cmd_args, option_str, option);
+        
+    elif option_type == 'float_list':
+        option_float_list(cmd_args, option_str, option);
+        
+    elif option_type == 'string_list':
+        option_string_list(cmd_args, option_str, option);
+        
+    else:
+        ValueError(f'Option type {option_type} not recognised');
+
+
+def option_bool(cmd_args, option_str, option):
+    if not option is None:
+        cmd_args += [option_str, str(int(option))]
     
+#--------------------------------------------------------------------------
+def option_int(cmd_args, option_str, option):
+    if not option is None:
+        cmd_args += [option_str, str(option)]
+
+#--------------------------------------------------------------------------
+def option_float(cmd_args, option_str, option):
+    if not option is None:
+        cmd_args += [option_str, f'{option:6.5f}']
+
+#--------------------------------------------------------------------------
+def option_string(cmd_args, option_str, option):
+    if not option is None:
+        cmd_args += [option_str, option]
+
+#--------------------------------------------------------------------------
+def option_int_list(cmd_args, option_str, option):
+    if not option is None:
+        options = ','.join(str(o) for o in option)
+        cmd_args += [option_str, options]
+
+#--------------------------------------------------------------------------
+def option_float_list(cmd_args, option_str, option):
+    if not option is None:
+        options = ','.join(f'{o:5.4f}' for o in option)
+        cmd_args += [option_str, options]
+    
+
+#--------------------------------------------------------------------------
+def option_string_list(cmd_args, option_str, option):
+    if not option is None:
+        options = ','.join(option)
+        cmd_args += [option_str, options]
 
 
 

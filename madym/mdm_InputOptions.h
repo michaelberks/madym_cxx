@@ -78,8 +78,8 @@ struct mdm_InputOptions {
     "Scaling value appplied to B1 map"); //!< See initial value
 
 	//DWI tool inputs
-	mdm_input_string DWImethod = mdm_input_string(
-		mdm_input_str("ADC"), "DWI_method", "",
+	mdm_input_string DWImodel = mdm_input_string(
+		mdm_input_str("ADC"), "DWI_model", "",
 		"Method used for DWI modelling"); //!< See initial value
 	mdm_input_string DWIDir = mdm_input_string(
 		mdm_input_str(""), "DWI_dir", "",

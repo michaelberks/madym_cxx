@@ -6,7 +6,7 @@ import warnings
 import subprocess
 import numpy as np
 
-from QbiMadym.utils import local_madym_root
+from QbiMadym.utils import local_madym_root, add_option
 
 def run(
     config_file:str=None, 
@@ -15,10 +15,11 @@ def run(
     T1_vols:list = None,
     T1_method:str = None,
     dynamic_basename:str = None,
+    dyn_dir:str = None,
     sequence_format:str = None,
     sequence_start:str = None,
     sequence_step:str = None,
-    n_dyns:int = 0,
+    n_dyns:int = None,
     input_Ct:bool = True,
     T1_name:str = None,
     M0_name:str = None,
@@ -42,15 +43,15 @@ def run(
     select_pct : float = None,
     img_fmt_r:str = None,
     img_fmt_w:str = None,
-    overwrite:bool = False,
+    overwrite:bool = None,
     program_log_name:str = None,
     audit_dir:str = None,
     audit_name:str = None,
     config_out:str = None,
     error_name:str = None,
-    no_log:bool = False,
-    no_audit:bool = False,
-    quiet:bool = False,
+    no_log:bool = None,
+    no_audit:bool = None,
+    quiet:bool = None,
     working_directory:str = None,
     dummy_run:bool = False):
     '''
@@ -78,6 +79,8 @@ def run(
             Method used for T1 mapping eg. VFA
         dynamic_basename : str default None, 
             Template name for dynamic sequences eg. dynamic/dyn_
+        dyn_dir : str default None, 
+            Folder containing dynamic volumes, can be omitted if inlcuded in dynamic_basename
         sequence_format : str default None, 
             Format for converting dynamic series index to string, eg %01u
         sequence_start : int default None, 
@@ -188,137 +191,101 @@ def run(
     #Set up initial cmd string
     cmd_args = [cmd_exe]
     
-    if config_file:
-        cmd_args += ['-c', config_file]
-    
-    if output_dir:
-        cmd_args += ['-o', output_dir] 
+    #   Check if a config file exists
+    add_option('string', cmd_args, '--config', config_file)    
 
-    #Set the dynamic names
-    if dynamic_basename:
-        cmd_args += ['--dyn', dynamic_basename]
+    #   Set the working dir
+    add_option('string', cmd_args, '--cwd', working_directory)    
 
-    if sequence_format:
-        cmd_args += ['--sequence_format', sequence_format]
+    #   Set output directory
+    add_option('string', cmd_args, '-o', output_dir)    
 
-    if sequence_start is not None:
-        cmd_args += ['--sequence_start', str(sequence_start)]
+    #   Set the dynamic names
+    add_option('string', cmd_args, '-d', dynamic_basename)    
 
-    if sequence_step is not None:
-        cmd_args += ['--sequence_step', str(sequence_step)]
+    add_option('string', cmd_args, '--dyn_dir', dyn_dir)    
 
-    if n_dyns > 0:
-        cmd_args += ['-n', str(n_dyns)]
+    #   Set the format
+    add_option('string', cmd_args, '--sequence_format', sequence_format)    
 
-    #Now set any args that require option inputs
-    if input_Ct:
-        cmd_args += ['--Ct']
-    
-    #Check if we have pre-computed T1
-    if T1_name:
-        cmd_args += ['--T1', T1_name]
-                      
-    #And if we're not using the ratio method, an M0 map
-    if M0_ratio:
-        cmd_args += ['--M0_ratio'] 
+    add_option('int', cmd_args, '--sequence_start', sequence_start)    
 
-    if M0_name:
-        cmd_args += ['--M0', M0_name]
+    add_option('int', cmd_args, '--sequence_step', sequence_step)    
 
-    if T1_vols:
-        #Set VFA files in the options string
-        t1_str = ','.join(T1_vols)
-        cmd_args += ['--T1_vols', t1_str]
-            
-    if T1_noise is not None:
-        cmd_args += ['--T1_noise', f'{T1_noise:5.4f}'] 
+    #   Set the number of dynamics
+    add_option('int', cmd_args, '--n_dyns', n_dyns)    
 
-    if T1_method:
-        cmd_args += ['--T1_method', T1_method]
+    #   Set image formats
+    add_option('string', cmd_args, '--img_fmt_r', img_fmt_r)    
+
+    add_option('string', cmd_args, '--img_fmt_w', img_fmt_w)   
+
+    add_option('bool', cmd_args, '--Ct', input_Ct) 
+
+    add_option('string', cmd_args, '--T1', T1_name)
+
+    add_option('string', cmd_args, '--M0', M0_name)
+
+    add_option('string_list', cmd_args, '--T1_vols', T1_vols)    
         
-    #Set any other options required to convert signal to concentration
-    if r1_const is not None:
-        cmd_args += ['--r1', f'{r1_const:4.3f}']       
+    add_option('float', cmd_args, '--T1_noise', T1_noise)    
+        
+    add_option('string', cmd_args, '--T1_method', T1_method)
+    
+    add_option('float', cmd_args, '--r1', r1_const)    
 
-    if TR:
-        cmd_args += ['--TR', f'{TR:4.3f}']
+    add_option('bool', cmd_args, '--M0_ratio', M0_ratio)    
+
+    #B1 correction options
+    add_option('string', cmd_args, '--B1', B1_name)    
+
+    add_option('bool', cmd_args, '--B1_correction', B1_correction)    
+
+    add_option('float', cmd_args, '--B1_scaling', B1_scaling)    
 
     #Now go through all the other optional parameters, and if they've been set,
     #set the necessary option flag in the cmd string
-    if B1_name:
-        cmd_args += ['--B1', B1_name]
+    add_option('bool', cmd_args, '--overwrite', overwrite)    
 
-    if B1_scaling is not None:
-        cmd_args += ['--B1_scaling', B1_scaling]
+    add_option('bool', cmd_args, '--no_audit', no_audit)    
 
-    if B1_correction:
-        cmd_args += ['--B1_correction']
+    add_option('bool', cmd_args, '--no_log', no_log)    
 
-    if injection_image is not None:
-        cmd_args += ['--inj', str(injection_image)]
+    add_option('bool', cmd_args, '--quiet', quiet)    
 
-    if roi_name:
-        cmd_args += ['--roi', roi_name]
+    add_option('int', cmd_args, '-i', injection_image)    
 
-    if aif_map:
-        cmd_args += ['--aif_map', aif_map]
+    add_option('string', cmd_args, '--roi', roi_name)    
 
-    if aif_slices:
-        cmd_args += ['--aif_slices', aif_slices]
-    
-    if aif_x_range:
-        cmd_args += ['--aif_x_range', aif_x_range]
-    
-    if aif_y_range:
-        cmd_args += ['--aif_y_range', aif_y_range]
-    
-    if min_T1_blood:
-        cmd_args += ['--min_T1_blood', f'{min_T1_blood:4.3f}']
-    
-    if peak_time:
-        cmd_args += ['--peak_time', f'{peak_time:4.3f}']
-    
-    if prebolus_noise:
-        cmd_args += ['--prebolus_noise', f'{prebolus_noise:4.3f}']
-    
-    if prebolus_min_images:
-        cmd_args += ['--prebolus_min_images', str(prebolus_min_images)]
-    
-    if select_pct:
-        cmd_args += ['--select_pct', f'{select_pct:4.3f}']
+    add_option('string', cmd_args, '--aif_map', aif_map)    
 
-    if program_log_name:
-        cmd_args += ['--log', program_log_name]
+    add_option('float', cmd_args, '--TR', TR)    
 
-    if audit_name:
-        cmd_args += ['--audit', audit_name]
+    add_option('string', cmd_args, '--aif_slices', aif_slices)    
 
-    if audit_dir:
-        cmd_args += ['--audit_dir', audit_dir]
+    add_option('string', cmd_args, '--aif_x_range', aif_x_range)    
 
-    if config_out:
-        cmd_args += ['--config_out', config_out]
+    add_option('string', cmd_args, '--aif_y_range', aif_y_range)    
 
-    if no_log:
-        cmd_args += ['--no_log']
+    add_option('float', cmd_args, '--min_T1_blood', min_T1_blood)    
 
-    if no_audit:
-        cmd_args += ['--no_audit']
+    add_option('float', cmd_args, '--peak_time', peak_time)    
 
-    if quiet:
-        cmd_args += ['--quiet']
+    add_option('float', cmd_args, '--prebolus_noise', prebolus_noise)    
 
-    if error_name:
-        cmd_args += ['--err', error_name]
+    add_option('int', cmd_args, '--prebolus_min_images', prebolus_min_images)    
 
-    if img_fmt_r:
-        cmd_args += ['--img_fmt_r', img_fmt_r]
+    add_option('float', cmd_args, '--select_pct', select_pct)    
 
-    if img_fmt_w:
-        cmd_args += ['--img_fmt_w', img_fmt_w]
+    add_option('string', cmd_args, '--program_log', program_log_name)    
 
-    if overwrite:
-        cmd_args += ['--overwrite']
+    add_option('string', cmd_args, '--audit', audit_name)    
+
+    add_option('string', cmd_args, '--audit_dir', audit_dir)    
+
+    add_option('string', cmd_args, '--config_out', config_out)    
+
+    add_option('string', cmd_args, '-E', error_name)    
 
     #Args structure complete, convert to string for printing
     cmd_str = ' '.join(cmd_args)
@@ -333,7 +300,7 @@ def run(
     #Otherwise we can run the command:
     print('***********************Madym AIF running **********************')
     if working_directory:
-        print('Working directory = {working_directory}')
+        print(f'Working directory = {working_directory}')
         
     print(cmd_str)
     result = subprocess.Popen(cmd_args, shell=False, cwd=working_directory,
