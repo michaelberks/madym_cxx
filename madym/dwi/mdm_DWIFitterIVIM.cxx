@@ -369,7 +369,11 @@ bcfitOutput mdm_DWIFitterIVIM::fitMultipleThresholds()
   for (auto s : signals_)
   {
     if (s <= 0)
+    {
+      best_fit.success = mdm_ErrorTracker::ErrorCode::DWI_INPUT_ZERO;
       return best_fit;
+    }
+      
   }
 
   // Loop over starting values generated for different thresholds

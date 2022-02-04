@@ -84,6 +84,18 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_DWIFitterADC::fitModel(
 	//Resize output appropriately
 	params.resize(2);
 
+	// Only peform fit if all signals are non - zero
+	for (auto s : signals_to_fit_)
+	{
+		if (s <= 0)
+		{
+			params[0] = NAN;
+			params[1] = NAN;
+			ssr = NAN;
+			return mdm_ErrorTracker::ErrorCode::DWI_INPUT_ZERO;
+		}
+	}
+
 	//Do linear ADC fit
 	// Get starting values from linear fit
 	linearFit(params[0], params[1], ssr);

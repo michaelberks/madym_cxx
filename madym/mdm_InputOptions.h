@@ -300,6 +300,9 @@ struct mdm_InputOptions {
   mdm_input_ints T1inputSeries = mdm_input_ints(
     mdm_input_int_list(std::vector<int>{}), "T1_series", "",
     "Indices of the dicom series for each T1 input"); //!< See initial value
+	mdm_input_ints DWIinputSeries = mdm_input_ints(
+		mdm_input_int_list(std::vector<int>{}), "DWI_series", "",
+		"Indices of the dicom series for DWI inputs"); //!< See initial value
   mdm_input_int dynSeries = mdm_input_int(
     0, "dyn_series", "",
     "Index of the dicom series for the dynamic DCE time-series"); //!< See initial value
@@ -320,6 +323,9 @@ struct mdm_InputOptions {
   mdm_input_bool makeT1Inputs = mdm_input_bool(
     false, "make_t1", "",
     "Make T1 input images from dicom series"); //!< See initial value
+	mdm_input_bool makeDWIInputs = mdm_input_bool(
+		false, "make_DWI", "",
+		"Make DWI input images from dicom series"); //!< See initial value
   mdm_input_bool makeSingle = mdm_input_bool(
     false, "make_single", "",
     "Make single 3D image from dicom series"); //!< See initial value
@@ -329,6 +335,9 @@ struct mdm_InputOptions {
   mdm_input_bool makeT1Means = mdm_input_bool(
     false, "make_t1_means", "",
     "Make mean of each set of T1 input repeats"); //!< See initial value
+	mdm_input_bool makeBvalueMeans = mdm_input_bool(
+		false, "make_Bvalue_means", "",
+		"Make mean of each set of B-value repeats"); //!< See initial value
   mdm_input_bool makeDynMean = mdm_input_bool(
     false, "make_dyn_mean", "",
     "Make temporal mean of dynamic images"); //!< See initial value

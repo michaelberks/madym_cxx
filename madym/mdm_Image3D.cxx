@@ -33,6 +33,9 @@ mdm_Image3D::MetaData::MetaData()
 	TI("TI"),
 	TA("TA"),
 	ETL("ETL"),
+	gradOriX("gradOriX"),
+	gradOriY("gradOriY"),
+	gradOriZ("gradOriZ"),
 	Xmm("Xmm"),
 	Ymm("Ymm"),
 	Zmm("Zmm"),
@@ -306,6 +309,12 @@ void mdm_Image3D::setMetaData(const std::string &key, const double &value)
 		info_.TA.setValue(value);
 	else if (key.compare(info_.ETL.key()) == 0)
 		info_.ETL.setValue(value);
+	else if (key.compare(info_.gradOriX.key()) == 0)
+		info_.gradOriX.setValue(value);
+	else if (key.compare(info_.gradOriY.key()) == 0)
+		info_.gradOriY.setValue(value);
+	else if (key.compare(info_.gradOriZ.key()) == 0)
+		info_.gradOriZ.setValue(value);
 	else if (key.compare(info_.Xmm.key()) == 0)
 		info_.Xmm.setValue(value);
 	else if (key.compare(info_.Ymm.key()) == 0)
@@ -371,6 +380,18 @@ MDM_API void mdm_Image3D::getSetKeyValuePairs(std::vector<std::string> &keys,
 	if (info_.ETL.isSet()){
 		keys.push_back(info_.ETL.key()); 
 		values.push_back(info_.ETL.value());
+	}
+	if (info_.gradOriX.isSet()) {
+		keys.push_back(info_.gradOriX.key());
+		values.push_back(info_.gradOriX.value());
+	}
+	if (info_.gradOriY.isSet()) {
+		keys.push_back(info_.gradOriY.key());
+		values.push_back(info_.gradOriY.value());
+	}
+	if (info_.gradOriZ.isSet()) {
+		keys.push_back(info_.gradOriZ.key());
+		values.push_back(info_.gradOriZ.value());
 	}
 	if (info_.Xmm.isSet()){
 		keys.push_back(info_.Xmm.key()); 

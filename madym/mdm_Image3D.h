@@ -88,6 +88,9 @@ class mdm_Image3D
 		KeyPair B; //!< Magnitude field B-value
 		KeyPair TI; //!< Inversion time in ms
 		KeyPair TA; //!< TA
+		KeyPair gradOriX; //!< Diffusion gradient orientation
+		KeyPair gradOriY; //!< Diffusion gradient orientation
+		KeyPair gradOriZ; //!< Diffusion gradient orientation
 		KeyPair ETL; //!< ETL
 		KeyPair Xmm; //!< X0
 		KeyPair Ymm; //!< Y0

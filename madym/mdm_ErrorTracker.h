@@ -41,8 +41,9 @@ public:
 		DCE_FIT_FAIL = 1024,			///> Error in model fitting optimisation     - Binary bit 11 set
 		DCE_INVALID_PARAM = 2048,	///> Error in model fitting optimisation     - Binary bit 12 set
     B1_INVALID = 4096,	      ///> B1 map correction value <= 0            - Binary bit 13 set
-		DWI_FIT_FAIL = 8192,      ///> Error in DWI model fitting              - Binary bit 14 set
-		DWI_MAX_ITER = 16384,			///> Hit max iterations in DWI opt           - Binary bit 15 set
+		DWI_INPUT_ZERO = 8192,    ///> Signals to DWI fit <= 0									- Binary bit 14 set
+		DWI_FIT_FAIL = 16384,     ///> Error in DWI model fitting              - Binary bit 14 set
+		DWI_MAX_ITER = 32768,			///> Hit max iterations in DWI opt           - Binary bit 15 set
 	};
 	
 	//! Default constructor
