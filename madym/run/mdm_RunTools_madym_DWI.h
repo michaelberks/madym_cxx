@@ -70,7 +70,7 @@ private:
 	\param methodType T1 method
 	\param numInputs number of input signals specified by user
 	*/
-	void checkNumInputs(mdm_DWImodelGenerator::DWImodels methodType, const int& numInputs);
+	void checkNumInputs(mdm_DWIModelGenerator::DWImodels methodType, const int& numInputs);
 
 	//! Check if there are T1 signal inputs to load, and if so, load them
 	void loadDWIInputs();

@@ -13,7 +13,7 @@
 #include "mdm_RunTools_madym_DWI_lite.h"
 
 #include <madym/utils/mdm_ProgramLogger.h>
-#include <madym/dwi/mdm_DWImodelGenerator.h>
+#include <madym/dwi/mdm_DWIModelGenerator.h>
 #include <madym/utils/mdm_exception.h>
 
 namespace fs = boost::filesystem;
@@ -43,10 +43,10 @@ MDM_API void mdm_RunTools_madym_DWI_lite::run()
   set_up_cwd();
 
 	//Parse DWI model from string, will abort if model type not recognised
-	auto modelType = mdm_DWImodelGenerator::parseModelName(options_.DWImodel());
+	auto modelType = mdm_DWIModelGenerator::parseModelName(options_.DWImodel());
 
 	//Instantiate DWI fitter of desired type
-	auto DWIFitter = mdm_DWImodelGenerator::createFitter(modelType, options_.BvalsThresh());
+	auto DWIFitter = mdm_DWIModelGenerator::createFitter(modelType, options_.BvalsThresh());
 
 	//Check number of inputs is valid
 	if (nSignals < DWIFitter->minimumInputs())

@@ -11,7 +11,7 @@
 
 #include <madym/utils/mdm_Image3D.h>
 #include <madym/utils/mdm_ErrorTracker.h>
-#include "dwi/mdm_DWImodelGenerator.h"
+#include "dwi/mdm_DWIModelGenerator.h"
 
 //!Fits diffusion models to 3D image volumes and stores the resulting model parameter maps
 /*!
@@ -46,7 +46,7 @@ public:
 	/*!
 	\param model selected diffusion model (eg ADC or IVIM)
 	*/
-	MDM_API void  mapDWI(mdm_DWImodelGenerator::DWImodels model);
+	MDM_API void  mapDWI(mdm_DWIModelGenerator::DWImodels model);
 
 	//! Fit diffusion model to each voxel in volume using default class model
 	/*!
@@ -93,14 +93,14 @@ public:
 	\return model used if no model specified in mapDWI
 	\see mapDWI
 	*/
-	MDM_API mdm_DWImodelGenerator::DWImodels  model() const;
+	MDM_API mdm_DWIModelGenerator::DWImodels  model() const;
 
 	//! Set diffusion model
 	/*!
 	\param model used if no model specified in mapDWI
 	\see mapT1
 	*/
-	MDM_API void  setModel(mdm_DWImodelGenerator::DWImodels model);
+	MDM_API void  setModel(mdm_DWIModelGenerator::DWImodels model);
 
 	//!Set BvalsThresh
 	/*!
@@ -128,7 +128,7 @@ private:
 	// a default empty image will be used
 	mdm_ErrorTracker &errorTracker_;
 
-	mdm_DWImodelGenerator::DWImodels model_;
+	mdm_DWIModelGenerator::DWImodels model_;
 
 	//Name of parameters associated with model maps
 	std::vector<std::string> paramNames_;

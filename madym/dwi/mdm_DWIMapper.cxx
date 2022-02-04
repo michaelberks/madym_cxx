@@ -24,7 +24,7 @@ MDM_API mdm_DWIMapper::mdm_DWIMapper(mdm_ErrorTracker &errorTracker, mdm_Image3D
 	:inputImages_(0),
 	errorTracker_(errorTracker),
   ROI_(ROI),
-	model_(mdm_DWImodelGenerator::DWImodels::UNDEFINED)
+	model_(mdm_DWIModelGenerator::DWImodels::UNDEFINED)
 {}
 
 //
@@ -55,13 +55,13 @@ MDM_API void mdm_DWIMapper::addInputImage(mdm_Image3D img)
 }
 
 //
-MDM_API void  mdm_DWIMapper::mapDWI(mdm_DWImodelGenerator::DWImodels method)
+MDM_API void  mdm_DWIMapper::mapDWI(mdm_DWIModelGenerator::DWImodels method)
 {
 	//
 	auto nSignals = inputImages_.size();
 
 	//Instantiate DWI fitter object of required method type
-	auto DWIFitter = mdm_DWImodelGenerator::createFitter(method, inputImages_, BvalsThresh_);
+	auto DWIFitter = mdm_DWIModelGenerator::createFitter(method, inputImages_, BvalsThresh_);
 	auto nParams = DWIFitter->nParams();
 
 	//Initialise maps
@@ -179,13 +179,13 @@ MDM_API double mdm_DWIMapper::model_map(const std::string& map_name, size_t voxe
 }
 
 //
-MDM_API mdm_DWImodelGenerator::DWImodels  mdm_DWIMapper::model() const
+MDM_API mdm_DWIModelGenerator::DWImodels  mdm_DWIMapper::model() const
 {
 	return model_;
 }
 
 //
-MDM_API void  mdm_DWIMapper::setModel(mdm_DWImodelGenerator::DWImodels model)
+MDM_API void  mdm_DWIMapper::setModel(mdm_DWIModelGenerator::DWImodels model)
 {
 	model_ = model;
 }

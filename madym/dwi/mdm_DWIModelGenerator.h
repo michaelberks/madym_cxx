@@ -1,5 +1,5 @@
 /**
-*  @file    dwi/mdm_DWImodelGenerator.h
+*  @file    dwi/mdm_DWIModelGenerator.h
 *  @brief Header only class to generate specific instances of DCE models
 *
 *  Original author MA Berks 24 Oct 2018
@@ -32,7 +32,7 @@
 	4) a new case in the switch statement of setModel
 
 */
-class mdm_DWImodelGenerator {
+class mdm_DWIModelGenerator {
 
 public:
 

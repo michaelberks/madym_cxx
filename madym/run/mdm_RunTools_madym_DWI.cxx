@@ -119,14 +119,14 @@ MDM_API std::string mdm_RunTools_madym_DWI::who() const
 //*******************************************************************************
 
 //
-void mdm_RunTools_madym_DWI::checkNumInputs(mdm_DWImodelGenerator::DWImodels methodType,
+void mdm_RunTools_madym_DWI::checkNumInputs(mdm_DWIModelGenerator::DWImodels methodType,
 	const int& numInputs)
 {
 	//This is a bit rubbish - instantiating a whole new object just to get
 	//some limits returned. But we want limits defined by the derived DWI method class,
 	//and want to check these to parse user input before the actual fitting objects
 	//get created.
-	auto DWIfitter = mdm_DWImodelGenerator::createFitter(methodType);
+	auto DWIfitter = mdm_DWIModelGenerator::createFitter(methodType);
 
 	if (numInputs < DWIfitter->minimumInputs())
 		throw mdm_exception(__func__, "not enough DWI inputs");
@@ -143,7 +143,7 @@ void mdm_RunTools_madym_DWI::mapDWI()
 		throw mdm_exception(__func__, "input map names (option --DWI_vols) must be provided");
 
 	//Parse DWI method from string, will abort if method type not recognised
-	auto model = mdm_DWImodelGenerator::parseModelName(
+	auto model = mdm_DWIModelGenerator::parseModelName(
 		options_.DWImodel());
 
 	//Check number of signal inputs, will abort if too many/too few
