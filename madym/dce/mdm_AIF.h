@@ -7,9 +7,9 @@
 
 #ifndef MDM_AIF_HDR
 #define MDM_AIF_HDR
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
-#include "mdm_Image3D.h"
+#include <madym/utils/mdm_Image3D.h>
 
  //! Reading, writing, generating and resampling vascular input functions for DCE TK models
 	/*!

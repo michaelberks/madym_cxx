@@ -6,7 +6,7 @@
 #include <madym/dwi/mdm_DWIFitterIVIM.h>
 #include <madym/image_io/nifti/mdm_NiftiFormat.h>
 #include <madym/image_io/xtr/mdm_XtrFormat.h>
-#include <madym/mdm_Image3D.h>
+#include <madym/utils/mdm_Image3D.h>
 #include <mdm_version.h>
 
 namespace fs = boost::filesystem;

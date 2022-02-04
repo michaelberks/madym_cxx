@@ -7,7 +7,7 @@
 
 #ifndef MDM_RUNTOOLS_MADYM_T1_LITE_HDR
 #define MDM_RUNTOOLS_MADYM_T1_LITE_HDR
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 #include <madym/run/mdm_RunToolsT1Fit.h>
 
 //! Class to run the lite version of the T1 mapping tool

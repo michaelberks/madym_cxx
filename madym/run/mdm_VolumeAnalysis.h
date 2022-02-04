@@ -7,11 +7,11 @@
 
 #ifndef MDM_VOLUMEANALYSIS_HDR
 #define MDM_VOLUMEANALYSIS_HDR
-#include <madym/mdm_api.h>
+#include <madym/utils/mdm_api.h>
 
-#include <madym/mdm_Image3D.h>
+#include <madym/utils/mdm_Image3D.h>
 
-#include <madym/mdm_ErrorTracker.h>
+#include <madym/utils/mdm_ErrorTracker.h>
 #include <madym/dce/mdm_DCEVoxel.h>
 #include <madym/dce/mdm_DCEModelBase.h>
 #include <madym/dce/mdm_DCEModelFitter.h>

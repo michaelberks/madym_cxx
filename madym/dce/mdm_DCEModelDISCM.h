@@ -10,11 +10,11 @@
 #ifndef MDM_DCEMODELDISCM_HDR
 #define MDM_DCEMODELDISCM_HDR
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
 #include "mdm_DCEModelBase.h"
 #include <vector>
-#include <mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 //! Implements a dual-input single-compartment model.
 class mdm_DCEModelDISCM : public mdm_DCEModelBase {
 public:

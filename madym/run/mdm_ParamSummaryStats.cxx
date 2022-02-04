@@ -17,7 +17,7 @@
 #include <fstream>
 #include <algorithm>
 #include <boost/format.hpp>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_exception.h>
 
 const std::vector<std::string> mdm_ParamSummaryStats::headers_ = {
 	"param",

@@ -8,8 +8,8 @@
 
 #ifndef MDM_RUNTOOLS_DCE_FIT_HDR
 #define MDM_RUNTOOLS_DCE_FIT_HDR
-#include "mdm_api.h"
-#include <madym/mdm_RunTools.h>
+#include <madym/utils/mdm_api.h>
+#include <madym/run/mdm_RunTools.h>
 #include <madym/dce/mdm_DCEModelFitter.h>
 #include <memory>
 

@@ -7,9 +7,9 @@
 
 #ifndef MDM_T1FITERRIR_HDR
 #define MDM_T1FITERRIR_HDR
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 #include "mdm_T1FitterBase.h"
-#include "mdm_ErrorTracker.h"
+#include <madym/utils/mdm_ErrorTracker.h>
 
 //! Class for estimating T1 (and M0) in a single voxel using inversion recovery method
 class mdm_T1FitterIR : public mdm_T1FitterBase {

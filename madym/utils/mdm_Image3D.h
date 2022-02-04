@@ -7,13 +7,13 @@
 #ifndef MDM_IMAGE3D_H
 #define MDM_IMAGE3D_H
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
 #include <vector>
 #include <string>
 #include <fstream>
 #include <cmath>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_exception.h>
 
  /*!
 	*  @brief   Storing 3D image data and associated meta-information

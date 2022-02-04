@@ -12,9 +12,9 @@
 
 #include "mdm_RunToolsDCEFit.h"
 
-#include <madym/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_ProgramLogger.h>
 #include <madym/dce/mdm_DCEModelGenerator.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_exception.h>
 
 namespace fs = boost::filesystem;
 

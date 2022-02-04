@@ -8,7 +8,7 @@
 
 #ifndef MDM_RUNTOOLS_VOLUMEANALYSIS_HDR
 #define MDM_RUNTOOLS_VOLUMEANALYSIS_HDR
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 #include <madym/run/mdm_RunToolsT1Fit.h>
 
 namespace fs = boost::filesystem;

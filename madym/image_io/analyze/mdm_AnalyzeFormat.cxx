@@ -19,8 +19,8 @@
 
 #include <boost/filesystem.hpp>
 
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_exception.h>
 
 /* Added so we can deal with stuff */
 const int mdm_AnalyzeFormat::MAX_ANALYZE_DIMS  = 8;

@@ -19,10 +19,10 @@
 #include <iomanip> // put_time
 
 #include <mdm_version.h>
-#include <madym/mdm_exception.h>
-#include <madym/mdm_platform_defs.h>
+#include <madym/utils/mdm_exception.h>
+#include <madym/utils/mdm_platform_defs.h>
 
-#include <madym/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_ProgramLogger.h>
 
 namespace fs = boost::filesystem;
 

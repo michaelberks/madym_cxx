@@ -10,14 +10,14 @@
 #define MDM_API_EXPORTS
 #endif // !MDM_API_EXPORTS
 
-#include <mdm_InputTypes.h>
+#include <madym/utils/mdm_InputTypes.h>
 #include <iostream>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
-#include <madym/mdm_exception.h>
-#include <madym/mdm_platform_defs.h>
+#include <madym/utils/mdm_exception.h>
+#include <madym/utils/mdm_platform_defs.h>
 
 const std::string mdm_input_str::EMPTY_STR = "\"\"";
 

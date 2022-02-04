@@ -17,8 +17,8 @@
 #include <cassert>          /* For assert macro */
 
 #include <madym/opt/interpolation.h>
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_exception.h>
 
 //
 MDM_API mdm_DWIFitterADC::mdm_DWIFitterADC(const std::vector<double>& Bvals, bool linearFit)

@@ -7,7 +7,7 @@
 
 #ifndef MDM_DCEVOXEL_HDR
 #define MDM_DCEVOXEL_HDR
-#include <madym/mdm_api.h>
+#include <madym/utils/mdm_api.h>
 
 #include <madym/dce/mdm_DCEModelBase.h>
 

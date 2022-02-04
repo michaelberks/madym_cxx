@@ -11,11 +11,11 @@
 
 #include <memory>
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
-#include <madym/mdm_Image3D.h>
-#include <madym/mdm_InputOptions.h>
-#include <madym/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_Image3D.h>
+#include <madym/run/mdm_InputOptions.h>
+#include <madym/utils/mdm_ProgramLogger.h>
 #include <madym/dwi/mdm_DWIFitterBase.h>
 #include <madym/dwi/mdm_DWIFitterADC.h>
 #include <madym/dwi/mdm_DWIFitterIVIM.h>

@@ -7,10 +7,10 @@
 
 #ifndef mdm_T1MAPPER_HDR
 #define mdm_T1MAPPER_HDR
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
-#include "mdm_Image3D.h"
-#include "mdm_ErrorTracker.h"
+#include <madym/utils/mdm_Image3D.h>
+#include <madym/utils/mdm_ErrorTracker.h>
 #include "t1/mdm_T1MethodGenerator.h"
 
 //!Mapping T1 for a full volume from input signal images

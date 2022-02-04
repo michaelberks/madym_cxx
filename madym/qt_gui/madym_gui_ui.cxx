@@ -10,7 +10,7 @@
 #include <madym/t1/mdm_T1MethodGenerator.h>
 #include <madym/image_io/mdm_ImageIO.h>
 
-#include <madym/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_ProgramLogger.h>
 #include <mdm_version.h>
 #include "madym_gui_model_configure.h"
 #include <iomanip>

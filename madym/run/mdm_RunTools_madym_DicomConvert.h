@@ -7,8 +7,8 @@
 
 #ifndef MDM_RUNTOOLS_MADYM_DCE_LITE_HDR
 #define MDM_RUNTOOLS_MADYM_DCE_LITE_HDR
-#include "mdm_api.h"
-#include <madym/mdm_RunTools.h>
+#include <madym/utils/mdm_api.h>
+#include <madym/run/mdm_RunTools.h>
 
 #include <dcmtk/dcmimgle/dcmimage.h>
 #include <dcmtk/dcmdata/dctk.h> 

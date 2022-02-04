@@ -10,7 +10,7 @@
 #endif // !MDM_API_EXPORTS
 
 #include "mdm_DCEModelBase.h"
-#include "mdm_platform_defs.h"
+#include <madym/utils/mdm_platform_defs.h>
 
 MDM_API mdm_DCEModelBase::mdm_DCEModelBase(
   mdm_AIF &AIF,

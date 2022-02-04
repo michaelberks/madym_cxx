@@ -10,11 +10,11 @@
 #ifndef MDM_DCEMODELDI2CXM_HDR
 #define MDM_DCEMODELDI2CXM_HDR
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
 #include "mdm_DCEModelBase.h"
 #include <vector>
-#include <mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 //! Implements a dual-input two-compartment exchange model.
 class mdm_DCEModelDI2CXM : public mdm_DCEModelBase {
 public:

@@ -12,9 +12,9 @@
 
 #include "mdm_RunTools_madym_DWI_lite.h"
 
-#include <madym/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_ProgramLogger.h>
 #include <madym/dwi/mdm_DWImodelGenerator.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_exception.h>
 
 namespace fs = boost::filesystem;
 

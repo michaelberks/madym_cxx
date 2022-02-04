@@ -8,8 +8,8 @@
 #ifndef MDM_DWIFITTERBASE_HDR
 #define MDM_DWIFITTERBASE_HDR
 
-#include "mdm_api.h"
-#include "mdm_ErrorTracker.h"
+#include <madym/utils/mdm_api.h>
+#include <madym/utils/mdm_ErrorTracker.h>
 #include "opt/optimization.h"
 
 #include <vector>

@@ -14,9 +14,9 @@
 #include <cassert>
 #include <chrono>  // chrono::system_clock
 
-#include <madym/mdm_ErrorTracker.h>
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_ErrorTracker.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_exception.h>
 #include <boost/format.hpp>
 
 //

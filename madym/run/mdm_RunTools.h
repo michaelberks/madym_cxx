@@ -8,15 +8,14 @@
 #ifndef MDM_RUNTOOLS_HDR
 #define MDM_RUNTOOLS_HDR
 
-#include "mdm_api.h"
-#include <mdm_OptionsParser.h>
-#include <madym/mdm_FileManager.h>
-#include <madym/mdm_VolumeAnalysis.h>
-#include <madym/mdm_AIF.h>
-#include <madym/t1/mdm_T1Mapper.h>
-#include <madym/mdm_ErrorTracker.h>
-
+#include <madym/utils/mdm_api.h>
+#include <madym/utils/mdm_ErrorTracker.h>
+#include <madym/dce/mdm_AIF.h>
 #include <madym/dce/mdm_DCEModelBase.h>
+#include <madym/t1/mdm_T1Mapper.h>
+#include <madym/run/mdm_OptionsParser.h>
+#include <madym/run/mdm_FileManager.h>
+#include <madym/run/mdm_VolumeAnalysis.h>
 
 #include <string>
 #include <vector>

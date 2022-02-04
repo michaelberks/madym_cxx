@@ -9,11 +9,11 @@
 #ifndef MDM_DCEMODEL2CFM_HDR
 #define MDM_DCEMODEL2CFM_HDR
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
 #include "mdm_DCEModelBase.h"
 #include <vector>
-#include <mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 //! Implements the two-compartment exchange model.
 class mdm_DCEModel2CFM : public mdm_DCEModelBase {
 public:

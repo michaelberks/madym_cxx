@@ -10,11 +10,11 @@
 #ifndef MDM_DCEMODELPATLAK_HDR
 #define MDM_DCEMODELPATLAK_HDR
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 #include "mdm_DCEModelBase.h"
 
 #include <vector>
-#include <mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 //! Implements the extended-Tofts model.
 class mdm_DCEModelPatlak : public mdm_DCEModelBase {
 public:

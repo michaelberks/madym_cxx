@@ -7,9 +7,9 @@
 
 #ifndef MDM_PARAMSUMMARYSTATS_HDR
 #define MDM_PARAMSUMMARYSTATS_HDR
-#include <madym/mdm_api.h>
+#include <madym/utils/mdm_api.h>
 
-#include <madym/mdm_Image3D.h>
+#include <madym/utils/mdm_Image3D.h>
 
 #include <iostream>
 

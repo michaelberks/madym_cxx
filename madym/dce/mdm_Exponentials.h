@@ -11,7 +11,7 @@
 
 #include <cmath>
 #include <vector>
-#include <madym/mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 
 //! Header only class to provide method for generating sequence names from user options
 class mdm_Exponentials {

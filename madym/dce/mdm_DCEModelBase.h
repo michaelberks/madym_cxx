@@ -16,11 +16,11 @@ Original author MA Berks 24 Oct 2018
 #ifndef MDM_DCEMODELBASE_HDR
 #define MDM_DCEMODELBASE_HDR
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
 #include <vector>
-#include <mdm_AIF.h>
-#include <mdm_ErrorTracker.h>
+#include <madym/dce/mdm_AIF.h>
+#include <madym/utils/mdm_ErrorTracker.h>
 
 //! Abstract base class for implementing DCE tracer-kinetic models
 class mdm_DCEModelBase {

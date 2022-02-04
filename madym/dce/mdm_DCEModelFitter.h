@@ -7,7 +7,7 @@
 
 #ifndef MDM_DCEMODELFITTER_HDR
 #define MDM_DCEMODELFITTER_HDR
-#include <madym/mdm_api.h>
+#include <madym/utils/mdm_api.h>
 
 #include <madym/dce/mdm_DCEModelBase.h>
 #include <madym/dce/mdm_DCEVoxel.h>

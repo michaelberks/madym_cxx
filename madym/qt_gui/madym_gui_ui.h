@@ -32,7 +32,7 @@
 
 #include "madym_gui_processor.h"
 
-#include <madym/mdm_OptionsParser.h>
+#include <madym/run/mdm_OptionsParser.h>
 #include <madym/dce/mdm_DCEModelBase.h>
 #include <madym/run/mdm_RunTools_madym_T1.h>
 

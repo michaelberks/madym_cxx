@@ -16,8 +16,8 @@
 #include <cmath>            /* For cos(), sin() and exp() */
 #include <cassert>          /* For assert macro */
 
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_exception.h>
 //
 MDM_API mdm_T1FitterIR::mdm_T1FitterIR(const std::vector<double> &TIs, const double TR)
   :

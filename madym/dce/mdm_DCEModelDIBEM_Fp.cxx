@@ -11,7 +11,7 @@
 #endif // !MDM_API_EXPORTS
 
 #include "mdm_DCEModelDIBEM_Fp.h"
-#include <madym/mdm_Exponentials.h>
+#include <madym/dce/mdm_Exponentials.h>
 #include <cmath>
 
 MDM_API mdm_DCEModelDIBEM_Fp::mdm_DCEModelDIBEM_Fp(

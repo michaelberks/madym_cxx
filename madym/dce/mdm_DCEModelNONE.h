@@ -10,11 +10,11 @@
 #ifndef MDM_DCEMODELNONE_HDR
 #define MDM_DCEMODELNONE_HDR
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 #include "mdm_DCEModelBase.h"
 
 #include <vector>
-#include <mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 //! Implements the extended-Tofts model.
 class mdm_DCEModelNONE : public mdm_DCEModelBase {
 public:

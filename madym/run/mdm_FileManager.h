@@ -7,13 +7,13 @@
 
 #ifndef MDM_FILELOAD_HDR
 #define MDM_FILELOAD_HDR
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
 #include "mdm_VolumeAnalysis.h"
 #include "mdm_ParamSummaryStats.h"
 #include <madym/image_io/mdm_ImageDatatypes.h>
 #include <madym/image_io/mdm_ImageIO.h>
-#include <madym/mdm_Image3D.h>
+#include <madym/utils/mdm_Image3D.h>
 
 //!   Manager class for reading input and writing ouput of volume-wise model analysis
 /*!

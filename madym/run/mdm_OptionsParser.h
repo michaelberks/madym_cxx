@@ -7,13 +7,13 @@
 
 #ifndef MDM_OPTIONS_PARSER_HDR
 #define MDM_OPTIONS_PARSER_HDR
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
 #include <string>
 #include <vector>
 #include <boost/program_options.hpp>
 
-#include <mdm_InputOptions.h>
+#include <madym/run/mdm_InputOptions.h>
 
 namespace po = boost::program_options;
 

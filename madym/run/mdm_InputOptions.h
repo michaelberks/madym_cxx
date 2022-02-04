@@ -8,7 +8,7 @@
 #ifndef MDM_INPUT_OPTIONS_HDR
 #define MDM_INPUT_OPTIONS_HDR
 
-#include <mdm_InputTypes.h>
+#include <madym/utils/mdm_InputTypes.h>
 
 //! Input options structure defining default input options for T1 mapping and DCE analysis
 struct mdm_InputOptions {

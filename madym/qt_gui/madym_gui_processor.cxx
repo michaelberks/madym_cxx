@@ -6,7 +6,7 @@
 
 #include "madym_gui_processor.h"
 
-#include <madym/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_ProgramLogger.h>
 #include <madym/run/mdm_RunTools_madym_T1.h>
 #include <madym/run/mdm_RunTools_madym_DCE.h>
 #include <madym/run/mdm_RunTools_madym_AIF.h>

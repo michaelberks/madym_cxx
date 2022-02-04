@@ -1,13 +1,13 @@
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>
-#include <madym/mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 #include <madym/tests/mdm_test_utils.h>
 
 #include <madym/image_io/mdm_ImageDatatypes.h>
 #include <madym/image_io/nifti/mdm_NiftiFormat.h>
-#include <madym/mdm_Image3D.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_Image3D.h>
+#include <madym/utils/mdm_exception.h>
 
 
 void test_nifti_io(const mdm_Image3D &img, const mdm_ImageDatatypes::DataType format, const bool compress)

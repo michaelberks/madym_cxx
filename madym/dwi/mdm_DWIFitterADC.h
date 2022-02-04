@@ -7,9 +7,9 @@
 
 #ifndef MDM_DWIFITTERADC_HDR
 #define MDM_DWIFITTERADC_HDR
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 #include "mdm_DWIFitterBase.h"
-#include "mdm_ErrorTracker.h"
+#include <madym/utils/mdm_ErrorTracker.h>
 
 //! Class for fitting ADC to DWI data
 class mdm_DWIFitterADC : public mdm_DWIFitterBase {

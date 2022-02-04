@@ -10,7 +10,7 @@
 #endif // !MDM_API_EXPORTS
 
 #include "mdm_DCEModelDI2CXM.h"
-#include <madym/mdm_Exponentials.h>
+#include <madym/dce/mdm_Exponentials.h>
 #include <cmath>
 
 MDM_API mdm_DCEModelDI2CXM::mdm_DCEModelDI2CXM(

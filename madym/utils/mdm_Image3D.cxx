@@ -9,7 +9,7 @@
 #ifndef MDM_API_EXPORTS
 #define MDM_API_EXPORTS
 #endif
-#include "mdm_Image3D.h"
+#include <madym/utils/mdm_Image3D.h>
 
 #include <string>
 #include <cassert>

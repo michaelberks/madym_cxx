@@ -20,9 +20,9 @@
 #include <numeric>
 #include <boost/format.hpp>
 
-#include <mdm_exception.h>
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_AIF.h>
+#include <madym/utils/mdm_exception.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/dce/mdm_AIF.h>
 
 //Names of output maps
 const std::string mdm_VolumeAnalysis::MAP_NAME_IAUC = "IAUC"; //Appended with IAUC time

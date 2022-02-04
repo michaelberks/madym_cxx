@@ -18,7 +18,7 @@
 #include "opt/interpolation.h"
 #include "opt/linalg.h"
 
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_exception.h>
 #include <cfloat>
 
 MDM_API mdm_DCEModelFitter::mdm_DCEModelFitter(

@@ -7,10 +7,10 @@
 
 #ifndef mdm_DWIMAPPER_HDR
 #define mdm_DWIMAPPER_HDR
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
-#include "mdm_Image3D.h"
-#include "mdm_ErrorTracker.h"
+#include <madym/utils/mdm_Image3D.h>
+#include <madym/utils/mdm_ErrorTracker.h>
 #include "dwi/mdm_DWImodelGenerator.h"
 
 //!Fits diffusion models to 3D image volumes and stores the resulting model parameter maps

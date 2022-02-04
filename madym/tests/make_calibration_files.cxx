@@ -1,7 +1,7 @@
 #include <iostream>
 #include <ostream>
 
-#include <madym/mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 #include <madym/dce/mdm_DCEModelGenerator.h>
 #include <madym/t1/mdm_T1FitterVFA.h>
 #include <madym/t1/mdm_T1FitterIR.h>

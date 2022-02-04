@@ -8,9 +8,9 @@
 #ifndef MDM_ERRORTRACKER_HDR
 #define MDM_ERRORTRACKER_HDR
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
-#include <madym/mdm_Image3D.h>
+#include <madym/utils/mdm_Image3D.h>
 #include <string>
 
 /*!

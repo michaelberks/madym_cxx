@@ -9,7 +9,7 @@
 
 #include "mdm_DicomFormat.h"
 
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_exception.h>
 #include <dcmtk/dcmimgle/dcmimage.h>
 #include <boost/algorithm/string.hpp>
 

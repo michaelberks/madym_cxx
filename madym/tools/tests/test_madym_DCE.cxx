@@ -5,12 +5,12 @@
 
 #include <madym/tests/mdm_test_utils.h>
 
-#include <madym/mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 #include <madym/dce/mdm_DCEModelGenerator.h>
 #include <madym/run/mdm_RunTools_madym_DCE.h>
 #include <madym/image_io/mdm_ImageIO.h>
-#include <madym/mdm_Image3D.h>
-#include <madym/mdm_ParamSummaryStats.h>
+#include <madym/utils/mdm_Image3D.h>
+#include <madym/run/mdm_ParamSummaryStats.h>
 #include <cmath>
 #include <mdm_version.h>
 

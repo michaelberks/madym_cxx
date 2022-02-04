@@ -18,7 +18,7 @@
 #include <iostream>
 #include <cstdlib>     //getenv()
 #include <mdm_version.h>
-#include <mdm_platform_defs.h>
+#include <madym/utils/mdm_platform_defs.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/asio/ip/host_name.hpp>

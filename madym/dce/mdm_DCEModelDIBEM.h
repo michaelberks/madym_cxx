@@ -10,12 +10,12 @@
 #ifndef MDM_DCEMODELDIBEM_HDR
 #define MDM_DCEMODELDIBEM_HDR
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
 #include "mdm_DCEModelBase.h"
 
 #include <vector>
-#include <mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 //! Implements the generic dual-input bi-exponential model.
 class mdm_DCEModelDIBEM : public mdm_DCEModelBase {
 public:

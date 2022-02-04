@@ -7,9 +7,9 @@
 
 #ifndef MDM_DWIFITTERIVIM_HDR
 #define MDM_DWIFITTERIVIM_HDR
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 #include "mdm_DWIFitterBase.h"
-#include "mdm_ErrorTracker.h"
+#include <madym/utils/mdm_ErrorTracker.h>
 #include "mdm_DWIFitterADC.h"
 
 struct bcfitOutput

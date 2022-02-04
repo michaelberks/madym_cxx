@@ -10,7 +10,7 @@
 
 #include <QObject>
 
-#include <mdm_RunTools.h>
+#include <madym/run/mdm_RunTools.h>
 
 //!Class for GUI processing tasks that runs in separate thread to main GUI
 class madym_gui_processor : public QObject

@@ -19,10 +19,10 @@
 
 namespace fs = boost::filesystem;
 
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_exception.h>
 #include <madym/image_io/xtr/mdm_XtrFormat.h>
-#include <madym/mdm_SequenceNames.h>
+#include <madym/utils/mdm_SequenceNames.h>
 
 const int mdm_FileManager::MAX_DYN_IMAGES = 1024;
 

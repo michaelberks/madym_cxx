@@ -10,11 +10,11 @@
 #define MDM_API_EXPORTS
 #endif
 
-#include "mdm_ErrorTracker.h"
+#include <madym/utils/mdm_ErrorTracker.h>
 
 #include <cassert>
-#include <madym/mdm_exception.h>
-#include <madym/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_exception.h>
+#include <madym/utils/mdm_ProgramLogger.h>
 
 //
 //

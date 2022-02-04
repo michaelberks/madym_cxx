@@ -22,9 +22,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_exception.h>
-#include <madym/mdm_platform_defs.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_exception.h>
+#include <madym/utils/mdm_platform_defs.h>
 #include <mdm_version.h>
 
 namespace fs = boost::filesystem;

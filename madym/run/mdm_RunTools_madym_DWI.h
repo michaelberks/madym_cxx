@@ -7,7 +7,7 @@
 
 #ifndef MDM_RUNTOOLS_MADYM_DWI_HDR
 #define MDM_RUNTOOLS_MADYM_DWI_HDR
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 #include <madym/run/mdm_RunToolsT1Fit.h>
 #include <madym/run/mdm_RunToolsVolumeAnalysis.h>
 

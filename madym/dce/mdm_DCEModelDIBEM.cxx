@@ -10,7 +10,7 @@
 #endif // !MDM_API_EXPORTS
 
 #include "mdm_DCEModelDIBEM.h"
-#include <madym/mdm_Exponentials.h>
+#include <madym/dce/mdm_Exponentials.h>
 
 #include <cmath>
 

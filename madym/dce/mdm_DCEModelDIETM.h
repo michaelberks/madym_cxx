@@ -10,11 +10,11 @@
 #ifndef MDM_DCEMODELDIETM_HDR
 #define MDM_DCEMODELDIETM_HDR
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 #include "mdm_DCEModelBase.h"
 
 #include <vector>
-#include <mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 //! Implements a dual-input extended-Tofts model.
 class mdm_DCEModelDIETM : public mdm_DCEModelBase {
 public:

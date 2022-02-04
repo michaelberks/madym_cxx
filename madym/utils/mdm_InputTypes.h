@@ -8,7 +8,7 @@
 #ifndef MDM_INPUT_TYPES_HDR
 #define MDM_INPUT_TYPES_HDR
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
 #include <string>
 #include <vector>

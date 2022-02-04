@@ -20,7 +20,7 @@
 #include <boost/algorithm/string/erase.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_exception.h>
 
 //! Custom validator for input type mdm_input_str
 void validate(boost::any& v,

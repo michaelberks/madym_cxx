@@ -5,7 +5,7 @@
  */
 
 #include "mdm_NiftiFormat.h"
-#include <madym/mdm_platform_defs.h>
+#include <madym/utils/mdm_platform_defs.h>
 
 DISABLE_WARNING_PUSH
 DISABLE_WARNING_DEPRECATED

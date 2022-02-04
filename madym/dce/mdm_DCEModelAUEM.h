@@ -10,11 +10,11 @@
 #ifndef MDM_DCEMODELAUEM_HDR
 #define MDM_DCEMODELAUEM_HDR
 
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 
 #include "mdm_DCEModelBase.h"
 #include <vector>
-#include <mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 //! Implements the active-uptake and efflux model.
 class mdm_DCEModelAUEM : public mdm_DCEModelBase {
 public:

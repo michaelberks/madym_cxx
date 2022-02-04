@@ -2,7 +2,7 @@
 #include <boost/format.hpp>
 
 #include <iostream>
-#include <madym/mdm_AIF.h>
+#include <madym/dce/mdm_AIF.h>
 #include <madym/tests/mdm_test_utils.h>
 
 BOOST_AUTO_TEST_SUITE(test_mdm)

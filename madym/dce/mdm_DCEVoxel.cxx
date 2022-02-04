@@ -14,8 +14,8 @@
 
 #include <algorithm>
 
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_exception.h>
 
 const double mdm_DCEVoxel::Ca_BAD1 = -1.0e3;
 const double mdm_DCEVoxel::Ca_BAD2 = -2.0e3;
