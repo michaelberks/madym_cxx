@@ -39,6 +39,7 @@ endif()
 
 if (BUILD_WITH_DCMTK)
   target_link_libraries( mdm_image ${DCMTK_LIBRARIES})
+  target_link_directories( mdm_image PUBLIC ${DCMTK_LIBRARY_DIR})
 endif()
 
 if (BUILD_INSTALL)
