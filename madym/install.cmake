@@ -149,25 +149,6 @@ elseif (APPLE)
         COMPONENT Tools
         CONFIGURATIONS Release)
 
-    if (BUILD_QT_GUI)
-
-        # Copy the GUI dependencies to the commandline tools lib
-        install(CODE "
-            set(GUI_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app\")
-            "
-            COMPONENT Tools
-            CONFIGURATIONS Release)
-    
-        install(CODE [[
-            file(INSTALL
-                DESTINATION ${LIB_DEST}
-                FILES ${GUI_DEST}/Contents/Frameworks/QtCore.framework
-            )
-            ]]
-            COMPONENT Tools
-            CONFIGURATIONS Release)
-    endif ()
-
 #-------------------------------------------------------------------------
 #Linux
 elseif( UNIX )
@@ -248,27 +229,35 @@ if (APPLE)
         "Apple developer ID for certificate used to code sign Apple targets")
 
     install(CODE
-        "message(STATUS \"Code-signing cmd line tools using ID ${APPLE_CODESIGN_ID}\")
-        execute_process(COMMAND codesign -s 
+        "execute_process(COMMAND codesign --timestamp --options runtime -s 
             ${APPLE_CODESIGN_ID}
             \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DCE )
-        execute_process(COMMAND codesign -s 
-        ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DCE_lite )
-        execute_process(COMMAND codesign -s 
-        ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_T1 )
-        execute_process(COMMAND codesign -s 
-        ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_T1_lite )
-        execute_process(COMMAND codesign -s 
-        ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_AIF )
-        execute_process(COMMAND codesign -s 
-        ${APPLE_CODESIGN_ID}
-        \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_MakeXtr )"
+        execute_process(COMMAND codesign --timestamp --options runtime -s 
+            ${APPLE_CODESIGN_ID}
+            \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DCE_lite )            
+        execute_process(COMMAND codesign --timestamp --options runtime -s 
+            ${APPLE_CODESIGN_ID}
+            \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_T1 )
+        execute_process(COMMAND codesign --timestamp --options runtime -s 
+            ${APPLE_CODESIGN_ID}
+            \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_T1_lite )
+        execute_process(COMMAND codesign --timestamp --options runtime -s 
+            ${APPLE_CODESIGN_ID}
+            \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_AIF )
+        execute_process(COMMAND codesign --timestamp --options runtime -s 
+            ${APPLE_CODESIGN_ID}
+            \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_MakeXtr )"
         COMPONENT Tools
         CONFIGURATIONS Release)
+
+    if (BUILD_WITH_DCMTK)
+        install(CODE
+        "execute_process(COMMAND codesign --timestamp --options runtime -s 
+            ${APPLE_CODESIGN_ID}
+            \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DicomConvert )"
+        COMPONENT Tools
+        CONFIGURATIONS Release)
+        endif()
 
     #Sign all the binaries in the copied libs
     # Transfer the value of ${MY_DEPENDENCY_PATHS} into the install script
@@ -281,9 +270,10 @@ if (APPLE)
         LIST_DIRECTORIES false
         "${LIB_DEST}/*")
       foreach(lib_file ${lib_files})
-        execute_process(COMMAND codesign --force -s 
+        execute_process(COMMAND codesign --timestamp --options runtime --force -s 
           ${_id}
           ${lib_file} )
+          message(STATUS "Signing library ${lib_file} with ${_id}")
       endforeach()
       
      ]]
@@ -297,12 +287,28 @@ if (APPLE)
         install(CODE
             "execute_process(COMMAND ${MACDEPLOYQT_EXECUTABLE} 
                 \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app )
-            message(STATUS \"Code-signing GUI using ID ${APPLE_CODESIGN_ID}\")
-            execute_process(COMMAND codesign --deep -s 
+            execute_process(COMMAND codesign --timestamp --options runtime --deep --force -s 
                 ${APPLE_CODESIGN_ID}
                 \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app )"
         COMPONENT GUI
         CONFIGURATIONS Release)
+
+        # Copy the GUI dependencies to the commandline tools lib, need to do this after they're signed
+        install(CODE "
+            set(LIB_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/lib\")
+            set(GUI_DEST \"\${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_gui.app\")
+            "
+            COMPONENT GUI
+            CONFIGURATIONS Release)
+    
+        install(CODE [[
+            file(INSTALL
+                DESTINATION ${LIB_DEST}
+                FILES ${GUI_DEST}/Contents/Frameworks/QtCore.framework
+            )
+            ]]
+            COMPONENT GUI
+            CONFIGURATIONS Release)
      endif()
 endif()
 
@@ -314,7 +320,7 @@ if (BUILD_QT_GUI)
     if (WIN32)
         set(CPACK_GENERATOR "NSIS;ZIP")
     elseif(APPLE)
-        set(CPACK_GENERATOR "DragNDrop;TGZ")
+        set(CPACK_GENERATOR "TGZ;DragNDrop")
     elseif(UNIX)
         set(CPACK_GENERATOR "DEB;TGZ")
     endif ()
@@ -322,7 +328,7 @@ else()
     if (WIN32)
         set(CPACK_GENERATOR "ZIP")
     elseif(APPLE)
-        set(CPACK_GENERATOR "DragNDrop;TGZ")
+        set(CPACK_GENERATOR "TGZ;DragNDrop")
     elseif(UNIX)
         set(CPACK_GENERATOR "DEB;TGZ")
     endif ()
@@ -351,7 +357,7 @@ set(CPACK_PACKAGE_VERSION_MAJOR "${MADYM_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${MADYM_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${MADYM_VERSION_PATCH}")
 set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/madym/qt_gui/images/madym.png")
-set(CPACK_COMPONENTS_ALL Tools Libs Examples Python)
+set(CPACK_COMPONENTS_ALL Libs Tools Examples Python)
 
 if (WIN32)
        set(CPACK_COMPONENTS_ALL ${CPACK_COMPONENTS_ALL} Runtime)
@@ -376,7 +382,7 @@ endif ()
 if (BUILD_QT_GUI)
 
   #Add GUI to components list
-  set(CPACK_COMPONENTS_ALL GUI ${CPACK_COMPONENTS_ALL})
+  set(CPACK_COMPONENTS_ALL ${CPACK_COMPONENTS_ALL} GUI)
 
   #Windows
   if ( WIN32 )
