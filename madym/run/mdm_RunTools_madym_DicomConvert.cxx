@@ -1253,9 +1253,10 @@ void mdm_RunTools_madym_DicomConvert::makeDWIInputVols(
       auto img = loadDicomImage(seriesInfo, volumeInfo.fileNames, false, 0, volumeInfo.Bvalue, volumeInfo.gradOri);
 
       //Make output name
+      auto seq_start = volumeInfo.Bvalue ? options_.sequenceStart() : 0;
       auto outputName = mdm_SequenceNames::makeSequenceFilename(
         DWIDir.string(), BvalueName + "_orient_", i_v + 1, options_.sequenceFormat(),
-        options_.sequenceStart(), options_.sequenceStep());
+        seq_start, options_.sequenceStep());
 
       //Write the output image and xtr file
       mdm_ImageIO::writeImage3D(imageWriteFormat,

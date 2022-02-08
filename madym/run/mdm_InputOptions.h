@@ -282,8 +282,12 @@ struct mdm_InputOptions {
 		mdm_input_str(""), "data", "", "Input data filename, see notes for options"); //!< See initial value
 	mdm_input_double FA = mdm_input_double(
 		0, "FA", "", "FA of dynamic series"); //!< See initial value
-  mdm_input_doubles VFAs = mdm_input_doubles(
-    mdm_input_double_list(std::vector<double>{}), "VFAs", "", "FA of dynamic series"); //!< See initial value
+	mdm_input_doubles VFAs = mdm_input_doubles(
+		mdm_input_double_list(std::vector<double>{}), "VFAs", "", "Flip-angles of T1 mapping inputs"); //!< See initial value
+	mdm_input_doubles TIs = mdm_input_doubles(
+		mdm_input_double_list(std::vector<double>{}), "TIs", "", "Inversion times of T1 mapping inputs"); //!< See initial value
+	mdm_input_doubles Bvalues = mdm_input_doubles(
+		mdm_input_double_list(std::vector<double>{}), "Bvalues", "", "Bvalues of DWI model inputs"); //!< See initial value
 	mdm_input_double TR = mdm_input_double(
 		0, "TR", "", "TR of dynamic series"); //!< See initial value
 	mdm_input_string outputName = mdm_input_string(

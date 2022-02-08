@@ -27,7 +27,7 @@
 
 	Any new model implementations should be added to:
 	1) a new enum entry in ModelTypes
-	2) a new model name in implementedModels()
+	2) a new model name in models()
 	3) a new if else case in ParseModelName matching the name to the enum type
 	4) a new case in the switch statement of setModel
 
@@ -51,7 +51,7 @@ public:
 	/*!
 	\return List of implemented model names
 	*/
-	MDM_API static const std::vector<std::string> implementedModels()
+	MDM_API static const std::vector<std::string> models()
 	{
 		return {
 			toString(ADC),
@@ -73,7 +73,7 @@ public:
 		case ADC: return "ADC";
 		case ADC_linear: return "ADC-linear";
 		case IVIM: return "IVIM";
-		case IVIM_simple: return "IVIM_simple";
+		case IVIM_simple: return "IVIM-simple";
 		default:
 			throw mdm_exception(__func__, "DWI model " + std::to_string(modelType) + " not valid");
 		}
@@ -81,7 +81,7 @@ public:
 
 	//! Convert DWI model string to enum
 	/*
-	\param model string name of DWI mapping model, must be a member of implementedModels
+	\param model string name of DWI mapping model, must be a member of models
 	\return model enum DWI mapping model, UNSPECIFIED if model name not recognised
 	*/
 	MDM_API static DWImodels parseModelName(const std::string& model)

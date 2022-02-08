@@ -27,7 +27,7 @@
 
 	Any new model implementations should be added to:
 	1) a new enum entry in ModelTypes
-	2) a new model name in implementedModels()
+	2) a new model name in models()
 	3) a new if else case in ParseModelName matching the name to the enum type
 	4) a new case in the switch statement of setModel
 	
@@ -50,7 +50,7 @@ public:
   /*!
 	\return List of implemented model names
 	*/
-	MDM_API static const std::vector<std::string> implementedMethods()
+	MDM_API static const std::vector<std::string> methods()
 	{
 		return {
 	    toString(VFA),
@@ -78,7 +78,7 @@ public:
 
 	//! Convert T1 method string to enum
 	/*
-	\param method string name of T1 mapping method, must be a member of implementedMethods
+	\param method string name of T1 mapping method, must be a member of methods
 	\return method enum T1 mapping method, UNSPECIFIED if method name not recognised
 	*/
 	MDM_API static T1Methods parseMethodName(const std::string &method, bool B1Correction)

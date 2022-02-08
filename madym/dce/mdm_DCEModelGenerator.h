@@ -34,7 +34,7 @@
 
 	Any new model implementations should be added to:
 	1) a new enum entry in ModelTypes
-	2) a new model name in implementedModels()
+	2) a new model name in models()
 	3) a new if else case in ParseModelName matching the name to the enum type
 	4) a new case in the switch statement of setModel
 	
@@ -66,7 +66,7 @@ public:
 	* @brief Returns list of implemented model names
 	* @return List of implemented model names
 	*/
-	MDM_API static const std::vector<std::string> implementedModels()
+	MDM_API static const std::vector<std::string> models()
 	{
 		return {
 	"ETM",
@@ -85,7 +85,7 @@ public:
 
 	//! Convert model name from string to type enum
 	/*
-	\param modelName name of model, must be a member of implementedModels
+	\param modelName name of model, must be a member of models
 	\return enum model type, UNSPECIFIED if model name not recognised
 	*/
 	MDM_API static  ModelTypes ParseModelName(const std::string modelName)

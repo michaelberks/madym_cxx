@@ -48,11 +48,30 @@ MDM_API void mdm_RunTools_madym_MakeXtr::run()
   //Set curent working dir
   set_up_cwd();
 
-  if (options_.makeT1Inputs())
+  if (!options_.T1inputNames().empty())
     makeT1InputXtr();
 
-  if (options_.makeDyn())
+  if (options_.nDyns() > 0 )
     makeDynamicXtr();
+
+  if (!options_.DWIinputNames().empty())
+    makeDWIXtr();
+
+  if (options_.makeDyn())
+    mdm_ProgramLogger::logProgramMessage((boost::format(
+      "INFO: option %1% is now deprecated. Dynamic XTR files will be generated as long as %2% is > 0.") 
+      % options_.makeDyn.key() % options_.nDyns.key()).str());
+
+  if (options_.makeT1Inputs())
+    mdm_ProgramLogger::logProgramMessage((boost::format(
+      "INFO: option %1% is now deprecated. T1 XTR files will be generated as long as %2% is not empty.")
+      % options_.makeT1Inputs.key() % options_.T1inputNames.key()).str());
+
+  if (options_.makeDWIInputs())
+    mdm_ProgramLogger::logProgramMessage((boost::format(
+      "INFO: option %1% is now deprecated. DWI XTR files will be generated as long as %2% is not empty.")
+      % options_.makeDWIInputs.key() % options_.DWIinputNames.key()).str());
+  
 
   mdm_ProgramLogger::logProgramMessage("Finished processing!");
 }
@@ -74,6 +93,8 @@ MDM_API int mdm_RunTools_madym_MakeXtr::parseInputs(int argc, const char *argv[]
   options_parser_.add_option(config_options, options_.sequenceStep);
   options_parser_.add_option(config_options, options_.T1inputNames);
   options_parser_.add_option(config_options, options_.T1Dir);
+  options_parser_.add_option(config_options, options_.DWIinputNames);
+  options_parser_.add_option(config_options, options_.DWIDir);
   options_parser_.add_option(config_options, options_.nDyns);
   options_parser_.add_option(config_options, options_.T1method);
 
@@ -85,6 +106,8 @@ MDM_API int mdm_RunTools_madym_MakeXtr::parseInputs(int argc, const char *argv[]
   options_parser_.add_option(config_options, options_.TR);
   options_parser_.add_option(config_options, options_.FA);
   options_parser_.add_option(config_options, options_.VFAs);
+  options_parser_.add_option(config_options, options_.TIs);
+  options_parser_.add_option(config_options, options_.Bvalues);
 
   return options_parser_.parseInputs(
     cmdline_options,
@@ -96,7 +119,7 @@ MDM_API int mdm_RunTools_madym_MakeXtr::parseInputs(int argc, const char *argv[]
 
 MDM_API std::string mdm_RunTools_madym_MakeXtr::who() const
 {
-	return "madym_DicomConvert";
+	return "madym_MakeXtr";
 }
 
 //*******************************************************************************
@@ -146,6 +169,7 @@ void mdm_RunTools_madym_MakeXtr::makeT1InputXtr()
   switch (methodType)
   {
   case mdm_T1MethodGenerator::VFA: makeVFAXtr(); break;
+  case mdm_T1MethodGenerator::IR: makeVFAXtr(); break;
   default:
     throw mdm_exception(__func__, "T1 method not recognised");
   }
@@ -182,6 +206,42 @@ void mdm_RunTools_madym_MakeXtr::makeVFAXtr()
     mdm_Image3D img;
     img.info().flipAngle.setValue(FA);
     img.info().TR.setValue(TR);
+
+    mdm_XtrFormat::writeAnalyzeXtr(T1path.string(), img, mdm_XtrFormat::NEW_XTR);
+    mdm_ProgramLogger::logProgramMessage("Created T1 input XTR file " + T1path.string() + ".xtr");
+  }
+}
+
+//---------------------------------------------------------------------
+void mdm_RunTools_madym_MakeXtr::makeIRXtr()
+{
+  //Check required inputs are set
+  auto nInputs = options_.T1inputNames().size();
+
+  if (!nInputs)
+    throw mdm_exception(__func__, "T1 input names must be set");
+
+  if (nInputs != options_.TIs().size())
+    throw mdm_exception(__func__,
+      boost::format("Number of elements in TIs (%1%) does not match number input names (%2%)")
+      % options_.TIs().size() % nInputs);
+
+  auto TR = options_.TR();
+  auto FA = options_.FA();
+
+  for (size_t i_t1 = 0; i_t1 < nInputs; i_t1++)
+  {
+    auto T1path = fs::absolute(
+      fs::path(options_.T1Dir()) / options_.T1inputNames()[i_t1]);
+    T1path.replace_extension();
+
+    auto TI = options_.TIs()[i_t1];
+
+    //Set up mean image
+    mdm_Image3D img;
+    img.info().flipAngle.setValue(FA);
+    img.info().TR.setValue(TR);
+    img.info().TI.setValue(TI);
 
     mdm_XtrFormat::writeAnalyzeXtr(T1path.string(), img, mdm_XtrFormat::NEW_XTR);
     mdm_ProgramLogger::logProgramMessage("Created T1 input XTR file " + T1path.string() + ".xtr");
@@ -232,5 +292,45 @@ void mdm_RunTools_madym_MakeXtr::makeDynamicXtr()
 
     mdm_XtrFormat::writeAnalyzeXtr(outputName, img, mdm_XtrFormat::NEW_XTR);
     mdm_ProgramLogger::logProgramMessage("Created dynamic XTR file " + outputName + ".xtr");
+  }
+}
+
+//---------------------------------------------------------------------
+void mdm_RunTools_madym_MakeXtr::makeDWIXtr()
+{
+  //Check required inputs are set
+  auto nInputs = options_.DWIinputNames().size();
+
+  if (!nInputs)
+    throw mdm_exception(__func__, "DWI input names must be set");
+
+  if (nInputs != options_.Bvalues().size())
+    throw mdm_exception(__func__,
+      boost::format("Number of elements in Bvalues (%1%) does not match number input names (%2%)")
+      % options_.Bvalues().size() % nInputs);
+
+  auto TR = options_.TR();
+  auto FA = options_.FA();
+
+  for (size_t i_b = 0; i_b < nInputs; i_b++)
+  {
+    auto DWIpath = fs::absolute(
+      fs::path(options_.DWIDir()) / options_.DWIinputNames()[i_b]);
+    DWIpath.replace_extension();
+
+    auto B = options_.Bvalues()[i_b];
+
+    //Set up mean image
+    mdm_Image3D img;
+    img.info().B.setValue(B);
+
+    if (FA)
+      img.info().flipAngle.setValue(FA);
+    if (TR)
+      img.info().TR.setValue(TR);
+    
+
+    mdm_XtrFormat::writeAnalyzeXtr(DWIpath.string(), img, mdm_XtrFormat::NEW_XTR);
+    mdm_ProgramLogger::logProgramMessage("Created DWI input XTR file " + DWIpath.string() + ".xtr");
   }
 }

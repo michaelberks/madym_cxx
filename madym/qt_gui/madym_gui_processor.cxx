@@ -10,12 +10,13 @@
 #include <madym/run/mdm_RunTools_madym_T1.h>
 #include <madym/run/mdm_RunTools_madym_DCE.h>
 #include <madym/run/mdm_RunTools_madym_AIF.h>
+#include <madym/run/mdm_RunTools_madym_DWI.h>
+#include <madym/run/mdm_RunTools_madym_DWI.h>
+#include <madym/run/mdm_RunTools_madym_DicomConvert.h>
+#include <madym/run/mdm_RunTools_madym_MakeXtr.h>
+
 
 static const std::string GUI = "_GUI";
-
-//  Class that pops an image from the processing queue, performs any
-//  necessary processing on the frame, and places it on the save queue for
-//  the saver to deal with.
  
 //
 // Public methods
@@ -49,6 +50,21 @@ void madym_gui_processor::set_madym_exe(RunType type)
   case RunType::DCE:
   {
     madym_exe_.reset(new mdm_RunTools_madym_DCE());
+    break;
+  }
+  case RunType::DWI:
+  {
+    madym_exe_.reset(new mdm_RunTools_madym_DWI());
+    break;
+  }
+  case RunType::DICOM:
+  {
+    madym_exe_.reset(new mdm_RunTools_madym_DicomConvert());
+    break;
+  }
+  case RunType::XTR:
+  {
+    madym_exe_.reset(new mdm_RunTools_madym_MakeXtr());
     break;
   }
   }

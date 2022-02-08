@@ -66,7 +66,13 @@ private:
   void makeVFAXtr();
 
   //
+  void makeIRXtr();
+
+  //
   void makeDynamicXtr();
+
+  //
+  void makeDWIXtr();
 
   //
   void readDynamicTimes();

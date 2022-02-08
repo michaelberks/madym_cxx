@@ -78,6 +78,9 @@ private slots:
 	void on_computeT1Button_clicked();
 	void on_computeIFButton_clicked();
   void on_fitModelButton_clicked();
+  void on_dwiModelButton_clicked();
+  void on_dicomButton_clicked();
+  void on_xtrButton_clicked();
 
   //Buttons in run window
   void on_loadConfigButton_clicked();
@@ -180,6 +183,12 @@ private slots:
   void on_residualsLineEdit_textChanged(const QString &text);
   void on_residualsSelect_clicked();
 
+  //DWI model options
+  void on_dwiModelComboBox_currentIndexChanged(const QString& text);
+  void on_dwiInputTextEdit_textChanged();
+  void on_bThresholdsLineEdit_textChanged(const QString& text);
+  void on_dwiInputSelect_clicked();
+
   //Log window
   void on_clearLogButton_clicked();
 
@@ -194,13 +203,28 @@ private: // Methods
 
   void initialize_processor_thread();
   void connect_signals_to_slots();
+
+  void setup_general_tab(bool show);
+  void setup_logging_tab(bool show);
+  void setup_DCE_data_tab(bool show);
+  void setup_conc_tab(bool show);
+  void setup_t1_mapping_tab(bool show);
+  void setup_DWI_model_tab(bool show);
+  void setup_DCE_model_tab(bool show);
+  void setup_IF_tab(bool show);
+  void setup_AIF_detection_tab(bool show);
+  void setup_fitting_tab(bool show);
+
   void initialize_widget_values();
+
   void initialize_model_options();
   void initialize_T1_options();
   void initialize_AIF_options();
+  void initialize_DWI_options();
   void initialize_image_format_options(QComboBox &b);
   void initialize_optimisation_options();
   void set_AIF_enabled();
+  void set_BValsThresholds_enabled();
   bool check_required_options();
   void setB1Name(const QString &text);
   void makeB1Consistent(bool useB1);
