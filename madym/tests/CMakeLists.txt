@@ -25,6 +25,7 @@ add_executable( test_mdm
   test_DCE_fit.cxx
   test_summaryStats.cxx
   test_volumeAnalysis.cxx
+  test_DWI.cxx
   test_mdm_exception.cxx
 )
 

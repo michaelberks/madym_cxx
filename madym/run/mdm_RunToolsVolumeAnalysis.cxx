@@ -12,8 +12,8 @@
 
 #include "mdm_RunToolsVolumeAnalysis.h"
 
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_exception.h>
 
 namespace fs = boost::filesystem;
 
@@ -172,12 +172,6 @@ void mdm_RunToolsVolumeAnalysis::mapT1()
   volumeAnalysis_.T1Mapper().setMethod(methodType);
   volumeAnalysis_.T1Mapper().setNoiseThreshold(options_.T1noiseThresh());
   volumeAnalysis_.T1Mapper().mapT1();
-}
-
-MDM_API void mdm_RunToolsVolumeAnalysis::writeOutput()
-{
-  fileManager_.saveOutputMaps(outputPath_.string(),
-    options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
 }
 
 //

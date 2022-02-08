@@ -3,10 +3,10 @@
 
 #include <iostream>
 #include <vector>
-#include <madym/mdm_Image3D.h>
+#include <madym/utils/mdm_Image3D.h>
 #include <madym/tests/mdm_test_utils.h>
-#include <madym/mdm_VolumeAnalysis.h>
-#include <madym/dce_models/mdm_DCEModelGenerator.h>
+#include <madym/run/mdm_VolumeAnalysis.h>
+#include <madym/dce/mdm_DCEModelGenerator.h>
 
 BOOST_AUTO_TEST_SUITE(test_mdm)
 

@@ -2,8 +2,8 @@
 * @file madym_T1.cxx
 * Standalone T1 calculator, reads in analyze format image volumes
 * and computes a volumetric map of T1 values. The aim is to
-* support all commonly used methods for calculating T1, however
-* currently only the variable flip-angle method is implemented.
+* support all commonly used methods for calculating T1, currently
+* the variable flip-angle and inversion recovery methods are implemented.
 *
 * @author   MA Berks (c) Copyright QBI Lab, University of Manchester 2020
 * @brief    Madym's command-line program for mapping T1 from inout images

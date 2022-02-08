@@ -3,8 +3,8 @@
 
 #include <iostream>
 #include <vector>
-#include <madym/mdm_Image3D.h>
-#include <madym/mdm_ParamSummaryStats.h>
+#include <madym/utils/mdm_Image3D.h>
+#include <madym/run/mdm_ParamSummaryStats.h>
 #include <madym/tests/mdm_test_utils.h>
 
 BOOST_AUTO_TEST_SUITE(test_mdm)

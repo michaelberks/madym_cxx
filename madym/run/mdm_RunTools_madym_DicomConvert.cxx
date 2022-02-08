@@ -15,10 +15,10 @@
 #include <madym/image_io/dicom/mdm_DicomFormat.h>
 #include <madym/image_io/xtr/mdm_XtrFormat.h>
 #include <madym/image_io/mdm_ImageIO.h>
-#include <madym/mdm_Image3D.h>
-#include <madym/mdm_SequenceNames.h>
+#include <madym/utils/mdm_Image3D.h>
+#include <madym/utils/mdm_SequenceNames.h>
 
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_exception.h>
 
 #include <string>
 #include <vector>
@@ -77,6 +77,9 @@ MDM_API void mdm_RunTools_madym_DicomConvert::run()
   if (options_.makeDyn())
     makeDynamicVols(seriesInfo_);
 
+  if (options_.makeDWIInputs())
+    makeDWIInputs(seriesInfo_);
+
   if (options_.makeSingle())
     makeSingleVol(seriesInfo_);
 }
@@ -102,7 +105,11 @@ MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *a
   //T1 input naming
   options_parser_.add_option(config_options, options_.T1inputNames);
   options_parser_.add_option(config_options, options_.T1Dir);
-  
+
+  //DWI naming
+  options_parser_.add_option(config_options, options_.DWIinputNames);
+  options_parser_.add_option(config_options, options_.DWIDir);
+
   //General naming
   options_parser_.add_option(config_options, options_.sequenceFormat);
   options_parser_.add_option(config_options, options_.sequenceStart);
@@ -115,19 +122,23 @@ MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *a
   options_parser_.add_option(config_options, options_.imageDataType);
   options_parser_.add_option(config_options, options_.flipX);
   options_parser_.add_option(config_options, options_.flipY);
+  options_parser_.add_option(config_options, options_.flipZ);
 
   //Dicom options
   options_parser_.add_option(config_options, options_.dicomDir);
   options_parser_.add_option(config_options, options_.dicomSort);
   options_parser_.add_option(config_options, options_.dicomSeriesFile);
   options_parser_.add_option(config_options, options_.makeT1Inputs);
+  options_parser_.add_option(config_options, options_.makeDWIInputs);
   options_parser_.add_option(config_options, options_.T1inputSeries);
+  options_parser_.add_option(config_options, options_.DWIinputSeries);
   options_parser_.add_option(config_options, options_.makeDyn);
   options_parser_.add_option(config_options, options_.makeSingle);
   options_parser_.add_option(config_options, options_.dynSeries);
   options_parser_.add_option(config_options, options_.singleSeries);
   options_parser_.add_option(config_options, options_.makeT1Means);
   options_parser_.add_option(config_options, options_.makeDynMean);
+  options_parser_.add_option(config_options, options_.makeBvalueMeans);
   options_parser_.add_option(config_options, options_.dicomFileFilter);
   options_parser_.add_option(config_options, options_.volumeName);
 
@@ -137,10 +148,30 @@ MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *a
   options_parser_.add_option(config_options, options_.dicomScale);
   options_parser_.add_option(config_options, options_.dicomOffset);
 
+  //Dicom scanner settings
+  options_parser_.add_option(config_options, options_.FATag);
+  options_parser_.add_option(config_options, options_.FARequired);
+
+  options_parser_.add_option(config_options, options_.TRTag);
+  options_parser_.add_option(config_options, options_.TRRequired);
+
+  options_parser_.add_option(config_options, options_.TITag);
+  options_parser_.add_option(config_options, options_.TIRequired);
+
+  options_parser_.add_option(config_options, options_.TETag);
+  options_parser_.add_option(config_options, options_.TERequired);
+
+  options_parser_.add_option(config_options, options_.BTag);
+  options_parser_.add_option(config_options, options_.BRequired);
+
+  options_parser_.add_option(config_options, options_.gradOriTag);
+  options_parser_.add_option(config_options, options_.gradOriRequired);
+
   //Dicom options - time
   options_parser_.add_option(config_options, options_.dynTimeTag);
+  options_parser_.add_option(config_options, options_.dynTimeRequired);
   options_parser_.add_option(config_options, options_.temporalResolution);
-
+  
   //Logging options_
   options_parser_.add_option(config_options, options_.noLog);
   options_parser_.add_option(config_options, options_.noAudit);
@@ -272,6 +303,57 @@ std::vector<std::string> mdm_RunTools_madym_DicomConvert::getFileList(fs::path d
   return files;
 }
 
+void mdm_RunTools_madym_DicomConvert::getScannerSetting(
+  DcmFileFormat& fileFormat,
+  const std::string& seriesName,
+  const std::string&settingName, 
+  const mdm_input_string& customTag,
+  const DcmTagKey& defaultTag, 
+  const bool required, 
+  double& setting)
+{
+  DcmTagKey tagKey;
+  if (customTag().empty())
+    tagKey = defaultTag;
+  else
+    setDicomTag(customTag, tagKey);
+
+  try { setting = mdm_DicomFormat::getNumericField(fileFormat, tagKey); }
+  catch (mdm_DicomMissingFieldException) {
+    if (required)
+      mdm_ProgramLogger::logProgramWarning(__func__,
+        (boost::format(
+          "Series %1% missing %2% expected in field %3%."
+        ) % seriesName % settingName % tagKey.toString()).str());
+  };
+}
+
+void mdm_RunTools_madym_DicomConvert::getScannerSetting(
+  DcmFileFormat& fileFormat,
+  const std::string& seriesName,
+  const std::string& settingName,
+  const mdm_input_string& customTag,
+  const DcmTagKey& defaultTag,
+  const bool required,
+  std::vector<double>& setting, 
+  size_t numValues)
+{
+  DcmTagKey tagKey;
+  if (customTag().empty())
+    tagKey = defaultTag;
+  else
+    setDicomTag(customTag, tagKey);
+
+  try { setting = mdm_DicomFormat::getNumericVector(fileFormat, tagKey, numValues); }
+  catch (mdm_DicomMissingFieldException) {
+    if (required)
+      mdm_ProgramLogger::logProgramWarning(__func__,
+        (boost::format(
+          "Series %1% missing %2% expected in field %3%."
+        ) % seriesName % settingName % tagKey.toString()).str());
+  };
+}
+
 //-----------------------------------------------------------------
 void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series, int nDyns)
 {
@@ -307,55 +389,33 @@ void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series, 
   series.Ymm = pixelSpacing[1];
   getNumericInfo(fileformat, DCM_SliceThickness, series.Zmm);
 
-  bool FA_required = true;
-  bool TR_required = true;
-  bool TI_required = false;
-  bool TE_required = true;
-  bool B_required = false;
-  bool gradOri_required = false;
-  bool time_required = true;
+  getScannerSetting(
+    fileformat, series.name, "FA", options_.FATag, 
+    DCM_FlipAngle, options_.FARequired(), series.FA);
 
-  try { series.FA = mdm_DicomFormat::getNumericField(fileformat, DCM_FlipAngle); }
-  catch (mdm_DicomMissingFieldException ) {
-    if (FA_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_FlipAngle field");
-  };
+  getScannerSetting(
+    fileformat, series.name, "TR", options_.TRTag, 
+    DCM_RepetitionTime, options_.TRRequired(), series.TR);
 
-  try { series.TR = mdm_DicomFormat::getNumericField(fileformat, DCM_RepetitionTime); }
-  catch (mdm_DicomMissingFieldException ) {
-    if (TR_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_RepetitionTime field");
-  };
+  getScannerSetting(
+    fileformat, series.name, "TI", options_.TITag, 
+    DCM_InversionTime, options_.TIRequired(), series.TI);
 
-  try { series.TI = mdm_DicomFormat::getNumericField(fileformat, DCM_InversionTime);}
-  catch (mdm_DicomMissingFieldException ) {
-    if (TI_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_InversionTime field");
-  };
+  getScannerSetting(
+    fileformat, series.name, "TE", options_.TETag, 
+    DCM_EchoTime, options_.TERequired(), series.TE);
 
-  try {series.TE = mdm_DicomFormat::getNumericField(fileformat, DCM_EchoTime);}
-  catch (mdm_DicomMissingFieldException ) {
-    if (TE_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_EchoTime field");
-  };
+  getScannerSetting(
+    fileformat, series.name, "B", options_.BTag, 
+    DCM_DiffusionBValue, options_.BRequired(), series.B);
 
-  try { series.B = mdm_DicomFormat::getNumericField(fileformat, DCM_DiffusionBValue); }
-  catch (mdm_DicomMissingFieldException) {
-    if (B_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_DiffusionBValue field");
-  };
+  getScannerSetting(
+    fileformat, series.name, "gradientOrientation", options_.gradOriTag, 
+    DCM_DiffusionGradientOrientation, options_.gradOriRequired(), series.gradOri);
 
-  try { series.gradOri = mdm_DicomFormat::getNumericField(fileformat, DCM_DiffusionGradientOrientation); }
-  catch (mdm_DicomMissingFieldException) {
-    if (gradOri_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_DiffusionGradientOrientation field");
-  }
-
-  try {series.acquisitionTime = mdm_DicomFormat::getNumericField(fileformat, DCM_AcquisitionTime);}
-  catch (mdm_DicomMissingFieldException) {
-    if (time_required)
-      mdm_ProgramLogger::logProgramWarning(__func__, "Series " + series.name + " missing DCM_AcquisitionTime field");
-  };
+  getScannerSetting(
+    fileformat, series.name, "acquisitionTime", options_.dynTimeTag,
+    DCM_DiffusionGradientOrientation, options_.dynTimeRequired(), series.acquisitionTime);
 }
 
 //-----------------------------------------------------------------
@@ -603,9 +663,15 @@ void mdm_RunTools_madym_DicomConvert::sortDicomDir()
       if (!status.good())
         throw mdm_exception(__func__, "Unable to open " + filename[0]);
 
-      auto seriesName = mdm_DicomFormat::getTextField(fileformat, DCM_SeriesDescription);
-      if (seriesName.empty())
+      std::string seriesName;
+      try
+      {
+        seriesName = mdm_DicomFormat::getTextField(fileformat, DCM_SeriesDescription);
+      }
+      catch (mdm_DicomMissingFieldException)
+      {
         seriesName = mdm_DicomFormat::getTextField(fileformat, DCM_ProtocolName);
+      }
 
       //Create a series info struct and push onto the seriesInfo container
       dcmSeriesInfo series;
@@ -640,13 +706,22 @@ void mdm_RunTools_madym_DicomConvert::sortDicomDir()
 
  //---------------------------------------------------------------------
 mdm_Image3D mdm_RunTools_madym_DicomConvert::loadDicomImage(
-  const dcmSeriesInfo &series, const int startIdx,
+  const dcmSeriesInfo& series, const int startIdx,
   bool isDynamic, int dynNum)
 {
   //Get vector filenames for this slice
   std::vector<std::string> sliceNames(series.filenames.begin() + startIdx,
     series.filenames.begin() + startIdx + series.nZ);
 
+  return loadDicomImage(series, sliceNames, isDynamic, dynNum);
+}
+
+//---------------------------------------------------------------------
+mdm_Image3D mdm_RunTools_madym_DicomConvert::loadDicomImage(const dcmSeriesInfo& series,
+  const std::vector<std::string>& sliceNames,
+  bool isDynamic, int dynNum,
+  double Bvalue, const std::vector<double> gradOri)
+{
   DcmFileFormat fileformat;
   OFCondition status = fileformat.loadFile(sliceNames[0].c_str());
   if (!status.good())
@@ -657,13 +732,13 @@ mdm_Image3D mdm_RunTools_madym_DicomConvert::loadDicomImage(
   double scale = options_.dicomScale();
   applyAutoScaling(fileformat, offset, scale);
 
-  std::vector<size_t> dimensions = { (size_t)series.nX, (size_t)series.nY, (size_t)series.nZ };
+  std::vector<size_t> dimensions = { (size_t)series.nX, (size_t)series.nY, sliceNames.size() };
   std::vector <double> pixelSpacing = { series.Xmm, series.Ymm, series.Zmm };
 
   //Make the image from the filenames
   auto img = mdm_DicomFormat::loadImageFromDicomSlices(
     dimensions, pixelSpacing, sliceNames, offset, scale,
-    options_.flipX(), options_.flipY());
+    options_.flipX(), options_.flipY(), options_.flipZ());
 
   //Now set meta data from DICOM fields
   if (series.FA)
@@ -674,9 +749,15 @@ mdm_Image3D mdm_RunTools_madym_DicomConvert::loadDicomImage(
     img.info().TE.setValue(series.TE);
   if (series.TI)
     img.info().TI.setValue(series.TI);
-  if (series.B)
-    img.info().B.setValue(series.B);
 
+  if (Bvalue >= 0)
+  {
+    img.info().B.setValue(Bvalue);
+    img.info().gradOriX.setValue(gradOri[0]);
+    img.info().gradOriY.setValue(gradOri[1]);
+    img.info().gradOriZ.setValue(gradOri[2]);
+  }
+    
   double acquisitionTime = isDynamic ?
     getDynamicTime(fileformat, dynNum) :
     series.acquisitionTime;
@@ -933,7 +1014,7 @@ void mdm_RunTools_madym_DicomConvert::makeT1InputVols(
   checkAutoScaling();
 
   auto nInputs = options_.T1inputSeries().size();
-  assert(nInputs = options_.T1inputNames().size());
+  assert(nInputs == options_.T1inputNames().size());
 
   auto imageWriteFormat = mdm_ImageIO::formatFromString(options_.imageWriteFormat());
   auto imageDatatype = static_cast<mdm_ImageDatatypes::DataType>(options_.imageDataType());
@@ -997,6 +1078,211 @@ void mdm_RunTools_madym_DicomConvert::makeT1InputVols(
       mdm_ImageIO::writeImage3D(imageWriteFormat,
         meanName, meanImg, imageDatatype, mdm_XtrFormat::NEW_XTR);
       mdm_ProgramLogger::logProgramMessage("Created mean T1 input file " + meanName);
+    }
+  }
+}
+
+//---------------------------------------------------------------------
+std::vector<mdm_RunTools_madym_DicomConvert::DWIBvalueVolumes>
+  mdm_RunTools_madym_DicomConvert::sortDWI(const dcmSeriesInfo &seriesInfo)
+{
+  //Set-up container for info on each B-value/gradient combo
+  std::vector<DWIBvalueVolumes> DWIBvalueList;
+
+  //Loop through each file in series, assigning to unique combos
+  //of B-value and gradient orientation. We can assume filenames are already
+  //sorted by slice-location
+  auto nImages = seriesInfo.numericInfo.size();
+  for (size_t i_im = 0; i_im < nImages; i_im++)
+  {
+    const auto& file = seriesInfo.filenames[i_im];
+
+    DcmFileFormat fileformat;
+    OFCondition status = fileformat.loadFile(file.c_str());
+
+    if (!status.good())
+      mdm_ProgramLogger::logProgramWarning(__func__,
+        file + ": cannot read DICOM file (" + status.text() + ")");
+
+    //Get B-value and gradient orientation
+    double Bvalue;
+    getScannerSetting(
+      fileformat, seriesInfo.name, "B-value", options_.BTag,
+      DCM_DiffusionBValue, true, Bvalue);
+
+    std::vector<double> gradOri;
+    getScannerSetting(
+      fileformat, seriesInfo.name, "gradientOrientation", options_.gradOriTag,
+      DCM_DiffusionGradientOrientation, true, gradOri, 3);
+
+    //Check if this B-value/gradient already found, and if so, and this filename
+    // to the matched DWI volume info
+    auto createNew = true;
+    for (auto& BvalueInfo : DWIBvalueList)
+    {
+      if (Bvalue == BvalueInfo.Bvalue)
+      {
+        for (auto& volumeInfo : BvalueInfo.volumes)
+        {
+          if (gradOri == volumeInfo.gradOri)
+          {
+            volumeInfo.fileNames.push_back(file);
+            createNew = false;
+            break;
+          }
+        }
+        
+        if (createNew)
+        {
+          //B-value matched, but new orientation
+          DWIvolumeInfo volumeInfo;
+          volumeInfo.fileNames.push_back(file);
+          volumeInfo.Bvalue = Bvalue;
+          volumeInfo.gradOri = gradOri;
+          BvalueInfo.volumes.push_back(volumeInfo);
+          createNew = false;
+        }
+      }
+    }
+
+    //New B-value
+    if (createNew)
+    {
+      //Create a new B-value info struct
+      DWIBvalueVolumes BvalueInfo;
+      BvalueInfo.Bvalue = Bvalue;
+
+      //Create a new grad volumes struct and add this to B-value struct
+      DWIvolumeInfo volumeInfo;
+      volumeInfo.fileNames.push_back(file);
+      volumeInfo.Bvalue = Bvalue;
+      volumeInfo.gradOri = gradOri;
+      BvalueInfo.volumes.push_back(volumeInfo);
+
+      //Add the new Bvalue info to the main list
+      DWIBvalueList.push_back(BvalueInfo);
+    }  
+  }
+
+  //Check we've sorted into a valid sequence
+  if (!checkDWIsortValid(DWIBvalueList))
+    throw mdm_exception(__func__, boost::format(
+      "DWI series %1% was not sorted properly. Check the series log files"
+    ) % seriesInfo.name);
+
+  //Otherwise return the volume info
+  return DWIBvalueList;
+  
+}
+
+//---------------------------------------------------------------------
+bool mdm_RunTools_madym_DicomConvert::checkDWIsortValid(const std::vector<DWIBvalueVolumes>& DWIBvalueList)
+{
+  //All volumes should have the same number of slices
+  size_t nSlices = 0 ;
+  for (const auto & BValueInfo : DWIBvalueList)
+  {
+    for (const auto volumeInfo : BValueInfo.volumes)
+    {
+      if (!nSlices)
+        nSlices = volumeInfo.fileNames.size();
+
+      else if (volumeInfo.fileNames.size() != nSlices)
+        return false;
+    }
+    
+
+  }
+  return true;
+}
+
+//---------------------------------------------------------------------
+void mdm_RunTools_madym_DicomConvert::makeDWIInputs(
+  const std::vector<dcmSeriesInfo>& seriesInfo)
+{
+  auto nInputs = options_.DWIinputSeries().size();
+  assert(nInputs == options_.DWIinputNames().size());
+
+  for (size_t i_dwi = 0; i_dwi < nInputs; i_dwi++)
+  {
+    const auto& DWIName = options_.DWIinputNames()[i_dwi];
+    const auto& index = options_.DWIinputSeries()[i_dwi] - 1;
+
+    if (index < 0 || index >= seriesInfo.size())
+      throw mdm_exception(__func__,
+        boost::format("DWI input series index (%1%) must be >= 0 and < %2%")
+        % index % seriesInfo.size());
+
+    makeDWIInputVols(seriesInfo[index], DWIName);
+  }
+    
+}
+
+//---------------------------------------------------------------------
+void mdm_RunTools_madym_DicomConvert::makeDWIInputVols(
+  const dcmSeriesInfo& seriesInfo, const std::string& basename)
+{
+  checkAutoScaling();
+
+  //Get list of filenames sorted in unique combos of B-value and orientation
+ auto DWIBvalueList = sortDWI(seriesInfo);
+
+  //Get read and write format
+  auto imageWriteFormat = mdm_ImageIO::formatFromString(options_.imageWriteFormat());
+  auto imageDatatype = static_cast<mdm_ImageDatatypes::DataType>(options_.imageDataType());
+
+  //Loop over each B-value/Gradient orientation combo
+  for (const auto BvalueInfo : DWIBvalueList)
+  {
+
+    //Set up mean image
+    mdm_Image3D meanImg;
+
+    //Make B-value basename
+    auto BvalueName = (boost::format("%1%_%2%") % basename % int(BvalueInfo.Bvalue)).str();
+
+    //Set up output directory - outpath is already absolute
+    fs::path DWIDir = fs::path(options_.DWIDir()) / fs::path(BvalueName);
+    fs::create_directories(DWIDir);
+    
+
+    auto nVolumes = BvalueInfo.volumes.size();
+    for (size_t i_v = 0; i_v < nVolumes; i_v++)
+    {
+      const auto volumeInfo = BvalueInfo.volumes[i_v];
+      auto img = loadDicomImage(seriesInfo, volumeInfo.fileNames, false, 0, volumeInfo.Bvalue, volumeInfo.gradOri);
+
+      //Make output name
+      auto seq_start = volumeInfo.Bvalue ? options_.sequenceStart() : 0;
+      auto outputName = mdm_SequenceNames::makeSequenceFilename(
+        DWIDir.string(), BvalueName + "_orient_", i_v + 1, options_.sequenceFormat(),
+        seq_start, options_.sequenceStep());
+
+      //Write the output image and xtr file
+      mdm_ImageIO::writeImage3D(imageWriteFormat,
+        outputName, img, imageDatatype, mdm_XtrFormat::NEW_XTR);
+      mdm_ProgramLogger::logProgramMessage("Created DWI input file " + outputName);
+
+      if (options_.makeBvalueMeans())
+      {
+        if (!i_v)
+          meanImg = img;
+
+        else
+          meanImg += img;
+      }
+
+    }
+
+    if (options_.makeBvalueMeans())
+    {
+      //Finalise the mean image
+      meanImg /= nVolumes;
+      auto meanName = (boost::format("%1%%2%") % DWIDir.string() % options_.meanSuffix()).str();
+
+      mdm_ImageIO::writeImage3D(imageWriteFormat,
+        meanName, meanImg, imageDatatype, mdm_XtrFormat::NEW_XTR);
+      mdm_ProgramLogger::logProgramMessage("Created mean DWI input file " + meanName);
     }
   }
 }

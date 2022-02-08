@@ -12,8 +12,8 @@
 
 #include "mdm_RunTools_madym_AIF.h"
 
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_exception.h>
 
 #include <algorithm>
 #include <numeric>
@@ -92,13 +92,10 @@ MDM_API void mdm_RunTools_madym_AIF::run()
     //Otherwise, try and auto-fit the AIF
     computeAutoAIF();
 
-  //Save the error tracker
-  fileManager_.saveErrorTracker(outputPath_.string(),
-    volumeAnalysis_.MAP_NAME_ERROR_TRACKER);
-
-  //Save an ROI if used
-  fileManager_.saveROI(outputPath_.string(),
-    volumeAnalysis_.MAP_NAME_ROI);
+  //Write outputs
+  fileManager_.saveGeneralOutputMaps(outputPath_.string());
+  fileManager_.saveDynamicOutputMaps(outputPath_.string(),
+      options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
 
   //Reset the volume analysis
   volumeAnalysis_.reset();

@@ -10,7 +10,7 @@
 
 #include <QObject>
 
-#include <mdm_RunTools.h>
+#include <madym/run/mdm_RunTools.h>
 
 //!Class for GUI processing tasks that runs in separate thread to main GUI
 class madym_gui_processor : public QObject
@@ -24,7 +24,10 @@ public:
   enum RunType {
     T1, //!< T1 mapping
     AIF, //!< AIF detection
-    DCE //!< DCE tracer-kinetic model fitting
+    DCE, //!< DCE tracer-kinetic model fitting
+    DWI, //!< Diffusion model fitting
+    DICOM, //!< Converting Diocm files
+    XTR //!< Making XTR files
   };
 
 	madym_gui_processor();

@@ -6,7 +6,7 @@ import warnings
 import subprocess
 import numpy as np
 
-from QbiMadym.utils import local_madym_root
+from QbiMadym.utils import local_madym_root, add_option
 
 def run(
     config_file:str=None,
@@ -17,10 +17,11 @@ def run(
     T1_vols:list = None,
     T1_method:str = None,
     dynamic_basename:str = None,
+    dyn_dir:str = None,
     sequence_format:str = None,
     sequence_start:str = None,
     sequence_step:str = None,
-    n_dyns:int = 0,
+    n_dyns:int = None,
     input_Ct:bool = None,
     output_Ct_sig:bool = None,
     output_Ct_mod:bool = None,
@@ -108,6 +109,8 @@ def run(
             Method used for T1 mapping eg. VFA
         dynamic_basename : str default None, 
             Template name for dynamic sequences eg. dynamic/dyn_
+        dyn_dir : str default None, 
+            Folder containing dynamic volumes, can be omitted if inlcuded in dynamic_basename
         sequence_format : str default None, 
             Format for converting dynamic series index to string, eg %01u
         sequence_start : int default None, 
@@ -270,207 +273,144 @@ def run(
     #Set up initial cmd string
     cmd_args = [cmd_exe]
     
-    if config_file:
-        cmd_args += ['-c', config_file]
+    #Check if a config file exists
+    add_option('string', cmd_args, '--config', config_file)
 
-    if model:
-        cmd_args += ['-m', model]
-    
-    if output_dir:
-        cmd_args += ['-o', output_dir] 
+    #Set the working dir
+    add_option('string', cmd_args, '--cwd', working_directory)
+
+    #Set TK model
+    add_option('string', cmd_args, '-m', model)
+
+    #Set output directory
+    add_option('string', cmd_args, '-o', output_dir)
 
     #Set the dynamic names
-    if dynamic_basename:
-        cmd_args += ['--dyn', dynamic_basename]
+    add_option('string', cmd_args, '-d', dynamic_basename)
 
-    if sequence_format:
-        cmd_args += ['--sequence_format', sequence_format]
+    add_option('string', cmd_args, '--dyn_dir', dyn_dir)
 
-    if sequence_start is not None:
-        cmd_args += ['--sequence_start', str(sequence_start)]
+    #Set the format
+    add_option('string', cmd_args, '--sequence_format', sequence_format)
 
-    if sequence_step is not None:
-        cmd_args += ['--sequence_step', str(sequence_step)]
+    add_option('int', cmd_args, '--sequence_start', sequence_start)
 
-    if n_dyns > 0:
-        cmd_args += ['-n', str(n_dyns)]
+    add_option('int', cmd_args, '--sequence_step', sequence_step)
 
-    if input_Ct is not None:
-        cmd_args += ['--Ct', str(int(input_Ct))]
-        
-    #T1/M0 options to load from maps
-    if T1_name:
-        cmd_args += ['--T1', T1_name]
-                    
-    #And if we're not using the ratio method, an M0 map
-    if M0_ratio is not None:
-        cmd_args += ['--M0_ratio', str(int(M0_ratio))]
+    #Set the number of dynamics
+    add_option('int', cmd_args, '--n_dyns', n_dyns)
 
-    if M0_name:
-        cmd_args += ['--M0', M0_name]
+    #Set image formats
+    add_option('string', cmd_args, '--img_fmt_r', img_fmt_r)
 
-    #T1 method to compute from signal inputs
-    if T1_vols:
-        #Set VFA files in the options string
-        t1_str = ','.join(T1_vols)
-        cmd_args += ['--T1_vols', t1_str]
-        
-    if T1_noise is not None:
-        cmd_args += ['--T1_noise', f'{T1_noise:5.4f}'] 
+    add_option('string', cmd_args, '--img_fmt_w', img_fmt_w)
 
-    if T1_method:
-        cmd_args += ['--T1_method', T1_method]
-    
+    #Now set any args that require option inputs
+    add_option('bool', cmd_args, '--Ct', input_Ct)
+
+    #Set T1 options
+    add_option('string', cmd_args, '--T1', T1_name)
+
+    add_option('string', cmd_args, '--M0', M0_name)
+
+    add_option('string', cmd_args, '--T1_method', T1_method) 
+
+    add_option('string_list', cmd_args, '--T1_vols', T1_vols)
+
+    add_option('float', cmd_args, '--T1_noise', T1_noise)
+
     #Set any other options required to convert signal to concentration
-    if r1_const is not None:
-        cmd_args += ['--r1', f'{r1_const:4.3f}']  
+    add_option('float', cmd_args, '--r1', r1_const)
 
-    if TR:
-        cmd_args += ['--TR', f'{TR:4.3f}']  
+    add_option('float', cmd_args, '--TR', TR)
+
+    add_option('float', cmd_args, '-D', dose)
+
+    add_option('bool', cmd_args, '--M0_ratio', M0_ratio)
+
+    #B1 correction options
+    add_option('bool', cmd_args, '--B1', B1_name)   
+
+    add_option('bool', cmd_args, '--B1_correction', B1_correction)
+
+    add_option('float', cmd_args, '--B1_scaling', B1_scaling)    
 
     #Now go through all the other optional parameters, and if they've been set,
-    #set the necessary option flag in the cmd string
-    if B1_name:
-        cmd_args += ['--B1', B1_name]
+    #set the necessary option flag in the cmd_args string
+    add_option('bool', cmd_args, '--no_opt', no_optimise)
 
-    if B1_scaling is not None:
-        cmd_args += ['--B1_scaling', B1_scaling]
+    add_option('bool', cmd_args, '--Ct_sig', output_Ct_sig)
 
-    if B1_correction is not None:
-        cmd_args += ['--B1_correction', str(int(B1_correction))]
-     
-    if dose is not None:
-        cmd_args += ['--dose', f'{dose:4.3f}']  
+    add_option('bool', cmd_args, '--Ct_mod', output_Ct_mod)
 
-    if hct is not None:
-        cmd_args += ['--hct', f'{hct:4.3f}']
+    add_option('bool', cmd_args, '--test_enh', test_enhancement)
 
-    if output_Ct_sig is not None:
-        cmd_args += ['--Ct_sig', str(int(output_Ct_sig))]
+    add_option('int', cmd_args, '--max_iter', max_iter)
 
-    if output_Ct_mod is not None:
-        cmd_args += ['--Ct_mod', str(int(output_Ct_mod))]   
+    add_option('string', cmd_args, '--opt_type', opt_type)
 
-    if no_optimise is not None:
-        cmd_args += ['--no_opt', str(int(no_optimise))]
+    add_option('bool', cmd_args, '--dyn_noise', dyn_noise)
 
-    if test_enhancement is not None:
-        cmd_args += ['--test_enh', str(int(test_enhancement))]  
+    add_option('bool', cmd_args, '--overwrite', overwrite)
 
-    if dyn_noise is not None:
-        cmd_args += ['--dyn_noise', str(int(dyn_noise))]
+    add_option('bool', cmd_args, '--no_audit', no_audit)
 
-    if injection_image is not None:
-        cmd_args += ['--inj', str(injection_image)]
+    add_option('bool', cmd_args, '--no_log', no_log)
 
-    if first_image is not None:
-        cmd_args += ['--first', str(first_image)]
+    add_option('bool', cmd_args, '--quiet', quiet)
 
-    if last_image is not None:
-        cmd_args += ['--last', str(last_image)]
+    add_option('float', cmd_args, '-H', hct)
 
-    if roi_name:
-        cmd_args += ['--roi', roi_name]
+    add_option('int', cmd_args, '-i', injection_image)
 
-    if aif_name:
-        cmd_args += ['--aif', aif_name]
+    add_option('int', cmd_args, '--first', first_image)
 
-    if aif_map:
-        cmd_args += ['--aif_map', aif_map]
+    add_option('int', cmd_args, '--last', last_image)
 
-    if pif_name:
-        cmd_args += ['--pif', pif_name]
+    add_option('string', cmd_args, '--roi', roi_name)
 
-    if program_log_name:
-        cmd_args += ['--log', program_log_name]
+    add_option('string', cmd_args, '--residuals', residuals)
 
-    if audit_name:
-        cmd_args += ['--audit', audit_name]
+    add_option('string', cmd_args, '--aif', aif_name)
 
-    if audit_dir:
-        cmd_args += ['--audit_dir', audit_dir]
+    add_option('string', cmd_args, '--aif_map', aif_map)
 
-    if config_out:
-        cmd_args += ['--config_out', config_out]
+    add_option('string', cmd_args, '--pif', pif_name)
 
-    if no_log is not None:
-        cmd_args += ['--no_log', str(int(no_log))]
+    add_option('string', cmd_args, '--program_log', program_log_name)
 
-    if no_audit is not None:
-        cmd_args += ['--no_audit', str(int(no_audit))]
+    add_option('string', cmd_args, '--audit', audit_name)
 
-    if quiet is not None:
-        cmd_args += ['--quiet', str(int(quiet))]
+    add_option('string', cmd_args, '--audit_dir', audit_dir)
 
-    if error_name:
-        cmd_args += ['--err', error_name] 
+    add_option('string', cmd_args, '--config_out', config_out)
 
-    if IAUC_times:
-        IAUC_str = ','.join(f'{i:3.2f}' for i in IAUC_times)
-        cmd_args += ['--iauc', IAUC_str]
+    add_option('string', cmd_args, '-E', error_name)
 
-    if IAUC_at_peak:
-        cmd_args += ['--iauc_peak']
+    add_option('float_list', cmd_args, '--iauc', IAUC_times)
 
-    if init_maps_dir:
-        cmd_args += ['--init_maps', init_maps_dir]
+    add_option('bool', cmd_args, '--iauc_peak', IAUC_at_peak)
 
-    if init_map_params:
-        params_str = ','.join(str(p) for p in init_map_params)       
-        cmd_args += ['--init_map_params', params_str]
+    add_option('string', cmd_args, '--init_maps', init_maps_dir)
 
-    elif init_params:
-        init_str = ','.join(f'{i:5.4f}' for i in init_params)           
-        cmd_args += ['--init_params', init_str]
-    
-    if param_names:
-        param_str = ','.join(param_names)
-        cmd_args += ['--param_names', param_str]
-    
-    if fixed_params:
-        fixed_str = ','.join(str(f) for f in fixed_params)       
-        cmd_args += ['--fixed_params', fixed_str]
-        
-        if fixed_values:
-            fixed_str = ','.join(f'{f:5.4f}' for f in fixed_values)           
-            cmd_args += ['--fixed_values', fixed_str]
+    add_option('float_list', cmd_args, '--init_params', init_params)
 
-    if lower_bounds:
-        bounds_str = ','.join(f'{b:5.4f}' for b in lower_bounds)       
-        cmd_args += ['--lower_bounds', bounds_str]
+    add_option('int_list', cmd_args, '--init_map_params', init_map_params)
 
-    if upper_bounds:
-        bounds_str = ','.join(f'{b:5.4f}' for b in upper_bounds)       
-        cmd_args += ['--upper_bounds', bounds_str]
+    add_option('string_list', cmd_args, '--param_names', param_names)
 
-    if relative_limit_params:
-        relative_str = ','.join(str(r) for r in relative_limit_params)       
-        cmd_args += ['--relative_limit_params', relative_str]
-        
-        if relative_limit_values:
-            relative_str = ','.join(f'{r:5.4f}' for r in relative_limit_values)           
-            cmd_args += ['--relative_limit_values', relative_str]
+    add_option('int_list', cmd_args, '--fixed_params', fixed_params)
+    add_option('float_list', cmd_args, '--fixed_values', fixed_values)
 
-    if residuals:
-        cmd_args += ['--residuals', residuals]
+    add_option('float_list', cmd_args, '--upper_bounds', upper_bounds)
+    add_option('float_list', cmd_args, '--lower_bounds', lower_bounds)
 
-    if max_iter is not None:
-        cmd_args += ['--max_iter', str(max_iter)]
+    add_option('int_list', cmd_args, '--relative_limit_params',
+        relative_limit_params)
+    add_option('float_list', cmd_args, '--relative_limit_values',
+        relative_limit_values)
 
-    if opt_type is not None:
-        cmd_args += ['--opt_type', opt_type]
-
-    if img_fmt_r:
-        cmd_args += ['--img_fmt_r', img_fmt_r]
-
-    if img_fmt_w:
-        cmd_args += ['--img_fmt_w', img_fmt_w]
-
-    if voxel_size_warn_only is not None:
-        cmd_args += ['--voxel_size_warn_only', str(int(voxel_size_warn_only))]
-
-    if overwrite is not None:
-        cmd_args += ['--overwrite', str(int(overwrite))]
+    add_option('bool', cmd_args, '--voxel_size_warn_only', voxel_size_warn_only)
 
     #Args structure complete, convert to string for printing
     cmd_str = ' '.join(cmd_args)
@@ -485,7 +425,7 @@ def run(
     #Otherwise we can run the command:
     print('***********************Madym DCE running **********************')
     if working_directory:
-        print('Working directory = {working_directory}')
+        print(f'Working directory = {working_directory}')
         
     print(cmd_str)
     result = subprocess.Popen(cmd_args, shell=False, cwd=working_directory,

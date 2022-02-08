@@ -12,9 +12,9 @@
 
 #include "mdm_RunTools_madym_T1_lite.h"
 
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/t1_methods/mdm_T1MethodGenerator.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/t1/mdm_T1MethodGenerator.h>
+#include <madym/utils/mdm_exception.h>
 
 namespace fs = boost::filesystem;
 
@@ -108,7 +108,7 @@ MDM_API void mdm_RunTools_madym_T1_lite::run()
 //
 MDM_API int mdm_RunTools_madym_T1_lite::parseInputs(int argc, const char *argv[])
 {
-	po::options_description config_options("calculate_T1_lite config options_");
+	po::options_description config_options("madym_T1_lite config options_");
 	
 	options_parser_.add_option(config_options, options_.dataDir);
 	options_parser_.add_option(config_options, options_.inputDataFile);

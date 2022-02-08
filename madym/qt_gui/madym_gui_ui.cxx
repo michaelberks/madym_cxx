@@ -6,11 +6,12 @@
 
 #include "madym_gui_ui.h"
 
-#include <madym/dce_models/mdm_DCEModelGenerator.h>
-#include <madym/t1_methods/mdm_T1MethodGenerator.h>
+#include <madym/dce/mdm_DCEModelGenerator.h>
+#include <madym/t1/mdm_T1MethodGenerator.h>
+#include <madym/dwi/mdm_DWIModelGenerator.h>
 #include <madym/image_io/mdm_ImageIO.h>
 
-#include <madym/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_ProgramLogger.h>
 #include <mdm_version.h>
 #include "madym_gui_model_configure.h"
 #include <iomanip>
@@ -139,6 +140,38 @@ void madym_gui_ui::on_fitModelButton_clicked()
   ui.stackedWidget->setCurrentWidget(ui.runPage);
 }
 
+void madym_gui_ui::on_dwiModelButton_clicked()
+{
+  processor_.set_madym_exe(madym_gui_processor::RunType::DWI);
+  runType_ = madym_gui_processor::RunType::DWI;
+  initialize_widget_values();
+  ui.stackedWidget->setCurrentWidget(ui.runPage);
+}
+
+void madym_gui_ui::on_dicomButton_clicked()
+{
+  processor_.set_madym_exe(madym_gui_processor::RunType::DICOM);
+  runType_ = madym_gui_processor::RunType::DICOM;
+  initialize_widget_values();
+  ui.stackedWidget->setCurrentWidget(ui.runPage);
+
+  //Warn that we currently don't support all options in GUI
+  on_logMessageReceived("The full set of input options to madym_DicomConvert are not available to be set in the GUI.\n\n"
+    "Please use the load config file option...\n");
+}
+
+void madym_gui_ui::on_xtrButton_clicked()
+{
+  processor_.set_madym_exe(madym_gui_processor::RunType::XTR);
+  runType_ = madym_gui_processor::RunType::XTR;
+  initialize_widget_values();
+  ui.stackedWidget->setCurrentWidget(ui.runPage);
+
+  //Warn that we currently don't support all options in GUI
+  on_logMessageReceived("The full set of input options to madym_MakeXtr are not available to be set in the GUI.\n\n"
+    "Please use the load config file option...\n\n");
+}
+
 //-------------------------------------------------------------------------
 //:Buttons in run window
 void madym_gui_ui::on_loadConfigButton_clicked()
@@ -171,6 +204,8 @@ void madym_gui_ui::on_loadConfigButton_clicked()
     msgBox.setText("Config file loaded");
     msgBox.setInformativeText(tr("Options successfully loaded from \n%1.").arg(config_file));
     msgBox.exec();
+
+    on_logMessageReceived(tr("Options successfully loaded from \n%1.\n").arg(config_file));
   }
   //Finally update the widget values with the new options
   initialize_widget_values();
@@ -708,6 +743,48 @@ void madym_gui_ui::on_residualsSelect_clicked()
 }
 
 //
+void madym_gui_ui::on_dwiModelComboBox_currentIndexChanged(const QString& text)
+{
+  auto model_str = text.toStdString();
+  processor_.madym_exe().options().DWImodel.set(model_str);
+  set_BValsThresholds_enabled();
+}
+
+//
+void madym_gui_ui::on_dwiInputTextEdit_textChanged()
+{
+  QString text = ui.dwiInputTextEdit->toPlainText();
+  text.replace("\n", ",");
+  processor_.madym_exe().options().DWIinputNames.value().fromString(text.toStdString());
+}
+
+//
+void madym_gui_ui::on_bThresholdsLineEdit_textChanged(const QString& text)
+{
+  int pos = 0;
+  QString str(text);
+  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable)
+    processor_.madym_exe().options().BvalsThresh.value().fromString(text.toStdString());
+}
+
+//
+void madym_gui_ui::on_dwiInputSelect_clicked()
+{
+  QStringList selectedMaps = QFileDialog::getOpenFileNames(this, tr("Select input maps for DWI models"),
+    dataDir_,
+    IMAGE_FILE_FILTER);
+
+  if (selectedMaps.isEmpty())
+    return;
+
+  QString maps = selectedMaps[0];
+  for (int i = 1; i < selectedMaps.length(); i++)
+    maps.append("\n").append(selectedMaps[i]);
+
+  ui.dwiInputTextEdit->setText(maps);
+}
+
+//
 void madym_gui_ui::on_clearLogButton_clicked()
 {
   ui.cmdTextEdit->clear();
@@ -899,41 +976,200 @@ bool madym_gui_ui::winEvent(MSG * message, long * result)
 }
 #endif
 
-void madym_gui_ui::initialize_widget_values()
+void madym_gui_ui::setup_general_tab(bool show)
 {
-  auto &options = processor_.madym_exe().options();
-
-  if (!dataDir_.isEmpty())
-    options.dataDir.set(dataDir_.toStdString());
-
-  //General input options
-  ui.dataDirLineEdit->setText(options.dataDir().c_str());
-  ui.roiPathLineEdit->setText(options.roiName().c_str());
-  ui.errorTrackerLineEdit->setText(options.errorTrackerName().c_str());
-
-  //Configure tabs only visible for fitting DCE models
-  if (runType_ == madym_gui_processor::DCE)
+  if (show)
   {
-    //AIF options
-    if (ui.fittingTabWidget->indexOf(ui.vascularTab) < 0)
-      ui.fittingTabWidget->insertTab(0, ui.vascularTab, "Vascular input");
+    auto& options = processor_.madym_exe().options();
+    if (!dataDir_.isEmpty())
+      options.dataDir.set(dataDir_.toStdString());
 
-    ui.AIFmapLineEdit->setText(options.aifMap().c_str());
-    ui.AIFfileLineEdit->setText(options.aifName().c_str());
+    //General input options
+    ui.dataDirLineEdit->setText(options.dataDir().c_str());
+    ui.roiPathLineEdit->setText(options.roiName().c_str());
+    ui.errorTrackerLineEdit->setText(options.errorTrackerName().c_str());
 
-    if (!options.aifMap().empty())
-      options.aifType.set(mdm_AIF::AIF_TYPE::AIF_MAP);
-      
-    if (!options.aifName().empty())
-      options.aifType.set(mdm_AIF::AIF_TYPE::AIF_FILE);
-      
-    initialize_AIF_options();
+    //Image format options
+    initialize_image_format_options(*ui.imageReadComboBox);
+    initialize_image_format_options(*ui.imageWriteComboBox);
 
-    ui.populationPIFCheckbox->setChecked(options.pifName().empty());
-    ui.autoPIFPathLineEdit->setText(options.pifName().c_str());
-    ui.doseLineEdit->setText(QString::number(options.dose()));
-    ui.hctLineEdit->setText(QString::number(options.hct()));
+    //Ouput options - visible for all tools
+    ui.outputDirLineEdit->setText(options.outputDir().c_str());
+    ui.overwriteCheckBox->setChecked(options.overwrite());
 
+    //Hide some additional widgets on general tab
+    ui.roiPathLabel->show();
+    ui.roiPathLineEdit->show();
+    ui.roiPathSelect->show();
+    ui.errorTrackerLabel->show();
+    ui.errorTrackerLineEdit->show();
+    ui.errorTrackerSelect->show();
+    ui.imageReadLabel->show();
+    ui.imageReadComboBox->show();
+    ui.imageWriteLabel->show();
+    ui.imageWriteComboBox->show();
+    ui.overwriteCheckBox->show();
+  }
+  else
+  {
+    auto idx = ui.inputTabWidget->indexOf(ui.outputTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+  }
+  
+}
+
+void madym_gui_ui::setup_logging_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+    //Logging options - visible for all tools
+    ui.logNameLineEdit->setText(options.programLogName().c_str());
+    ui.configLineEdit->setText(options.outputConfigFileName().c_str());
+    ui.auditNameLineEdit->setText(options.auditLogBaseName().c_str());
+    ui.auditDirLineEdit->setText(options.auditLogDir().c_str());
+    ui.outputTabWidget->setCurrentIndex(0);
+  }
+  else
+  {
+    auto idx = ui.inputTabWidget->indexOf(ui.loggingTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_DCE_data_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+
+    //DCE input options
+    if (ui.inputTabWidget->indexOf(ui.dceTab) < 0)
+      ui.inputTabWidget->insertTab(0, ui.dceTab, "DCE data");
+
+    ui.inputTypeRadioButtonS->setChecked(!options.inputCt());
+    ui.inputTypeRadioButtonC->setChecked(options.inputCt());
+    ui.dceInputLineEdit->setText(options.dynDir().c_str());
+    ui.dceNameLineEdit->setText(options.dynName().c_str());
+    ui.dceFormatLineEdit->setText(options.sequenceFormat().c_str());
+    ui.dceStartSpinBox->setValue(options.sequenceStart());
+    ui.dceStepSpinBox->setValue(options.sequenceStep());
+    ui.nDynSpinBox->setValue(options.nDyns());
+    ui.injectionImageSpinBox->setValue(options.injectionImage());
+  }
+  else
+  {
+    auto idx = ui.inputTabWidget->indexOf(ui.dceTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_conc_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+
+    //Signal to concentration - TODO constrain inputs and put units on number inputs
+    if (ui.inputTabWidget->indexOf(ui.concentrationTab) < 0)
+      ui.inputTabWidget->insertTab(1, ui.concentrationTab, "Signal to concentration");
+
+    ui.m0RatioCheckBox->setChecked(options.M0Ratio());
+    ui.t1MapLineEdit->setText(options.T1Name().c_str());
+    ui.t1UsePrecomputedCheckBox->setChecked(!options.T1Name().empty());
+    ui.m0MapLineEdit->setText(options.M0Name().c_str());
+    ui.t1MapLineEdit->setEnabled(ui.t1UsePrecomputedCheckBox->isChecked());
+    ui.t1MapPathSelect->setEnabled(ui.t1UsePrecomputedCheckBox->isChecked());
+    ui.m0MapLineEdit->setEnabled(!options.M0Ratio() &&
+      ui.t1UsePrecomputedCheckBox->isChecked());
+    ui.m0MapPathSelect->setEnabled(!options.M0Ratio() &&
+      ui.t1UsePrecomputedCheckBox->isChecked());
+    ui.r1LineEdit->setText(QString::number(options.r1Const()));
+
+    //For AIF hide the IAUC
+    if (runType_ == madym_gui_processor::RunType::AIF)
+    {
+      //Hide the IAUC options from the S(t) to C(t) tab
+      ui.iaucLabel->hide();
+      ui.iaucTimesLineEdit->hide();
+    }
+    else if (runType_ == madym_gui_processor::RunType::DCE)
+    {
+      ui.iaucLabel->show();
+      ui.iaucTimesLineEdit->show();
+      QString iaucTimes(options.IAUCTimes.value().toString().c_str());
+      ui.iaucTimesLineEdit->setText(iaucTimes.replace("[", "").replace("]", ""));
+    }
+  }
+  else
+  {
+    auto idx = ui.inputTabWidget->indexOf(ui.concentrationTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_t1_mapping_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+    
+    initialize_T1_options();
+    ui.t1ThresholdLineEdit->setValidator(new QDoubleValidator(0, 10000, 2, this));
+    ui.t1ThresholdLineEdit->setText(QString::number(options.T1noiseThresh()));
+
+    QString t1Inputs(options.T1inputNames.value().toString().c_str());
+    ui.t1InputTextEdit->setText(t1Inputs.replace("[", "").replace("]", "").replace(",", "\n"));//
+    ui.inputTabWidget->setCurrentIndex(0);
+
+    //Set B1 options
+    makeB1Consistent(
+      options.B1Correction() ||
+      options.T1method() == mdm_T1MethodGenerator::toString(mdm_T1MethodGenerator::VFA_B1)
+    );
+    ui.b1ScalingSpinBox->setValue(options.B1Scaling()); //Also sets spinbox in T1 mapping tab
+  }
+  else
+  {
+    auto idx = ui.inputTabWidget->indexOf(ui.t1MapTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_DWI_model_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+
+    initialize_DWI_options();
+
+    QString dwiInputs(options.DWIinputNames.value().toString().c_str());
+    ui.dwiInputTextEdit->setText(dwiInputs.replace("[", "").replace("]", "").replace(",", "\n"));//
+    ui.inputTabWidget->setCurrentIndex(0);
+
+    QString bThresholds(options.BvalsThresh.value().toString().c_str());
+    ui.bThresholdsLineEdit->setText(bThresholds.replace("[", "").replace("]", ""));
+  }
+  else
+  {
+    auto idx = ui.inputTabWidget->indexOf(ui.dwiTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_DCE_model_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+    
     //Model options
     if (ui.fittingTabWidget->indexOf(ui.modelTab) < 0)
       ui.fittingTabWidget->insertTab(0, ui.modelTab, "Model fitting");
@@ -952,27 +1188,58 @@ void madym_gui_ui::initialize_widget_values()
     initialize_optimisation_options();
 
     //Output options specific to DCE fits
-    ui.iaucLabel->show();
-    ui.iaucTimesLineEdit->show();
     ui.outputCsCheckBox->setChecked(options.outputCt_sig());
     ui.outputCmCheckBox->setChecked(options.outputCt_mod());
-
-    QString iaucTimes(options.IAUCTimes.value().toString().c_str());
-    ui.iaucTimesLineEdit->setText(iaucTimes.replace("[", "").replace("]", ""));
-
-    //Hide the AIF detection tab
-    auto idx = ui.fittingTabWidget->indexOf(ui.aifTab);
+  }
+  else
+  {
+    auto idx = ui.fittingTabWidget->indexOf(ui.modelTab);
     if (idx >= 0)
       ui.fittingTabWidget->removeTab(idx);
-
-    //Set the tool label and run button text
-    ui.runButton->setText("Run DCE model fitting");
-    ui.toolLabel->setText("DCE model fitting");
   }
+  
+}
 
-  //Configure tabs only visible for AIF detection
-  if (runType_ == madym_gui_processor::AIF)
+void madym_gui_ui::setup_IF_tab(bool show)
+{
+  if (show)
   {
+    auto& options = processor_.madym_exe().options();
+
+    //AIF options
+    if (ui.fittingTabWidget->indexOf(ui.vascularTab) < 0)
+      ui.fittingTabWidget->insertTab(0, ui.vascularTab, "Vascular input");
+
+    ui.AIFmapLineEdit->setText(options.aifMap().c_str());
+    ui.AIFfileLineEdit->setText(options.aifName().c_str());
+
+    if (!options.aifMap().empty())
+      options.aifType.set(mdm_AIF::AIF_TYPE::AIF_MAP);
+
+    if (!options.aifName().empty())
+      options.aifType.set(mdm_AIF::AIF_TYPE::AIF_FILE);
+
+    initialize_AIF_options();
+
+    ui.populationPIFCheckbox->setChecked(options.pifName().empty());
+    ui.autoPIFPathLineEdit->setText(options.pifName().c_str());
+    ui.doseLineEdit->setText(QString::number(options.dose()));
+    ui.hctLineEdit->setText(QString::number(options.hct()));
+  }
+  else
+  {
+    auto idx = ui.fittingTabWidget->indexOf(ui.vascularTab);
+    if (idx >= 0)
+      ui.fittingTabWidget->removeTab(idx);
+  }
+  
+}
+
+void madym_gui_ui::setup_AIF_detection_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
     //AIF detection options
     if (ui.fittingTabWidget->indexOf(ui.aifTab) < 0)
       ui.fittingTabWidget->insertTab(0, ui.aifTab, "AIF detection");
@@ -998,116 +1265,169 @@ void madym_gui_ui::initialize_widget_values()
 
     ui.selectPctSpinBox->setRange(0, 100);
     ui.selectPctSpinBox->setValue(options.selectPct());
-
-    //Hide the vascular input and model fitting tabs
-    auto idx = ui.fittingTabWidget->indexOf(ui.modelTab);
+  }
+  else
+  {
+    //Hide the AIF detection tab
+    auto idx = ui.fittingTabWidget->indexOf(ui.aifTab);
     if (idx >= 0)
       ui.fittingTabWidget->removeTab(idx);
+  }
+}
 
-    idx = ui.fittingTabWidget->indexOf(ui.vascularTab);
-    if (idx >= 0)
-      ui.fittingTabWidget->removeTab(idx);
+void madym_gui_ui::setup_fitting_tab(bool show)
+{
+  if (show)
+  {
+    ui.fittingTabWidget->show();
+    ui.fittingTabWidget->setCurrentIndex(0);
+  }
+  else
+    ui.fittingTabWidget->hide();
+}
 
-    //Hide the IAUC options from the S(t) to C(t) tab
-    ui.iaucLabel->hide();
-    ui.iaucTimesLineEdit->hide();
+
+void madym_gui_ui::initialize_widget_values()
+{
+ 
+  //General and logging tabs used by all
+  setup_general_tab(true);
+  setup_logging_tab(runType_ != madym_gui_processor::XTR);
+
+  //Configure tabs for different run types
+  switch (runType_)
+  {
+  case madym_gui_processor::DCE:
+    //Tabs to setup and show
+    setup_t1_mapping_tab(true);
+    setup_IF_tab(true);
+    setup_DCE_model_tab(true);
+    setup_DCE_data_tab(true);
+    setup_conc_tab(true);
+    setup_fitting_tab(true);
+
+    //Tabs to hide
+    setup_AIF_detection_tab(false);
+    setup_DWI_model_tab(false);
+
+    //Set the tool label and run button text
+    ui.runButton->setText("Run DCE model fitting");
+    ui.toolLabel->setText("DCE model fitting");
+    break;
+
+  case madym_gui_processor::AIF:
+    //Tabs to setup and show
+    setup_t1_mapping_tab(true);
+    setup_AIF_detection_tab(true);
+    setup_DCE_data_tab(true);
+    setup_conc_tab(true);
+    setup_fitting_tab(true);
+
+    //Tabs to hide
+    setup_DCE_model_tab(false);
+    setup_IF_tab(false);
 
     //Set the tool label and run button text
     ui.runButton->setText("Run AIF detection");
     ui.toolLabel->setText("AIF detection");
-  }
+    break;
 
-  if (runType_ == madym_gui_processor::AIF || runType_ == madym_gui_processor::DCE)
-  {
-    //DCE input options
-    if (ui.inputTabWidget->indexOf(ui.dceTab) < 0)
-      ui.inputTabWidget->insertTab(0, ui.dceTab, "DCE data");
+  case madym_gui_processor::T1:
+    //Tabs to setup and show
+    setup_t1_mapping_tab(true);
 
-    ui.inputTypeRadioButtonS->setChecked(!options.inputCt());
-    ui.inputTypeRadioButtonC->setChecked(options.inputCt());
-    ui.dceInputLineEdit->setText(options.dynDir().c_str());
-    ui.dceNameLineEdit->setText(options.dynName().c_str());
-    ui.dceFormatLineEdit->setText(options.sequenceFormat().c_str());
-    ui.dceStartSpinBox->setValue(options.sequenceStart());
-    ui.dceStepSpinBox->setValue(options.sequenceStep());
-    ui.nDynSpinBox->setValue(options.nDyns());
-    ui.injectionImageSpinBox->setValue(options.injectionImage());
-
-    //Signal to concentration - TODO constrain inputs and put units on number inputs
-    if (ui.inputTabWidget->indexOf(ui.concentrationTab) < 0)
-      ui.inputTabWidget->insertTab(1, ui.concentrationTab, "Signal to concentration");
-
-    ui.m0RatioCheckBox->setChecked(options.M0Ratio());
-    ui.t1MapLineEdit->setText(options.T1Name().c_str());
-    ui.t1UsePrecomputedCheckBox->setChecked(!options.T1Name().empty());
-    ui.m0MapLineEdit->setText(options.M0Name().c_str());
-    ui.t1MapLineEdit->setEnabled(ui.t1UsePrecomputedCheckBox->isChecked());
-    ui.t1MapPathSelect->setEnabled(ui.t1UsePrecomputedCheckBox->isChecked());
-    ui.m0MapLineEdit->setEnabled(!options.M0Ratio() &&
-      ui.t1UsePrecomputedCheckBox->isChecked());
-    ui.m0MapPathSelect->setEnabled(!options.M0Ratio() &&
-      ui.t1UsePrecomputedCheckBox->isChecked());
-    ui.r1LineEdit->setText(QString::number(options.r1Const()));
-
-    //B1 options are set via the T1 tab initially
-
-    ui.fittingTabWidget->show();
-    ui.fittingTabWidget->setCurrentIndex(0);
-  }
-  else //T1 tool
-  {
-    //Hide DCE data, signal to concentration tabs
-    auto idx = ui.inputTabWidget->indexOf(ui.dceTab);
-    if (idx >= 0)
-      ui.inputTabWidget->removeTab(idx);
-
-    idx = ui.inputTabWidget->indexOf(ui.concentrationTab);
-    if (idx >= 0)
-      ui.inputTabWidget->removeTab(idx);
-
-    ui.fittingTabWidget->hide();
+    //Tabs to hide
+    setup_DCE_data_tab(false);
+    setup_conc_tab(false);
+    setup_DWI_model_tab(false);
+    setup_fitting_tab(false);
 
     //Set the tool label and run button text
     ui.runButton->setText("Run T1 mapping");
     ui.toolLabel->setText("T1 mapping");
+    break;
+
+  case madym_gui_processor::DWI:
+    //Tabs to setup and show
+    setup_DWI_model_tab(true);
+
+    //Tabs to hide
+    setup_t1_mapping_tab(false); 
+    setup_DCE_data_tab(false);
+    setup_conc_tab(false);
+    setup_fitting_tab(false);
+
+    //Set the tool label and run button text
+    ui.runButton->setText("Run DWI modelling");
+    ui.toolLabel->setText("DWI modelling");
+    break;
+
+  case madym_gui_processor::DICOM:
+    //Tabs to setup and show
+    //None - currently forceed to use config input
+
+    //Tabs to hide
+    setup_DWI_model_tab(false);
+    setup_t1_mapping_tab(false);
+    setup_DCE_data_tab(false);
+    setup_conc_tab(false);
+    setup_fitting_tab(false);
+
+    //Hide some additional widgets on general tab
+    ui.roiPathLabel->hide();
+    ui.roiPathLineEdit->hide();
+    ui.roiPathSelect->hide();
+    ui.errorTrackerLabel->hide();
+    ui.errorTrackerLineEdit->hide();
+    ui.errorTrackerSelect->hide();
+    ui.imageReadLabel->hide();
+    ui.imageReadComboBox->hide();
+
+    //Set the tool label and run button text
+    ui.runButton->setText("Convert DICOM files");
+    ui.toolLabel->setText("Dicom conversion");
+
+    break;
+
+  case madym_gui_processor::XTR:
+    //Tabs to setup and show
+    //None - currently foreced to use config input
+
+    //Tabs to hide
+    setup_DWI_model_tab(false);
+    setup_t1_mapping_tab(false);
+    setup_DCE_data_tab(false);
+    setup_conc_tab(false);
+    setup_fitting_tab(false);
+
+    //Hide some additional widgets on general tab
+    ui.roiPathLabel->hide();
+    ui.roiPathLineEdit->hide();
+    ui.roiPathSelect->hide();
+    ui.errorTrackerLabel->hide();
+    ui.errorTrackerLineEdit->hide();
+    ui.errorTrackerSelect->hide();
+    ui.imageReadLabel->hide();
+    ui.imageReadComboBox->hide();
+    ui.imageWriteLabel->hide();
+    ui.imageWriteComboBox->hide();
+    ui.overwriteCheckBox->hide();
+
+    //Set the tool label and run button text
+    ui.runButton->setText("Make XTR files");
+    ui.toolLabel->setText("Make XTR files");
+
+    break;
+
+  default:
+    ;
   }
-  
-  //T1 calculation - visible for all tools
-  initialize_T1_options();
-  ui.t1ThresholdLineEdit->setValidator(new QDoubleValidator(0, 10000, 2, this));
-  ui.t1ThresholdLineEdit->setText(QString::number(options.T1noiseThresh()));
-
-  QString t1Inputs(options.T1inputNames.value().toString().c_str());
-  ui.t1InputTextEdit->setText(t1Inputs.replace("[", "").replace("]", "").replace(",","\n"));//
-  ui.inputTabWidget->setCurrentIndex(0);
-
-  //Set B1 options
-  makeB1Consistent(
-    options.B1Correction() ||
-    options.T1method() == mdm_T1MethodGenerator::toString(mdm_T1MethodGenerator::VFA_B1)
-  );
-  ui.b1ScalingSpinBox->setValue(options.B1Scaling()); //Also sets spinbox in T1 mapping tab
-
-  //Image format options
-  initialize_image_format_options(*ui.imageReadComboBox);
-  initialize_image_format_options(*ui.imageWriteComboBox);
-
-	//Ouput options - visible for all tools
-	ui.outputDirLineEdit->setText(options.outputDir().c_str());
-	ui.overwriteCheckBox->setChecked(options.overwrite());
-
-  //Logging options - visible for all tools
-  ui.logNameLineEdit->setText(options.programLogName().c_str());
-  ui.configLineEdit->setText(options.outputConfigFileName().c_str());
-  ui.auditNameLineEdit->setText(options.auditLogBaseName().c_str());
-  ui.auditDirLineEdit->setText(options.auditLogDir().c_str());
-  ui.outputTabWidget->setCurrentIndex(0);
 }
 
 //
 void madym_gui_ui::initialize_model_options()
 {
-  const auto &models = mdm_DCEModelGenerator::implementedModels();
+  const auto &models = mdm_DCEModelGenerator::models();
   int selected_index = 0;
   bool matched = false;
   {
@@ -1132,7 +1452,7 @@ void madym_gui_ui::initialize_model_options()
 //
 void madym_gui_ui::initialize_T1_options()
 {
-  const auto &methods = mdm_T1MethodGenerator::implementedMethods();
+  const auto &methods = mdm_T1MethodGenerator::methods();
   int selected_index = 0;
   bool matched = false;
   {
@@ -1179,6 +1499,30 @@ void madym_gui_ui::initialize_AIF_options()
   }
   ui.AIFtypeComboBox->setCurrentIndex(selected_index);
   set_AIF_enabled();
+}
+
+void madym_gui_ui::initialize_DWI_options()
+{
+  const auto& models = mdm_DWIModelGenerator::models();
+  int selected_index = 0;
+  bool matched = false;
+  {
+    const QSignalBlocker blocker(ui.dwiModelComboBox);
+    // We use a signal blocker here to avoid trying to set an empty model
+    //if a config file is loaded an we update the widget values
+    ui.dwiModelComboBox->clear();
+    for (auto model : models)
+    {
+      ui.dwiModelComboBox->addItem(model.c_str());
+      if (model == processor_.madym_exe().options().DWImodel())
+        matched = true;
+      else if (!matched)
+        selected_index++;
+    }
+    ui.dwiModelComboBox->addItem(NONE_SELECTED);
+  }
+  ui.dwiModelComboBox->setCurrentIndex(selected_index);
+  set_BValsThresholds_enabled();
 }
 
 //
@@ -1239,6 +1583,15 @@ void madym_gui_ui::set_AIF_enabled()
   ui.AIFmapLineEdit->setEnabled(type == mdm_AIF::AIF_MAP);
   ui.AIFmapSelect->setEnabled(type == mdm_AIF::AIF_MAP);
   ui.doseLineEdit->setEnabled(type == mdm_AIF::AIF_POP || type == mdm_AIF::AIF_STD);
+}
+
+//
+void madym_gui_ui::set_BValsThresholds_enabled()
+{
+  auto model_str = ui.dwiModelComboBox->currentText().toStdString();
+  auto model = mdm_DWIModelGenerator::parseModelName(model_str);
+  bool IVIM = (model == mdm_DWIModelGenerator::IVIM) || (model == mdm_DWIModelGenerator::IVIM_simple);
+  ui.bThresholdsLineEdit->setEnabled(IVIM);
 }
 
 bool madym_gui_ui::check_required_options()

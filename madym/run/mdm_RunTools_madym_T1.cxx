@@ -12,9 +12,9 @@
 
 #include "mdm_RunTools_madym_T1.h"
 
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_exception.h>
-#include <madym/t1_methods/mdm_T1FitterBase.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_exception.h>
+#include <madym/t1/mdm_T1FitterBase.h>
 
 namespace fs = boost::filesystem;
 
@@ -54,7 +54,8 @@ MDM_API void mdm_RunTools_madym_T1::run()
   mapT1();
 
 	//Write output
-	writeOutput();
+	fileManager_.saveGeneralOutputMaps(outputPath_.string());
+	fileManager_.saveT1OutputMaps(outputPath_.string());
 
   //Reset the volume analysis
   volumeAnalysis_.reset();
@@ -63,40 +64,41 @@ MDM_API void mdm_RunTools_madym_T1::run()
 //
 MDM_API int mdm_RunTools_madym_T1::parseInputs(int argc, const char *argv[])
 {
-	po::options_description cmdline_options("calculate_T1 options_");
-	po::options_description config_options("calculate_T1 config options_");
+	po::options_description cmdline_options("madym_T1 options_");
+	po::options_description config_options("madym_T1 config options_");
 	
 	
-		//Generic input options_ applied to all command-line tools
+	//Generic input options_ applied to all command-line tools
 	options_parser_.add_option(cmdline_options, options_.configFile);
 	options_parser_.add_option(cmdline_options, options_.dataDir);
 
-		//ROI options_
+	//ROI options_
 	options_parser_.add_option(config_options, options_.roiName);
-  options_parser_.add_option(config_options, options_.errorTrackerName);
+	options_parser_.add_option(config_options, options_.errorTrackerName);
 
-		//T1 calculation options_
+	//T1 calculation options_
 	options_parser_.add_option(config_options, options_.T1method);
+	options_parser_.add_option(config_options, options_.T1Dir);
 	options_parser_.add_option(config_options, options_.T1inputNames);
 	options_parser_.add_option(config_options, options_.T1noiseThresh);
-  options_parser_.add_option(config_options, options_.B1Scaling);
-  options_parser_.add_option(config_options, options_.B1Name);
-  options_parser_.add_option(config_options, options_.TR);
+	options_parser_.add_option(config_options, options_.B1Scaling);
+	options_parser_.add_option(config_options, options_.B1Name);
+	options_parser_.add_option(config_options, options_.TR);
 
-		//General output options_
+	//General output options_
 	options_parser_.add_option(config_options, options_.outputRoot);
 	options_parser_.add_option(config_options, options_.outputDir);
 	options_parser_.add_option(config_options, options_.overwrite);
 
-  //Image format options
-  options_parser_.add_option(config_options, options_.imageReadFormat);
-  options_parser_.add_option(config_options, options_.imageWriteFormat);
+	//Image format options
+	options_parser_.add_option(config_options, options_.imageReadFormat);
+	options_parser_.add_option(config_options, options_.imageWriteFormat);
 
-		//Logging options_
-  options_parser_.add_option(config_options, options_.voxelSizeWarnOnly);
-  options_parser_.add_option(config_options, options_.noLog);
-  options_parser_.add_option(config_options, options_.noAudit);
-  options_parser_.add_option(config_options, options_.quiet);
+	//Logging options_
+	options_parser_.add_option(config_options, options_.voxelSizeWarnOnly);
+	options_parser_.add_option(config_options, options_.noLog);
+	options_parser_.add_option(config_options, options_.noAudit);
+	options_parser_.add_option(config_options, options_.quiet);
 	options_parser_.add_option(config_options, options_.programLogName);
 	options_parser_.add_option(config_options, options_.outputConfigFileName);
 	options_parser_.add_option(config_options, options_.auditLogBaseName);
@@ -106,7 +108,7 @@ MDM_API int mdm_RunTools_madym_T1::parseInputs(int argc, const char *argv[])
 		cmdline_options,
 		config_options,
 		options_.configFile(),
-    who(),
+		who(),
 		argc, argv);
 }
 

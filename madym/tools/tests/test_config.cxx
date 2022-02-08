@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <madym/tests/mdm_test_utils.h>
-#include <madym/mdm_OptionsParser.h>
+#include <madym/run/mdm_OptionsParser.h>
 #include <madym/run/mdm_RunTools_madym_DCE.h>
 
 BOOST_AUTO_TEST_SUITE(test_mdm_tools)

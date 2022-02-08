@@ -12,8 +12,8 @@
 #include <QLineEdit>
 #include <QCheckBox>
 
-#include <madym/dce_models/mdm_DCEModelBase.h>
-#include <madym/mdm_OptionsParser.h>
+#include <madym/dce/mdm_DCEModelBase.h>
+#include <madym/run/mdm_OptionsParser.h>
 #include "ui_madym_model_configure.h"
 
 //! Helper class providing GUI controls to configure each individual model parameter

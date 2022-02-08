@@ -6,7 +6,7 @@ import warnings
 from tempfile import TemporaryDirectory
 import subprocess
 import os
-from QbiMadym.utils import local_madym_root
+from QbiMadym.utils import local_madym_root, add_option
 
 def run(model=None, input_data=None,
     cmd_exe:str = None,
@@ -17,7 +17,6 @@ def run(model=None, input_data=None,
     output_Ct_sig:bool = True,
     output_Ct_mod:bool = True,
     no_optimise:bool = None,
-    # The below are all only required if we're converting from signals
     T1:np.array = None, 
     M0:np.array = None,
     TR:float = None,
@@ -35,7 +34,7 @@ def run(model=None, input_data=None,
     pif_name:str = None,
     #
     IAUC_times:np.array = [60,90,120],
-    IAUC_at_peak:bool = None,
+    IAUC_at_peak:bool = False,
     init_params:np.array = None,
     fixed_params:np.array = None,
     fixed_values:np.array = None,
@@ -250,9 +249,7 @@ def run(model=None, input_data=None,
             1
         )
         
-        if not M0_ratio:
-            if M0 is None:
-                raise ValueError('M0 if M0_ratio is set to false')
+        if not M0 is None:
             input_data = np.concatenate(
                 (input_data, np.atleast_1d(M0).reshape((n_samples,1))),
                 1
@@ -265,6 +262,9 @@ def run(model=None, input_data=None,
             (input_data, np.atleast_1d(B1_values).reshape((n_samples,1))),
             1
         )
+        B1_correction = True
+    else:
+        B1_correction = False
 
     #Check for bad samples, these can screw up Madym as the lite version
     #of the software doesn't do the full range of error checks Madym proper
@@ -274,7 +274,6 @@ def run(model=None, input_data=None,
         warnings.warn('Samples with NaN values found,'
             ' these will be set to zero for model-fitting')
         input_data[discard_samples,:] = 0
-
 
     discard_samples = np.any(~np.isfinite(input_data), 1)
     if any(discard_samples):
@@ -306,119 +305,87 @@ def run(model=None, input_data=None,
         '-O', output_name]
 
     #Now set any args that require option inputs
-    if input_Ct is not None:
-        cmd_args += ['--Ct', str(int(input_Ct))]
-        
-    else: #Below are only needed if input is signals
-        if TR is not None:
-            cmd_args += ['--TR', f'{TR:4.3f}']
-        
-        if FA is not None:
-            cmd_args += ['--FA', f'{FA:4.3f}']
-        
-        if r1_const is not None:
-            cmd_args += ['--r1', f'{r1_const:4.3f}']       
+    add_option('bool', cmd_args, '--Ct', input_Ct)
 
-        if M0_ratio:
-            cmd_args += ['--M0_ratio']
- 
-    if dose is not None:
-        cmd_args += ['--dose', f'{dose:4.3f}']
+    #Below are only needed if input is signals
+    add_option('float', cmd_args, '--TR', TR)
 
-    if hct is not None:
-        cmd_args += ['--hct', f'{hct:4.3f}']
+    add_option('float', cmd_args, '--FA', FA)
 
-    if injection_image is not None:
-        cmd_args += ['--inj', str(injection_image)]
+    add_option('float', cmd_args, '--r1', r1_const)
 
-    if first_image is not None:
-        cmd_args += ['--first', str(first_image)]
+    add_option('bool', cmd_args, '--M0_ratio', M0_ratio)
 
-    if last_image is not None:
-        cmd_args += ['--last', str(last_image)]
+    add_option('float', cmd_args, '-D', dose)
 
-    if output_Ct_sig is not None:
-        cmd_args += ['--Ct_sig', str(int(output_Ct_sig))]
+    add_option('float', cmd_args, '-H', hct)
 
-    if output_Ct_mod is not None:
-        cmd_args += ['--Ct_mod', str(int(output_Ct_mod))]
+    add_option('int', cmd_args, '-i', injection_image)
 
-    if no_optimise is not None:
-        cmd_args += ['--no_opt', str(int(no_optimise))]
+    add_option('int', cmd_args, '--first', first_image)
 
-    if test_enhancement is not None:
-        cmd_args += ['--test_enh', str(int(test_enhancement))]
+    add_option('int', cmd_args, '--last', last_image)
 
-    if aif_name is not None:
-        cmd_args += ['--aif', aif_name]
+    add_option('bool', cmd_args, '--Ct_sig', output_Ct_sig)
 
-    if pif_name is not None:
-        cmd_args += ['--pif', pif_name]
+    add_option('bool', cmd_args, '--Ct_mod', output_Ct_mod)
+
+    add_option('bool', cmd_args, '--no_opt', no_optimise)
+
+    add_option('bool', cmd_args, '--B1_correction', B1_correction)
+
+    add_option('int', cmd_args, '--max_iter', max_iter)
+
+    add_option('string', cmd_args, '--opt_type', opt_type)
+
+    add_option('bool', cmd_args, '--test_enh', test_enhancement)
+
+    add_option('bool', cmd_args, '--quiet', quiet)
+
+    add_option('string', cmd_args, '--aif', aif_name)
+
+    add_option('string', cmd_args, '--pif', pif_name)
 
     if dyn_times is not None:
         #Get a name for the temporary file we'll write times to (we'll hold
         #off writing anything until we know this isn't a dummy run
         dyn_times_file = os.path.join(input_dir.name, 'dyn_times.dat')
-        cmd_args += ['-t', f'{dyn_times_file}']
+        add_option('string', cmd_args, '-t', dyn_times_file)
 
     if dyn_noise_values is not None:
         #Get a name for the temporary file we'll write noise to (we'll hold
         #off writing anything until we know this isn't a dummy run
         dyn_noise_file = os.path.join(input_dir.name, 'dyn_noise.dat')
-        cmd_args += ['--dyn_noise', f'{dyn_noise_file}']
+        add_option('string', cmd_args, '--dyn_noise', dyn_noise_file)
 
-    if IAUC_times:
-        IAUC_str = ','.join(f'{i:3.2f}' for i in IAUC_times)
-        cmd_args += ['--iauc', IAUC_str]
+    add_option('float_list', cmd_args, '--iauc', IAUC_times)
 
-    if IAUC_at_peak is not None:
-        cmd_args += ['--iauc_peak', str(int(IAUC_at_peak))]
+    add_option('bool', cmd_args, '--iauc_peak', IAUC_at_peak)
 
     load_params = False
     if init_params is not None:
         if n_samples > 1 and init_params.shape[0] == n_samples:
             input_params_file = os.path.join(input_dir.name, 'input_params.dat')
             load_params = True
-            cmd_args += ['--init_params_file', f'{input_params_file}']
+            add_option('string', cmd_args, '--init_params_file', input_params_file)
         else:
-            init_str = ','.join(f'{i:5.4f}' for i in init_params)           
-            cmd_args += ['--init_params', init_str]
+            add_option('float_list', cmd_args, '--init_params', init_params)
         
-    if fixed_params is not None:
-        fixed_str = ','.join(str(f) for f in fixed_params)       
-        cmd_args += ['--fixed_params', fixed_str]
-        
-        if fixed_values is not None:
-            fixed_str = ','.join(f'{f:5.4f}' for f in fixed_values)           
-            cmd_args += ['--fixed_values', fixed_str]
+    add_option('int_list', cmd_args, '--fixed_params', fixed_params)
 
-    if lower_bounds:
-        bounds_str = ','.join(f'{b:5.4f}' for b in lower_bounds)       
-        cmd_args += ['--lower_bounds', bounds_str]
+    add_option('float_list', cmd_args, '--fixed_values', fixed_values)
 
-    if upper_bounds:
-        bounds_str = ','.join(f'{b:5.4f}' for b in upper_bounds)       
-        cmd_args += ['--upper_bounds', bounds_str]
+    add_option('float_list', cmd_args, '--upper_bounds', upper_bounds)
 
-    if relative_limit_params:
-        relative_str = ','.join(str(r) for r in relative_limit_params)       
-        cmd_args += ['--relative_limit_params', relative_str]
-        
-        if relative_limit_values:
-            relative_str = ','.join(f'{r:5.4f}' for r in relative_limit_values)           
-            cmd_args += ['--relative_limit_values', relative_str]
+    add_option('float_list', cmd_args, '--lower_bounds', lower_bounds)
 
-    if max_iter is not None:
-        cmd_args += ['--max_iter', str(max_iter)]
+    add_option('int_list', cmd_args, '--relative_limit_params',
+        relative_limit_params)
 
-    if opt_type is not None:
-        cmd_args += ['--opt_type', opt_type]
+    add_option('float_list', cmd_args, '--relative_limit_values',
+        relative_limit_values)
 
-    if B1_values is not None:
-        cmd_args += ['--B1_correction']
-
-    if quiet is not None:
-        cmd_args += ['--quiet', str(int(quiet))]
+    add_option('bool', cmd_args, '--quiet', quiet)
 
     #Args structure complete, convert to string for printing
     cmd_str = ' '.join(cmd_args)

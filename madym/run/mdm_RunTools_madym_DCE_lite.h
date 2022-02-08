@@ -7,7 +7,7 @@
 
 #ifndef MDM_RUNTOOLS_MADYM_DCE_LITE_HDR
 #define MDM_RUNTOOLS_MADYM_DCE_LITE_HDR
-#include "mdm_api.h"
+#include <madym/utils/mdm_api.h>
 #include <madym/run/mdm_RunToolsDCEFit.h>
 
 //! Class to run the lite version of the DCE analysis tool

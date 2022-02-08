@@ -7,8 +7,8 @@
 
 #ifndef MDM_RUNTOOLS_MADYM_DCE_LITE_HDR
 #define MDM_RUNTOOLS_MADYM_DCE_LITE_HDR
-#include "mdm_api.h"
-#include <madym/mdm_RunTools.h>
+#include <madym/utils/mdm_api.h>
+#include <madym/run/mdm_RunTools.h>
 
 #include <dcmtk/dcmimgle/dcmimage.h>
 #include <dcmtk/dcmdata/dctk.h> 
@@ -108,6 +108,33 @@ private:
     const std::vector<dcmSeriesInfo> &seriesInfo);
 
   //
+  struct DWIvolumeInfo {
+    std::vector<std::string> fileNames;
+    double Bvalue;
+    std::vector<double> gradOri;
+  };
+
+  //
+  struct DWIBvalueVolumes {
+    std::vector<DWIvolumeInfo> volumes;
+    double Bvalue;
+  };
+
+  //
+  std::vector<DWIBvalueVolumes> sortDWI(const dcmSeriesInfo& seriesInfo);
+
+  //
+  bool checkDWIsortValid(const std::vector<DWIBvalueVolumes> &DWIVolumeList);
+
+  //
+  void makeDWIInputs(
+    const std::vector<dcmSeriesInfo>& seriesInfo);
+
+  //
+  void makeDWIInputVols(
+    const dcmSeriesInfo& seriesInfo, const std::string &basename);
+
+  //
   void makeDynamicVols(
     const std::vector<dcmSeriesInfo> &seriesInfo);
 
@@ -118,6 +145,26 @@ private:
 
   //
   std::vector<std::string> getFileList(boost::filesystem::path directory);
+
+  //
+  void getScannerSetting(
+    DcmFileFormat& fileFormat,
+    const std::string& seriesName,
+    const std::string& settingName,
+    const mdm_input_string& customTag,
+    const DcmTagKey& defaultTag,
+    const bool required,
+    double& setting);
+
+  void getScannerSetting(
+    DcmFileFormat& fileFormat,
+    const std::string& seriesName,
+    const std::string& settingName,
+    const mdm_input_string& customTag,
+    const DcmTagKey& defaultTag,
+    const bool required,
+    std::vector<double>& setting,
+    size_t numValues);
 
   //
   void completeSeriesInfo(dcmSeriesInfo &series, int nDyns = 0);
@@ -136,8 +183,13 @@ private:
   void readSeriesInfo();
 
   //
-  mdm_Image3D loadDicomImage(const dcmSeriesInfo &series, const int startIdx,
+  mdm_Image3D loadDicomImage(const dcmSeriesInfo& series, const int startIdx,
     bool isDynamic = false, int dynNum = 0);
+
+  //
+  mdm_Image3D loadDicomImage(const dcmSeriesInfo& series, const std::vector<std::string>& sliceNames,
+    bool isDynamic = false, int dynNum = 0, 
+    double Bvalue = -1, const std::vector<double> gradOri = {});
 
 
   //

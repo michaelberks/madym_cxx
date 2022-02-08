@@ -3,8 +3,8 @@
 #include <madym/tests/mdm_test_utils.h>
 
 #include <fstream>
-#include <madym/t1_methods/mdm_T1FitterVFA.h>
-#include <madym/t1_methods/mdm_T1FitterIR.h>
+#include <madym/t1/mdm_T1FitterVFA.h>
+#include <madym/t1/mdm_T1FitterIR.h>
 #include <mdm_version.h>
 
 namespace fs = boost::filesystem;
@@ -60,7 +60,7 @@ void run_T1_lite_VFA_test(double B1)
     method = "VFA";
   } 
 
-  //Call calculate_T1 to fit T1 and M0
+  //Call madym_T1 to fit T1 and M0
   std::string T1_output_dir = test_dir + "/madym_T1_lite/";
   std::string outputName = "madym_analysis.dat";
   std::stringstream cmd;
@@ -143,7 +143,7 @@ void run_T1_lite_IR_test()
   BOOST_TEST_MESSAGE("Testing IR");
   method = "IR";
 
-  //Call calculate_T1 to fit T1 and M0
+  //Call madym_T1 to fit T1 and M0
   std::string T1_output_dir = test_dir + "/madym_T1_lite/";
   std::string outputName = "madym_analysis.dat";
   std::stringstream cmd;

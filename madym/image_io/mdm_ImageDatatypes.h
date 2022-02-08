@@ -8,8 +8,8 @@
 #ifndef MDM_IMAGEDATATYPES_H
 #define MDM_IMAGEDATATYPES_H
 
-#include "mdm_api.h"
-#include <madym/mdm_Image3D.h>
+#include <madym/utils/mdm_api.h>
+#include <madym/utils/mdm_Image3D.h>
 #include <madym/image_io/xtr/mdm_XtrFormat.h>
 
  //! Analyze image format reading and writing

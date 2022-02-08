@@ -7,7 +7,6 @@
 set( CMAKE_VERBOSE_MAKEFILE ON)
 
 set(mdm_opt_sources
-	#mdm_opt_api.h
 	alglibinternal.cpp		alglibinternal.h
 	alglibmisc.cpp			alglibmisc.h
 	ap.cpp					ap.h
@@ -16,6 +15,9 @@ set(mdm_opt_sources
 	fasttransforms.cpp		fasttransforms.h
 	integration.cpp			integration.h
 	interpolation.cpp		interpolation.h
+	kernels_avx2.cpp		kernels_avx2.h
+	kernels_fma.cpp			kernels_fma.h
+	kernels_sse2.cpp		kernels_sse2.h
 	linalg.cpp				linalg.h
 	optimization.cpp		optimization.h
 	solvers.cpp				solvers.h

@@ -1,5 +1,5 @@
 /*************************************************************************
-ALGLIB 3.13.0 (source code generated 2017-12-29)
+ALGLIB 3.18.0 (source code generated 2021-10-25)
 Copyright (c) Sergey Bochkanov (ALGLIB project).
 
 >>> SOURCE LICENSE >>>
@@ -17,6 +17,9 @@ A copy of the GNU General Public License is available at
 http://www.fsf.org/licensing/licenses
 >>> END OF LICENSE >>>
 *************************************************************************/
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 #include "stdafx.h"
 #include "fasttransforms.h"
 
@@ -83,7 +86,7 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 29.05.2009 by Bochkanov Sergey
 *************************************************************************/
-void fftc1d(complex_1d_array &a, const ae_int_t n)
+void fftc1d(complex_1d_array &a, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -98,6 +101,8 @@ void fftc1d(complex_1d_array &a, const ae_int_t n)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::fftc1d(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -133,7 +138,7 @@ OUTPUT PARAMETERS
      Copyright 29.05.2009 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void fftc1d(complex_1d_array &a)
+void fftc1d(complex_1d_array &a, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -144,6 +149,8 @@ void fftc1d(complex_1d_array &a)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::fftc1d(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), n, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -171,7 +178,7 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 29.05.2009 by Bochkanov Sergey
 *************************************************************************/
-void fftc1dinv(complex_1d_array &a, const ae_int_t n)
+void fftc1dinv(complex_1d_array &a, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -186,6 +193,8 @@ void fftc1dinv(complex_1d_array &a, const ae_int_t n)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::fftc1dinv(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -212,7 +221,7 @@ OUTPUT PARAMETERS
      Copyright 29.05.2009 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void fftc1dinv(complex_1d_array &a)
+void fftc1dinv(complex_1d_array &a, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -223,6 +232,8 @@ void fftc1dinv(complex_1d_array &a)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::fftc1dinv(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), n, &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -253,7 +264,7 @@ other FFT-related subroutines.
   -- ALGLIB --
      Copyright 01.06.2009 by Bochkanov Sergey
 *************************************************************************/
-void fftr1d(const real_1d_array &a, const ae_int_t n, complex_1d_array &f)
+void fftr1d(const real_1d_array &a, const ae_int_t n, complex_1d_array &f, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -268,6 +279,8 @@ void fftr1d(const real_1d_array &a, const ae_int_t n, complex_1d_array &f)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::fftr1d(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(f.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -297,7 +310,7 @@ other FFT-related subroutines.
      Copyright 01.06.2009 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void fftr1d(const real_1d_array &a, complex_1d_array &f)
+void fftr1d(const real_1d_array &a, complex_1d_array &f, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -308,6 +321,8 @@ void fftr1d(const real_1d_array &a, complex_1d_array &f)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::fftr1d(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(f.c_ptr()), &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -350,7 +365,7 @@ not used) because array size is used to automatically determine FFT length
   -- ALGLIB --
      Copyright 01.06.2009 by Bochkanov Sergey
 *************************************************************************/
-void fftr1dinv(const complex_1d_array &f, const ae_int_t n, real_1d_array &a)
+void fftr1dinv(const complex_1d_array &f, const ae_int_t n, real_1d_array &a, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -365,6 +380,8 @@ void fftr1dinv(const complex_1d_array &f, const ae_int_t n, real_1d_array &a)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::fftr1dinv(const_cast<alglib_impl::ae_vector*>(f.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(a.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -406,7 +423,7 @@ not used) because array size is used to automatically determine FFT length
      Copyright 01.06.2009 by Bochkanov Sergey
 *************************************************************************/
 #if !defined(AE_NO_EXCEPTIONS)
-void fftr1dinv(const complex_1d_array &f, real_1d_array &a)
+void fftr1dinv(const complex_1d_array &f, real_1d_array &a, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;    
@@ -417,6 +434,8 @@ void fftr1dinv(const complex_1d_array &f, real_1d_array &a)
     if( setjmp(_break_jump) )
         _ALGLIB_CPP_EXCEPTION(_alglib_env_state.error_msg);
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::fftr1dinv(const_cast<alglib_impl::ae_vector*>(f.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(a.c_ptr()), &_alglib_env_state);
 
     alglib_impl::ae_state_clear(&_alglib_env_state);
@@ -443,7 +462,7 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 04.06.2009 by Bochkanov Sergey
 *************************************************************************/
-void fhtr1d(real_1d_array &a, const ae_int_t n)
+void fhtr1d(real_1d_array &a, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -458,6 +477,8 @@ void fhtr1d(real_1d_array &a, const ae_int_t n)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::fhtr1d(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -479,7 +500,7 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 29.05.2009 by Bochkanov Sergey
 *************************************************************************/
-void fhtr1dinv(real_1d_array &a, const ae_int_t n)
+void fhtr1dinv(real_1d_array &a, const ae_int_t n, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -494,6 +515,8 @@ void fhtr1dinv(real_1d_array &a, const ae_int_t n)
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::fhtr1dinv(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), n, &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -530,7 +553,7 @@ subroutine - just shift its result correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convc1d(const complex_1d_array &a, const ae_int_t m, const complex_1d_array &b, const ae_int_t n, complex_1d_array &r)
+void convc1d(const complex_1d_array &a, const ae_int_t m, const complex_1d_array &b, const ae_int_t n, complex_1d_array &r, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -545,6 +568,8 @@ void convc1d(const complex_1d_array &a, const ae_int_t m, const complex_1d_array
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::convc1d(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), m, const_cast<alglib_impl::ae_vector*>(b.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(r.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -576,7 +601,7 @@ subroutine - just shift its result correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convc1dinv(const complex_1d_array &a, const ae_int_t m, const complex_1d_array &b, const ae_int_t n, complex_1d_array &r)
+void convc1dinv(const complex_1d_array &a, const ae_int_t m, const complex_1d_array &b, const ae_int_t n, complex_1d_array &r, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -591,6 +616,8 @@ void convc1dinv(const complex_1d_array &a, const ae_int_t m, const complex_1d_ar
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::convc1dinv(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), m, const_cast<alglib_impl::ae_vector*>(b.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(r.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -624,7 +651,7 @@ correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convc1dcircular(const complex_1d_array &s, const ae_int_t m, const complex_1d_array &r, const ae_int_t n, complex_1d_array &c)
+void convc1dcircular(const complex_1d_array &s, const ae_int_t m, const complex_1d_array &r, const ae_int_t n, complex_1d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -639,6 +666,8 @@ void convc1dcircular(const complex_1d_array &s, const ae_int_t m, const complex_
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::convc1dcircular(const_cast<alglib_impl::ae_vector*>(s.c_ptr()), m, const_cast<alglib_impl::ae_vector*>(r.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(c.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -670,7 +699,7 @@ correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convc1dcircularinv(const complex_1d_array &a, const ae_int_t m, const complex_1d_array &b, const ae_int_t n, complex_1d_array &r)
+void convc1dcircularinv(const complex_1d_array &a, const ae_int_t m, const complex_1d_array &b, const ae_int_t n, complex_1d_array &r, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -685,6 +714,8 @@ void convc1dcircularinv(const complex_1d_array &a, const ae_int_t m, const compl
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::convc1dcircularinv(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), m, const_cast<alglib_impl::ae_vector*>(b.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(r.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -712,7 +743,7 @@ subroutine - just shift its result correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convr1d(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, const ae_int_t n, real_1d_array &r)
+void convr1d(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, const ae_int_t n, real_1d_array &r, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -727,6 +758,8 @@ void convr1d(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, c
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::convr1d(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), m, const_cast<alglib_impl::ae_vector*>(b.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(r.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -758,7 +791,7 @@ subroutine - just shift its result correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convr1dinv(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, const ae_int_t n, real_1d_array &r)
+void convr1dinv(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, const ae_int_t n, real_1d_array &r, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -773,6 +806,8 @@ void convr1dinv(const real_1d_array &a, const ae_int_t m, const real_1d_array &b
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::convr1dinv(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), m, const_cast<alglib_impl::ae_vector*>(b.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(r.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -800,7 +835,7 @@ correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convr1dcircular(const real_1d_array &s, const ae_int_t m, const real_1d_array &r, const ae_int_t n, real_1d_array &c)
+void convr1dcircular(const real_1d_array &s, const ae_int_t m, const real_1d_array &r, const ae_int_t n, real_1d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -815,6 +850,8 @@ void convr1dcircular(const real_1d_array &s, const ae_int_t m, const real_1d_arr
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::convr1dcircular(const_cast<alglib_impl::ae_vector*>(s.c_ptr()), m, const_cast<alglib_impl::ae_vector*>(r.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(c.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -846,7 +883,7 @@ correspondingly.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void convr1dcircularinv(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, const ae_int_t n, real_1d_array &r)
+void convr1dcircularinv(const real_1d_array &a, const ae_int_t m, const real_1d_array &b, const ae_int_t n, real_1d_array &r, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -861,6 +898,8 @@ void convr1dcircularinv(const real_1d_array &a, const ae_int_t m, const real_1d_
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::convr1dcircularinv(const_cast<alglib_impl::ae_vector*>(a.c_ptr()), m, const_cast<alglib_impl::ae_vector*>(b.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(r.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -904,7 +943,7 @@ on [-K..M-1],  you can still use this subroutine, just shift result by K.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void corrc1d(const complex_1d_array &signal, const ae_int_t n, const complex_1d_array &pattern, const ae_int_t m, complex_1d_array &r)
+void corrc1d(const complex_1d_array &signal, const ae_int_t n, const complex_1d_array &pattern, const ae_int_t m, complex_1d_array &r, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -919,6 +958,8 @@ void corrc1d(const complex_1d_array &signal, const ae_int_t n, const complex_1d_
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::corrc1d(const_cast<alglib_impl::ae_vector*>(signal.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(pattern.c_ptr()), m, const_cast<alglib_impl::ae_vector*>(r.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -951,7 +992,7 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void corrc1dcircular(const complex_1d_array &signal, const ae_int_t m, const complex_1d_array &pattern, const ae_int_t n, complex_1d_array &c)
+void corrc1dcircular(const complex_1d_array &signal, const ae_int_t m, const complex_1d_array &pattern, const ae_int_t n, complex_1d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -966,6 +1007,8 @@ void corrc1dcircular(const complex_1d_array &signal, const ae_int_t m, const com
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::corrc1dcircular(const_cast<alglib_impl::ae_vector*>(signal.c_ptr()), m, const_cast<alglib_impl::ae_vector*>(pattern.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(c.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -1007,7 +1050,7 @@ on [-K..M-1],  you can still use this subroutine, just shift result by K.
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void corrr1d(const real_1d_array &signal, const ae_int_t n, const real_1d_array &pattern, const ae_int_t m, real_1d_array &r)
+void corrr1d(const real_1d_array &signal, const ae_int_t n, const real_1d_array &pattern, const ae_int_t m, real_1d_array &r, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -1022,6 +1065,8 @@ void corrr1d(const real_1d_array &signal, const ae_int_t n, const real_1d_array 
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::corrr1d(const_cast<alglib_impl::ae_vector*>(signal.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(pattern.c_ptr()), m, const_cast<alglib_impl::ae_vector*>(r.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -1054,7 +1099,7 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 21.07.2009 by Bochkanov Sergey
 *************************************************************************/
-void corrr1dcircular(const real_1d_array &signal, const ae_int_t m, const real_1d_array &pattern, const ae_int_t n, real_1d_array &c)
+void corrr1dcircular(const real_1d_array &signal, const ae_int_t m, const real_1d_array &pattern, const ae_int_t n, real_1d_array &c, const xparams _xparams)
 {
     jmp_buf _break_jump;
     alglib_impl::ae_state _alglib_env_state;
@@ -1069,6 +1114,8 @@ void corrr1dcircular(const real_1d_array &signal, const ae_int_t m, const real_1
 #endif
     }
     ae_state_set_break_jump(&_alglib_env_state, &_break_jump);
+    if( _xparams.flags!=0x0 )
+        ae_state_set_flags(&_alglib_env_state, _xparams.flags);
     alglib_impl::corrr1dcircular(const_cast<alglib_impl::ae_vector*>(signal.c_ptr()), m, const_cast<alglib_impl::ae_vector*>(pattern.c_ptr()), n, const_cast<alglib_impl::ae_vector*>(c.c_ptr()), &_alglib_env_state);
     alglib_impl::ae_state_clear(&_alglib_env_state);
     return;
@@ -1140,7 +1187,9 @@ void fftc1d(/* Complex */ ae_vector* a, ae_int_t n, ae_state *_state)
     ae_vector buf;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&plan, 0, sizeof(plan));    memset(&buf, 0, sizeof(buf));    _fasttransformplan_init(&plan, _state, ae_true);
+    memset(&plan, 0, sizeof(plan));
+    memset(&buf, 0, sizeof(buf));
+    _fasttransformplan_init(&plan, _state, ae_true);
     ae_vector_init(&buf, 0, DT_REAL, _state, ae_true);
 
     ae_assert(n>0, "FFTC1D: incorrect N!", _state);
@@ -1277,7 +1326,9 @@ void fftr1d(/* Real    */ ae_vector* a,
     fasttransformplan plan;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&buf, 0, sizeof(buf));    memset(&plan, 0, sizeof(plan));    ae_vector_clear(f);
+    memset(&buf, 0, sizeof(buf));
+    memset(&plan, 0, sizeof(plan));
+    ae_vector_clear(f);
     ae_vector_init(&buf, 0, DT_REAL, _state, ae_true);
     _fasttransformplan_init(&plan, _state, ae_true);
 
@@ -1407,7 +1458,9 @@ void fftr1dinv(/* Complex */ ae_vector* f,
     ae_vector fh;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&h, 0, sizeof(h));    memset(&fh, 0, sizeof(fh));    ae_vector_clear(a);
+    memset(&h, 0, sizeof(h));
+    memset(&fh, 0, sizeof(fh));
+    ae_vector_clear(a);
     ae_vector_init(&h, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&fh, 0, DT_COMPLEX, _state, ae_true);
 
@@ -1630,7 +1683,8 @@ void fhtr1d(/* Real    */ ae_vector* a, ae_int_t n, ae_state *_state)
     ae_vector fa;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&fa, 0, sizeof(fa));    ae_vector_init(&fa, 0, DT_COMPLEX, _state, ae_true);
+    memset(&fa, 0, sizeof(fa));
+    ae_vector_init(&fa, 0, DT_COMPLEX, _state, ae_true);
 
     ae_assert(n>0, "FHTR1D: incorrect N!", _state);
     
@@ -1804,7 +1858,10 @@ void convc1dinv(/* Complex */ ae_vector* a,
     double t;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&buf, 0, sizeof(buf));    memset(&buf2, 0, sizeof(buf2));    memset(&plan, 0, sizeof(plan));    ae_vector_clear(r);
+    memset(&buf, 0, sizeof(buf));
+    memset(&buf2, 0, sizeof(buf2));
+    memset(&plan, 0, sizeof(plan));
+    ae_vector_clear(r);
     ae_vector_init(&buf, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&buf2, 0, DT_REAL, _state, ae_true);
     _fasttransformplan_init(&plan, _state, ae_true);
@@ -1900,7 +1957,8 @@ void convc1dcircular(/* Complex */ ae_vector* s,
     ae_int_t j2;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&buf, 0, sizeof(buf));    ae_vector_clear(c);
+    memset(&buf, 0, sizeof(buf));
+    ae_vector_clear(c);
     ae_vector_init(&buf, 0, DT_COMPLEX, _state, ae_true);
 
     ae_assert(n>0&&m>0, "ConvC1DCircular: incorrect N or M!", _state);
@@ -1981,7 +2039,11 @@ void convc1dcircularinv(/* Complex */ ae_vector* a,
     double t;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&buf, 0, sizeof(buf));    memset(&buf2, 0, sizeof(buf2));    memset(&cbuf, 0, sizeof(cbuf));    memset(&plan, 0, sizeof(plan));    ae_vector_clear(r);
+    memset(&buf, 0, sizeof(buf));
+    memset(&buf2, 0, sizeof(buf2));
+    memset(&cbuf, 0, sizeof(cbuf));
+    memset(&plan, 0, sizeof(plan));
+    ae_vector_clear(r);
     ae_vector_init(&buf, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&buf2, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&cbuf, 0, DT_COMPLEX, _state, ae_true);
@@ -2150,7 +2212,11 @@ void convr1dinv(/* Real    */ ae_vector* a,
     ae_complex c3;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&buf, 0, sizeof(buf));    memset(&buf2, 0, sizeof(buf2));    memset(&buf3, 0, sizeof(buf3));    memset(&plan, 0, sizeof(plan));    ae_vector_clear(r);
+    memset(&buf, 0, sizeof(buf));
+    memset(&buf2, 0, sizeof(buf2));
+    memset(&buf3, 0, sizeof(buf3));
+    memset(&plan, 0, sizeof(plan));
+    ae_vector_clear(r);
     ae_vector_init(&buf, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&buf2, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&buf3, 0, DT_REAL, _state, ae_true);
@@ -2229,7 +2295,8 @@ void convr1dcircular(/* Real    */ ae_vector* s,
     ae_int_t j2;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&buf, 0, sizeof(buf));    ae_vector_clear(c);
+    memset(&buf, 0, sizeof(buf));
+    ae_vector_clear(c);
     ae_vector_init(&buf, 0, DT_REAL, _state, ae_true);
 
     ae_assert(n>0&&m>0, "ConvC1DCircular: incorrect N or M!", _state);
@@ -2315,7 +2382,13 @@ void convr1dcircularinv(/* Real    */ ae_vector* a,
     ae_complex c3;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&buf, 0, sizeof(buf));    memset(&buf2, 0, sizeof(buf2));    memset(&buf3, 0, sizeof(buf3));    memset(&cbuf, 0, sizeof(cbuf));    memset(&cbuf2, 0, sizeof(cbuf2));    memset(&plan, 0, sizeof(plan));    ae_vector_clear(r);
+    memset(&buf, 0, sizeof(buf));
+    memset(&buf2, 0, sizeof(buf2));
+    memset(&buf3, 0, sizeof(buf3));
+    memset(&cbuf, 0, sizeof(cbuf));
+    memset(&cbuf2, 0, sizeof(cbuf2));
+    memset(&plan, 0, sizeof(plan));
+    ae_vector_clear(r);
     ae_vector_init(&buf, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&buf2, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&buf3, 0, DT_REAL, _state, ae_true);
@@ -2471,7 +2544,11 @@ void convc1dx(/* Complex */ ae_vector* a,
     ae_vector buf2;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&bbuf, 0, sizeof(bbuf));    memset(&plan, 0, sizeof(plan));    memset(&buf, 0, sizeof(buf));    memset(&buf2, 0, sizeof(buf2));    ae_vector_clear(r);
+    memset(&bbuf, 0, sizeof(bbuf));
+    memset(&plan, 0, sizeof(plan));
+    memset(&buf, 0, sizeof(buf));
+    memset(&buf2, 0, sizeof(buf2));
+    ae_vector_clear(r);
     ae_vector_init(&bbuf, 0, DT_COMPLEX, _state, ae_true);
     _fasttransformplan_init(&plan, _state, ae_true);
     ae_vector_init(&buf, 0, DT_REAL, _state, ae_true);
@@ -2947,7 +3024,11 @@ void convr1dx(/* Real    */ ae_vector* a,
     ae_vector buf3;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&plan, 0, sizeof(plan));    memset(&buf, 0, sizeof(buf));    memset(&buf2, 0, sizeof(buf2));    memset(&buf3, 0, sizeof(buf3));    ae_vector_clear(r);
+    memset(&plan, 0, sizeof(plan));
+    memset(&buf, 0, sizeof(buf));
+    memset(&buf2, 0, sizeof(buf2));
+    memset(&buf3, 0, sizeof(buf3));
+    ae_vector_clear(r);
     _fasttransformplan_init(&plan, _state, ae_true);
     ae_vector_init(&buf, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&buf2, 0, DT_REAL, _state, ae_true);
@@ -3381,7 +3462,9 @@ void corrc1d(/* Complex */ ae_vector* signal,
     ae_int_t i;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&p, 0, sizeof(p));    memset(&b, 0, sizeof(b));    ae_vector_clear(r);
+    memset(&p, 0, sizeof(p));
+    memset(&b, 0, sizeof(b));
+    ae_vector_clear(r);
     ae_vector_init(&p, 0, DT_COMPLEX, _state, ae_true);
     ae_vector_init(&b, 0, DT_COMPLEX, _state, ae_true);
 
@@ -3445,7 +3528,9 @@ void corrc1dcircular(/* Complex */ ae_vector* signal,
     ae_int_t j2;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&p, 0, sizeof(p));    memset(&b, 0, sizeof(b));    ae_vector_clear(c);
+    memset(&p, 0, sizeof(p));
+    memset(&b, 0, sizeof(b));
+    ae_vector_clear(c);
     ae_vector_init(&p, 0, DT_COMPLEX, _state, ae_true);
     ae_vector_init(&b, 0, DT_COMPLEX, _state, ae_true);
 
@@ -3543,7 +3628,9 @@ void corrr1d(/* Real    */ ae_vector* signal,
     ae_int_t i;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&p, 0, sizeof(p));    memset(&b, 0, sizeof(b));    ae_vector_clear(r);
+    memset(&p, 0, sizeof(p));
+    memset(&b, 0, sizeof(b));
+    ae_vector_clear(r);
     ae_vector_init(&p, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&b, 0, DT_REAL, _state, ae_true);
 
@@ -3607,7 +3694,9 @@ void corrr1dcircular(/* Real    */ ae_vector* signal,
     ae_int_t j2;
 
     ae_frame_make(_state, &_frame_block);
-    memset(&p, 0, sizeof(p));    memset(&b, 0, sizeof(b));    ae_vector_clear(c);
+    memset(&p, 0, sizeof(p));
+    memset(&b, 0, sizeof(b));
+    ae_vector_clear(c);
     ae_vector_init(&p, 0, DT_REAL, _state, ae_true);
     ae_vector_init(&b, 0, DT_REAL, _state, ae_true);
 

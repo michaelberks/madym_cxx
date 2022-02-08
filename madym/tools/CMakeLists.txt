@@ -36,6 +36,20 @@ add_executable(madym_T1_lite
 target_link_libraries( madym_T1_lite mdm)
 
 #-------------------------------------------------------------------
+# Standalone tool for working with DWI
+add_executable(madym_DWI 
+	madym_DWI.cxx)
+
+target_link_libraries( madym_DWI mdm)
+
+#-------------------------------------------------------------------
+# Lightweight tool for working with DWI
+add_executable(madym_DWI_lite 
+	madym_DWI_lite.cxx)
+
+target_link_libraries( madym_DWI_lite mdm)
+
+#-------------------------------------------------------------------
 # Standalone tool for computing an auto AIF
 add_executable(madym_AIF 
 	madym_AIF.cxx)

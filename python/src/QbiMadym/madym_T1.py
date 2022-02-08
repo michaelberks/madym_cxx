@@ -8,7 +8,7 @@ import numpy as np
 from tempfile import TemporaryDirectory
 
 from QbiPy.image_io.analyze_format import read_analyze_img, write_analyze
-from QbiMadym.utils import local_madym_root
+from QbiMadym.utils import local_madym_root, add_option
 
 def  run(
     config_file = None,
@@ -30,12 +30,12 @@ def  run(
     audit_name:str = None,
     config_out:str = None,
     error_name:str = None,
-    no_log:bool = False,
-    no_audit:bool = False,
-    quiet:bool = False,
+    no_log:bool = None,
+    no_audit:bool = None,
+    quiet:bool = None,
     img_fmt_r:str = None,
     img_fmt_w:str = None,
-    overwrite:bool = False,
+    overwrite:bool = None,
     working_directory:str = None,
     return_maps:bool = False,
     dummy_run:bool = False
@@ -189,65 +189,45 @@ def  run(
     #Check if fitting to full volumes saved on disk, or directly supplied data
     if not use_lite:
 
-        if config_file:
-            cmd_args += ['--config', config_file]
-        
-        #Set up FA map names
-        if T1_vols:
-            #Set VFA files in the options string 
-            t1_input_str = ','.join(T1_vols)   
-            cmd_args += ['--T1_vols', t1_input_str]
+        add_option('string', cmd_args, '--config', config_file);
+    
+        add_option('string', cmd_args, '--cwd', working_directory);
+    
+        add_option('string', cmd_args, '-T', method);
+    
+        add_option('string_list', cmd_args, '--T1_vols', T1_vols);
+    
+        add_option('string', cmd_args, '-o', output_dir);
+    
+        add_option('string', cmd_args, '--B1', B1_name);  
+    
+        add_option('float', cmd_args, '--B1_scaling', B1_scaling);
+    
+        add_option('string', cmd_args, '--img_fmt_r', img_fmt_r);
+    
+        add_option('string', cmd_args, '--img_fmt_w', img_fmt_w);
+    
+        add_option('string', cmd_args, '-E', error_name);
+    
+        add_option('string', cmd_args, '--roi', roi_name);
+    
+        add_option('float', cmd_args, '--T1_noise', noise_thresh);
+    
+        add_option('bool', cmd_args, '--no_audit', no_audit);
 
-        if output_dir:
-            cmd_args += [ '-o', output_dir]
+        add_option('bool', cmd_args, '--no_log', no_log);
 
-        if method:
-            cmd_args += ['-T', method]
+        add_option('bool', cmd_args, '--quiet', quiet);
+    
+        add_option('string', cmd_args, '--program_log', program_log_name);
 
-        if B1_name:
-            cmd_args += ['--B1', B1_name]
+        add_option('string', cmd_args, '--audit', audit_name);
 
-        if B1_scaling is not None:
-            cmd_args += ['--B1_scaling', B1_scaling]
-        
-        if noise_thresh is not None:
-            cmd_args += ['--T1_noise', f'{noise_thresh:5.4f}']
+        add_option('string', cmd_args, '--audit_dir', audit_dir);
 
-        if roi_name is not None:
-            cmd_args += ['--roi', roi_name]
-        
-        if error_name is not None:
-            cmd_args += ['--err', error_name]
-
-        if program_log_name:
-            cmd_args += ['--log', program_log_name]
-
-        if audit_name:
-            cmd_args += ['--audit', audit_name]
-
-        if audit_dir:
-            cmd_args += ['--audit_dir', audit_dir]
-
-        if config_out:
-            cmd_args += ['--config_out', config_out]
-
-        if no_log:
-            cmd_args += ['--no_log']
-
-        if no_audit:
-            cmd_args += ['--no_audit']
-
-        if quiet:
-            cmd_args += ['--quiet']
-
-        if img_fmt_r:
-            cmd_args += ['--img_fmt_r', img_fmt_r]
-
-            if img_fmt_w:
-                cmd_args += ['--img_fmt_w', img_fmt_w]
-        
-        if overwrite:
-            cmd_args += ['--overwrite']
+        add_option('string', cmd_args, '--config_out', config_out);
+    
+        add_option('bool', cmd_args, '--overwrite', overwrite);
         
     else:
         #Fit directly supplied FA and signal data using madym_T1_lite
@@ -264,7 +244,7 @@ def  run(
         cmd_args += [
             '--data', input_file,
             '--n_T1', str(nScannerParams),
-            '--TR', f'{TR:4.3f}',
+            '--TR', f'{TR:5.4f}',
             '-o', output_dir,
             '-O', output_name]
         
@@ -279,8 +259,7 @@ def  run(
             raise ValueError(
                 'Size of ScannerParams array does not match size of signals array')
 
-        if method:
-            cmd_args += ['-T', method]
+        add_option('string', cmd_args, '-T', method)
         
         #If B1 values supplied, append them to the signals and set B1_correction
         #flag
@@ -289,10 +268,9 @@ def  run(
                 (signals, np.atleast_1d(B1_values).reshape((nSamples,1))),
                 1
             )
-            cmd_args += ['--B1_correction']
+            add_option('bool', cmd_args, '--B1_correction', True)
 
-        if quiet:
-            cmd_args += ['--quiet']
+        add_option('bool', cmd_args, '--quiet', quiet)
         
         #Check for bad samples, these can screw up Madym as the lite version
         #of the software doesn't do the full range of error checks Madym proper

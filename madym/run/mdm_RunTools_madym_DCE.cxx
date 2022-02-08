@@ -12,8 +12,8 @@
 
 #include "mdm_RunTools_madym_DCE.h"
 
-#include <madym/mdm_ProgramLogger.h>
-#include <madym/mdm_exception.h>
+#include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_exception.h>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/erase.hpp>
@@ -336,5 +336,8 @@ void mdm_RunTools_madym_DCE::writeOutput()
   if (model_->numParams())
     AIF_.writeAIF(outputPath_.string() + "/AIF.txt");
 
-  mdm_RunToolsVolumeAnalysis::writeOutput();
+	fileManager_.saveGeneralOutputMaps(outputPath_.string());
+	fileManager_.saveDynamicOutputMaps(outputPath_.string(),
+		options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
+	fileManager_.saveDCEOutputMaps(outputPath_.string());
 }
