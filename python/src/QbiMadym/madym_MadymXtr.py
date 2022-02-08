@@ -15,6 +15,8 @@ def run(
     T1_method:str = None,
     T1_vols:list = None,
     T1_dir:str = None,
+    DWI_vols:list = None,
+    DWI_dir:str = None,
     dynamic_basename:str = None,
     dyn_dir:str = None,
     sequence_format:str = None,
@@ -27,6 +29,8 @@ def run(
     TR : float = None,
     FA : float = None,
     VFAs : list = None,
+    TIs : list = None,
+    Bvalues : list = None,
     dyn_times:np.array = None,
     working_directory:str = None,
     dummy_run:bool = None):
@@ -50,9 +54,13 @@ def run(
             Path to file setting options
         cmd_exe : str  default None,
         T1_vols : list default None, 
-            File names of generated signal volumes to from which baseline T1 is mapped
+            File names of signal volumes from which baseline T1 is mapped
         T1_dir : str = None,
             Folder to which T1 input volumes saved
+        DWI_vols : list default None, 
+            File names of signal volumes for DWI models
+        DWI_dir : str = None,
+            Folder to which DWI input volumes saved
         dynamic_basename : str default None, 
             Template name for dynamic sequences eg. dynamic/dyn_
         sequence_format : str default None, 
@@ -75,6 +83,10 @@ def run(
             Flip-angle of dynamic series
         VFAs : list = None,
             List of flip-angles for baseline T1 mapping images
+        TIs : list = None,
+            List of inversion times for baseline T1 mapping images
+        Bvalues : list = None,
+            List of B-values for DWI signal images
         dyn_times:np.array = None,
             Time associated with each dynamic signal (in mins)
         working_directory : str = None,
@@ -127,46 +139,54 @@ def run(
     #Set up initial cmd string
     cmd_args = [cmd_exe]
     
-    add_option('string', cmd_args, '--config', config_file);
+    add_option('string', cmd_args, '--config', config_file)
 
-    add_option('string', cmd_args, '--cwd', working_directory);
+    add_option('string', cmd_args, '--cwd', working_directory)
 
-    add_option('string', cmd_args, '--T1_method', T1_method);
+    add_option('string', cmd_args, '--T1_method', T1_method)
 
-    add_option('string_list', cmd_args, '--T1_vols', T1_vols);
+    add_option('string_list', cmd_args, '--T1_vols', T1_vols)
 
-    add_option('string', cmd_args, '--T1_dir', T1_dir);
+    add_option('string', cmd_args, '--T1_dir', T1_dir)
 
-    add_option('string', cmd_args, '-d', dynamic_basename);
+    add_option('string_list', cmd_args, '--DWI_vols', DWI_vols)
 
-    add_option('string', cmd_args, '--dyn_dir', dyn_dir);
+    add_option('string', cmd_args, '--DWI_dir', DWI_dir)
 
-    add_option('string', cmd_args, '--sequence_format', sequence_format);
+    add_option('string', cmd_args, '-d', dynamic_basename)
 
-    add_option('int', cmd_args, '--sequence_start', sequence_start);
+    add_option('string', cmd_args, '--dyn_dir', dyn_dir)
 
-    add_option('int', cmd_args, '--sequence_step', sequence_step);
+    add_option('string', cmd_args, '--sequence_format', sequence_format)
 
-    add_option('int', cmd_args, '--n_dyns', n_dyns);
+    add_option('int', cmd_args, '--sequence_start', sequence_start)
 
-    add_option('bool', cmd_args, '--make_t1', make_t1);
+    add_option('int', cmd_args, '--sequence_step', sequence_step)
 
-    add_option('bool', cmd_args, '--make_dyn', make_dyn);
+    add_option('int', cmd_args, '--n_dyns', n_dyns)
 
-    add_option('float', cmd_args, '--temp_res', temp_res);
+    add_option('bool', cmd_args, '--make_t1', make_t1)
 
-    add_option('float', cmd_args, '--TR', TR);
+    add_option('bool', cmd_args, '--make_dyn', make_dyn)
 
-    add_option('float', cmd_args, '--FA', FA);
+    add_option('float', cmd_args, '--temp_res', temp_res)
 
-    add_option('float_list', cmd_args, '--VFAs', VFAs);
+    add_option('float', cmd_args, '--TR', TR)
+
+    add_option('float', cmd_args, '--FA', FA)
+
+    add_option('float_list', cmd_args, '--VFAs', VFAs)
+
+    add_option('float_list', cmd_args, '--TI', TIs)
+
+    add_option('float_list', cmd_args, '--Bvalues', Bvalues)
 
     if dyn_times is not None:
         #Get a name for the temporary file we'll write times to (we'll hold
         #off writing anything until we know this isn't a dummy run
         t_dir = TemporaryDirectory()
         dyn_times_file = os.path.join(t_dir.name, 'dyn_times.dat')
-        add_option('string', cmd_args, '-t', dyn_times_file);
+        add_option('string', cmd_args, '-t', dyn_times_file)
 
     #Args structure complete, convert to string for printing
     cmd_str = ' '.join(cmd_args)
