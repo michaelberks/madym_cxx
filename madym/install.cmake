@@ -243,6 +243,12 @@ if (APPLE)
             \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_T1_lite )
         execute_process(COMMAND codesign --timestamp --options runtime -s 
             ${APPLE_CODESIGN_ID}
+            \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DWI )
+        execute_process(COMMAND codesign --timestamp --options runtime -s 
+            ${APPLE_CODESIGN_ID}
+            \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_DWI_lite )
+        execute_process(COMMAND codesign --timestamp --options runtime -s 
+            ${APPLE_CODESIGN_ID}
             \${CMAKE_INSTALL_PREFIX}/${MADYM_DEPLOY_DIR}/bin/madym_AIF )
         execute_process(COMMAND codesign --timestamp --options runtime -s 
             ${APPLE_CODESIGN_ID}
