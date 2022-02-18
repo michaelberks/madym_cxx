@@ -236,7 +236,7 @@ def run(
 
     add_option('string', cmd_args, '--dicom_dir', dicom_dir)
 
-    add_option('string', cmd_args, '--dicom_series_file', dicom_series_file)
+    add_option('string', cmd_args, '--dicom_series', dicom_series_file)
 
     add_option('int_list', cmd_args, '--T1_series', T1_input_series)
 
