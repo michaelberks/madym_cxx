@@ -82,6 +82,8 @@ MDM_API int mdm_RunTools_madym_MakeXtr::parseInputs(int argc, const char *argv[]
   po::options_description cmdline_options("madym_MakeXtr options");
   po::options_description config_options("madym_MakeXtr config options");
 
+  options_parser_.add_option(cmdline_options, options_.help);
+  options_parser_.add_option(cmdline_options, options_.version);
   options_parser_.add_option(cmdline_options, options_.configFile);
   options_parser_.add_option(cmdline_options, options_.dataDir);
 
@@ -168,8 +170,10 @@ void mdm_RunTools_madym_MakeXtr::makeT1InputXtr()
 
   switch (methodType)
   {
-  case mdm_T1MethodGenerator::VFA: makeVFAXtr(); break;
-  case mdm_T1MethodGenerator::IR: makeVFAXtr(); break;
+  case mdm_T1MethodGenerator::VFA:; //fall through
+  case mdm_T1MethodGenerator::VFA_B1:
+    makeVFAXtr(); break;
+  case mdm_T1MethodGenerator::IR: makeIRXtr(); break;
   default:
     throw mdm_exception(__func__, "T1 method not recognised");
   }
@@ -309,8 +313,8 @@ void mdm_RunTools_madym_MakeXtr::makeDWIXtr()
       boost::format("Number of elements in Bvalues (%1%) does not match number input names (%2%)")
       % options_.Bvalues().size() % nInputs);
 
-  auto TR = options_.TR();
-  auto FA = options_.FA();
+  //auto TR = options_.TR();
+  //auto FA = options_.FA();
 
   for (size_t i_b = 0; i_b < nInputs; i_b++)
   {
@@ -324,10 +328,10 @@ void mdm_RunTools_madym_MakeXtr::makeDWIXtr()
     mdm_Image3D img;
     img.info().B.setValue(B);
 
-    if (FA)
-      img.info().flipAngle.setValue(FA);
-    if (TR)
-      img.info().TR.setValue(TR);
+    //if (FA)
+    //  img.info().flipAngle.setValue(FA);
+    //if (TR)
+    //  img.info().TR.setValue(TR);
     
 
     mdm_XtrFormat::writeAnalyzeXtr(DWIpath.string(), img, mdm_XtrFormat::NEW_XTR);

@@ -7,7 +7,7 @@ import subprocess
 import numpy as np
 from tempfile import TemporaryDirectory
 
-from QbiPy.image_io.analyze_format import read_analyze_img, write_analyze
+from QbiPy.image_io.analyze_format import read_analyze, write_analyze
 from QbiMadym.utils import local_madym_root, add_option
 
 def  run(
@@ -345,12 +345,12 @@ def  run(
 
         T1_path = os.path.join(working_directory,output_dir, 'T1.hdr')
         M0_path = os.path.join(working_directory,output_dir, 'M0.hdr')
-        T1 = read_analyze_img(T1_path)
-        M0 = read_analyze_img(M0_path)
+        T1 = read_analyze(T1_path)[0]
+        M0 = read_analyze(M0_path)[0]
         
         if error_name is not None:
             error_path = os.path.join(working_directory,output_dir, error_name+'.hdr')
-            error_codes = read_analyze_img(error_path)
+            error_codes = read_analyze(error_path)[0]
         else:
             error_codes = []
     else:

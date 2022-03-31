@@ -151,7 +151,7 @@ private:
     DcmFileFormat& fileFormat,
     const std::string& seriesName,
     const std::string& settingName,
-    const mdm_input_string& customTag,
+    const mdm_input_dicom_tag& customTag,
     const DcmTagKey& defaultTag,
     const bool required,
     double& setting);
@@ -160,7 +160,7 @@ private:
     DcmFileFormat& fileFormat,
     const std::string& seriesName,
     const std::string& settingName,
-    const mdm_input_string& customTag,
+    const mdm_input_dicom_tag& customTag,
     const DcmTagKey& defaultTag,
     const bool required,
     std::vector<double>& setting,
@@ -170,14 +170,11 @@ private:
   void completeSeriesInfo(dcmSeriesInfo &series, int nDyns = 0);
 
   //
-  void printSeriesInfo(const dcmSeriesInfo &series);
-
-  //
-  void printSeriesInfoSummary(const dcmSeriesInfo &series);
+  void printSeriesInfoSummary(const dcmSeriesInfo &series, std::ofstream &file);
 
   //
   void writeSeriesInfo(
-    const std::vector<dcmSeriesInfo> &seriesInfo);
+    std::vector<dcmSeriesInfo> &seriesInfo);
 
   //
   void readSeriesInfo();
@@ -196,7 +193,7 @@ private:
   void setDicomTag(const mdm_input_strings &tagInput, DcmTagKey &tag);
 
   //
-  void setDicomTag(const mdm_input_string &tagInput, DcmTagKey &tag);
+  void setDicomTag(const mdm_input_dicom_tag &tagInput, DcmTagKey &tag);
 
   //
   void checkSortValid(dcmSeriesInfo &series);

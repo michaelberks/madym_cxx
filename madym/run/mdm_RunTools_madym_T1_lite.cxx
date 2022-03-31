@@ -109,7 +109,9 @@ MDM_API void mdm_RunTools_madym_T1_lite::run()
 MDM_API int mdm_RunTools_madym_T1_lite::parseInputs(int argc, const char *argv[])
 {
 	po::options_description config_options("madym_T1_lite config options_");
-	
+	options_parser_.add_option(config_options, options_.help);
+	options_parser_.add_option(config_options, options_.version);
+
 	options_parser_.add_option(config_options, options_.dataDir);
 	options_parser_.add_option(config_options, options_.inputDataFile);
 	options_parser_.add_option(config_options, options_.T1method);

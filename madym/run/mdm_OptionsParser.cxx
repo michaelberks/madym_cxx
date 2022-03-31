@@ -21,6 +21,7 @@
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 #include <madym/utils/mdm_exception.h>
+#include <madym/utils/mdm_ProgramLogger.h>
 
 //! Custom validator for input type mdm_input_str
 void validate(boost::any& v,
@@ -95,13 +96,23 @@ void validate(boost::any& v,
 	v = mdm_input_int_list(s);
 }
 
+//! Custom validator for input type mdm_input_dicomTag
+void validate(boost::any& v,
+	const std::vector<std::string>& values,
+	mdm_input_dicomTag* target_type, int)
+{
+
+	// Make sure no previous assignment to 'a' was made.
+	po::validators::check_first_occurrence(v);
+	// Extract the first string from 'values'. If there is more than
+	// one string, it's an error, and exception will be thrown.
+	const std::string& s = po::validators::get_single_string(values);
+	v = mdm_input_dicomTag(s);
+}
+
 //
 MDM_API  mdm_OptionsParser::mdm_OptionsParser()
 {
-	help_.add_options()
-		("help,h", "Print options and quit")
-		("version,v", "Print version and quit")
-		;
 }
 
 //
@@ -111,13 +122,15 @@ MDM_API bool mdm_OptionsParser::to_stream(std::ostream &stream,
 	//Print out the config and cwd options first, commented so they don't get
 	//read in by the Boosts config reader
 	stream << "#" << caller << "\n";
+	stream << "#" << options.version.key() << " = " << MDM_VERSION << "\n";
 	stream << "#" << options.configFile.key() << " = " << options.configFile() << "\n";
 	stream << "#" << options.dataDir.key() << " = " << options.dataDir() << "\n";
 
 	for (const auto& it : vm_) 
 	{
 		auto &key = it.first;
-		if (key == options.configFile.key() || key == options.dataDir.key())
+		if (key == options.configFile.key() || key == options.dataDir.key() || 
+			key == options.help.key() || key == options.version.key())
 			continue;
 
 		stream << key << " = ";
@@ -135,6 +148,8 @@ MDM_API bool mdm_OptionsParser::to_stream(std::ostream &stream,
 		else if (auto v = boost::any_cast<mdm_input_int_list>(&value))
 			stream << *v;
 		else if (auto v = boost::any_cast<mdm_input_double_list>(&value))
+			stream << *v;
+		else if (auto v = boost::any_cast<mdm_input_dicomTag>(&value))
 			stream << *v;
 		stream << "\n";
 	}
@@ -163,7 +178,7 @@ MDM_API mdm_OptionsParser::ParseType mdm_OptionsParser::parseInputs(
 	int argc, const char *argv[])
 {
 	po::options_description combined_options("");
-	combined_options.add(cmdline_options).add(config_options).add(help_);
+	combined_options.add(cmdline_options).add(config_options);
 
 	//Parse the command-line
 	if (!parse_command_line(argc, argv, combined_options))
@@ -188,7 +203,6 @@ MDM_API mdm_OptionsParser::ParseType mdm_OptionsParser::parseInputs(
 	po::options_description &cmdline_options,
 	int argc, const char *argv[])
 {
-	cmdline_options.add(help_);
 
 	//Parse the command line
 	if (!parse_command_line(argc, argv, cmdline_options))
@@ -237,6 +251,8 @@ template void MDM_API mdm_OptionsParser::add_option(po::options_description &c,
 	mdm_input_ints &o);  //!< Template declaration for list of ints input
 template void MDM_API mdm_OptionsParser::add_option(po::options_description &c,
 	mdm_input_doubles &o);  //!< Template declaration for list of doubles input
+template void MDM_API mdm_OptionsParser::add_option(po::options_description& c,
+	mdm_input_dicom_tag& o);  //!< Template declaration for list of doubles input
 
 //! Template specialization for bool input
 template<>
@@ -297,8 +313,10 @@ bool mdm_OptionsParser::parse_command_line(int argc, const char *argv[],
 bool mdm_OptionsParser::help_set(int argc, const po::options_description &combined_options)
 {
 	//Check if help set, if so, just display options and quit
-	if (argc == 1 || vm_.count("help")) {
-		std::cout << combined_options << "\n";
+	if (argc == 1 || vm_["help"].as<bool>()) {
+		std::stringstream ss;
+		ss << combined_options << "\n";
+		mdm_ProgramLogger::logProgramMessage(ss.str());
 		return true;
 	}
 	return false;
@@ -307,8 +325,8 @@ bool mdm_OptionsParser::help_set(int argc, const po::options_description &combin
 bool mdm_OptionsParser::version_set()
 {
 	//Check if version set
-	if (vm_.count("version")) {
-		std::cout << MDM_VERSION << "\n";
+	if (vm_["version"].as<bool>()) {
+		mdm_ProgramLogger::logProgramMessage(MDM_VERSION);
 		return true;
 	}
 	return false;

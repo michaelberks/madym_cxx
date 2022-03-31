@@ -86,6 +86,7 @@ private slots:
   void on_loadConfigButton_clicked();
   void on_saveConfigButton_clicked();
   void on_homeButton_clicked();
+  void on_helpButton_clicked();
   void on_runButton_clicked();
 
   //General input options
@@ -189,6 +190,96 @@ private slots:
   void on_bThresholdsLineEdit_textChanged(const QString& text);
   void on_dwiInputSelect_clicked();
 
+  //Dicom tabs...
+  //Dicom image format
+  void on_dicomImageWriteComboBox_currentIndexChanged(const QString& text);
+  void on_dicomDataTypeComboBox_currentIndexChanged(const QString& text);
+  void on_flipXCheckBox_stateChanged(int state);
+  void on_flipYCheckBox_stateChanged(int state);
+  void on_flipZCheckBox_stateChanged(int state);
+  void on_dicomScaleSpinBox_valueChanged(double value);
+  void on_dicomOffsetSpinBox_valueChanged(double value);
+  void on_autoScaleTagLineEdit_textChanged(const QString& text);
+  void on_autoOffsetTagLineEdit_textChanged(const QString& text);
+
+  //Dicom sequence naming
+  void on_sequenceFormatLineEdit_textChanged(const QString& text);
+  void on_sequenceStartSpinBox_valueChanged(int value);
+  void on_sequenceStepSpinBox_valueChanged(int value);
+  void on_meanSuffixLineEdit_textChanged(const QString& text);
+  void on_repeatPrefixLineEdit_textChanged(const QString& text);
+
+  //Dicom main options
+  void on_dicomDirLineEdit_textChanged(const QString& text);
+  void on_dicomDirSelect_clicked();
+  void on_seriesNameLineEdit_textChanged(const QString& text);
+  void on_sortCheckBox_stateChanged(int state);
+  void on_makeDynCheckBox_stateChanged(int state);
+  void on_makeT1InputsCheckBox_stateChanged(int state);
+  void on_makeDWIInputsCheckBox_stateChanged(int state);
+  void on_makeSingleCheckBox_stateChanged(int state);
+
+  //Dicom sort options
+  void on_dicomFileFilterLineEdit_textChanged(const QString& text);
+  void on_sliceFilterTagLineEdit_textChanged(const QString& text);
+  void on_sliceFilterMatchValueLineEdit_textChanged(const QString& text);
+
+  //Dicom make dynamic options
+  void on_dicomDynSeriesLineEdit_textChanged(const QString& text);
+  void on_makeDynMeanCheckBox_stateChanged(int state);
+  void on_dynamicDirLineEdit_textChanged(const QString& text);
+  void on_dynamicDirSelect_clicked();
+  void on_dynamicNameLineEdit_textChanged(const QString& text);
+  void on_dicomNDynSpinBox_valueChanged(int value);
+  void on_temporalResolutionSpinBox_valueChanged(double value);
+
+  //Dicom T1 inputs
+  void on_dicomT1InputSeriesLineEdit_textChanged(const QString& text);
+  void on_makeT1MeansCheckBox_stateChanged(int state);
+  void on_T1DirLineEdit_textChanged(const QString& text);
+  void on_T1DirSelect_clicked();
+  void on_dicomT1InputTextEdit_textChanged();
+  void on_xtrT1MethodComboBox_currentIndexChanged(const QString& text);
+
+  //Dicom DWI inputs
+  void on_dicomDWIInputSeriesLineEdit_textChanged(const QString& text);
+  void on_makeBvalueMeansCheckBox_stateChanged(int state);
+  void on_DWIDirLineEdit_textChanged(const QString& text);
+  void on_DWIDirSelect_clicked();
+  void on_dicomDWIInputTextEdit_textChanged();
+
+  //Dicom single volume inputs
+  void on_dicomSingleSeriesLineEdit_textChanged(const QString& text);
+  void on_dicomSingleVolNamesTextEdit_textChanged();
+
+  //Dicom scanner attributes
+  void on_dynTimeTagLineEdit_textChanged(const QString& text);
+  void on_dynTimeRequiredCheckBox_stateChanged(int state);
+  void on_FATagLineEdit_textChanged(const QString& text);
+  void on_FARequiredCheckBox_stateChanged(int state);
+  void on_TRTagLineEdit_textChanged(const QString& text);
+  void on_TRRequiredCheckBox_stateChanged(int state);
+  void on_TITagLineEdit_textChanged(const QString& text);
+  void on_TIRequiredCheckBox_stateChanged(int state);
+  void on_TETagLineEdit_textChanged(const QString& text);
+  void on_TERequiredCheckBox_stateChanged(int state);
+  void on_BTagLineEdit_textChanged(const QString& text);
+  void on_BRequiredCheckBox_stateChanged(int state);
+  void on_gradOriTagLineEdit_textChanged(const QString& text);
+  void on_gradOriRequiredCheckBox_stateChanged(int state);
+
+  //XTR tabs
+  void on_xtrSequenceFormatLineEdit_textChanged(const QString& text);
+  void on_xtrSequenceStartSpinBox_valueChanged(int value);
+  void on_xtrSequenceStepSpinBox_valueChanged(int value);
+  void on_xtrFALineEdit_textChanged(const QString& text);
+  void on_xtrVFAsLineEdit_textChanged(const QString& text);
+  void on_xtrTIsLineEdit_textChanged(const QString& text);
+  void on_xtrBvaluesLineEdit_textChanged(const QString& text);
+  void on_xtrTRLineEdit_textChanged(const QString& text);
+  void on_dynamicTimesFileLineEdit_textChanged(const QString& text);
+  void on_dynamicTimesFileSelect_clicked();
+
   //Log window
   void on_clearLogButton_clicked();
 
@@ -215,19 +306,35 @@ private: // Methods
   void setup_AIF_detection_tab(bool show);
   void setup_fitting_tab(bool show);
 
+  void setup_dicom_tabs(bool show);
+  void setup_dicom_format_tab(bool show);
+  void setup_dicom_sequence_tab(bool show);
+  void setup_dicom_options_tab(bool show);
+  void setup_dicom_sort_tab(bool show);
+  void setup_dicom_dynamic_tab(bool show);
+  void setup_dicom_t1_tab(bool show);
+  void setup_dicom_DWI_tab(bool show);
+  void setup_dicom_single_tab(bool show);
+  void setup_dicom_scanner_tab(bool show);
+  void setup_xtr_scanner_tab(bool show);
+
   void initialize_widget_values();
 
   void initialize_model_options();
-  void initialize_T1_options();
+  void initialize_T1_options(QComboBox& b);
   void initialize_AIF_options();
   void initialize_DWI_options();
-  void initialize_image_format_options(QComboBox &b);
+  void initialize_image_format_options(QComboBox& b);
+  void initialize_image_datatype_options(QComboBox& b);
   void initialize_optimisation_options();
   void set_AIF_enabled();
   void set_BValsThresholds_enabled();
   bool check_required_options();
   void setB1Name(const QString &text);
   void makeB1Consistent(bool useB1);
+
+  QString tagToString(const dicomTag& tag);
+  void setTagOption(const QString& text, mdm_input_dicom_tag &tagOption);
 
 #ifdef _WIN32
 	bool winEvent(MSG * message, long * result);
@@ -264,6 +371,9 @@ private: // Variables
 
   //Validator to check range inputs
   QValidator *doubleListValidator;
+
+  //Validator to check tag inputs
+  QValidator* tagValidator;
 
 };
 

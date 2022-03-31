@@ -158,9 +158,9 @@ BOOST_AUTO_TEST_CASE(test_madym_DWI_IVIM) {
 
 	//Load in the parameter img vols and extract the single voxel from each
 	mdm_Image3D S0_fit = mdm_NiftiFormat::readImage3D(DWI_output_dir + "S0", false);
-	mdm_Image3D d_fit = mdm_NiftiFormat::readImage3D(DWI_output_dir + "d", false);
+	mdm_Image3D d_fit = mdm_NiftiFormat::readImage3D(DWI_output_dir + "D", false);
 	mdm_Image3D f_fit = mdm_NiftiFormat::readImage3D(DWI_output_dir + "f", false);
-	mdm_Image3D dstar_fit = mdm_NiftiFormat::readImage3D(DWI_output_dir + "dstar", false);
+	mdm_Image3D dstar_fit = mdm_NiftiFormat::readImage3D(DWI_output_dir + "Dstar", false);
 	
 	//Check the model parameters have fitted correctly
 	double tol = 0.5;

@@ -12,6 +12,7 @@
 
 #include <string>
 #include <vector>
+#include <tuple>
 
 //! Template class, defining an input option comprising a key, value and information text
 /*!
@@ -20,9 +21,15 @@ We use using boost::program_options to parse options for the T1 mapping and DCE 
 1. mdm_Input acts as container for each option, comprising a key (in long and short form), the option value and information text describing the option.
 2. Wrapper classes mdm_input_str, mdm_input_string_list, mdm_input_int_list and mdm_input_double_list to allow us to customise how boost::program_option parse string and vector inputs
 
-For the customised option types, we need to provide the wrapped class to boost::program_options, but use the unwrapped standard library class in the rest of our code. To achieve this, mdm_Input is templated with <T_wrapped,T_unwrapped>. So for example a string option is stored in an object of type mdm_Input<mdm_input_str,std::string>. For input types we do not need to customise (ints, bools and doubles) T_unwrapped = T_wrapped, eg an integer option is stored in an object mdm_Input<int,int>.
+For the customised option types, we need to provide the wrapped class to boost::program_options, 
+but use the unwrapped standard library class in the rest of our code. 
+To achieve this, mdm_Input is templated with <T_wrapped,T_unwrapped>. 
+So for example a string option is stored in an object of type mdm_Input<mdm_input_str,std::string>. 
+For input types we do not need to customise (ints, bools and doubles) T_unwrapped = T_wrapped, eg an integer option is stored in an object mdm_Input<int,int>.
 
-To hide the ugly double-templates, we use typdefs #mdm_input_int, #mdm_input_string etc. It seems like a lot of boiler plate, but defining all this here makes is much easier to have a clear and concsise interface for defining and using options in the rest of the library.
+To hide the ugly double-templates, we use typdefs #mdm_input_int, #mdm_input_string etc. 
+It seems like a lot of boiler plate, but defining all this here makes is much easier to have a clear and concsise 
+interface for defining and using options in the rest of the library.
 */
 template <class T_wrapped, class T_unwrapped>
 class mdm_Input {
@@ -43,6 +50,7 @@ public:
 	\see mdm_input_bool
 	\see mdm_input_int
 	\see mdm_input_double
+	\see mdm_dicom_tag
 	*/
   MDM_API mdm_Input(T_wrapped value, std::string k, std::string ks, std::string info) :
 		value_(value),
@@ -293,6 +301,56 @@ private:
   std::vector<std::string> list_;
 };
 
+//!Simple structure for dicom tags
+typedef std::pair<std::string, std::string> dicomTag;
+
+//! Wrapper class for string vectors to pass to boost::program_options
+class mdm_input_dicomTag {
+
+public:
+
+	//! Default constructor
+	MDM_API mdm_input_dicomTag();
+
+	//! Constructor from a standard string vector
+	/*!
+	\param list set string vector value
+	*/
+	MDM_API mdm_input_dicomTag(dicomTag tag);
+
+	//! Constructor from string
+	/*!
+	\param str string form used in config_file/cmd line option
+	*/
+	MDM_API mdm_input_dicomTag(const std::string& str);
+
+	//! Default destructor
+	MDM_API ~mdm_input_dicomTag();
+
+	//! Operator to return option value as vector of strings
+	MDM_API const dicomTag& operator() () const;
+
+	//!Set value from string
+	/*!
+	\param str string form used in config_file/cmd line option
+	*/
+	MDM_API void fromString(const std::string& str);
+
+	//!Return string format of list
+	/*!
+	\return string form used in config_file/cmd line option
+	*/
+	MDM_API std::string toString() const;
+
+private:
+	friend std::ostream& operator<<(std::ostream& os, const mdm_input_dicomTag& tag)
+	{
+		os << tag.toString();
+		return os;
+	}
+	dicomTag tag_;
+};
+
 //! Input option for strings
 typedef mdm_Input < mdm_input_string_list, std::vector<std::string> > mdm_input_strings;
 
@@ -313,5 +371,8 @@ typedef mdm_Input< int, int> mdm_input_int;
 
 //! Input option for doubles
 typedef mdm_Input< double, double> mdm_input_double;
+
+//! Input option for dicom tags
+typedef mdm_Input< mdm_input_dicomTag, dicomTag> mdm_input_dicom_tag;
 
 #endif

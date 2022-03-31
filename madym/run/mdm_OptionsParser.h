@@ -175,7 +175,6 @@ private:
 	void make_exe_args(int argc, const char *argv[]);
 	
 	po::variables_map vm_;
-	po::options_description help_;
 	std::string exe_args_;
 	std::string exe_cmd_;
 

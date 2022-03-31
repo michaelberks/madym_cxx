@@ -7,5 +7,6 @@
     <file>images/madym.png</file>
     <file>images/madym_lrg.png</file>
     <file>images/return.png</file>
+	<file>images/help.png</file>
     </qresource>
 </RCC>
