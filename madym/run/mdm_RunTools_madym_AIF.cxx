@@ -107,6 +107,8 @@ MDM_API int mdm_RunTools_madym_AIF::parseInputs(int argc, const char *argv[])
   po::options_description cmdline_options("madym_AIF options");
   po::options_description config_options("madym_AIF config options");
 
+  options_parser_.add_option(cmdline_options, options_.help);
+  options_parser_.add_option(cmdline_options, options_.version);
   options_parser_.add_option(cmdline_options, options_.configFile);
   options_parser_.add_option(cmdline_options, options_.dataDir);;
 

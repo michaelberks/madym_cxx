@@ -273,6 +273,8 @@ MDM_API int mdm_RunTools_madym_DCE_lite::parseInputs(int argc, const char *argv[
 {
 	po::options_description config_options("madym-lite config options_");
 	
+	options_parser_.add_option(config_options, options_.help);
+	options_parser_.add_option(config_options, options_.version);
 	options_parser_.add_option(config_options, options_.dataDir);
 
 		//DCE input options_

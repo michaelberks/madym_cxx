@@ -53,7 +53,93 @@ public:
     DT_COMPLEX256 = 2048,  ///< long double pair (256 bits) 
     DT_RGBA32 = 2304,  ///< 4 byte RGBA (32 bits/voxel)  
 	};
+
+
+  MDM_API static std::string toString(DataType type)
+  {
+    switch (type)
+    {
+    case DT_UNKNOWN: return "DT_UNKNOWN (0)";
+    case DT_BINARY: return "DT_BINARY (1)";
+    case DT_UNSIGNED_CHAR: return "DT_UNSIGNED_CHAR (2)";
+    case DT_SIGNED_SHORT: return "DT_SIGNED_SHORT (4)";
+    case DT_SIGNED_INT: return "DT_SIGNED_INT (8)";
+    case DT_FLOAT: return "DT_FLOAT (16)";
+    case DT_COMPLEX: return "DT_COMPLEX (32)";
+    case DT_DOUBLE: return "DT_DOUBLE (64)";
+    case DT_RGB: return "DT_RGB24 (128)";
+    case DT_ALL: return "DT_ALL (255)";
+    case DT_INT8: return "DT_INT8 (256)";
+    case DT_UINT16: return "DT_UINT16 (512)";
+    case DT_UINT32: return "DT_UINT32 (768)";
+    case DT_INT64: return "DT_INT64 (1024)";
+    case DT_UINT64: return "DT_UINT64 (1280)";
+    case DT_FLOAT128: return "DT_FLOAT128 (1536)";
+    case DT_COMPLEX128: return "DT_COMPLEX128 (1792)";
+    case DT_COMPLEX256: return "DT_COMPLEX256 (2048)";
+    case DT_RGBA32: return "DT_RGBA32 (2304)";
+    default:
+      throw mdm_exception(__func__, "Unknown format option " + type);
+    }
+  }
+
+  MDM_API static const std::vector<std::string> validTypes()
+  {
+    return {
+      toString(DT_BINARY),
+      toString(DT_UNSIGNED_CHAR),
+      toString(DT_SIGNED_SHORT),
+      toString(DT_SIGNED_INT),
+      toString(DT_FLOAT),
+      toString(DT_DOUBLE)
+    };
+  }
+
+  //
+  MDM_API static DataType typeFromString(const std::string& type)
+  {
+    if (type == toString(DT_UNKNOWN))
+      return DT_UNKNOWN;
+    if (type == toString(DT_BINARY))
+      return DT_BINARY;
+    else if (type == toString(DT_UNSIGNED_CHAR))
+      return DT_UNSIGNED_CHAR;
+    else if (type == toString(DT_SIGNED_SHORT))
+      return DT_SIGNED_SHORT;
+    else if (type == toString(DT_SIGNED_INT))
+      return DT_SIGNED_INT;
+    if (type == toString(DT_FLOAT))
+      return DT_FLOAT;
+    if (type == toString(DT_COMPLEX))
+      return DT_COMPLEX;
+    else if (type == toString(DT_DOUBLE))
+      return DT_DOUBLE;
+    else if (type == toString(DT_RGB))
+      return DT_RGB;
+    else if (type == toString(DT_ALL))
+      return DT_ALL;
+    if (type == toString(DT_INT8))
+      return DT_INT8;
+    if (type == toString(DT_UINT16))
+      return DT_UINT16;
+    else if (type == toString(DT_UINT32))
+      return DT_UINT32;
+    else if (type == toString(DT_INT64))
+      return DT_INT64;
+    else if (type == toString(DT_UINT64))
+      return DT_UINT64;
+    if (type == toString(DT_FLOAT128))
+      return DT_FLOAT128;
+    if (type == toString(DT_COMPLEX128))
+      return DT_COMPLEX128;
+    else if (type == toString(DT_COMPLEX256))
+      return DT_COMPLEX256;
+    else if (type == toString(DT_RGBA32))
+      return DT_RGBA32;
+    else
+      throw mdm_exception(__func__, "Unknown data type option " + type);
+  }
 };
 
 
-#endif /* MDM_ANALYZEFORMAT_H */
+#endif /* MDM_IMAGEDATATYPES_H */

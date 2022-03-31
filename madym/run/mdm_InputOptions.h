@@ -14,6 +14,13 @@
 struct mdm_InputOptions {
 
 	//Generic input options applied to all command-line tools
+	mdm_input_bool help = mdm_input_bool(
+		false, "help", "h", "Print options list and exit"
+	);
+	mdm_input_bool version = mdm_input_bool(
+		false, "version", "v", "Print version exit"
+	);
+
 	mdm_input_string configFile = mdm_input_string(
 		mdm_input_str(""), "config", "c", 
     "Read input parameters from a configuration file"); //!< See initial value
@@ -310,15 +317,18 @@ struct mdm_InputOptions {
   mdm_input_int dynSeries = mdm_input_int(
     0, "dyn_series", "",
     "Index of the dicom series for the dynamic DCE time-series"); //!< See initial value
-  mdm_input_int singleSeries = mdm_input_int(
-    0, "single_series", "",
-    "Index of the dicom series for converting a generic single volume"); //!< See initial value
+  mdm_input_ints singleSeries = mdm_input_ints(
+		mdm_input_int_list(std::vector<int>{}), "single_series", "",
+    "Indices of the dicom series for converting a generic single volume(s)"); //!< See initial value
   mdm_input_string dicomFileFilter = mdm_input_string(
     mdm_input_str(""), "dicom_filter", "",
     "File filter for dicom sort (eg IM_)"); //!< See initial value
   mdm_input_string volumeName = mdm_input_string(
     mdm_input_str(""), "vol_name", "",
-    "Output filename for converting a single dicom volume"); //!< See initial value
+    "DEPRECATED: Use --single_vol_names"); //!< See initial value
+	mdm_input_strings singleVolNames = mdm_input_strings(
+		mdm_input_string_list(std::vector<std::string>{}), "single_vol_names", "",
+		"Output filename(s) for converting a single dicom volume(s)"); //!< See initial value
 
   //Dicom options -flags
   mdm_input_bool dicomSort = mdm_input_bool(
@@ -356,12 +366,12 @@ struct mdm_InputOptions {
 		"Reverse order of dicom slices in 3D image volume"); //!< See initial value
 
   //Dicom options - scaling
-  mdm_input_string autoScaleTag = mdm_input_string(
-    mdm_input_str("0x2005,0x100e"), 
+	mdm_input_dicom_tag autoScaleTag = mdm_input_dicom_tag(
+		mdm_input_dicomTag(dicomTag{ "2005","100e" }),
     "scale_tag", "",
     "Dicom tag key (group,element) for rescale slope, in hexideciaml form - for Philips this is (0x2005, 0x100e)"); //!< See initial value
-  mdm_input_string autoOffsetTag = mdm_input_string(
-    mdm_input_str("0x2005,0x100d"),
+	mdm_input_dicom_tag autoOffsetTag = mdm_input_dicom_tag(
+		mdm_input_dicomTag(dicomTag{ "2005","100d" }),
     "offset_tag", "",
     "Dicom tag key (group,element) for rescale intercept, in hexideciaml form - for Philips this is (0x2005, 0x100d)"); //!< See initial value
 
@@ -371,8 +381,8 @@ struct mdm_InputOptions {
     0, "dicom_offset", "", "Additional offset factor applied to the dicom data"); //!< See initial value
 
   //DICOM -acquisition time
-  mdm_input_string dynTimeTag = mdm_input_string(
-    mdm_input_str(""),
+	mdm_input_dicom_tag dynTimeTag = mdm_input_dicom_tag(
+		mdm_input_dicomTag(),
     "acquisition_time_tag", "",
     "Dicom tag key (group,element) for acquisition time, if empty uses DCM_AcquisitionTime"); //!< See initial value
 	mdm_input_bool dynTimeRequired = mdm_input_bool(
@@ -384,55 +394,62 @@ struct mdm_InputOptions {
 
 
 	//DICOM scanning settings
-	mdm_input_string FATag = mdm_input_string(
-		mdm_input_str(""),
+	mdm_input_dicom_tag FATag = mdm_input_dicom_tag(
+		mdm_input_dicomTag(),
 		"FA_tag", "",
 		"Custom Dicom tag key (group,element) for FlipAngle, only required if protocol doesn't use standard FlipAngle field (0018,1314)"); //!< See initial value
 	mdm_input_bool FARequired = mdm_input_bool(
 		true, "FA_required", "",
 		"If set to true, throws program warning if FA not found in a DICOM header"); //!< See initial value
 
-	mdm_input_string TRTag = mdm_input_string(
-		mdm_input_str(""),
+	mdm_input_dicom_tag TRTag = mdm_input_dicom_tag(
+		mdm_input_dicomTag(),
 		"TR_tag", "",
 		"Custom Dicom tag key (group,element) for TR, only required if protocol doesn't use standard RepetitionTime field (0018,0080)"); //!< See initial value
 	mdm_input_bool TRRequired = mdm_input_bool(
 		true, "TR_required", "",
 		"If set to true, throws program warning if TR not found in a DICOM header"); //!< See initial value
 
-	mdm_input_string TITag = mdm_input_string(
-		mdm_input_str(""),
+	mdm_input_dicom_tag TITag = mdm_input_dicom_tag(
+		mdm_input_dicomTag(),
 		"TI_tag", "",
 		"Custom Dicom tag key (group,element) for TI, only required if protocol doesn't use standard InversionTime field (0018,0082)"); //!< See initial value
 	mdm_input_bool TIRequired = mdm_input_bool(
 		false, "TI_required", "",
 		"If set to true, throws program warning if TI not found in a DICOM header"); //!< See initial value
 
-	mdm_input_string TETag = mdm_input_string(
-		mdm_input_str(""),
+	mdm_input_dicom_tag TETag = mdm_input_dicom_tag(
+		mdm_input_dicomTag(),
 		"TE_tag", "",
 		"Custom Dicom tag key (group,element) for TE, only required if protocol doesn't use standard EchoTime field (0018,0081)"); //!< See initial value
 	mdm_input_bool TERequired = mdm_input_bool(
 		true, "TE_required", "",
 		"If set to true, throws program warning if TE not found in a DICOM header"); //!< See initial value
 
-	mdm_input_string BTag = mdm_input_string(
-		mdm_input_str(""),
+	mdm_input_dicom_tag BTag = mdm_input_dicom_tag(
+		mdm_input_dicomTag(),
 		"B_tag", "",
 		"Custom Dicom tag key (group,element) for diffusion B-value, only required if protocol doesn't use standard DCM_DiffusionBValue field (0018,9087)"); //!< See initial value
 	mdm_input_bool BRequired = mdm_input_bool(
 		false, "B_required", "",
 		"If set to true, throws program warning if diffusion B-value not found in a DICOM header"); //!< See initial value
 
-	mdm_input_string gradOriTag = mdm_input_string(
-		mdm_input_str(""),
+	mdm_input_dicom_tag gradOriTag = mdm_input_dicom_tag(
+		mdm_input_dicomTag(),
 		"grad_ori_tag", "",
 		"Custom Dicom tag key (group,element) for diffusion gradient orientation, only required if protocol doesn't use standard DCM_DiffusionGradientOrientation field (0018,9089)"); //!< See initial value
 	mdm_input_bool gradOriRequired = mdm_input_bool(
 		false, "grad_ori_required", "",
 		"If set to true, throws program warning if diffusion gradient orientation not found in a DICOM header"); //!< See initial value
 
-	bool time_required = true;
+	mdm_input_dicom_tag sliceFilterTag = mdm_input_dicom_tag(
+		mdm_input_dicomTag(),
+		"slice_filter_tag", "",
+		"Custom Dicom tag key (group,element) for filtering slices against a user set value"); //!< See initial value
+	mdm_input_strings sliceFilterMatchValue = mdm_input_strings(
+		mdm_input_string_list(std::vector<std::string>{}),
+		"slice_filter_match_value", "",
+		"Value(s) of attribute set by slice_filter_tag that slices must match to be included"); //!< See initial value
 
   //DICOM - naming
   mdm_input_string repeatPrefix = mdm_input_string(

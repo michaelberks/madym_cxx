@@ -42,7 +42,7 @@
          <x>0</x>
          <y>0</y>
          <width>1145</width>
-         <height>785</height>
+         <height>786</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -747,7 +747,7 @@
                     </widget>
                    </item>
                    <item row="1" column="0">
-                    <widget class="QLabel" name="label_10">
+                    <widget class="QLabel" name="outputDirLabel">
                      <property name="text">
                       <string>Output folder:</string>
                      </property>
@@ -829,6 +829,165 @@
                    </item>
                   </layout>
                  </widget>
+                 <widget class="QWidget" name="formatTab">
+                  <attribute name="title">
+                   <string>Image formats</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_20">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="imageReadLabel_2">
+                     <property name="text">
+                      <string>Output format:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1" colspan="3">
+                    <widget class="QComboBox" name="dicomImageWriteComboBox"/>
+                   </item>
+                   <item row="0" column="4">
+                    <widget class="QLabel" name="imageWriteLabel_2">
+                     <property name="text">
+                      <string>Output datatype:</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="5" colspan="3">
+                    <widget class="QComboBox" name="dicomDataTypeComboBox"/>
+                   </item>
+                   <item row="1" column="0" colspan="3">
+                    <widget class="QCheckBox" name="flipXCheckBox">
+                     <property name="text">
+                      <string>Flip x</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="3" colspan="2">
+                    <widget class="QCheckBox" name="flipYCheckBox">
+                     <property name="text">
+                      <string>Flip y</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="5" colspan="3">
+                    <widget class="QCheckBox" name="flipZCheckBox">
+                     <property name="text">
+                      <string>Flip z</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0" colspan="2">
+                    <widget class="QLabel" name="label_56">
+                     <property name="text">
+                      <string>Scale factor</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2" colspan="2">
+                    <widget class="QDoubleSpinBox" name="dicomScaleSpinBox">
+                     <property name="minimum">
+                      <double>-100000.000000000000000</double>
+                     </property>
+                     <property name="maximum">
+                      <double>100000.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0" colspan="2">
+                    <widget class="QLabel" name="label_54">
+                     <property name="text">
+                      <string>Scale tag:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="2" colspan="2">
+                    <widget class="QLineEdit" name="autoScaleTagLineEdit"/>
+                   </item>
+                   <item row="3" column="4" colspan="2">
+                    <widget class="QLabel" name="label_55">
+                     <property name="text">
+                      <string>Offset tag:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="6" colspan="2">
+                    <widget class="QLineEdit" name="autoOffsetTagLineEdit"/>
+                   </item>
+                   <item row="2" column="4" colspan="2">
+                    <widget class="QLabel" name="label_57">
+                     <property name="text">
+                      <string>Offset factor:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="6" colspan="2">
+                    <widget class="QDoubleSpinBox" name="dicomOffsetSpinBox">
+                     <property name="maximum">
+                      <double>100000.000000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="sequenceTab">
+                  <attribute name="title">
+                   <string>Sequence naming</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_21">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_28">
+                     <property name="text">
+                      <string>Sequence format:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1" colspan="2">
+                    <widget class="QLineEdit" name="sequenceFormatLineEdit"/>
+                   </item>
+                   <item row="0" column="3">
+                    <widget class="QLabel" name="label_52">
+                     <property name="text">
+                      <string>start:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="4">
+                    <widget class="QSpinBox" name="sequenceStartSpinBox"/>
+                   </item>
+                   <item row="0" column="5">
+                    <widget class="QLabel" name="label_53">
+                     <property name="text">
+                      <string>step:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="6">
+                    <widget class="QSpinBox" name="sequenceStepSpinBox"/>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_37">
+                     <property name="text">
+                      <string>Mean suffix:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QLineEdit" name="meanSuffixLineEdit"/>
+                   </item>
+                   <item row="2" column="0" colspan="2">
+                    <widget class="QLabel" name="label_38">
+                     <property name="text">
+                      <string>Repeat prefix:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QLineEdit" name="repeatPrefixLineEdit"/>
+                   </item>
+                  </layout>
+                 </widget>
                  <widget class="QWidget" name="loggingTab">
                   <attribute name="title">
                    <string>Logging</string>
@@ -901,7 +1060,7 @@
                <item>
                 <widget class="QTabWidget" name="inputTabWidget">
                  <property name="currentIndex">
-                  <number>3</number>
+                  <number>7</number>
                  </property>
                  <widget class="QWidget" name="dceTab">
                   <attribute name="title">
@@ -1385,12 +1544,542 @@
                    </item>
                   </layout>
                  </widget>
+                 <widget class="QWidget" name="dicomTab">
+                  <attribute name="title">
+                   <string>DICOM</string>
+                  </attribute>
+                  <widget class="QCheckBox" name="makeSingleCheckBox">
+                   <property name="geometry">
+                    <rect>
+                     <x>194</x>
+                     <y>103</y>
+                     <width>308</width>
+                     <height>17</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Make single volumes</string>
+                   </property>
+                  </widget>
+                  <widget class="QCheckBox" name="makeT1InputsCheckBox">
+                   <property name="geometry">
+                    <rect>
+                     <x>309</x>
+                     <y>80</y>
+                     <width>193</width>
+                     <height>17</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Make T1 inputs</string>
+                   </property>
+                  </widget>
+                  <widget class="QCheckBox" name="sortCheckBox">
+                   <property name="geometry">
+                    <rect>
+                     <x>27</x>
+                     <y>80</y>
+                     <width>161</width>
+                     <height>17</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Sort</string>
+                   </property>
+                  </widget>
+                  <widget class="QLineEdit" name="seriesNameLineEdit">
+                   <property name="geometry">
+                    <rect>
+                     <x>114</x>
+                     <y>50</y>
+                     <width>371</width>
+                     <height>20</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QCheckBox" name="makeDWIInputsCheckBox">
+                   <property name="geometry">
+                    <rect>
+                     <x>27</x>
+                     <y>103</y>
+                     <width>161</width>
+                     <height>17</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Make DWI inputs</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="imageBaseName_3">
+                   <property name="geometry">
+                    <rect>
+                     <x>14</x>
+                     <y>20</y>
+                     <width>84</width>
+                     <height>20</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>DICOM folder:</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                  <widget class="QLineEdit" name="dicomDirLineEdit">
+                   <property name="geometry">
+                    <rect>
+                     <x>104</x>
+                     <y>20</y>
+                     <width>385</width>
+                     <height>20</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QToolButton" name="dicomDirSelect">
+                   <property name="geometry">
+                    <rect>
+                     <x>495</x>
+                     <y>20</y>
+                     <width>25</width>
+                     <height>19</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>...</string>
+                   </property>
+                  </widget>
+                  <widget class="QCheckBox" name="makeDynCheckBox">
+                   <property name="geometry">
+                    <rect>
+                     <x>194</x>
+                     <y>80</y>
+                     <width>109</width>
+                     <height>17</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Make dynamics</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_58">
+                   <property name="geometry">
+                    <rect>
+                     <x>10</x>
+                     <y>50</y>
+                     <width>98</width>
+                     <height>20</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Series name:</string>
+                   </property>
+                  </widget>
+                 </widget>
+                 <widget class="QWidget" name="sortTab">
+                  <attribute name="title">
+                   <string>Sort</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_23">
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_76">
+                     <property name="text">
+                      <string>Slice filter tag:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="sliceFilterMatchValueLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_75">
+                     <property name="text">
+                      <string>DICOM filename filter:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="dicomFileFilterLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QLineEdit" name="sliceFilterTagLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <spacer name="verticalSpacer_12">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_77">
+                     <property name="text">
+                      <string>Slice filter match value:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <spacer name="horizontalSpacer_4">
+                     <property name="orientation">
+                      <enum>Qt::Horizontal</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>40</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="dynamicTab">
+                  <attribute name="title">
+                   <string>Dynamic</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_16">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="dynSeriesLabel">
+                     <property name="text">
+                      <string>Dynamic series:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="imageBaseName_4">
+                     <property name="text">
+                      <string>Dynamic folder:</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_59">
+                     <property name="text">
+                      <string>Dynamic name:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_61">
+                     <property name="text">
+                      <string>Temporal resolution:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="QDoubleSpinBox" name="temporalResolutionSpinBox">
+                     <property name="decimals">
+                      <number>3</number>
+                     </property>
+                     <property name="maximum">
+                      <double>100000.000000000000000</double>
+                     </property>
+                     <property name="singleStep">
+                      <double>0.100000000000000</double>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1" colspan="3">
+                    <widget class="QLineEdit" name="dynamicDirLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="3">
+                    <widget class="QCheckBox" name="makeDynMeanCheckBox">
+                     <property name="text">
+                      <string>Make temporal mean</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1" colspan="2">
+                    <widget class="QLineEdit" name="dicomDynSeriesLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="4">
+                    <widget class="QToolButton" name="dynamicDirSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1" colspan="3">
+                    <widget class="QLineEdit" name="dynamicNameLineEdit"/>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_60">
+                     <property name="text">
+                      <string>Number of volumes:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QSpinBox" name="dicomNDynSpinBox"/>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="T1InputTab">
+                  <attribute name="title">
+                   <string>T1 inputs</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_17">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="T1InputSeriesLabel">
+                     <property name="text">
+                      <string>T1 series:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="4">
+                    <widget class="QCheckBox" name="makeT1MeansCheckBox">
+                     <property name="text">
+                      <string>Make T1 repeat means</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="imageBaseName_5">
+                     <property name="text">
+                      <string>T1 folder:</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="5">
+                    <widget class="QToolButton" name="T1DirSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_62">
+                     <property name="toolTip">
+                      <string>Enter each name on new line</string>
+                     </property>
+                     <property name="whatsThis">
+                      <string>Enter each name on new line</string>
+                     </property>
+                     <property name="text">
+                      <string>T1 names:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1" colspan="4">
+                    <widget class="QTextEdit" name="dicomT1InputTextEdit">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>50</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                     <property name="whatsThis">
+                      <string>Enter each name on new line</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1" colspan="3">
+                    <widget class="QLineEdit" name="dicomT1InputSeriesLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="xtrT1MethodLabel">
+                     <property name="text">
+                      <string>T1 method:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1" colspan="3">
+                    <widget class="QComboBox" name="xtrT1MethodComboBox"/>
+                   </item>
+                   <item row="2" column="1" colspan="4">
+                    <widget class="QLineEdit" name="T1DirLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="DWIInputTab">
+                  <attribute name="title">
+                   <string>DWI</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_18">
+                   <item row="0" column="0" colspan="3">
+                    <widget class="QLabel" name="DWIInputSeriesLabel">
+                     <property name="text">
+                      <string>DWI series:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="3">
+                    <widget class="QLineEdit" name="dicomDWIInputSeriesLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="4">
+                    <widget class="QCheckBox" name="makeBvalueMeansCheckBox">
+                     <property name="text">
+                      <string>Make B-value means</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0" colspan="2">
+                    <widget class="QLabel" name="imageBaseName_6">
+                     <property name="text">
+                      <string>DWI folder:</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2" colspan="3">
+                    <widget class="QLineEdit" name="DWIDirLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="5">
+                    <widget class="QToolButton" name="DWIDirSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_65">
+                     <property name="toolTip">
+                      <string>Enter each name on new line</string>
+                     </property>
+                     <property name="whatsThis">
+                      <string>Enter each name on new line</string>
+                     </property>
+                     <property name="text">
+                      <string>DWI names:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1" colspan="4">
+                    <widget class="QTextEdit" name="dicomDWIInputTextEdit">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>50</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                     <property name="whatsThis">
+                      <string>Enter each name on new line</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="singlesTab">
+                  <attribute name="title">
+                   <string>Single volumes</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_19">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_67">
+                     <property name="text">
+                      <string>Single series:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1" colspan="2">
+                    <widget class="QLineEdit" name="dicomSingleSeriesLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0" colspan="2">
+                    <widget class="QLabel" name="label_66">
+                     <property name="toolTip">
+                      <string>Enter each name on new line</string>
+                     </property>
+                     <property name="text">
+                      <string>Single volume names:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QTextEdit" name="dicomSingleVolNamesTextEdit">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>50</height>
+                      </size>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>16777215</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                     <property name="toolTip">
+                      <string>Enter each name on new line</string>
+                     </property>
+                     <property name="whatsThis">
+                      <string>Enter each name on new line</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
                 </widget>
                </item>
                <item>
                 <widget class="QTabWidget" name="fittingTabWidget">
                  <property name="currentIndex">
-                  <number>0</number>
+                  <number>4</number>
                  </property>
                  <widget class="QWidget" name="modelTab">
                   <attribute name="title">
@@ -1839,6 +2528,284 @@
                    </item>
                   </layout>
                  </widget>
+                 <widget class="QWidget" name="scannerTab">
+                  <attribute name="title">
+                   <string>Scanner attributes</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_22">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_68">
+                     <property name="text">
+                      <string>Dynamic time tag:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="dynTimeTagLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QCheckBox" name="dynTimeRequiredCheckBox">
+                     <property name="text">
+                      <string>Required</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_69">
+                     <property name="text">
+                      <string>FA tag:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QLineEdit" name="FATagLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QCheckBox" name="FARequiredCheckBox">
+                     <property name="text">
+                      <string>Required</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_70">
+                     <property name="text">
+                      <string>TR tag:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="TRTagLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QCheckBox" name="TRRequiredCheckBox">
+                     <property name="text">
+                      <string>Required</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_71">
+                     <property name="text">
+                      <string>TI tag:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QLineEdit" name="TITagLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="2">
+                    <widget class="QCheckBox" name="TIRequiredCheckBox">
+                     <property name="text">
+                      <string>Required</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_72">
+                     <property name="text">
+                      <string>TE tag:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="QLineEdit" name="TETagLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="2">
+                    <widget class="QCheckBox" name="TERequiredCheckBox">
+                     <property name="text">
+                      <string>Required</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="0">
+                    <widget class="QLabel" name="label_73">
+                     <property name="text">
+                      <string>B-value tag:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <widget class="QLineEdit" name="BTagLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="2">
+                    <widget class="QCheckBox" name="BRequiredCheckBox">
+                     <property name="text">
+                      <string>Required</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="0">
+                    <widget class="QLabel" name="label_74">
+                     <property name="text">
+                      <string>Gradient orientation tag:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="1">
+                    <widget class="QLineEdit" name="gradOriTagLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="2">
+                    <widget class="QCheckBox" name="gradOriRequiredCheckBox">
+                     <property name="text">
+                      <string>Required</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="xtrScannerTab">
+                  <attribute name="title">
+                   <string>Scanner settings</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_24">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_84">
+                     <property name="text">
+                      <string>Sequence format:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QLineEdit" name="xtrSequenceFormatLineEdit"/>
+                   </item>
+                   <item row="0" column="3">
+                    <widget class="QSpinBox" name="xtrSequenceStartSpinBox"/>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QLabel" name="label_63">
+                     <property name="text">
+                      <string>start:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QLineEdit" name="xtrVFAsLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_80">
+                     <property name="text">
+                      <string>VFAs:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_81">
+                     <property name="text">
+                      <string>TIs:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QLineEdit" name="xtrTIsLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="4">
+                    <widget class="QLabel" name="label_64">
+                     <property name="text">
+                      <string>step:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_79">
+                     <property name="text">
+                      <string>Dynamic FA:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QLineEdit" name="xtrFALineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="5">
+                    <widget class="QSpinBox" name="xtrSequenceStepSpinBox"/>
+                   </item>
+                   <item row="5" column="1">
+                    <widget class="QLineEdit" name="xtrTRLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="0">
+                    <widget class="QLabel" name="label_78">
+                     <property name="text">
+                      <string>Dynamic times file:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="QLineEdit" name="xtrBvaluesLineEdit">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="0">
+                    <widget class="QLabel" name="label_82">
+                     <property name="text">
+                      <string>TR:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_83">
+                     <property name="text">
+                      <string>B-values:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="5">
+                    <widget class="QToolButton" name="dynamicTimesFileSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="1" colspan="4">
+                    <widget class="QLineEdit" name="dynamicTimesFileLineEdit"/>
+                   </item>
+                  </layout>
+                 </widget>
                 </widget>
                </item>
                <item>
@@ -1888,6 +2855,12 @@
                       <height>32</height>
                      </size>
                     </property>
+                    <property name="toolTip">
+                     <string>Return to home screen</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Return to home screen</string>
+                    </property>
                     <property name="text">
                      <string/>
                     </property>
@@ -1901,6 +2874,29 @@
                    <widget class="QPushButton" name="saveConfigButton">
                     <property name="text">
                      <string>Save config file...</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="2">
+                   <widget class="QPushButton" name="helpButton">
+                    <property name="maximumSize">
+                     <size>
+                      <width>32</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>Display full command-line options to log window</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Display full command-line options to log window</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="madym_gui.qrc">
+                      <normaloff>:/images/help.png</normaloff>:/images/help.png</iconset>
                     </property>
                    </widget>
                   </item>

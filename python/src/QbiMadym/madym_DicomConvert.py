@@ -27,6 +27,8 @@ def run(
     dyn_series : int = None,
     single_series : int = None,
     dicom_filter : str = None,
+    slice_filter_tag : str = None,
+    slice_filter_match_value : str = None,
     vol_name : str = None,
     sort : bool = None,
     make_t1 : bool = None,
@@ -105,6 +107,10 @@ def run(
             Index of the dicom series for converting a generic single volume
         dicom_filter : str = None
             File filter for dicom sort (eg IM_)
+        slice_filter_tag : str = None
+            Custom Dicom tag key (group,element) for filtering slices against a user set value
+        slice_filter_match_value : str = None
+            Value of attribute set by slice_filter_tag that slices must match to be included
         vol_name : str = None
             Output filename for converting a single dicom volume
         sort : bool = None
@@ -245,6 +251,10 @@ def run(
     add_option('int', cmd_args, '--single_series', single_series)
 
     add_option('string', cmd_args, '--dicom_filter', dicom_filter)
+
+    add_option('string', cmd_args, '--slice_filter_tag', slice_filter_tag)
+
+    add_option('string', cmd_args, '--slice_filter_match_value', slice_filter_match_value)
 
     add_option('string', cmd_args, '--vol_name', vol_name)
 

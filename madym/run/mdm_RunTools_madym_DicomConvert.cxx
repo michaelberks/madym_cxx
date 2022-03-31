@@ -90,6 +90,9 @@ MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *a
   po::options_description cmdline_options("madym_DicomConvert options");
   po::options_description config_options("madym_DicomConvert config options");
 
+  options_parser_.add_option(cmdline_options, options_.help);
+  options_parser_.add_option(cmdline_options, options_.version);
+
   options_parser_.add_option(cmdline_options, options_.configFile);
   options_parser_.add_option(cmdline_options, options_.dataDir);
 
@@ -140,7 +143,10 @@ MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *a
   options_parser_.add_option(config_options, options_.makeDynMean);
   options_parser_.add_option(config_options, options_.makeBvalueMeans);
   options_parser_.add_option(config_options, options_.dicomFileFilter);
+  options_parser_.add_option(config_options, options_.sliceFilterTag);
+  options_parser_.add_option(config_options, options_.sliceFilterMatchValue);
   options_parser_.add_option(config_options, options_.volumeName);
+  options_parser_.add_option(config_options, options_.singleVolNames);
 
   //Dicom options - scaling
   options_parser_.add_option(config_options, options_.autoScaleTag);
@@ -231,6 +237,35 @@ void mdm_RunTools_madym_DicomConvert::extractInfo(const std::string &filename,
   OFCondition status = fileformat.loadFile(filename.c_str());
   if (status.good())
   {
+    //Check if a slice filter is in place, if so skip any frames that don't match the
+    //required filter value
+    if (!options_.sliceFilterTag().first.empty())
+    {
+      DcmTagKey filterTag;
+      setDicomTag(options_.sliceFilterTag, filterTag);
+      bool matched = false;
+      try
+      {
+        for (const auto& value : options_.sliceFilterMatchValue())
+        {
+          if (mdm_DicomFormat::getTextField(fileformat, filterTag) == value)
+          {
+            matched = true;
+            break;
+          }
+        }
+      }
+      catch (mdm_DicomMissingFieldException)
+      {
+        mdm_ProgramLogger::logProgramWarning(__func__, "Attribute for slice_filter_tag (" +
+          options_.sliceFilterTag().first + "," + options_.sliceFilterTag().second + 
+          ") is not set for " + filename);
+      }
+      //If not matched, return without trying to check any further info
+      if (!matched)
+        return;
+    }
+
     dcmNumericInfo info_n;
     bool valid = 
       getNumericInfo(fileformat, DCM_SeriesNumber, info_n.seriesNumber) &&
@@ -307,13 +342,13 @@ void mdm_RunTools_madym_DicomConvert::getScannerSetting(
   DcmFileFormat& fileFormat,
   const std::string& seriesName,
   const std::string&settingName, 
-  const mdm_input_string& customTag,
+  const mdm_input_dicom_tag& customTag,
   const DcmTagKey& defaultTag, 
   const bool required, 
   double& setting)
 {
   DcmTagKey tagKey;
-  if (customTag().empty())
+  if (customTag().first.empty())
     tagKey = defaultTag;
   else
     setDicomTag(customTag, tagKey);
@@ -332,14 +367,14 @@ void mdm_RunTools_madym_DicomConvert::getScannerSetting(
   DcmFileFormat& fileFormat,
   const std::string& seriesName,
   const std::string& settingName,
-  const mdm_input_string& customTag,
+  const mdm_input_dicom_tag& customTag,
   const DcmTagKey& defaultTag,
   const bool required,
   std::vector<double>& setting, 
   size_t numValues)
 {
   DcmTagKey tagKey;
-  if (customTag().empty())
+  if (customTag().first.empty())
     tagKey = defaultTag;
   else
     setDicomTag(customTag, tagKey);
@@ -419,35 +454,15 @@ void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series, 
 }
 
 //-----------------------------------------------------------------
-void mdm_RunTools_madym_DicomConvert::printSeriesInfo(const dcmSeriesInfo &series)
-{
-  /*
-  std::stringstream ss;
-
-	ss << 
-		"mdm_Image3D:   type " << imgType_ << " image struct at location " << this << "\n" <<
-		"voxel matrix is " << nX_ << " x " << nY_ << " x " << nZ_ << 
-		", with dimensions " << 
-		info_.Xmm.value() << " mm x " << 
-		info_.Ymm.value() << " mm x " << 
-		info_.Zmm.value() << " mm\n" <<
-		"time stamp is " << timeStamp_ << "\n" <<
-		"info fields: flip angle is " << info_.flipAngle.value() << ", TR is " << info_.TR.value() << ",\n" <<
-    "TE is " << info_.TE.value() << " and B is " << info_.B.value() << " (value < 0.0 => not set)\n" <<
-    "and the image data is held at " << &data_ << "\n",
-  
-  imgString = ss.str();*/
-  //mdm_ProgramLogger::logProgramMessage("Series " + std::to_string(series.index) + ": " + series.name);
-}
-
-//-----------------------------------------------------------------
-void mdm_RunTools_madym_DicomConvert::printSeriesInfoSummary(const dcmSeriesInfo &series)
+void mdm_RunTools_madym_DicomConvert::printSeriesInfoSummary(const dcmSeriesInfo &series, std::ofstream& file)
 {
   std::string vol = series.nTimes > 1 ? "volumes" : "volume";
   std::stringstream ss;
 
   ss <<
-    "Series " << series.index << ": " << series.name <<
+    "Series " << series.index << ": " 
+    << series.numericInfo[0].seriesNumber << " "
+    << series.name <<
     ", " << series.nTimes << " " << vol << " of size " <<
     "(" << series.nX << " x " << series.nY << " x " << series.nZ << ")" <<
     ", voxel size (" <<
@@ -456,28 +471,47 @@ void mdm_RunTools_madym_DicomConvert::printSeriesInfoSummary(const dcmSeriesInfo
     series.Zmm << ")\n";
 
   mdm_ProgramLogger::logProgramMessage(ss.str());
+
+  file << ss.str();
 }
 
 //-----------------------------------------------------------------
 void mdm_RunTools_madym_DicomConvert::writeSeriesInfo(
-  const std::vector<dcmSeriesInfo> &seriesInfo)
+  std::vector<dcmSeriesInfo> &seriesInfo)
 {
 
   //Create file for saving the series names
   auto seriesFileRoot = outputPath_ / options_.dicomSeriesFile();
-  auto seriesFile = seriesFileRoot.string() + "_names.txt";
+  auto seriesNamesFile = seriesFileRoot.string() + "_names.txt";
+  auto seriesSummaryFile = seriesFileRoot.string() + "_summary.txt";
 
-  // Open text file for writing filenames and numeric info
-  std::ofstream seriesFileStream(seriesFile.c_str(), std::ios::out);
-  if (!seriesFileStream)
-    throw mdm_exception(__func__, "Can't open series text file for writing " + seriesFile);
+  // Open text files for writing filenames and summary info
+  std::ofstream seriesNamesFileStream(seriesNamesFile.c_str(), std::ios::out);
+  if (!seriesNamesFileStream)
+    throw mdm_exception(__func__, "Can't open series text file for writing " + seriesNamesFile);
 
-  for (const auto &series : seriesInfo)
+  std::ofstream seriesSummaryFileStream(seriesSummaryFile.c_str(), std::ios::out);
+  if (!seriesSummaryFileStream)
+    throw mdm_exception(__func__, "Can't open series text file for writing " + seriesSummaryFile);
+
+  //Print number of series found
+  auto nSeries = seriesInfo_.size();
+  mdm_ProgramLogger::logProgramMessage(
+    "Found " + std::to_string(nSeries) + " series:");
+
+  seriesSummaryFileStream << "Found " << nSeries << " series:\n\n";
+
+  for (auto &series : seriesInfo)
   {
+    //Complete the series information and print summary
+    completeSeriesInfo(series);
+    printSeriesInfoSummary(series, seriesSummaryFileStream);
+
+    //Complete the series info file entries
     auto seriesName = series.name;
 
     //Write the unmodified series name
-    seriesFileStream << seriesName << '\n';
+    seriesNamesFileStream << seriesName << '\n';
 
     //Set up paths to files
     auto seriesRoot = (boost::format("%1%_series%2%") % seriesFileRoot.string() % series.index).str();
@@ -509,8 +543,11 @@ void mdm_RunTools_madym_DicomConvert::writeSeriesInfo(
       info.sliceLocation << " " <<
       info.instanceNumber << '\n';
     numericFileStream.close();
+
+    
   }
-  seriesFileStream.close();
+  seriesNamesFileStream.close();
+  seriesSummaryFileStream.close();
 }
 
 //--------------------------------------------------------------------
@@ -689,16 +726,6 @@ void mdm_RunTools_madym_DicomConvert::sortDicomDir()
     series.numericInfo.push_back(info_n);
   }
 
-  auto nSeries = seriesInfo_.size();
-  mdm_ProgramLogger::logProgramMessage(
-    "Found " + std::to_string(nSeries) +  " series:");
-
-  for (auto &series : seriesInfo_)
-  {
-    completeSeriesInfo(series);
-    printSeriesInfoSummary(series);
-  }
-
   //Write output lists
   writeSeriesInfo(seriesInfo_);
 
@@ -842,28 +869,12 @@ void mdm_RunTools_madym_DicomConvert::setDicomTag(const mdm_input_strings &tagIn
 
 //---------------------------------------------------------------------
 //
-void mdm_RunTools_madym_DicomConvert::setDicomTag(const mdm_input_string &tagInput, DcmTagKey &tag)
+void mdm_RunTools_madym_DicomConvert::setDicomTag(const mdm_input_dicom_tag&tagInput, DcmTagKey &tag)
 {
-  //Make sure input has exactly 2 elements
-  if (tagInput().size() != 13)
-    throw mdm_exception(__func__, "Error parsing " + std::string(tagInput.key()) +
-      " = " + tagInput() +
-      ": dicom tag definitions must by of form 0xAAAA_0xAAAA");
-
-  if (tagInput().substr(0,2) != "0x")
-    throw mdm_exception(__func__, "Error parsing " + std::string(tagInput.key()) +
-      " = " + tagInput() +
-      ": dicom tag definitions must by of form 0xAAAA_0xAAAA");
-
-  if (tagInput().substr(7, 2) != "0x")
-    throw mdm_exception(__func__, "Error parsing " + std::string(tagInput.key()) +
-      " = " + tagInput() +
-      ": dicom tag definitions must by of form 0xAAAA_0xAAAA");
-
   try
   {
-    auto group = std::stoul(tagInput().substr(2, 4), 0, 16);
-    auto element = std::stoul(tagInput().substr(9, 4), 0, 16);
+    auto group = std::stoul(tagInput().first, 0, 16);
+    auto element = std::stoul(tagInput().second, 0, 16);
     tag.set(group, element);
   }
   catch (const std::invalid_argument &e)
@@ -883,10 +894,10 @@ void mdm_RunTools_madym_DicomConvert::setDicomTag(const mdm_input_string &tagInp
 
 void mdm_RunTools_madym_DicomConvert::checkAutoScaling()
 {
-  if (!options_.autoOffsetTag().empty())
+  if (!options_.autoOffsetTag().first.empty())
     setDicomTag(options_.autoOffsetTag, autoOffsetTag_);
 
-  if (!options_.autoScaleTag().empty())
+  if (!options_.autoScaleTag().first.empty())
     setDicomTag(options_.autoScaleTag, autoScaleTag_);
 }
 
@@ -894,7 +905,7 @@ void mdm_RunTools_madym_DicomConvert::checkAutoScaling()
 void mdm_RunTools_madym_DicomConvert::checkDynamicTime()
 {
   //If input options dynTimeTag is not empty, attempt to set the tag from that
-  if (!options_.dynTimeTag().empty())
+  if (!options_.dynTimeTag().first.empty())
     setDicomTag(options_.dynTimeTag, dynamicTimeTag_);
 
   //Else use default of DCM_AcquisitionTime
@@ -978,33 +989,52 @@ double mdm_RunTools_madym_DicomConvert::getDynamicTime(DcmFileFormat &fileformat
 void mdm_RunTools_madym_DicomConvert::makeSingleVol(
   const std::vector<dcmSeriesInfo> &seriesInfo)
 {
-  const auto &index = options_.singleSeries() - 1;
-  if (index < 0 || index >= seriesInfo.size())
-    throw mdm_exception(__func__,
-      boost::format("Dicom series index (%1%) must be >= 0 and < %2%")
-      % index % seriesInfo.size());
+  //Deal with deprecated volumeName input
+  if (!options_.volumeName().empty() && options_.singleVolNames().empty())
+    options_.singleVolNames.set({ options_.volumeName() });
+
+  //Check length of series indices match length of volume names
+  auto nSeries = options_.singleVolNames().size();
+  if ( options_.singleSeries().size() != nSeries)
+    throw mdm_exception(__func__, boost::format(
+      "Length of %1% (%2) odes not match length of %3% (%4)."
+    ) % options_.singleSeries.key() % options_.singleSeries().size() 
+    % options_.singleVolNames.key() % nSeries);
 
   checkAutoScaling();
 
-  const auto& series = seriesInfo[index];
+  for (size_t i = 0; i < nSeries; i++)
+  {
+    const auto& index = options_.singleSeries()[i] - 1;
+    if (index < 0 || index >= seriesInfo.size())
+      throw mdm_exception(__func__,
+        boost::format("Dicom series index (%1%) must be >= 0 and < %2%")
+        % index % seriesInfo.size());
 
-  //Check this sequence was validly sorted
-  if (!series.sortValid)
-    throw mdm_exception(__func__, boost::format(
-      "Series %1% was not sorted properly. Check the series log files"
-    ) % series.name);
+    const auto& series = seriesInfo[index];
 
-  auto img = loadDicomImage(series, 0, false);
+    //Check this sequence was validly sorted
+    if (!series.sortValid)
+      throw mdm_exception(__func__, boost::format(
+        "Series %1% was not sorted properly. Check the series log files"
+      ) % series.name);
 
-  //Get write format from options
-  auto imageWriteFormat = mdm_ImageIO::formatFromString(options_.imageWriteFormat());
-  auto imageDatatype = static_cast<mdm_ImageDatatypes::DataType>(options_.imageDataType());
+    auto img = loadDicomImage(series, 0, false);
 
-  auto volumeName = outputPath_ / options_.volumeName();
+    //Get write format from options
+    auto imageWriteFormat = mdm_ImageIO::formatFromString(options_.imageWriteFormat());
+    auto imageDatatype = static_cast<mdm_ImageDatatypes::DataType>(options_.imageDataType());
+
+    auto volumeName = fs::absolute(options_.singleVolNames()[i]);
+    fs::create_directories(volumeName.parent_path());
+
+    mdm_ImageIO::writeImage3D(imageWriteFormat,
+      volumeName.string(), img, imageDatatype, mdm_XtrFormat::NEW_XTR);
+    mdm_ProgramLogger::logProgramMessage("Created 3D image " + volumeName.string() + " from series " + 
+      std::to_string(series.index) + ": " + series.name);
+  }
+
   
-  mdm_ImageIO::writeImage3D(imageWriteFormat,
-    volumeName.string(), img, imageDatatype, mdm_XtrFormat::NEW_XTR);
-  mdm_ProgramLogger::logProgramMessage("Created 3D image " + volumeName.string());
 }
 
 //---------------------------------------------------------------------
@@ -1032,6 +1062,9 @@ void mdm_RunTools_madym_DicomConvert::makeT1InputVols(
 
     const auto &series = seriesInfo[index];
 
+    mdm_ProgramLogger::logProgramMessage("Creating T1 input files " + T1Name + " from series " +
+      std::to_string(series.index) + ": " + series.name + " ...");
+
     //Check this sequence was validly sorted
     if (!series.sortValid)
       throw mdm_exception(__func__, boost::format(
@@ -1042,7 +1075,7 @@ void mdm_RunTools_madym_DicomConvert::makeT1InputVols(
     mdm_Image3D meanImg;
 
     //Set up output directory - outpath is already absolute
-    fs::path T1Dir = fs::path(options_.T1Dir()) / fs::path(T1Name);
+    fs::path T1Dir = fs::path(fs::absolute(options_.T1Dir())) / fs::path(T1Name);
     fs::create_directories(T1Dir);
 
     for (int i_rpt = 0; i_rpt < series.nTimes; i_rpt++)
@@ -1213,6 +1246,11 @@ void mdm_RunTools_madym_DicomConvert::makeDWIInputs(
         boost::format("DWI input series index (%1%) must be >= 0 and < %2%")
         % index % seriesInfo.size());
 
+    mdm_ProgramLogger::logProgramMessage("Creating DWI input files " 
+      + DWIName + " from series " +
+      std::to_string(seriesInfo[index].index) 
+      + ": " + seriesInfo[index].name + " ...");
+
     makeDWIInputVols(seriesInfo[index], DWIName);
   }
     
@@ -1312,8 +1350,8 @@ void mdm_RunTools_madym_DicomConvert::makeDynamicVols(
   //Set up mean image
   mdm_Image3D meanImg;
 
-  //Set up output directory - outpath is already absolute
-  fs::path dynDir = fs::path(options_.dynDir());
+  //Set up output directory
+  fs::path dynDir = fs::path(fs::absolute(options_.dynDir()));
   fs::create_directories(dynDir);
 
   //Cap the total number of dynamics saved if set in options
@@ -1324,8 +1362,9 @@ void mdm_RunTools_madym_DicomConvert::makeDynamicVols(
   auto imageWriteFormat = mdm_ImageIO::formatFromString(options_.imageWriteFormat());
   auto imageDatatype = static_cast<mdm_ImageDatatypes::DataType>(options_.imageDataType());
   
-  mdm_ProgramLogger::logProgramMessage("Converting DICOM into DCE series with "
-    + std::to_string(nTimes) + " timepoints...");
+  mdm_ProgramLogger::logProgramMessage("Creating dynamic sequence with "
+    + std::to_string(nTimes) + " timepoints from series " +
+    std::to_string(series.index) + ": " + series.name + " ...");
 
   for (int i_dyn = 0; i_dyn < nTimes; i_dyn++)
   {

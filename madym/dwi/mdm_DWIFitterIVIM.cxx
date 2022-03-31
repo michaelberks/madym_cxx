@@ -23,7 +23,7 @@
 MDM_API mdm_DWIFitterIVIM::mdm_DWIFitterIVIM(const std::vector<double> &Bvals,
   bool fullModel, const std::vector<double> &BValsThresh)
   :
-  mdm_DWIFitterBase(Bvals, { "S0", "d", "f", "dstar" }),
+  mdm_DWIFitterBase(Bvals, { "S0", "D", "f", "Dstar" }),
   ADCFitter_(Bvals, false),
   fullModel_(fullModel),
   BValsThresh_(BValsThresh)

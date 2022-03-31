@@ -74,6 +74,13 @@ MDM_API const bool& mdm_input_bool::operator() ()  const// specialize only one m
 	return value_;
 }
 
+// Template specialization to return option value dicom tag
+template <>
+MDM_API const dicomTag& mdm_input_dicom_tag::operator() ()  const
+{
+  return value_();
+}
+
 //Switch doxygen parsing back on
 //! @endcond 
 
@@ -310,6 +317,85 @@ MDM_API std::string mdm_input_string_list::toString() const
       ss << ",";
   }
   ss << "]";
+  return ss.str();
+}
+
+//*******************************************************************
+MDM_API mdm_input_dicomTag::mdm_input_dicomTag()
+{}
+
+MDM_API mdm_input_dicomTag::~mdm_input_dicomTag()
+{}
+
+MDM_API mdm_input_dicomTag::mdm_input_dicomTag(dicomTag tag)
+  : tag_(tag)
+{
+}
+
+MDM_API mdm_input_dicomTag::mdm_input_dicomTag(const std::string& str)
+{
+  fromString(str);
+}
+
+MDM_API const dicomTag& mdm_input_dicomTag::operator() () const
+{
+  return tag_;
+}
+
+DISABLE_WARNING_PUSH
+DISABLE_WARNING_UNKNOWN_ESCAPE_SEQUENCE
+
+MDM_API void mdm_input_dicomTag::fromString(const std::string& str)
+{
+  //String format should either be:
+  // old format: 0xAAAA_0xAAAA
+  // new format: AAAA,AAAA
+  // where A is a hexidecimal character 0-9,a-f
+  // TODO: could (and should!) do a reg_expr to check hexidecimal
+  const auto errStr = "Error parsing dicom tag = " + str +
+    ": dicom tag definitions must by of form 0xAAAA_0xAAAA or AAAA,AAAA";
+
+  if (str == mdm_input_str::EMPTY_STR)
+  {
+    tag_.first = "";
+    tag_.second = "";
+  }
+  else if (str.size() == 13)
+  {
+    //Old format, 0xAAAA_0xAAAA
+    //TODO: could(and should!) do a reg_expr to check hexidecimal
+    if (str.substr(0, 2) != "0x")
+      throw mdm_exception(__func__, errStr);
+
+    if (str.substr(7, 2) != "0x")
+      throw mdm_exception(__func__, errStr);
+
+    tag_.first = str.substr(2, 4);
+    tag_.second = str.substr(9, 4);
+  }
+  else if (str.size() == 9)
+  {
+    //New format, AAAA,AAAA
+    //TODO: could(and should!) do a reg_expr to check hexidecimal
+    if (str.substr(4, 1) != ",")
+      throw mdm_exception(__func__, errStr);
+
+    tag_.first = str.substr(0, 4);
+    tag_.second = str.substr(5, 4);
+  }
+  else
+    throw mdm_exception(__func__, errStr);
+
+}
+DISABLE_WARNING_POP
+
+MDM_API std::string mdm_input_dicomTag::toString() const
+{
+  if (tag_.first.empty())
+    return mdm_input_str::EMPTY_STR;
+
+  std::stringstream ss;
+  ss << tag_.first << "," << tag_.second;
   return ss.str();
 }
 

@@ -10,6 +10,7 @@
 #include <madym/t1/mdm_T1MethodGenerator.h>
 #include <madym/dwi/mdm_DWIModelGenerator.h>
 #include <madym/image_io/mdm_ImageIO.h>
+#include <madym/image_io/mdm_ImageDatatypes.h>
 
 #include <madym/utils/mdm_ProgramLogger.h>
 #include <mdm_version.h>
@@ -46,14 +47,14 @@ madym_gui_ui::madym_gui_ui(QWidget *parent)
   QRegExp rangeREX("^[0-9]+(?:(,|-)[0-9]+)*$");
   rangeREX.setPatternSyntax(QRegExp::RegExp);
   rangeValidator = new QRegExpValidator(rangeREX);
-  ui.xRangeLineEdit->setValidator(rangeValidator);
-  ui.yRangeLineEdit->setValidator(rangeValidator);
-  ui.slicesLineEdit->setValidator(rangeValidator);
 
   QRegExp doubleListREX("^[0-9]+(\\.[0-9]+)?(?:,([0-9]+(\\.[0-9]+)?))*$");
   doubleListREX.setPatternSyntax(QRegExp::RegExp);
   doubleListValidator = new QRegExpValidator(doubleListREX);
-  ui.iaucTimesLineEdit->setValidator(doubleListValidator);
+
+  //Set up validator for tags
+  QRegExp dicomTagREX("[0-9a-f]{4},[0-9a-f]{4}", Qt::CaseInsensitive, QRegExp::RegExp);
+  tagValidator = new QRegExpValidator(dicomTagREX);
 
   initialize_processor_thread();
   connect_signals_to_slots();
@@ -154,10 +155,6 @@ void madym_gui_ui::on_dicomButton_clicked()
   runType_ = madym_gui_processor::RunType::DICOM;
   initialize_widget_values();
   ui.stackedWidget->setCurrentWidget(ui.runPage);
-
-  //Warn that we currently don't support all options in GUI
-  on_logMessageReceived("The full set of input options to madym_DicomConvert are not available to be set in the GUI.\n\n"
-    "Please use the load config file option...\n");
 }
 
 void madym_gui_ui::on_xtrButton_clicked()
@@ -166,10 +163,6 @@ void madym_gui_ui::on_xtrButton_clicked()
   runType_ = madym_gui_processor::RunType::XTR;
   initialize_widget_values();
   ui.stackedWidget->setCurrentWidget(ui.runPage);
-
-  //Warn that we currently don't support all options in GUI
-  on_logMessageReceived("The full set of input options to madym_MakeXtr are not available to be set in the GUI.\n\n"
-    "Please use the load config file option...\n\n");
 }
 
 //-------------------------------------------------------------------------
@@ -187,6 +180,8 @@ void madym_gui_ui::on_loadConfigButton_clicked()
   //Call input options to parse madym arguments, this will set all
   //the current processor_.madym_exe().options() fields into the input options
   //variable map and then check the config file	
+  //Need to reset madym_exe or we get confusing mix of old and new options
+  processor_.set_madym_exe(runType_);
   processor_.madym_exe().options().configFile.set(config_file.toStdString());
   if (processor_.madym_exe().parseInputs(processor_.madym_exe().who()))
   {
@@ -232,6 +227,14 @@ void madym_gui_ui::on_saveConfigButton_clicked()
 void madym_gui_ui::on_homeButton_clicked()
 {
   ui.stackedWidget->setCurrentWidget(ui.homePage);
+}
+
+//
+void madym_gui_ui::on_helpButton_clicked()
+{
+  processor_.madym_exe().options().help.set(true);
+  processor_.madym_exe().parseInputs(processor_.madym_exe().who());
+  processor_.madym_exe().options().help.set(false);
 }
 
 //
@@ -742,6 +745,452 @@ void madym_gui_ui::on_residualsSelect_clicked()
   ui.residualsLineEdit->setText(selectedPath);
 }
 
+
+//-----------------------------------------------------------------------------------
+// Dicom image formats
+//
+void madym_gui_ui::on_dicomImageWriteComboBox_currentIndexChanged(const QString& text)
+{
+  processor_.madym_exe().options().imageWriteFormat.set(text.toStdString());
+}
+
+//
+void madym_gui_ui::on_dicomDataTypeComboBox_currentIndexChanged(const QString& text)
+{
+  auto type = mdm_ImageDatatypes::typeFromString(text.toStdString());
+  processor_.madym_exe().options().imageDataType.set(type);
+}
+
+//
+void madym_gui_ui::on_flipXCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().flipX.set(state);
+}
+
+//
+void madym_gui_ui::on_flipYCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().flipY.set(state);
+}
+
+//
+void madym_gui_ui::on_flipZCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().flipZ.set(state);
+}
+
+//
+void madym_gui_ui::on_dicomScaleSpinBox_valueChanged(double value)
+{
+  processor_.madym_exe().options().dicomScale.set(value);
+}
+
+//
+void madym_gui_ui::on_dicomOffsetSpinBox_valueChanged(double value)
+{
+  processor_.madym_exe().options().dicomOffset.set(value);
+}
+
+//
+void madym_gui_ui::on_autoScaleTagLineEdit_textChanged(const QString& text)
+{
+  setTagOption(text, processor_.madym_exe().options().autoScaleTag);
+}
+
+//
+void madym_gui_ui::on_autoOffsetTagLineEdit_textChanged(const QString& text)
+{
+  setTagOption(text, processor_.madym_exe().options().autoOffsetTag);
+}
+
+//-----------------------------------------------------------------------------------
+// Dicom sequence naming
+//
+void madym_gui_ui::on_sequenceFormatLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().sequenceFormat.set(text.toStdString());
+}
+
+void madym_gui_ui::on_sequenceStartSpinBox_valueChanged(int value)
+{
+  processor_.madym_exe().options().sequenceStart.set(value);
+}
+
+void madym_gui_ui::on_sequenceStepSpinBox_valueChanged(int value)
+{
+  processor_.madym_exe().options().sequenceStep.set(value);
+}
+
+void madym_gui_ui::on_meanSuffixLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().meanSuffix.set(text.toStdString());
+}
+
+void madym_gui_ui::on_repeatPrefixLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().repeatPrefix.set(text.toStdString());
+}
+//-----------------------------------------------------------------------------------
+//Dicom main options
+//
+void madym_gui_ui::on_dicomDirLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().dicomDir.set(text.toStdString());
+}
+
+void madym_gui_ui::on_dicomDirSelect_clicked()
+{
+  QString selectedDir = QFileDialog::getExistingDirectory(this, tr("Choose dicom folder"),
+    dataDir_,
+    QFileDialog::ShowDirsOnly
+    | QFileDialog::DontResolveSymlinks);
+
+  if (selectedDir.isEmpty())
+    return;
+
+  ui.dicomDirLineEdit->setText(selectedDir);
+}
+
+void madym_gui_ui::on_seriesNameLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().dicomSeriesFile.set(text.toStdString());
+}
+
+void madym_gui_ui::on_sortCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().dicomSort.set(state);
+}
+
+void madym_gui_ui::on_makeDynCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().makeDyn.set(state);
+}
+
+void madym_gui_ui::on_makeT1InputsCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().makeT1Inputs.set(state);
+}
+
+void madym_gui_ui::on_makeDWIInputsCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().makeDWIInputs.set(state);
+}
+
+void madym_gui_ui::on_makeSingleCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().makeSingle.set(state);
+}
+
+//-----------------------------------------------------------------------------------
+//Dicom sort options
+//
+void madym_gui_ui::on_dicomFileFilterLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().dicomFileFilter.set(text.toStdString());
+}
+
+void madym_gui_ui::on_sliceFilterTagLineEdit_textChanged(const QString& text)
+{
+  setTagOption(text, processor_.madym_exe().options().sliceFilterTag);
+}
+
+void madym_gui_ui::on_sliceFilterMatchValueLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().sliceFilterMatchValue.value().fromString(text.toStdString());
+}
+
+//-----------------------------------------------------------------------------------
+////Dicom make dynamic options
+//
+void madym_gui_ui::on_dicomDynSeriesLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().dynSeries.set(text.toInt());
+}
+
+void madym_gui_ui::on_makeDynMeanCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().makeDynMean.set(state);
+}
+
+void madym_gui_ui::on_dynamicDirLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().dynDir.set(text.toStdString());
+}
+
+void madym_gui_ui::on_dynamicDirSelect_clicked()
+{
+  QString selectedDir = QFileDialog::getExistingDirectory(this, tr("Choose output folder for dynamic series"),
+    dataDir_,
+    QFileDialog::ShowDirsOnly
+    | QFileDialog::DontResolveSymlinks);
+
+  if (selectedDir.isEmpty())
+    return;
+
+  ui.dynamicDirLineEdit->setText(selectedDir);
+}
+
+void madym_gui_ui::on_dynamicNameLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().dynName.set(text.toStdString());
+}
+
+void madym_gui_ui::on_dicomNDynSpinBox_valueChanged(int value)
+{
+  processor_.madym_exe().options().nDyns.set(value);
+}
+
+void madym_gui_ui::on_temporalResolutionSpinBox_valueChanged(double value)
+{
+  processor_.madym_exe().options().temporalResolution.set(value);
+}
+
+//-----------------------------------------------------------------------------------
+//Dicom T1 inputs
+//
+void madym_gui_ui::on_dicomT1InputSeriesLineEdit_textChanged(const QString& text)
+{
+  int pos = 0;
+  QString str(text);
+  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
+    processor_.madym_exe().options().T1inputSeries.value().fromString(text.toStdString());
+}
+
+void madym_gui_ui::on_makeT1MeansCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().makeT1Means.set(state);
+}
+
+void madym_gui_ui::on_T1DirLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().T1Dir.set(text.toStdString());
+}
+
+void madym_gui_ui::on_T1DirSelect_clicked()
+{
+  QString selectedDir = QFileDialog::getExistingDirectory(this, tr("Choose output folder for T1 inputs"),
+    dataDir_,
+    QFileDialog::ShowDirsOnly
+    | QFileDialog::DontResolveSymlinks);
+
+  if (selectedDir.isEmpty())
+    return;
+
+  ui.T1DirLineEdit->setText(selectedDir);
+}
+
+void madym_gui_ui::on_dicomT1InputTextEdit_textChanged()
+{
+  QString text = ui.dicomT1InputTextEdit->toPlainText();
+  text.replace("\n", ",");
+  processor_.madym_exe().options().T1inputNames.value().fromString(text.toStdString());
+}
+
+void madym_gui_ui::on_xtrT1MethodComboBox_currentIndexChanged(const QString& text)
+{
+  processor_.madym_exe().options().T1method.set(text.toStdString());
+}
+
+//-----------------------------------------------------------------------------------
+//Dicom DWI inputs
+//
+void madym_gui_ui::on_dicomDWIInputSeriesLineEdit_textChanged(const QString& text)
+{
+  int pos = 0;
+  QString str(text);
+  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
+    processor_.madym_exe().options().DWIinputSeries.value().fromString(text.toStdString());
+}
+
+void madym_gui_ui::on_makeBvalueMeansCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().makeBvalueMeans.set(state);
+}
+
+void madym_gui_ui::on_DWIDirLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().DWIDir.set(text.toStdString());
+}
+
+void madym_gui_ui::on_DWIDirSelect_clicked()
+{
+  QString selectedDir = QFileDialog::getExistingDirectory(this, tr("Choose output folder for DWI inputs"),
+    dataDir_,
+    QFileDialog::ShowDirsOnly
+    | QFileDialog::DontResolveSymlinks);
+
+  if (selectedDir.isEmpty())
+    return;
+
+  ui.DWIDirLineEdit->setText(selectedDir);
+}
+
+void madym_gui_ui::on_dicomDWIInputTextEdit_textChanged()
+{
+  QString text = ui.dicomDWIInputTextEdit->toPlainText();
+  text.replace("\n", ",");
+  processor_.madym_exe().options().DWIinputNames.value().fromString(text.toStdString());
+}
+
+//-----------------------------------------------------------------------------------
+//Dicom single volume inputs
+void madym_gui_ui::on_dicomSingleSeriesLineEdit_textChanged(const QString& text)
+{
+  int pos = 0;
+  QString str(text);
+  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
+    processor_.madym_exe().options().singleSeries.value().fromString(text.toStdString());
+}
+
+void madym_gui_ui::on_dicomSingleVolNamesTextEdit_textChanged()
+{
+  QString text = ui.dicomSingleVolNamesTextEdit->toPlainText();
+  text.replace("\n", ",");
+  processor_.madym_exe().options().singleVolNames.value().fromString(text.toStdString());
+}
+
+//-----------------------------------------------------------------------------------
+//Dicom scanner attributes
+void madym_gui_ui::on_dynTimeTagLineEdit_textChanged(const QString& text)
+{
+  setTagOption(text, processor_.madym_exe().options().dynTimeTag);
+}
+
+void madym_gui_ui::on_dynTimeRequiredCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().dynTimeRequired.set(state);
+}
+
+void madym_gui_ui::on_FATagLineEdit_textChanged(const QString& text)
+{
+  setTagOption(text, processor_.madym_exe().options().FATag);
+}
+
+void madym_gui_ui::on_FARequiredCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().FARequired.set(state);
+}
+
+void madym_gui_ui::on_TRTagLineEdit_textChanged(const QString& text)
+{
+  setTagOption(text, processor_.madym_exe().options().TRTag);
+}
+
+void madym_gui_ui::on_TRRequiredCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().TRRequired.set(state);
+}
+
+void madym_gui_ui::on_TITagLineEdit_textChanged(const QString& text)
+{
+  setTagOption(text, processor_.madym_exe().options().TITag);
+}
+
+void madym_gui_ui::on_TIRequiredCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().TIRequired.set(state);
+}
+
+void madym_gui_ui::on_TETagLineEdit_textChanged(const QString& text)
+{
+  setTagOption(text, processor_.madym_exe().options().TETag);
+}
+
+void madym_gui_ui::on_TERequiredCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().TERequired.set(state);
+}
+
+void madym_gui_ui::on_BTagLineEdit_textChanged(const QString& text)
+{
+  setTagOption(text, processor_.madym_exe().options().BTag);
+}
+
+void madym_gui_ui::on_BRequiredCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().BRequired.set(state);
+}
+
+void madym_gui_ui::on_gradOriTagLineEdit_textChanged(const QString& text)
+{
+  setTagOption(text, processor_.madym_exe().options().gradOriTag);
+}
+
+void madym_gui_ui::on_gradOriRequiredCheckBox_stateChanged(int state)
+{
+  processor_.madym_exe().options().gradOriRequired.set(state);
+}
+
+//-----------------------------------------------------------------------------------
+//XTR tabs
+void madym_gui_ui::on_xtrSequenceFormatLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().sequenceFormat.set(text.toStdString());
+}
+
+void madym_gui_ui::on_xtrSequenceStartSpinBox_valueChanged(int value)
+{
+  processor_.madym_exe().options().sequenceStart.set(value);
+}
+
+void madym_gui_ui::on_xtrSequenceStepSpinBox_valueChanged(int value)
+{
+  processor_.madym_exe().options().sequenceStep.set(value);
+}
+
+void madym_gui_ui::on_xtrFALineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().FA.set(text.toDouble());
+}
+
+void madym_gui_ui::on_xtrVFAsLineEdit_textChanged(const QString& text)
+{
+  int pos = 0;
+  QString str(text);
+  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable)
+    processor_.madym_exe().options().VFAs.value().fromString(text.toStdString());
+}
+
+void madym_gui_ui::on_xtrTIsLineEdit_textChanged(const QString& text)
+{
+  int pos = 0;
+  QString str(text);
+  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable)
+    processor_.madym_exe().options().TIs.value().fromString(text.toStdString());
+}
+
+void madym_gui_ui::on_xtrBvaluesLineEdit_textChanged(const QString& text)
+{
+  int pos = 0;
+  QString str(text);
+  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable)
+    processor_.madym_exe().options().Bvalues.value().fromString(text.toStdString());
+}
+
+void madym_gui_ui::on_xtrTRLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().TR.set(text.toDouble());
+}
+
+void madym_gui_ui::on_dynamicTimesFileLineEdit_textChanged(const QString& text)
+{
+  processor_.madym_exe().options().dynTimesFile.set(text.toStdString());
+}
+
+void madym_gui_ui::on_dynamicTimesFileSelect_clicked()
+{
+  QString selectedPath = QFileDialog::getOpenFileName(this, tr("Select dynamic times mask"),
+    dataDir_,
+    tr("Config files (*.txt *.cfg);;All files (*.*)"));
+
+  if (selectedPath.isEmpty())
+    return;
+
+  ui.dynamicTimesFileLineEdit->setText(selectedPath);
+}
+
+//-----------------------------------------------------------------------------------
+// DWI
 //
 void madym_gui_ui::on_dwiModelComboBox_currentIndexChanged(const QString& text)
 {
@@ -980,6 +1429,9 @@ void madym_gui_ui::setup_general_tab(bool show)
 {
   if (show)
   {
+    if (ui.outputTabWidget->indexOf(ui.outputTab) < 0)
+      ui.outputTabWidget->insertTab(0, ui.outputTab, "General options");
+
     auto& options = processor_.madym_exe().options();
     if (!dataDir_.isEmpty())
       options.dataDir.set(dataDir_.toStdString());
@@ -997,24 +1449,29 @@ void madym_gui_ui::setup_general_tab(bool show)
     ui.outputDirLineEdit->setText(options.outputDir().c_str());
     ui.overwriteCheckBox->setChecked(options.overwrite());
 
-    //Hide some additional widgets on general tab
-    ui.roiPathLabel->show();
-    ui.roiPathLineEdit->show();
-    ui.roiPathSelect->show();
-    ui.errorTrackerLabel->show();
-    ui.errorTrackerLineEdit->show();
-    ui.errorTrackerSelect->show();
-    ui.imageReadLabel->show();
-    ui.imageReadComboBox->show();
-    ui.imageWriteLabel->show();
-    ui.imageWriteComboBox->show();
-    ui.overwriteCheckBox->show();
+    //Show/hide widgets on general tab not needed for DICOM/XTR modes
+    auto dicom = runType_ == madym_gui_processor::RunType::DICOM;
+    auto xtr = runType_ == madym_gui_processor::RunType::XTR;
+    ui.outputDirLabel->setVisible(!xtr);
+    ui.outputDirLineEdit->setVisible(!xtr);
+    ui.outputDirSelect->setVisible(!xtr);
+    ui.roiPathLabel->setVisible(!xtr && !dicom);
+    ui.roiPathLineEdit->setVisible(!xtr && !dicom);
+    ui.roiPathSelect->setVisible(!xtr && !dicom);
+    ui.errorTrackerLabel->setVisible(!xtr && !dicom);
+    ui.errorTrackerLineEdit->setVisible(!xtr && !dicom);
+    ui.errorTrackerSelect->setVisible(!xtr && !dicom);
+    ui.imageReadLabel->setVisible(!xtr && !dicom);
+    ui.imageReadComboBox->setVisible(!xtr && !dicom);
+    ui.imageWriteLabel->setVisible(!xtr);
+    ui.imageWriteComboBox->setVisible(!xtr);
+    ui.overwriteCheckBox->setVisible(!xtr);
   }
   else
   {
-    auto idx = ui.inputTabWidget->indexOf(ui.outputTab);
+    auto idx = ui.outputTabWidget->indexOf(ui.outputTab);
     if (idx >= 0)
-      ui.inputTabWidget->removeTab(idx);
+      ui.outputTabWidget->removeTab(idx);
   }
   
 }
@@ -1023,6 +1480,9 @@ void madym_gui_ui::setup_logging_tab(bool show)
 {
   if (show)
   {
+    if (ui.outputTabWidget->indexOf(ui.loggingTab) < 0)
+      ui.outputTabWidget->insertTab(1, ui.loggingTab, "Logging");
+
     auto& options = processor_.madym_exe().options();
     //Logging options - visible for all tools
     ui.logNameLineEdit->setText(options.programLogName().c_str());
@@ -1033,9 +1493,9 @@ void madym_gui_ui::setup_logging_tab(bool show)
   }
   else
   {
-    auto idx = ui.inputTabWidget->indexOf(ui.loggingTab);
+    auto idx = ui.outputTabWidget->indexOf(ui.loggingTab);
     if (idx >= 0)
-      ui.inputTabWidget->removeTab(idx);
+      ui.outputTabWidget->removeTab(idx);
   }
 }
 
@@ -1071,12 +1531,12 @@ void madym_gui_ui::setup_conc_tab(bool show)
 {
   if (show)
   {
-    auto& options = processor_.madym_exe().options();
-
-    //Signal to concentration - TODO constrain inputs and put units on number inputs
     if (ui.inputTabWidget->indexOf(ui.concentrationTab) < 0)
       ui.inputTabWidget->insertTab(1, ui.concentrationTab, "Signal to concentration");
 
+    auto& options = processor_.madym_exe().options();
+
+    //Signal to concentration - TODO constrain inputs and put units on number inputs
     ui.m0RatioCheckBox->setChecked(options.M0Ratio());
     ui.t1MapLineEdit->setText(options.T1Name().c_str());
     ui.t1UsePrecomputedCheckBox->setChecked(!options.T1Name().empty());
@@ -1102,6 +1562,7 @@ void madym_gui_ui::setup_conc_tab(bool show)
       ui.iaucTimesLineEdit->show();
       QString iaucTimes(options.IAUCTimes.value().toString().c_str());
       ui.iaucTimesLineEdit->setText(iaucTimes.replace("[", "").replace("]", ""));
+      ui.iaucTimesLineEdit->setValidator(doubleListValidator);
     }
   }
   else
@@ -1116,9 +1577,12 @@ void madym_gui_ui::setup_t1_mapping_tab(bool show)
 {
   if (show)
   {
+    if (ui.inputTabWidget->indexOf(ui.t1MapTab) < 0)
+      ui.inputTabWidget->insertTab(2, ui.t1MapTab, "T1 mapping");
+
     auto& options = processor_.madym_exe().options();
     
-    initialize_T1_options();
+    initialize_T1_options(*ui.t1MethodComboBox);
     ui.t1ThresholdLineEdit->setValidator(new QDoubleValidator(0, 10000, 2, this));
     ui.t1ThresholdLineEdit->setText(QString::number(options.T1noiseThresh()));
 
@@ -1145,6 +1609,9 @@ void madym_gui_ui::setup_DWI_model_tab(bool show)
 {
   if (show)
   {
+    if (ui.inputTabWidget->indexOf(ui.dwiTab) < 0)
+      ui.inputTabWidget->insertTab(3, ui.dwiTab, "DWI modelling");
+
     auto& options = processor_.madym_exe().options();
 
     initialize_DWI_options();
@@ -1208,7 +1675,7 @@ void madym_gui_ui::setup_IF_tab(bool show)
 
     //AIF options
     if (ui.fittingTabWidget->indexOf(ui.vascularTab) < 0)
-      ui.fittingTabWidget->insertTab(0, ui.vascularTab, "Vascular input");
+      ui.fittingTabWidget->insertTab(1, ui.vascularTab, "Vascular input");
 
     ui.AIFmapLineEdit->setText(options.aifMap().c_str());
     ui.AIFfileLineEdit->setText(options.aifName().c_str());
@@ -1242,16 +1709,19 @@ void madym_gui_ui::setup_AIF_detection_tab(bool show)
     auto& options = processor_.madym_exe().options();
     //AIF detection options
     if (ui.fittingTabWidget->indexOf(ui.aifTab) < 0)
-      ui.fittingTabWidget->insertTab(0, ui.aifTab, "AIF detection");
+      ui.fittingTabWidget->insertTab(2, ui.aifTab, "AIF detection");
 
     QString xRange(options.aifXrange.value().toString().c_str());
     ui.xRangeLineEdit->setText(xRange.replace("[", "").replace("]", ""));
+    ui.xRangeLineEdit->setValidator(rangeValidator);
 
     QString yRange(options.aifYrange.value().toString().c_str());
     ui.yRangeLineEdit->setText(yRange.replace("[", "").replace("]", ""));
+    ui.yRangeLineEdit->setValidator(rangeValidator);
 
     QString slices(options.aifSlices.value().toString().c_str());
     ui.slicesLineEdit->setText(slices.replace("[", "").replace("]", ""));
+    ui.slicesLineEdit->setValidator(rangeValidator);
 
     ui.minT1lineEdit->setValidator(new QDoubleValidator(0, 10000, 2, this));
     ui.minT1lineEdit->setText(QString::number(options.minT1Blood()));
@@ -1286,6 +1756,410 @@ void madym_gui_ui::setup_fitting_tab(bool show)
     ui.fittingTabWidget->hide();
 }
 
+void madym_gui_ui::setup_dicom_tabs(bool show)
+{
+  auto dicom = runType_ == madym_gui_processor::RunType::DICOM;
+  
+  setup_dicom_format_tab(show && dicom);
+  setup_dicom_sequence_tab(show && dicom);
+  setup_dicom_options_tab(show && dicom);
+  setup_dicom_sort_tab(show && dicom);
+  setup_dicom_dynamic_tab(show);
+  setup_dicom_t1_tab(show);
+  setup_dicom_DWI_tab(show);
+  setup_dicom_single_tab(show && dicom);
+  setup_dicom_scanner_tab(show && dicom);
+  setup_xtr_scanner_tab(show && !dicom);
+}
+
+void madym_gui_ui::setup_dicom_format_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+    
+    //DICOM convert format options
+    if (ui.outputTabWidget->indexOf(ui.formatTab) < 0)
+      ui.outputTabWidget->insertTab(0, ui.formatTab, "Image formats");
+
+    //Set up GUI widgets
+    initialize_image_format_options(*ui.dicomImageWriteComboBox);
+    initialize_image_datatype_options(*ui.dicomDataTypeComboBox);
+
+    ui.flipXCheckBox->setChecked(options.flipX());
+    ui.flipYCheckBox->setChecked(options.flipY());
+    ui.flipZCheckBox->setChecked(options.flipZ());
+
+    ui.dicomScaleSpinBox->setValue(options.dicomScale());
+    ui.dicomOffsetSpinBox->setValue(options.dicomOffset());
+
+    ui.autoScaleTagLineEdit->setText(tagToString(options.autoScaleTag()));
+    ui.autoOffsetTagLineEdit->setText(tagToString(options.autoOffsetTag()));
+
+    //Set validators for tags
+    ui.autoScaleTagLineEdit->setValidator(tagValidator);
+    ui.autoOffsetTagLineEdit->setValidator(tagValidator);
+
+  }
+  else
+  {
+    //Hide the tab
+    auto idx = ui.outputTabWidget->indexOf(ui.formatTab);
+    if (idx >= 0)
+      ui.outputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_dicom_sequence_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+
+    //DICOM convert format options
+    if (ui.outputTabWidget->indexOf(ui.sequenceTab) < 0)
+      ui.outputTabWidget->insertTab(0, ui.sequenceTab, "Sequence naming");
+
+    //Set up GUI widgets
+    ui.sequenceFormatLineEdit->setText(options.sequenceFormat().c_str());
+    ui.sequenceStartSpinBox->setValue(options.sequenceStart());
+    ui.sequenceStepSpinBox->setValue(options.sequenceStep());
+
+    ui.meanSuffixLineEdit->setText(options.meanSuffix().c_str());
+    ui.repeatPrefixLineEdit->setText(options.repeatPrefix().c_str());
+  }
+  else
+  {
+    //Hide the tab
+    auto idx = ui.outputTabWidget->indexOf(ui.sequenceTab);
+    if (idx >= 0)
+      ui.outputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_dicom_options_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+
+    //DICOM convert format options
+    if (ui.inputTabWidget->indexOf(ui.dicomTab) < 0)
+      ui.inputTabWidget->insertTab(0, ui.dicomTab, "DICOM");
+
+    //Set up GUI widgets
+    ui.dicomDirLineEdit->setText(options.dicomDir().c_str());
+    ui.seriesNameLineEdit->setText(options.dicomSeriesFile().c_str());
+
+    //Flags
+    ui.sortCheckBox->setChecked(options.dicomSort());
+    ui.makeDynCheckBox->setChecked(options.makeDyn());
+    ui.makeT1InputsCheckBox->setChecked(options.makeT1Inputs());
+    ui.makeDWIInputsCheckBox->setChecked(options.makeDWIInputs());
+    ui.makeSingleCheckBox->setChecked(options.makeSingle());
+
+  }
+  else
+  {
+    //Hide the tab
+    auto idx = ui.inputTabWidget->indexOf(ui.dicomTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_dicom_sort_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+
+    //DICOM convert format options
+    if (ui.inputTabWidget->indexOf(ui.sortTab) < 0)
+      ui.inputTabWidget->insertTab(0, ui.sortTab, "Sort");
+
+    //Set GUI widgets
+    ui.dicomFileFilterLineEdit->setText(options.dicomFileFilter().c_str());
+    ui.sliceFilterTagLineEdit->setText(tagToString(options.sliceFilterTag()));
+    ui.sliceFilterTagLineEdit->setValidator(tagValidator);
+    QString matches(options.sliceFilterMatchValue.value().toString().c_str());
+    ui.sliceFilterMatchValueLineEdit->setText(matches.replace("[", "").replace("]",""));
+
+  }
+  else
+  {
+    //Hide the tab
+    auto idx = ui.inputTabWidget->indexOf(ui.sortTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_dicom_dynamic_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+
+    //DICOM convert format options
+    if (ui.inputTabWidget->indexOf(ui.dynamicTab) < 0)
+      ui.inputTabWidget->insertTab(0, ui.dynamicTab, "Dynamic");
+
+    //Set-up GUI widgets
+    if (runType_ == madym_gui_processor::RunType::DICOM)
+    {
+      ui.dynSeriesLabel->show();
+      ui.dicomDynSeriesLineEdit->show();
+      ui.makeDynMeanCheckBox->show();
+      if (options.dynSeries())
+        ui.dicomDynSeriesLineEdit->setText(QString::number(options.dynSeries()));
+      ui.dicomDynSeriesLineEdit->setValidator(new QIntValidator(1, 1000));
+
+      ui.makeDynMeanCheckBox->setChecked(options.makeDynMean());
+    }
+    else
+    {
+      ui.dynSeriesLabel->hide();
+      ui.dicomDynSeriesLineEdit->hide();
+      ui.makeDynMeanCheckBox->hide();
+    }
+
+    ui.dynamicDirLineEdit->setText(options.dynDir().c_str());
+
+    ui.dynamicNameLineEdit->setText(options.dynName().c_str());
+
+    ui.dicomNDynSpinBox->setValue(options.nDyns());
+
+    ui.temporalResolutionSpinBox->setValue(options.temporalResolution());
+
+  }
+  else
+  {
+    //Hide the tab
+    auto idx = ui.inputTabWidget->indexOf(ui.dynamicTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_dicom_t1_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+
+    //DICOM convert format options
+    if (ui.inputTabWidget->indexOf(ui.T1InputTab) < 0)
+      ui.inputTabWidget->insertTab(0, ui.T1InputTab, "T1 inputs");
+
+    //Set-up GUI widgets
+    if (runType_ == madym_gui_processor::RunType::DICOM)
+    {
+      ui.T1InputSeriesLabel->show();
+      ui.dicomT1InputSeriesLineEdit->show();
+      ui.makeT1MeansCheckBox->show();
+      QString series(options.T1inputSeries.value().toString().c_str());
+      ui.dicomT1InputSeriesLineEdit->setText(series.replace("[", "").replace("]", ""));
+      ui.dicomT1InputSeriesLineEdit->setValidator(rangeValidator);
+
+      ui.makeT1MeansCheckBox->setChecked(options.makeT1Means());
+
+      ui.xtrT1MethodLabel->hide();
+      ui.xtrT1MethodComboBox->hide();  
+    }
+    else
+    {
+      ui.T1InputSeriesLabel->hide();
+      ui.dicomT1InputSeriesLineEdit->hide();
+      ui.makeT1MeansCheckBox->hide();
+
+      ui.xtrT1MethodLabel->show();
+      ui.xtrT1MethodComboBox->show();
+      initialize_T1_options(*ui.xtrT1MethodComboBox);
+    }
+
+    ui.T1DirLineEdit->setText(options.T1Dir().c_str());
+
+    QString t1Inputs(options.T1inputNames.value().toString().c_str());
+    ui.dicomT1InputTextEdit->setText(t1Inputs.replace("[", "").replace("]", "").replace(",", "\n"));//
+
+  }
+  else
+  {
+    //Hide the tab
+    auto idx = ui.inputTabWidget->indexOf(ui.T1InputTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_dicom_DWI_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+
+    //DICOM convert format options
+    if (ui.inputTabWidget->indexOf(ui.DWIInputTab) < 0)
+      ui.inputTabWidget->insertTab(0, ui.DWIInputTab, "DWI");
+
+    //Set-up GUI widgets
+    if (runType_ == madym_gui_processor::RunType::DICOM)
+    {
+      ui.DWIInputSeriesLabel->show();
+      ui.dicomDWIInputSeriesLineEdit->show();
+      ui.makeBvalueMeansCheckBox->show();
+      QString series(options.DWIinputSeries.value().toString().c_str());
+      ui.dicomDWIInputSeriesLineEdit->setText(series.replace("[", "").replace("]", ""));
+      ui.dicomDWIInputSeriesLineEdit->setValidator(rangeValidator);
+
+      ui.makeBvalueMeansCheckBox->setChecked(options.makeBvalueMeans());
+    }
+    else
+    {
+      ui.DWIInputSeriesLabel->hide();
+      ui.dicomDWIInputSeriesLineEdit->hide();
+      ui.makeBvalueMeansCheckBox->hide();
+    }
+
+    ui.DWIDirLineEdit->setText(options.DWIDir().c_str());
+
+    QString dwiInputs(options.DWIinputNames.value().toString().c_str());
+    ui.dicomDWIInputTextEdit->setText(dwiInputs.replace("[", "").replace("]", "").replace(",", "\n"));//
+
+  }
+  else
+  {
+    //Hide the tab
+    auto idx = ui.inputTabWidget->indexOf(ui.DWIInputTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_dicom_single_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+
+    //DICOM convert format options
+    if (ui.inputTabWidget->indexOf(ui.singlesTab) < 0)
+      ui.inputTabWidget->insertTab(0, ui.singlesTab, "Single volumes");
+
+    //Set-up GUI widgets
+    QString series(options.singleSeries.value().toString().c_str());
+    ui.dicomSingleSeriesLineEdit->setText(series.replace("[", "").replace("]", ""));
+    ui.dicomSingleSeriesLineEdit->setValidator(rangeValidator);
+
+    QString singles(options.singleVolNames.value().toString().c_str());
+    ui.dicomSingleVolNamesTextEdit->setText(singles.replace("[", "").replace("]", "").replace(",", "\n"));//
+
+  }
+  else
+  {
+    //Hide the tab
+    auto idx = ui.inputTabWidget->indexOf(ui.singlesTab);
+    if (idx >= 0)
+      ui.inputTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_dicom_scanner_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+
+    //DICOM convert format options
+    if (ui.fittingTabWidget->indexOf(ui.scannerTab) < 0)
+      ui.fittingTabWidget->insertTab(0, ui.scannerTab, "Scanner attributes");
+
+    //Set up GUI widgets
+    ui.dynTimeTagLineEdit->setText(tagToString(options.dynTimeTag()));
+    ui.dynTimeTagLineEdit->setValidator(tagValidator);
+    ui.dynTimeRequiredCheckBox->setChecked(options.dynTimeRequired());
+
+    ui.FATagLineEdit->setText(tagToString(options.FATag()));
+    ui.FATagLineEdit->setValidator(tagValidator);
+    ui.FARequiredCheckBox->setChecked(options.FARequired());
+    ui.FATagLineEdit->setWhatsThis(options.FATag.info());
+    ui.FATagLineEdit->setToolTip(options.FATag.info());
+
+    ui.TRTagLineEdit->setText(tagToString(options.TRTag()));
+    ui.TRTagLineEdit->setValidator(tagValidator);
+    ui.TRRequiredCheckBox->setChecked(options.TRRequired());
+
+    ui.TITagLineEdit->setText(tagToString(options.TITag()));
+    ui.TITagLineEdit->setValidator(tagValidator);
+    ui.TIRequiredCheckBox->setChecked(options.TIRequired());
+
+    ui.TETagLineEdit->setText(tagToString(options.TETag()));
+    ui.TETagLineEdit->setValidator(tagValidator);
+    ui.TERequiredCheckBox->setChecked(options.TERequired());
+
+    ui.BTagLineEdit->setText(tagToString(options.BTag()));
+    ui.BTagLineEdit->setValidator(tagValidator);
+    ui.BRequiredCheckBox->setChecked(options.BRequired());
+
+    ui.gradOriTagLineEdit->setText(tagToString(options.gradOriTag()));
+    ui.gradOriTagLineEdit->setValidator(tagValidator);
+    ui.gradOriRequiredCheckBox->setChecked(options.gradOriRequired());
+
+  }
+  else
+  {
+    //Hide the tab
+    auto idx = ui.fittingTabWidget->indexOf(ui.scannerTab);
+    if (idx >= 0)
+      ui.fittingTabWidget->removeTab(idx);
+  }
+}
+
+void madym_gui_ui::setup_xtr_scanner_tab(bool show)
+{
+  if (show)
+  {
+    auto& options = processor_.madym_exe().options();
+
+    //DICOM convert format options
+    if (ui.fittingTabWidget->indexOf(ui.xtrScannerTab) < 0)
+      ui.fittingTabWidget->insertTab(0, ui.xtrScannerTab, "Scanner settings");
+
+    //Set up GUI widgets
+    ui.xtrSequenceFormatLineEdit->setText(options.sequenceFormat().c_str());
+    ui.xtrSequenceStartSpinBox->setValue(options.sequenceStart());
+    ui.xtrSequenceStepSpinBox->setValue(options.sequenceStep());
+
+    ui.xtrFALineEdit->setText(QString::number(options.FA()));
+    ui.xtrFALineEdit->setValidator(new QDoubleValidator(0, 10000, 2, this));
+
+    QString VFAs(options.VFAs.value().toString().c_str());
+    ui.xtrVFAsLineEdit->setText(VFAs.replace("[", "").replace("]", ""));
+    ui.xtrVFAsLineEdit->setValidator(doubleListValidator);
+
+    QString TIs(options.TIs.value().toString().c_str());
+    ui.xtrTIsLineEdit->setText(TIs.replace("[", "").replace("]", ""));
+    ui.xtrTIsLineEdit->setValidator(doubleListValidator);
+
+    QString Bvalues(options.Bvalues.value().toString().c_str());
+    ui.xtrBvaluesLineEdit->setText(Bvalues.replace("[", "").replace("]", ""));
+    ui.xtrBvaluesLineEdit->setValidator(doubleListValidator);
+
+    ui.xtrTRLineEdit->setText(QString::number(options.TR()));
+    ui.xtrTRLineEdit->setValidator(new QDoubleValidator(0, 10000, 2, this));
+
+    ui.dynamicTimesFileLineEdit->setText(options.dynTimesFile().c_str());
+
+  }
+  else
+  {
+    //Hide the tab
+    auto idx = ui.fittingTabWidget->indexOf(ui.xtrScannerTab);
+    if (idx >= 0)
+      ui.fittingTabWidget->removeTab(idx);
+  }
+}
 
 void madym_gui_ui::initialize_widget_values()
 {
@@ -1309,6 +2183,7 @@ void madym_gui_ui::initialize_widget_values()
     //Tabs to hide
     setup_AIF_detection_tab(false);
     setup_DWI_model_tab(false);
+    setup_dicom_tabs(false);
 
     //Set the tool label and run button text
     ui.runButton->setText("Run DCE model fitting");
@@ -1326,6 +2201,7 @@ void madym_gui_ui::initialize_widget_values()
     //Tabs to hide
     setup_DCE_model_tab(false);
     setup_IF_tab(false);
+    setup_dicom_tabs(false);
 
     //Set the tool label and run button text
     ui.runButton->setText("Run AIF detection");
@@ -1341,6 +2217,7 @@ void madym_gui_ui::initialize_widget_values()
     setup_conc_tab(false);
     setup_DWI_model_tab(false);
     setup_fitting_tab(false);
+    setup_dicom_tabs(false);
 
     //Set the tool label and run button text
     ui.runButton->setText("Run T1 mapping");
@@ -1356,6 +2233,7 @@ void madym_gui_ui::initialize_widget_values()
     setup_DCE_data_tab(false);
     setup_conc_tab(false);
     setup_fitting_tab(false);
+    setup_dicom_tabs(false);
 
     //Set the tool label and run button text
     ui.runButton->setText("Run DWI modelling");
@@ -1364,24 +2242,18 @@ void madym_gui_ui::initialize_widget_values()
 
   case madym_gui_processor::DICOM:
     //Tabs to setup and show
-    //None - currently forceed to use config input
+    setup_dicom_tabs(true);
+    setup_fitting_tab(true);
 
     //Tabs to hide
     setup_DWI_model_tab(false);
     setup_t1_mapping_tab(false);
     setup_DCE_data_tab(false);
     setup_conc_tab(false);
-    setup_fitting_tab(false);
-
-    //Hide some additional widgets on general tab
-    ui.roiPathLabel->hide();
-    ui.roiPathLineEdit->hide();
-    ui.roiPathSelect->hide();
-    ui.errorTrackerLabel->hide();
-    ui.errorTrackerLineEdit->hide();
-    ui.errorTrackerSelect->hide();
-    ui.imageReadLabel->hide();
-    ui.imageReadComboBox->hide();
+    setup_IF_tab(false);
+    setup_DCE_model_tab(false);
+    setup_AIF_detection_tab(false);
+    
 
     //Set the tool label and run button text
     ui.runButton->setText("Convert DICOM files");
@@ -1391,27 +2263,17 @@ void madym_gui_ui::initialize_widget_values()
 
   case madym_gui_processor::XTR:
     //Tabs to setup and show
-    //None - currently foreced to use config input
+    setup_fitting_tab(true);
+    setup_dicom_tabs(true);
 
     //Tabs to hide
     setup_DWI_model_tab(false);
     setup_t1_mapping_tab(false);
     setup_DCE_data_tab(false);
     setup_conc_tab(false);
-    setup_fitting_tab(false);
-
-    //Hide some additional widgets on general tab
-    ui.roiPathLabel->hide();
-    ui.roiPathLineEdit->hide();
-    ui.roiPathSelect->hide();
-    ui.errorTrackerLabel->hide();
-    ui.errorTrackerLineEdit->hide();
-    ui.errorTrackerSelect->hide();
-    ui.imageReadLabel->hide();
-    ui.imageReadComboBox->hide();
-    ui.imageWriteLabel->hide();
-    ui.imageWriteComboBox->hide();
-    ui.overwriteCheckBox->hide();
+    setup_IF_tab(false);
+    setup_DCE_model_tab(false);
+    setup_AIF_detection_tab(false);
 
     //Set the tool label and run button text
     ui.runButton->setText("Make XTR files");
@@ -1422,6 +2284,10 @@ void madym_gui_ui::initialize_widget_values()
   default:
     ;
   }
+  //Make sure the tabs rae on their first tab
+  ui.outputTabWidget->setCurrentIndex(0);
+  ui.inputTabWidget->setCurrentIndex(0);
+  ui.fittingTabWidget->setCurrentIndex(0);
 }
 
 //
@@ -1450,27 +2316,27 @@ void madym_gui_ui::initialize_model_options()
 }
 
 //
-void madym_gui_ui::initialize_T1_options()
+void madym_gui_ui::initialize_T1_options(QComboBox& b)
 {
   const auto &methods = mdm_T1MethodGenerator::methods();
   int selected_index = 0;
   bool matched = false;
   {
-    const QSignalBlocker blocker(ui.t1MethodComboBox);
+    const QSignalBlocker blocker(&b);
     // We use a signal blocker here to avoid trying to set an empty model
     //if a config file is loaded an we update the widget values
-    ui.t1MethodComboBox->clear();
+    b.clear();
     for (auto method : methods)
     {
-      ui.t1MethodComboBox->addItem(method.c_str()); 
+      b.addItem(method.c_str());
       if (method == processor_.madym_exe().options().T1method())
         matched = true;
       else if (!matched)
         selected_index++;
     }
-    ui.t1MethodComboBox->addItem(NONE_SELECTED);
+    b.addItem(NONE_SELECTED);
   }
-  ui.t1MethodComboBox->setCurrentIndex(selected_index);
+  b.setCurrentIndex(selected_index);
 }
 
 //
@@ -1549,6 +2415,29 @@ void madym_gui_ui::initialize_image_format_options(QComboBox &b)
   b.setCurrentIndex(selected_index);
 }
 
+void madym_gui_ui::initialize_image_datatype_options(QComboBox& b)
+{
+  const auto& types = mdm_ImageDatatypes::validTypes();
+  int selected_index = 0;
+  bool matched = false;
+  {
+    const QSignalBlocker blocker(&b);
+    // We use a signal blocker here to avoid trying to set an empty model
+    //if a config file is loaded an we update the widget values
+    b.clear();
+    for (auto type : types)
+    {
+      b.addItem(type.c_str());
+      if (mdm_ImageDatatypes::typeFromString(type) == processor_.madym_exe().options().imageDataType())
+        matched = true;
+      else if (!matched)
+        selected_index++;
+    }
+    b.addItem(NONE_SELECTED);
+  }
+  b.setCurrentIndex(selected_index);
+}
+
 //
 void madym_gui_ui::initialize_optimisation_options()
 {
@@ -1596,7 +2485,8 @@ void madym_gui_ui::set_BValsThresholds_enabled()
 
 bool madym_gui_ui::check_required_options()
 {
-  if (processor_.madym_exe().options().outputDir().empty())
+  if (runType_ != madym_gui_processor::RunType::XTR &&
+    processor_.madym_exe().options().outputDir().empty())
   {
     QMessageBox msgBox;
     msgBox.setIcon(QMessageBox::Warning);
@@ -1669,4 +2559,20 @@ void madym_gui_ui::makeB1Consistent(bool useB1)
   ui.b1MapPathSelect2->setEnabled(options.B1Correction());
   ui.b1ScalingSpinBox->setEnabled(options.B1Correction());
   ui.b1ScalingSpinBox2->setEnabled(options.B1Correction());
+}
+
+QString madym_gui_ui::tagToString(const dicomTag& tag)
+{
+  if (tag.first.empty())
+    return "";
+  else
+    return tr("%1,%2").arg(tag.first.c_str()).arg(tag.second.c_str());
+}
+
+void madym_gui_ui::setTagOption(const QString& text, mdm_input_dicom_tag& tagOption)
+{
+  int pos = 0;
+  QString str(text);
+  if (tagValidator->validate(str, pos) == QValidator::Acceptable)
+    tagOption.value().fromString(text.toStdString());
 }
