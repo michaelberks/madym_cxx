@@ -25,11 +25,11 @@ def run(
     dicom_series_file : str = None,
     T1_input_series : list = None,
     dyn_series : int = None,
-    single_series : int = None,
+    single_series : list = None,
     dicom_filter : str = None,
     slice_filter_tag : str = None,
-    slice_filter_match_value : str = None,
-    vol_name : str = None,
+    slice_filter_match_value : list = None,
+    single_vol_names : list = None,
     sort : bool = None,
     make_t1 : bool = None,
     make_single : bool = None,
@@ -103,16 +103,16 @@ def run(
             Indices of the dicom series for each T1 input
         dyn_series : int = None
             Index of the dicom series for the dynamic DCE time-series
-        single_series : int = None
+        single_series : list = None
             Index of the dicom series for converting a generic single volume
         dicom_filter : str = None
             File filter for dicom sort (eg IM_)
         slice_filter_tag : str = None
             Custom Dicom tag key (group,element) for filtering slices against a user set value
-        slice_filter_match_value : str = None
-            Value of attribute set by slice_filter_tag that slices must match to be included
-        vol_name : str = None
-            Output filename for converting a single dicom volume
+        slice_filter_match_value : list = None
+            Value(s) of attribute set by slice_filter_tag that slices must match to be included
+        single_vol_names : list = None
+            Output filename(s) for converting a single dicom volume
         sort : bool = None
             "Sort the files in Dicom dir into separate series, writing out the series information")
         make_t1 : bool = None
@@ -248,15 +248,15 @@ def run(
 
     add_option('int', cmd_args, '--dyn_series', dyn_series)
 
-    add_option('int', cmd_args, '--single_series', single_series)
+    add_option('int_list', cmd_args, '--single_series', single_series)
 
     add_option('string', cmd_args, '--dicom_filter', dicom_filter)
 
     add_option('string', cmd_args, '--slice_filter_tag', slice_filter_tag)
 
-    add_option('string', cmd_args, '--slice_filter_match_value', slice_filter_match_value)
+    add_option('string_list', cmd_args, '--slice_filter_match_value', slice_filter_match_value)
 
-    add_option('string', cmd_args, '--vol_name', vol_name)
+    add_option('string_list', cmd_args, '--single_vol_names', single_vol_names)
 
     add_option('bool', cmd_args, '--sort', sort)
 
