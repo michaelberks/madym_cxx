@@ -997,7 +997,7 @@ void mdm_RunTools_madym_DicomConvert::makeSingleVol(
   auto nSeries = options_.singleVolNames().size();
   if ( options_.singleSeries().size() != nSeries)
     throw mdm_exception(__func__, boost::format(
-      "Length of %1% (%2) odes not match length of %3% (%4)."
+      "Length of %1% (%2%) does not match length of %3% (%4%)."
     ) % options_.singleSeries.key() % options_.singleSeries().size() 
     % options_.singleVolNames.key() % nSeries);
 
@@ -1044,7 +1044,11 @@ void mdm_RunTools_madym_DicomConvert::makeT1InputVols(
   checkAutoScaling();
 
   auto nInputs = options_.T1inputSeries().size();
-  assert(nInputs == options_.T1inputNames().size());
+  if (nInputs != options_.T1inputNames().size())
+    throw mdm_exception(__func__,
+      boost::format("Number of elements in %1% (%2%) does not match %3% (%4%)")
+      % options_.T1inputNames.key() % options_.T1inputNames().size()
+      % options_.T1inputSeries.key() % nInputs);
 
   auto imageWriteFormat = mdm_ImageIO::formatFromString(options_.imageWriteFormat());
   auto imageDatatype = static_cast<mdm_ImageDatatypes::DataType>(options_.imageDataType());
@@ -1234,7 +1238,11 @@ void mdm_RunTools_madym_DicomConvert::makeDWIInputs(
   const std::vector<dcmSeriesInfo>& seriesInfo)
 {
   auto nInputs = options_.DWIinputSeries().size();
-  assert(nInputs == options_.DWIinputNames().size());
+  if (nInputs != options_.DWIinputNames().size())
+    throw mdm_exception(__func__,
+      boost::format("Number of elements in %1% (%2%) does not match %3% (%4%)")
+      % options_.DWIinputNames.key() % options_.DWIinputNames().size() 
+      % options_.DWIinputSeries.key() % nInputs);
 
   for (size_t i_dwi = 0; i_dwi < nInputs; i_dwi++)
   {

@@ -200,7 +200,7 @@ MDM_API std::string mdm_input_int_list::toString() const
   if (range_open)
     ss << list_.back();
 
-  ss << " ]";
+  ss << "]";
   return ss.str();
 }
 

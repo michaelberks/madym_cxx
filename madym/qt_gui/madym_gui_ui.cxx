@@ -619,28 +619,19 @@ void madym_gui_ui::on_hctLineEdit_textChanged(const QString &text)
 //AIF detection options
 void madym_gui_ui::on_xRangeLineEdit_textChanged(const QString &text)
 {
-  int pos = 0;
-  QString str(text);
-  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
-    processor_.madym_exe().options().aifXrange.value().fromString(text.toStdString());
+  setRangeOption(text, processor_.madym_exe().options().aifXrange);
 }
 
 //
 void madym_gui_ui::on_yRangeLineEdit_textChanged(const QString &text)
 {
-  int pos = 0;
-  QString str(text);
-  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
-    processor_.madym_exe().options().aifYrange.value().fromString(text.toStdString());
+  setRangeOption(text, processor_.madym_exe().options().aifYrange);
 }
 
 //
 void madym_gui_ui::on_slicesLineEdit_textChanged(const QString &text)
 {
-  int pos = 0;
-  QString str(text);
-  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
-    processor_.madym_exe().options().aifSlices.value().fromString(text.toStdString());
+  setRangeOption(text, processor_.madym_exe().options().aifSlices);
 }
 
 //
@@ -699,10 +690,7 @@ void madym_gui_ui::on_outputDirSelect_clicked()
 //
 void madym_gui_ui::on_iaucTimesLineEdit_textChanged(const QString &text)
 {
-  int pos = 0;
-  QString str(text);
-  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable)
-    processor_.madym_exe().options().IAUCTimes.value().fromString(text.toStdString());
+  setDoubleListOption(text, processor_.madym_exe().options().IAUCTimes);
 }
 
 //
@@ -950,10 +938,7 @@ void madym_gui_ui::on_temporalResolutionSpinBox_valueChanged(double value)
 //
 void madym_gui_ui::on_dicomT1InputSeriesLineEdit_textChanged(const QString& text)
 {
-  int pos = 0;
-  QString str(text);
-  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
-    processor_.madym_exe().options().T1inputSeries.value().fromString(text.toStdString());
+  setRangeOption(text, processor_.madym_exe().options().T1inputSeries);
 }
 
 void madym_gui_ui::on_makeT1MeansCheckBox_stateChanged(int state)
@@ -996,10 +981,7 @@ void madym_gui_ui::on_xtrT1MethodComboBox_currentIndexChanged(const QString& tex
 //
 void madym_gui_ui::on_dicomDWIInputSeriesLineEdit_textChanged(const QString& text)
 {
-  int pos = 0;
-  QString str(text);
-  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
-    processor_.madym_exe().options().DWIinputSeries.value().fromString(text.toStdString());
+  setRangeOption(text, processor_.madym_exe().options().DWIinputSeries);
 }
 
 void madym_gui_ui::on_makeBvalueMeansCheckBox_stateChanged(int state)
@@ -1036,10 +1018,7 @@ void madym_gui_ui::on_dicomDWIInputTextEdit_textChanged()
 //Dicom single volume inputs
 void madym_gui_ui::on_dicomSingleSeriesLineEdit_textChanged(const QString& text)
 {
-  int pos = 0;
-  QString str(text);
-  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
-    processor_.madym_exe().options().singleSeries.value().fromString(text.toStdString());
+  setRangeOption(text, processor_.madym_exe().options().singleSeries);
 }
 
 void madym_gui_ui::on_dicomSingleVolNamesTextEdit_textChanged()
@@ -1145,26 +1124,17 @@ void madym_gui_ui::on_xtrFALineEdit_textChanged(const QString& text)
 
 void madym_gui_ui::on_xtrVFAsLineEdit_textChanged(const QString& text)
 {
-  int pos = 0;
-  QString str(text);
-  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable)
-    processor_.madym_exe().options().VFAs.value().fromString(text.toStdString());
+  setDoubleListOption(text, processor_.madym_exe().options().VFAs);
 }
 
 void madym_gui_ui::on_xtrTIsLineEdit_textChanged(const QString& text)
 {
-  int pos = 0;
-  QString str(text);
-  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable)
-    processor_.madym_exe().options().TIs.value().fromString(text.toStdString());
+  setDoubleListOption(text, processor_.madym_exe().options().TIs);
 }
 
 void madym_gui_ui::on_xtrBvaluesLineEdit_textChanged(const QString& text)
 {
-  int pos = 0;
-  QString str(text);
-  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable)
-    processor_.madym_exe().options().Bvalues.value().fromString(text.toStdString());
+  setDoubleListOption(text, processor_.madym_exe().options().Bvalues);
 }
 
 void madym_gui_ui::on_xtrTRLineEdit_textChanged(const QString& text)
@@ -1210,10 +1180,7 @@ void madym_gui_ui::on_dwiInputTextEdit_textChanged()
 //
 void madym_gui_ui::on_bThresholdsLineEdit_textChanged(const QString& text)
 {
-  int pos = 0;
-  QString str(text);
-  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable)
-    processor_.madym_exe().options().BvalsThresh.value().fromString(text.toStdString());
+  setDoubleListOption(text, processor_.madym_exe().options().BvalsThresh);
 }
 
 //
@@ -2569,10 +2536,29 @@ QString madym_gui_ui::tagToString(const dicomTag& tag)
     return tr("%1,%2").arg(tag.first.c_str()).arg(tag.second.c_str());
 }
 
-void madym_gui_ui::setTagOption(const QString& text, mdm_input_dicom_tag& tagOption)
+void madym_gui_ui::setRangeOption(const QString& text, mdm_input_ints& option)
 {
   int pos = 0;
   QString str(text);
+  str.replace(" ", "");
+  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
+    option.value().fromString(text.toStdString());
+}
+
+void madym_gui_ui::setDoubleListOption(const QString& text, mdm_input_doubles& option)
+{
+  int pos = 0;
+  QString str(text);
+  str.replace(" ", "");
+  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable)
+    option.value().fromString(text.toStdString());
+}
+
+void madym_gui_ui::setTagOption(const QString& text, mdm_input_dicom_tag& option)
+{
+  int pos = 0;
+  QString str(text);
+  str.replace(" ", "");
   if (tagValidator->validate(str, pos) == QValidator::Acceptable)
-    tagOption.value().fromString(text.toStdString());
+    option.value().fromString(text.toStdString());
 }
