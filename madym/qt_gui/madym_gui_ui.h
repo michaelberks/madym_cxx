@@ -334,7 +334,9 @@ private: // Methods
   void makeB1Consistent(bool useB1);
 
   QString tagToString(const dicomTag& tag);
-  void setTagOption(const QString& text, mdm_input_dicom_tag &tagOption);
+  void setRangeOption(const QString& text, mdm_input_ints& option);
+  void setDoubleListOption(const QString& text, mdm_input_doubles& option);
+  void setTagOption(const QString& text, mdm_input_dicom_tag &option);
 
 #ifdef _WIN32
 	bool winEvent(MSG * message, long * result);
