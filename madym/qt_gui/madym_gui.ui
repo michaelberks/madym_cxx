@@ -40,9 +40,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>0</y>
+         <y>-26</y>
          <width>1145</width>
-         <height>786</height>
+         <height>805</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -657,25 +657,7 @@
           </widget>
           <widget class="QWidget" name="runPage">
            <layout class="QGridLayout" name="gridLayout_8">
-            <item row="0" column="0">
-             <widget class="QLabel" name="toolLabel">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>T1 mapping</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1" rowspan="3">
+            <item row="0" column="2" rowspan="3">
              <widget class="QFrame" name="controls">
               <property name="maximumSize">
                <size>
@@ -2817,6 +2799,29 @@
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_2">
+                  <item row="0" column="3">
+                   <widget class="QPushButton" name="helpButton">
+                    <property name="maximumSize">
+                     <size>
+                      <width>32</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>Display full command-line options to log window</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Display full command-line options to log window</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="madym_gui.qrc">
+                      <normaloff>:/images/help.png</normaloff>:/images/help.png</iconset>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="0" column="0">
                    <widget class="QPushButton" name="loadConfigButton">
                     <property name="text">
@@ -2824,24 +2829,14 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="0" colspan="2">
-                   <widget class="QPushButton" name="runButton">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>32</height>
-                     </size>
-                    </property>
+                  <item row="0" column="1">
+                   <widget class="QPushButton" name="saveConfigButton">
                     <property name="text">
-                     <string>Run tool</string>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="madym_gui.qrc">
-                      <normaloff>:/images/play.ico</normaloff>:/images/play.ico</iconset>
+                     <string>Save config file...</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="2">
+                  <item row="2" column="3">
                    <widget class="QPushButton" name="homeButton">
                     <property name="minimumSize">
                      <size>
@@ -2870,33 +2865,30 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="1">
-                   <widget class="QPushButton" name="saveConfigButton">
-                    <property name="text">
-                     <string>Save config file...</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="2">
-                   <widget class="QPushButton" name="helpButton">
-                    <property name="maximumSize">
+                  <item row="2" column="0" colspan="2">
+                   <widget class="QPushButton" name="runButton">
+                    <property name="minimumSize">
                      <size>
-                      <width>32</width>
-                      <height>16777215</height>
+                      <width>0</width>
+                      <height>32</height>
                      </size>
                     </property>
-                    <property name="toolTip">
-                     <string>Display full command-line options to log window</string>
-                    </property>
-                    <property name="whatsThis">
-                     <string>Display full command-line options to log window</string>
-                    </property>
                     <property name="text">
-                     <string/>
+                     <string>Run tool</string>
                     </property>
                     <property name="icon">
                      <iconset resource="madym_gui.qrc">
-                      <normaloff>:/images/help.png</normaloff>:/images/help.png</iconset>
+                      <normaloff>:/images/play.ico</normaloff>:/images/play.ico</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0" colspan="2">
+                   <widget class="QLabel" name="invalidLabel">
+                    <property name="text">
+                     <string>One or more fields have invalid values. Check all tabs for red inputs.</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
                     </property>
                    </widget>
                   </item>
@@ -2906,14 +2898,32 @@
               </layout>
              </widget>
             </item>
-            <item row="1" column="0">
+            <item row="0" column="0">
+             <widget class="QLabel" name="toolLabel">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>T1 mapping</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="2">
              <widget class="QPlainTextEdit" name="cmdTextEdit">
               <property name="readOnly">
                <bool>true</bool>
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
+            <item row="2" column="0" colspan="2">
              <widget class="QPushButton" name="clearLogButton">
               <property name="minimumSize">
                <size>

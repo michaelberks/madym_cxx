@@ -334,9 +334,12 @@ private: // Methods
   void makeB1Consistent(bool useB1);
 
   QString tagToString(const dicomTag& tag);
-  void setRangeOption(const QString& text, mdm_input_ints& option);
-  void setDoubleListOption(const QString& text, mdm_input_doubles& option);
-  void setTagOption(const QString& text, mdm_input_dicom_tag &option);
+  void setIntOption(const QString& text, mdm_input_int& option, QLineEdit* lineEdit);
+  void setDoubleOption(const QString& text, mdm_input_double& option, QLineEdit* lineEdit);
+  void setRangeOption(const QString& text, mdm_input_ints& option, QLineEdit *lineEdit);
+  void setDoubleListOption(const QString& text, mdm_input_doubles& option, QLineEdit* lineEdit);
+  void setTagOption(const QString& text, mdm_input_dicom_tag &option, QLineEdit* lineEdit);
+  void setRunValid(bool valid, QLineEdit* lineEdit);
 
 #ifdef _WIN32
 	bool winEvent(MSG * message, long * result);
@@ -376,6 +379,9 @@ private: // Variables
 
   //Validator to check tag inputs
   QValidator* tagValidator;
+
+  //Flag that all fields are valid
+  QList<QLineEdit *> invalidFields_;
 
 };
 

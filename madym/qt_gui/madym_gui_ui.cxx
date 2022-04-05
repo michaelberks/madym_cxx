@@ -60,6 +60,8 @@ madym_gui_ui::madym_gui_ui(QWidget *parent)
   connect_signals_to_slots();
   ui.stackedWidget->setCurrentWidget(ui.homePage);
   mdm_ProgramLogger::setQuiet(true);
+  ui.invalidLabel->setVisible(false);
+  ui.invalidLabel->setStyleSheet("color: red;");
 
   //See if config dir and data are set
   if (const char* env_c = std::getenv("MADYM_CONFIG_DIR"))
@@ -387,7 +389,7 @@ void madym_gui_ui::on_t1InputSelect_clicked()
 
 void madym_gui_ui::on_t1ThresholdLineEdit_textChanged(const QString &text)
 {
-	processor_.madym_exe().options().T1noiseThresh.set(text.toDouble());
+  setDoubleOption(text, processor_.madym_exe().options().T1noiseThresh, ui.t1ThresholdLineEdit);
 }
 
 void madym_gui_ui::on_b1MapLineEdit2_textChanged(const QString &text)
@@ -463,7 +465,7 @@ void madym_gui_ui::on_m0MapPathSelect_clicked()
 
 void madym_gui_ui::on_r1LineEdit_textChanged(const QString &text)
 {
-	processor_.madym_exe().options().r1Const.set(text.toDouble());
+  setDoubleOption(text, processor_.madym_exe().options().r1Const, ui.r1LineEdit);
 }
 
 void madym_gui_ui::on_b1CorrectionCheckBox_stateChanged(int state)
@@ -608,42 +610,42 @@ void madym_gui_ui::on_autoPIFPathSelect_clicked()
 
 void madym_gui_ui::on_doseLineEdit_textChanged(const QString &text)
 {
-	processor_.madym_exe().options().dose.set(text.toDouble());
+  setDoubleOption(text, processor_.madym_exe().options().dose, ui.doseLineEdit);
 }
 void madym_gui_ui::on_hctLineEdit_textChanged(const QString &text)
 {
-	processor_.madym_exe().options().hct.set(text.toDouble());
+  setDoubleOption(text, processor_.madym_exe().options().hct, ui.hctLineEdit);
 }
 
 //---------------------------------------------------------------
 //AIF detection options
 void madym_gui_ui::on_xRangeLineEdit_textChanged(const QString &text)
 {
-  setRangeOption(text, processor_.madym_exe().options().aifXrange);
+  setRangeOption(text, processor_.madym_exe().options().aifXrange, ui.xRangeLineEdit);
 }
 
 //
 void madym_gui_ui::on_yRangeLineEdit_textChanged(const QString &text)
 {
-  setRangeOption(text, processor_.madym_exe().options().aifYrange);
+  setRangeOption(text, processor_.madym_exe().options().aifYrange, ui.yRangeLineEdit);
 }
 
 //
 void madym_gui_ui::on_slicesLineEdit_textChanged(const QString &text)
 {
-  setRangeOption(text, processor_.madym_exe().options().aifSlices);
+  setRangeOption(text, processor_.madym_exe().options().aifSlices, ui.slicesLineEdit);
 }
 
 //
 void madym_gui_ui::on_minT1lineEdit_textChanged(const QString &text)
 {
-  processor_.madym_exe().options().minT1Blood.set(text.toDouble());
+  setDoubleOption(text, processor_.madym_exe().options().minT1Blood, ui.minT1lineEdit);
 }
 
 //
 void madym_gui_ui::on_peakTimeLineEdit_textChanged(const QString &text)
 {
-  processor_.madym_exe().options().peakTime.set(text.toDouble());
+  setDoubleOption(text, processor_.madym_exe().options().peakTime, ui.peakTimeLineEdit);
 }
 
 //
@@ -655,7 +657,7 @@ void madym_gui_ui::on_prebolusMinSpinBox_valueChanged(int value)
 //
 void madym_gui_ui::on_prebolusNoiseLineEdit_textChanged(const QString &text)
 {
-  processor_.madym_exe().options().prebolusNoise.set(text.toDouble());
+  setDoubleOption(text, processor_.madym_exe().options().prebolusNoise, ui.prebolusNoiseLineEdit);
 }
 
 //
@@ -690,7 +692,7 @@ void madym_gui_ui::on_outputDirSelect_clicked()
 //
 void madym_gui_ui::on_iaucTimesLineEdit_textChanged(const QString &text)
 {
-  setDoubleListOption(text, processor_.madym_exe().options().IAUCTimes);
+  setDoubleListOption(text, processor_.madym_exe().options().IAUCTimes, ui.iaucTimesLineEdit);
 }
 
 //
@@ -782,13 +784,13 @@ void madym_gui_ui::on_dicomOffsetSpinBox_valueChanged(double value)
 //
 void madym_gui_ui::on_autoScaleTagLineEdit_textChanged(const QString& text)
 {
-  setTagOption(text, processor_.madym_exe().options().autoScaleTag);
+  setTagOption(text, processor_.madym_exe().options().autoScaleTag, ui.autoScaleTagLineEdit);
 }
 
 //
 void madym_gui_ui::on_autoOffsetTagLineEdit_textChanged(const QString& text)
 {
-  setTagOption(text, processor_.madym_exe().options().autoOffsetTag);
+  setTagOption(text, processor_.madym_exe().options().autoOffsetTag, ui.autoOffsetTagLineEdit);
 }
 
 //-----------------------------------------------------------------------------------
@@ -879,7 +881,7 @@ void madym_gui_ui::on_dicomFileFilterLineEdit_textChanged(const QString& text)
 
 void madym_gui_ui::on_sliceFilterTagLineEdit_textChanged(const QString& text)
 {
-  setTagOption(text, processor_.madym_exe().options().sliceFilterTag);
+  setTagOption(text, processor_.madym_exe().options().sliceFilterTag, ui.sliceFilterTagLineEdit);
 }
 
 void madym_gui_ui::on_sliceFilterMatchValueLineEdit_textChanged(const QString& text)
@@ -892,7 +894,7 @@ void madym_gui_ui::on_sliceFilterMatchValueLineEdit_textChanged(const QString& t
 //
 void madym_gui_ui::on_dicomDynSeriesLineEdit_textChanged(const QString& text)
 {
-  processor_.madym_exe().options().dynSeries.set(text.toInt());
+  setIntOption(text, processor_.madym_exe().options().dynSeries, ui.dicomDynSeriesLineEdit);
 }
 
 void madym_gui_ui::on_makeDynMeanCheckBox_stateChanged(int state)
@@ -938,7 +940,7 @@ void madym_gui_ui::on_temporalResolutionSpinBox_valueChanged(double value)
 //
 void madym_gui_ui::on_dicomT1InputSeriesLineEdit_textChanged(const QString& text)
 {
-  setRangeOption(text, processor_.madym_exe().options().T1inputSeries);
+  setRangeOption(text, processor_.madym_exe().options().T1inputSeries, ui.dicomT1InputSeriesLineEdit);
 }
 
 void madym_gui_ui::on_makeT1MeansCheckBox_stateChanged(int state)
@@ -981,7 +983,7 @@ void madym_gui_ui::on_xtrT1MethodComboBox_currentIndexChanged(const QString& tex
 //
 void madym_gui_ui::on_dicomDWIInputSeriesLineEdit_textChanged(const QString& text)
 {
-  setRangeOption(text, processor_.madym_exe().options().DWIinputSeries);
+  setRangeOption(text, processor_.madym_exe().options().DWIinputSeries, ui.dicomDWIInputSeriesLineEdit);
 }
 
 void madym_gui_ui::on_makeBvalueMeansCheckBox_stateChanged(int state)
@@ -1018,7 +1020,7 @@ void madym_gui_ui::on_dicomDWIInputTextEdit_textChanged()
 //Dicom single volume inputs
 void madym_gui_ui::on_dicomSingleSeriesLineEdit_textChanged(const QString& text)
 {
-  setRangeOption(text, processor_.madym_exe().options().singleSeries);
+  setRangeOption(text, processor_.madym_exe().options().singleSeries, ui.dicomSingleSeriesLineEdit);
 }
 
 void madym_gui_ui::on_dicomSingleVolNamesTextEdit_textChanged()
@@ -1032,7 +1034,7 @@ void madym_gui_ui::on_dicomSingleVolNamesTextEdit_textChanged()
 //Dicom scanner attributes
 void madym_gui_ui::on_dynTimeTagLineEdit_textChanged(const QString& text)
 {
-  setTagOption(text, processor_.madym_exe().options().dynTimeTag);
+  setTagOption(text, processor_.madym_exe().options().dynTimeTag, ui.dynTimeTagLineEdit);
 }
 
 void madym_gui_ui::on_dynTimeRequiredCheckBox_stateChanged(int state)
@@ -1042,7 +1044,7 @@ void madym_gui_ui::on_dynTimeRequiredCheckBox_stateChanged(int state)
 
 void madym_gui_ui::on_FATagLineEdit_textChanged(const QString& text)
 {
-  setTagOption(text, processor_.madym_exe().options().FATag);
+  setTagOption(text, processor_.madym_exe().options().FATag, ui.FATagLineEdit);
 }
 
 void madym_gui_ui::on_FARequiredCheckBox_stateChanged(int state)
@@ -1052,7 +1054,7 @@ void madym_gui_ui::on_FARequiredCheckBox_stateChanged(int state)
 
 void madym_gui_ui::on_TRTagLineEdit_textChanged(const QString& text)
 {
-  setTagOption(text, processor_.madym_exe().options().TRTag);
+  setTagOption(text, processor_.madym_exe().options().TRTag, ui.TRTagLineEdit);
 }
 
 void madym_gui_ui::on_TRRequiredCheckBox_stateChanged(int state)
@@ -1062,7 +1064,7 @@ void madym_gui_ui::on_TRRequiredCheckBox_stateChanged(int state)
 
 void madym_gui_ui::on_TITagLineEdit_textChanged(const QString& text)
 {
-  setTagOption(text, processor_.madym_exe().options().TITag);
+  setTagOption(text, processor_.madym_exe().options().TITag, ui.TITagLineEdit);
 }
 
 void madym_gui_ui::on_TIRequiredCheckBox_stateChanged(int state)
@@ -1072,7 +1074,7 @@ void madym_gui_ui::on_TIRequiredCheckBox_stateChanged(int state)
 
 void madym_gui_ui::on_TETagLineEdit_textChanged(const QString& text)
 {
-  setTagOption(text, processor_.madym_exe().options().TETag);
+  setTagOption(text, processor_.madym_exe().options().TETag, ui.TETagLineEdit);
 }
 
 void madym_gui_ui::on_TERequiredCheckBox_stateChanged(int state)
@@ -1082,7 +1084,7 @@ void madym_gui_ui::on_TERequiredCheckBox_stateChanged(int state)
 
 void madym_gui_ui::on_BTagLineEdit_textChanged(const QString& text)
 {
-  setTagOption(text, processor_.madym_exe().options().BTag);
+  setTagOption(text, processor_.madym_exe().options().BTag, ui.BTagLineEdit);
 }
 
 void madym_gui_ui::on_BRequiredCheckBox_stateChanged(int state)
@@ -1092,7 +1094,7 @@ void madym_gui_ui::on_BRequiredCheckBox_stateChanged(int state)
 
 void madym_gui_ui::on_gradOriTagLineEdit_textChanged(const QString& text)
 {
-  setTagOption(text, processor_.madym_exe().options().gradOriTag);
+  setTagOption(text, processor_.madym_exe().options().gradOriTag, ui.gradOriTagLineEdit);
 }
 
 void madym_gui_ui::on_gradOriRequiredCheckBox_stateChanged(int state)
@@ -1119,27 +1121,27 @@ void madym_gui_ui::on_xtrSequenceStepSpinBox_valueChanged(int value)
 
 void madym_gui_ui::on_xtrFALineEdit_textChanged(const QString& text)
 {
-  processor_.madym_exe().options().FA.set(text.toDouble());
+  setDoubleOption(text, processor_.madym_exe().options().FA, ui.xtrFALineEdit);
 }
 
 void madym_gui_ui::on_xtrVFAsLineEdit_textChanged(const QString& text)
 {
-  setDoubleListOption(text, processor_.madym_exe().options().VFAs);
+  setDoubleListOption(text, processor_.madym_exe().options().VFAs, ui.xtrVFAsLineEdit);
 }
 
 void madym_gui_ui::on_xtrTIsLineEdit_textChanged(const QString& text)
 {
-  setDoubleListOption(text, processor_.madym_exe().options().TIs);
+  setDoubleListOption(text, processor_.madym_exe().options().TIs, ui.xtrTIsLineEdit);
 }
 
 void madym_gui_ui::on_xtrBvaluesLineEdit_textChanged(const QString& text)
 {
-  setDoubleListOption(text, processor_.madym_exe().options().Bvalues);
+  setDoubleListOption(text, processor_.madym_exe().options().Bvalues, ui.xtrBvaluesLineEdit);
 }
 
 void madym_gui_ui::on_xtrTRLineEdit_textChanged(const QString& text)
 {
-  processor_.madym_exe().options().TR.set(text.toDouble());
+  setDoubleOption(text, processor_.madym_exe().options().TR, ui.xtrTRLineEdit);
 }
 
 void madym_gui_ui::on_dynamicTimesFileLineEdit_textChanged(const QString& text)
@@ -1180,7 +1182,7 @@ void madym_gui_ui::on_dwiInputTextEdit_textChanged()
 //
 void madym_gui_ui::on_bThresholdsLineEdit_textChanged(const QString& text)
 {
-  setDoubleListOption(text, processor_.madym_exe().options().BvalsThresh);
+  setDoubleListOption(text, processor_.madym_exe().options().BvalsThresh, ui.bThresholdsLineEdit);
 }
 
 //
@@ -1313,7 +1315,7 @@ void madym_gui_ui::on_optTypeComboBox_currentIndexChanged(const QString& text)
 
 void madym_gui_ui::on_maxIterationsLineEdit_textChanged(const QString &text)
 {
-	processor_.madym_exe().options().maxIterations.set(text.toInt());
+  setIntOption(text, processor_.madym_exe().options().maxIterations, ui.maxIterationsLineEdit);
 } 
 
 //-------------------------------------------------------------------------
@@ -1514,7 +1516,9 @@ void madym_gui_ui::setup_conc_tab(bool show)
       ui.t1UsePrecomputedCheckBox->isChecked());
     ui.m0MapPathSelect->setEnabled(!options.M0Ratio() &&
       ui.t1UsePrecomputedCheckBox->isChecked());
-    ui.r1LineEdit->setText(QString::number(options.r1Const()));
+    ui.r1LineEdit->setValidator(new QDoubleValidator(0, 10000, 5, this));
+  ui.r1LineEdit->setText(QString::number(options.r1Const()));
+    
 
     //For AIF hide the IAUC
     if (runType_ == madym_gui_processor::RunType::AIF)
@@ -1550,7 +1554,7 @@ void madym_gui_ui::setup_t1_mapping_tab(bool show)
     auto& options = processor_.madym_exe().options();
     
     initialize_T1_options(*ui.t1MethodComboBox);
-    ui.t1ThresholdLineEdit->setValidator(new QDoubleValidator(0, 10000, 2, this));
+    ui.t1ThresholdLineEdit->setValidator(new QDoubleValidator(0, 10000, 5, this));
     ui.t1ThresholdLineEdit->setText(QString::number(options.T1noiseThresh()));
 
     QString t1Inputs(options.T1inputNames.value().toString().c_str());
@@ -1657,8 +1661,11 @@ void madym_gui_ui::setup_IF_tab(bool show)
 
     ui.populationPIFCheckbox->setChecked(options.pifName().empty());
     ui.autoPIFPathLineEdit->setText(options.pifName().c_str());
+    ui.doseLineEdit->setValidator(new QDoubleValidator(0, 10000, 5, this));
     ui.doseLineEdit->setText(QString::number(options.dose()));
+    ui.hctLineEdit->setValidator(new QDoubleValidator(0, 1, 5, this));
     ui.hctLineEdit->setText(QString::number(options.hct()));
+    
   }
   else
   {
@@ -1690,14 +1697,14 @@ void madym_gui_ui::setup_AIF_detection_tab(bool show)
     ui.slicesLineEdit->setText(slices.replace("[", "").replace("]", ""));
     ui.slicesLineEdit->setValidator(rangeValidator);
 
-    ui.minT1lineEdit->setValidator(new QDoubleValidator(0, 10000, 2, this));
+    ui.minT1lineEdit->setValidator(new QDoubleValidator(0, 10000, 5, this));
     ui.minT1lineEdit->setText(QString::number(options.minT1Blood()));
-    ui.peakTimeLineEdit->setValidator(new QDoubleValidator(0, 10, 3, this));
+    ui.peakTimeLineEdit->setValidator(new QDoubleValidator(0, 100, 5, this));
     ui.peakTimeLineEdit->setText(QString::number(options.peakTime()));
 
     ui.prebolusMinSpinBox->setRange(0, 100);
     ui.prebolusMinSpinBox->setValue(options.prebolusMinImages());
-    ui.prebolusNoiseLineEdit->setValidator(new QDoubleValidator(0, 1000, 2, this));
+    ui.prebolusNoiseLineEdit->setValidator(new QDoubleValidator(0, 1000, 5, this));
     ui.prebolusNoiseLineEdit->setText(QString::number(options.prebolusNoise()));
 
     ui.selectPctSpinBox->setRange(0, 100);
@@ -1878,10 +1885,10 @@ void madym_gui_ui::setup_dicom_dynamic_tab(bool show)
       ui.dynSeriesLabel->show();
       ui.dicomDynSeriesLineEdit->show();
       ui.makeDynMeanCheckBox->show();
+      ui.dicomDynSeriesLineEdit->setValidator(new QIntValidator(1, 1000));
       if (options.dynSeries())
         ui.dicomDynSeriesLineEdit->setText(QString::number(options.dynSeries()));
-      ui.dicomDynSeriesLineEdit->setValidator(new QIntValidator(1, 1000));
-
+      
       ui.makeDynMeanCheckBox->setChecked(options.makeDynMean());
     }
     else
@@ -2098,9 +2105,9 @@ void madym_gui_ui::setup_xtr_scanner_tab(bool show)
     ui.xtrSequenceStartSpinBox->setValue(options.sequenceStart());
     ui.xtrSequenceStepSpinBox->setValue(options.sequenceStep());
 
+    ui.xtrFALineEdit->setValidator(new QDoubleValidator(0, 10000, 5, this));
     ui.xtrFALineEdit->setText(QString::number(options.FA()));
-    ui.xtrFALineEdit->setValidator(new QDoubleValidator(0, 10000, 2, this));
-
+    
     QString VFAs(options.VFAs.value().toString().c_str());
     ui.xtrVFAsLineEdit->setText(VFAs.replace("[", "").replace("]", ""));
     ui.xtrVFAsLineEdit->setValidator(doubleListValidator);
@@ -2113,9 +2120,9 @@ void madym_gui_ui::setup_xtr_scanner_tab(bool show)
     ui.xtrBvaluesLineEdit->setText(Bvalues.replace("[", "").replace("]", ""));
     ui.xtrBvaluesLineEdit->setValidator(doubleListValidator);
 
+    ui.xtrTRLineEdit->setValidator(new QDoubleValidator(0, 10000, 5, this));
     ui.xtrTRLineEdit->setText(QString::number(options.TR()));
-    ui.xtrTRLineEdit->setValidator(new QDoubleValidator(0, 10000, 2, this));
-
+    
     ui.dynamicTimesFileLineEdit->setText(options.dynTimesFile().c_str());
 
   }
@@ -2536,29 +2543,127 @@ QString madym_gui_ui::tagToString(const dicomTag& tag)
     return tr("%1,%2").arg(tag.first.c_str()).arg(tag.second.c_str());
 }
 
-void madym_gui_ui::setRangeOption(const QString& text, mdm_input_ints& option)
+void madym_gui_ui::setIntOption(const QString& text, mdm_input_int& option, QLineEdit* lineEdit)
 {
+  auto validator = lineEdit->validator();
   int pos = 0;
   QString str(text);
   str.replace(" ", "");
-  if (rangeValidator->validate(str, pos) == QValidator::Acceptable)
-    option.value().fromString(text.toStdString());
+  if (validator->validate(str, pos) == QValidator::Acceptable || text.isEmpty())
+  {
+    option.set(text.toInt());
+    lineEdit->setStyleSheet("color: black;");
+    setRunValid(true, lineEdit);
+  }
+  else
+  {
+    lineEdit->setStyleSheet("color: red;");
+    setRunValid(false, lineEdit);
+  }
 }
 
-void madym_gui_ui::setDoubleListOption(const QString& text, mdm_input_doubles& option)
+void madym_gui_ui::setDoubleOption(const QString& text, mdm_input_double& option, QLineEdit* lineEdit)
 {
+  auto validator = lineEdit->validator();
   int pos = 0;
   QString str(text);
   str.replace(" ", "");
-  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable)
-    option.value().fromString(text.toStdString());
+  if ((validator->validate(str, pos) == QValidator::Acceptable || text.isEmpty()) &&
+    !str.contains(","))
+  {
+    option.set(text.toDouble());
+    lineEdit->setStyleSheet("color: black;");
+    setRunValid(true, lineEdit);
+  }
+  else
+  {
+    lineEdit->setStyleSheet("color: red;");
+    setRunValid(false, lineEdit);
+  }
 }
 
-void madym_gui_ui::setTagOption(const QString& text, mdm_input_dicom_tag& option)
+void madym_gui_ui::setRangeOption(const QString& text, mdm_input_ints& option, QLineEdit* lineEdit)
 {
   int pos = 0;
   QString str(text);
   str.replace(" ", "");
-  if (tagValidator->validate(str, pos) == QValidator::Acceptable)
+  if (rangeValidator->validate(str, pos) == QValidator::Acceptable || text.isEmpty())
+  {
     option.value().fromString(text.toStdString());
+    lineEdit->setStyleSheet("color: black;");
+    setRunValid(true, lineEdit);
+  }
+  else
+  {
+    lineEdit->setStyleSheet("color: red;");
+    setRunValid(false, lineEdit);
+  }
+    
+}
+
+void madym_gui_ui::setDoubleListOption(const QString& text, mdm_input_doubles& option, QLineEdit* lineEdit)
+{
+  int pos = 0;
+  QString str(text);
+  str.replace(" ", "");
+  if (doubleListValidator->validate(str, pos) == QValidator::Acceptable || text.isEmpty())
+  {
+    option.value().fromString(text.toStdString());
+    lineEdit->setStyleSheet("color: black;");
+    setRunValid(true, lineEdit);
+  }
+  else
+  {
+    lineEdit->setStyleSheet("color: red;");
+    setRunValid(false, lineEdit);
+  }
+}
+
+void madym_gui_ui::setTagOption(const QString& text, mdm_input_dicom_tag& option, QLineEdit* lineEdit)
+{
+  int pos = 0;
+  QString str(text);
+  str.replace(" ", "");
+  if (tagValidator->validate(str, pos) == QValidator::Acceptable || text.isEmpty())
+  {
+    if (text.isEmpty())
+      option.value().fromString(mdm_input_str::EMPTY_STR);
+    else
+      option.value().fromString(text.toStdString());
+
+    lineEdit->setStyleSheet("color: black;");
+    setRunValid(true, lineEdit);
+  }
+  else
+  {
+    lineEdit->setStyleSheet("color: red;");
+    setRunValid(false, lineEdit);
+  }
+}
+
+void madym_gui_ui::setRunValid(bool valid, QLineEdit* lineEdit)
+{
+  //Check to see if this lineEdit is on the invalid list.
+  auto idx = invalidFields_.indexOf(lineEdit);
+  if (valid)
+  {
+    //If lineEdit on list, remove it
+    if (idx >= 0)
+      invalidFields_.removeAt(idx);
+
+    //Check to see if the list is now empty, if so, we're valid
+    auto valid = invalidFields_.empty();
+    ui.runButton->setEnabled(valid);
+    ui.invalidLabel->setVisible(!valid);
+  }
+  else
+  {
+    //If lineEdit not on list add it
+    if (idx < 0)
+      invalidFields_.append(lineEdit);
+
+    //We can't be valid, so disable the runButton
+    ui.runButton->setEnabled(false);
+    ui.invalidLabel->setVisible(true);
+  }
 }
