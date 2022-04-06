@@ -109,7 +109,7 @@ public:
 	\return wrapped default value of option
 	\see value
 	*/
-	MDM_API const T_wrapped& default() const { return default_; };
+	MDM_API const T_wrapped& default_value() const { return default_; };
 
 	//! Return a reference to the wrapped value
 	/*!
