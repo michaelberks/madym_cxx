@@ -9,6 +9,7 @@
 #define MDM_INPUT_OPTIONS_HDR
 
 #include <madym/utils/mdm_InputTypes.h>
+#include <map>
 
 //! Input options structure defining default input options for T1 mapping and DCE analysis
 struct mdm_InputOptions {
@@ -462,6 +463,23 @@ struct mdm_InputOptions {
     "mean_suffix", "",
     "Suffix of image name for mean of repeats in DICOM series, appended to series name"); //!< See initial value
 
+	void resetGuiOptions()
+	{
+		guiSetOptions.clear();
+	}
+
+	void trackGuiOptions(const std::string &key, const std::string &value) 
+	{
+		//Otherwise look for key in user set fields
+		if (guiSetOptions.count(key))
+			guiSetOptions[key] = value;
+
+		else
+			guiSetOptions.emplace(key, value);
+	}
+
+	std::map<std::string, std::string> guiSetOptions;
+		
 
 };
 

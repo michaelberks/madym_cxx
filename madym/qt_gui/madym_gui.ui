@@ -40,9 +40,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>0</y>
+         <y>-26</y>
          <width>1145</width>
-         <height>786</height>
+         <height>806</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -657,25 +657,7 @@
           </widget>
           <widget class="QWidget" name="runPage">
            <layout class="QGridLayout" name="gridLayout_8">
-            <item row="0" column="0">
-             <widget class="QLabel" name="toolLabel">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-               </font>
-              </property>
-              <property name="text">
-               <string>T1 mapping</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1" rowspan="3">
+            <item row="0" column="2" rowspan="3">
              <widget class="QFrame" name="controls">
               <property name="maximumSize">
                <size>
@@ -729,7 +711,7 @@
                    <item row="2" column="1" colspan="4">
                     <widget class="QLineEdit" name="roiPathLineEdit">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
@@ -1060,7 +1042,7 @@
                <item>
                 <widget class="QTabWidget" name="inputTabWidget">
                  <property name="currentIndex">
-                  <number>7</number>
+                  <number>4</number>
                  </property>
                  <widget class="QWidget" name="dceTab">
                   <attribute name="title">
@@ -1548,133 +1530,73 @@
                   <attribute name="title">
                    <string>DICOM</string>
                   </attribute>
-                  <widget class="QCheckBox" name="makeSingleCheckBox">
-                   <property name="geometry">
-                    <rect>
-                     <x>194</x>
-                     <y>103</y>
-                     <width>308</width>
-                     <height>17</height>
-                    </rect>
-                   </property>
-                   <property name="text">
-                    <string>Make single volumes</string>
-                   </property>
-                  </widget>
-                  <widget class="QCheckBox" name="makeT1InputsCheckBox">
-                   <property name="geometry">
-                    <rect>
-                     <x>309</x>
-                     <y>80</y>
-                     <width>193</width>
-                     <height>17</height>
-                    </rect>
-                   </property>
-                   <property name="text">
-                    <string>Make T1 inputs</string>
-                   </property>
-                  </widget>
-                  <widget class="QCheckBox" name="sortCheckBox">
-                   <property name="geometry">
-                    <rect>
-                     <x>27</x>
-                     <y>80</y>
-                     <width>161</width>
-                     <height>17</height>
-                    </rect>
-                   </property>
-                   <property name="text">
-                    <string>Sort</string>
-                   </property>
-                  </widget>
-                  <widget class="QLineEdit" name="seriesNameLineEdit">
-                   <property name="geometry">
-                    <rect>
-                     <x>114</x>
-                     <y>50</y>
-                     <width>371</width>
-                     <height>20</height>
-                    </rect>
-                   </property>
-                  </widget>
-                  <widget class="QCheckBox" name="makeDWIInputsCheckBox">
-                   <property name="geometry">
-                    <rect>
-                     <x>27</x>
-                     <y>103</y>
-                     <width>161</width>
-                     <height>17</height>
-                    </rect>
-                   </property>
-                   <property name="text">
-                    <string>Make DWI inputs</string>
-                   </property>
-                  </widget>
-                  <widget class="QLabel" name="imageBaseName_3">
-                   <property name="geometry">
-                    <rect>
-                     <x>14</x>
-                     <y>20</y>
-                     <width>84</width>
-                     <height>20</height>
-                    </rect>
-                   </property>
-                   <property name="text">
-                    <string>DICOM folder:</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                   </property>
-                  </widget>
-                  <widget class="QLineEdit" name="dicomDirLineEdit">
-                   <property name="geometry">
-                    <rect>
-                     <x>104</x>
-                     <y>20</y>
-                     <width>385</width>
-                     <height>20</height>
-                    </rect>
-                   </property>
-                  </widget>
-                  <widget class="QToolButton" name="dicomDirSelect">
-                   <property name="geometry">
-                    <rect>
-                     <x>495</x>
-                     <y>20</y>
-                     <width>25</width>
-                     <height>19</height>
-                    </rect>
-                   </property>
-                   <property name="text">
-                    <string>...</string>
-                   </property>
-                  </widget>
-                  <widget class="QCheckBox" name="makeDynCheckBox">
-                   <property name="geometry">
-                    <rect>
-                     <x>194</x>
-                     <y>80</y>
-                     <width>109</width>
-                     <height>17</height>
-                    </rect>
-                   </property>
-                   <property name="text">
-                    <string>Make dynamics</string>
-                   </property>
-                  </widget>
-                  <widget class="QLabel" name="label_58">
-                   <property name="geometry">
-                    <rect>
-                     <x>10</x>
-                     <y>50</y>
-                     <width>98</width>
-                     <height>20</height>
-                    </rect>
-                   </property>
-                   <property name="text">
-                    <string>Series name:</string>
-                   </property>
-                  </widget>
+                  <layout class="QGridLayout" name="gridLayout_25">
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="imageBaseName_3">
+                     <property name="text">
+                      <string>DICOM folder:</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1" colspan="4">
+                    <widget class="QLineEdit" name="dicomDirLineEdit"/>
+                   </item>
+                   <item row="0" column="5">
+                    <widget class="QToolButton" name="dicomDirSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_58">
+                     <property name="text">
+                      <string>Series name:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1" colspan="4">
+                    <widget class="QLineEdit" name="seriesNameLineEdit"/>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QCheckBox" name="sortCheckBox">
+                     <property name="text">
+                      <string>Sort</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QCheckBox" name="makeDWIInputsCheckBox">
+                     <property name="text">
+                      <string>Make DWI inputs</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QCheckBox" name="makeDynCheckBox">
+                     <property name="text">
+                      <string>Make dynamics</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QCheckBox" name="makeSingleCheckBox">
+                     <property name="text">
+                      <string>Make single volumes</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="2">
+                    <widget class="QCheckBox" name="makeT1InputsCheckBox">
+                     <property name="text">
+                      <string>Make T1 inputs</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </widget>
                  <widget class="QWidget" name="sortTab">
                   <attribute name="title">
@@ -1942,28 +1864,28 @@
                    <string>DWI</string>
                   </attribute>
                   <layout class="QGridLayout" name="gridLayout_18">
-                   <item row="0" column="0" colspan="3">
+                   <item row="0" column="0">
                     <widget class="QLabel" name="DWIInputSeriesLabel">
                      <property name="text">
                       <string>DWI series:</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="0" column="3">
+                   <item row="0" column="1">
                     <widget class="QLineEdit" name="dicomDWIInputSeriesLineEdit">
                      <property name="text">
                       <string/>
                      </property>
                     </widget>
                    </item>
-                   <item row="0" column="4">
+                   <item row="0" column="2">
                     <widget class="QCheckBox" name="makeBvalueMeansCheckBox">
                      <property name="text">
                       <string>Make B-value means</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="0" colspan="2">
+                   <item row="1" column="0">
                     <widget class="QLabel" name="imageBaseName_6">
                      <property name="text">
                       <string>DWI folder:</string>
@@ -1973,14 +1895,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="2" colspan="3">
-                    <widget class="QLineEdit" name="DWIDirLineEdit">
-                     <property name="text">
-                      <string/>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="5">
+                   <item row="1" column="3">
                     <widget class="QToolButton" name="DWIDirSelect">
                      <property name="text">
                       <string>...</string>
@@ -2000,7 +1915,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="2" column="1" colspan="4">
+                   <item row="2" column="1" colspan="2">
                     <widget class="QTextEdit" name="dicomDWIInputTextEdit">
                      <property name="minimumSize">
                       <size>
@@ -2016,6 +1931,13 @@
                      </property>
                      <property name="whatsThis">
                       <string>Enter each name on new line</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1" colspan="2">
+                    <widget class="QLineEdit" name="DWIDirLineEdit">
+                     <property name="text">
+                      <string/>
                      </property>
                     </widget>
                    </item>
@@ -2817,6 +2739,29 @@
                   <enum>QFrame::Raised</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_2">
+                  <item row="0" column="3">
+                   <widget class="QPushButton" name="helpButton">
+                    <property name="maximumSize">
+                     <size>
+                      <width>32</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>Display full command-line options to log window</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>Display full command-line options to log window</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="madym_gui.qrc">
+                      <normaloff>:/images/help.png</normaloff>:/images/help.png</iconset>
+                    </property>
+                   </widget>
+                  </item>
                   <item row="0" column="0">
                    <widget class="QPushButton" name="loadConfigButton">
                     <property name="text">
@@ -2824,24 +2769,14 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="0" colspan="2">
-                   <widget class="QPushButton" name="runButton">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>32</height>
-                     </size>
-                    </property>
+                  <item row="0" column="1">
+                   <widget class="QPushButton" name="saveConfigButton">
                     <property name="text">
-                     <string>Run tool</string>
-                    </property>
-                    <property name="icon">
-                     <iconset resource="madym_gui.qrc">
-                      <normaloff>:/images/play.ico</normaloff>:/images/play.ico</iconset>
+                     <string>Save config file...</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="1" column="2">
+                  <item row="2" column="3">
                    <widget class="QPushButton" name="homeButton">
                     <property name="minimumSize">
                      <size>
@@ -2870,33 +2805,30 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="1">
-                   <widget class="QPushButton" name="saveConfigButton">
-                    <property name="text">
-                     <string>Save config file...</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="2">
-                   <widget class="QPushButton" name="helpButton">
-                    <property name="maximumSize">
+                  <item row="2" column="0" colspan="2">
+                   <widget class="QPushButton" name="runButton">
+                    <property name="minimumSize">
                      <size>
-                      <width>32</width>
-                      <height>16777215</height>
+                      <width>0</width>
+                      <height>32</height>
                      </size>
                     </property>
-                    <property name="toolTip">
-                     <string>Display full command-line options to log window</string>
-                    </property>
-                    <property name="whatsThis">
-                     <string>Display full command-line options to log window</string>
-                    </property>
                     <property name="text">
-                     <string/>
+                     <string>Run tool</string>
                     </property>
                     <property name="icon">
                      <iconset resource="madym_gui.qrc">
-                      <normaloff>:/images/help.png</normaloff>:/images/help.png</iconset>
+                      <normaloff>:/images/play.ico</normaloff>:/images/play.ico</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0" colspan="2">
+                   <widget class="QLabel" name="invalidLabel">
+                    <property name="text">
+                     <string>One or more fields have invalid values. Check all tabs for red inputs.</string>
+                    </property>
+                    <property name="alignment">
+                     <set>Qt::AlignCenter</set>
                     </property>
                    </widget>
                   </item>
@@ -2906,14 +2838,32 @@
               </layout>
              </widget>
             </item>
-            <item row="1" column="0">
+            <item row="0" column="0">
+             <widget class="QLabel" name="toolLabel">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>T1 mapping</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="2">
              <widget class="QPlainTextEdit" name="cmdTextEdit">
               <property name="readOnly">
                <bool>true</bool>
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
+            <item row="2" column="0" colspan="2">
              <widget class="QPushButton" name="clearLogButton">
               <property name="minimumSize">
                <size>

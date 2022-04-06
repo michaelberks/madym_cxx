@@ -324,19 +324,30 @@ private: // Methods
   void initialize_T1_options(QComboBox& b);
   void initialize_AIF_options();
   void initialize_DWI_options();
-  void initialize_image_format_options(QComboBox& b);
+  void initialize_image_format_options(QComboBox& b, const mdm_input_string& option);
   void initialize_image_datatype_options(QComboBox& b);
   void initialize_optimisation_options();
   void set_AIF_enabled();
   void set_BValsThresholds_enabled();
   bool check_required_options();
+  void reset_user_set_options();
   void setB1Name(const QString &text);
   void makeB1Consistent(bool useB1);
 
   QString tagToString(const dicomTag& tag);
-  void setRangeOption(const QString& text, mdm_input_ints& option);
-  void setDoubleListOption(const QString& text, mdm_input_doubles& option);
-  void setTagOption(const QString& text, mdm_input_dicom_tag &option);
+  void setStringOption(const QString& text, mdm_input_string& option);
+  void setStringListOption(const QString& text, mdm_input_strings& option);
+  void setIntOption(const QString& text, mdm_input_int& option, QLineEdit* lineEdit);
+  void setIntOption(const int value, mdm_input_int& option);
+  void setDoubleOption(const QString& text, mdm_input_double& option, QLineEdit* lineEdit);
+  void setDoubleOption(const double value, mdm_input_double& option);
+  void setBoolOption(const bool flag, mdm_input_bool& option);
+  void setRangeOption(const QString& text, mdm_input_ints& option, QLineEdit *lineEdit);
+  void setDoubleListOption(const QString& text, mdm_input_doubles& option, QLineEdit* lineEdit);
+  void setTagOption(const QString& text, mdm_input_dicom_tag &option, QLineEdit* lineEdit);
+  void setRunValid(bool valid, QLineEdit* lineEdit);
+  template <class T> void trackChanges(const T& option);
+  void trackChangedOption(const std::string& key, const std::string& value);
 
 #ifdef _WIN32
 	bool winEvent(MSG * message, long * result);
@@ -376,6 +387,12 @@ private: // Variables
 
   //Validator to check tag inputs
   QValidator* tagValidator;
+
+  //List of all fields that are invalid
+  QList<QLineEdit *> invalidFields_;
+
+  //Flag to track user changes
+  bool trackChanges_;
 
 };
 

@@ -116,56 +116,30 @@ MDM_API  mdm_OptionsParser::mdm_OptionsParser()
 }
 
 //
-MDM_API bool mdm_OptionsParser::to_stream(std::ostream &stream, 
+MDM_API bool mdm_OptionsParser::to_file(const std::string &filepath, 
+	const std::string& cmdFilepath,
 	const mdm_InputOptions &options, const std::string &caller) const
 {
-	//Print out the config and cwd options first, commented so they don't get
-	//read in by the Boosts config reader
-	stream << "#" << caller << "\n";
-	stream << "#" << options.version.key() << " = " << MDM_VERSION << "\n";
-	stream << "#" << options.configFile.key() << " = " << options.configFile() << "\n";
-	stream << "#" << options.dataDir.key() << " = " << options.dataDir() << "\n";
-
-	for (const auto& it : vm_) 
-	{
-		auto &key = it.first;
-		if (key == options.configFile.key() || key == options.dataDir.key() || 
-			key == options.help.key() || key == options.version.key())
-			continue;
-
-		stream << key << " = ";
-		auto& value = it.second.value();
-		if (auto v = boost::any_cast<bool>(&value))
-			stream << *v;
-		else if (auto v = boost::any_cast<int>(&value))
-			stream << *v;
-		else if (auto v = boost::any_cast<double>(&value))
-			stream << *v;
-		else if (auto v = boost::any_cast<mdm_input_str>(&value))
-			stream << *v;
-		else if (auto v = boost::any_cast<mdm_input_string_list>(&value))
-			stream << *v;
-		else if (auto v = boost::any_cast<mdm_input_int_list>(&value))
-			stream << *v;
-		else if (auto v = boost::any_cast<mdm_input_double_list>(&value))
-			stream << *v;
-		else if (auto v = boost::any_cast<mdm_input_dicomTag>(&value))
-			stream << *v;
-		stream << "\n";
-	}
-	return true;
-}
-
-//
-MDM_API bool mdm_OptionsParser::to_file(const std::string &filename, 
-	const mdm_InputOptions &options, const std::string &caller) const
-{
-	std::ofstream filestream(filename, std::ios::out);
+	std::ofstream filestream(filepath, std::ios::out);
 	if (!filestream.is_open())
 		return false;
-	to_stream(filestream, options, caller);
+	all_to_stream(filestream, options, caller);
 
 	filestream.close();
+
+	if (!cmdFilepath.empty())
+	{
+		std::ofstream cmdFilestream(cmdFilepath, std::ios::out);
+		if (!cmdFilestream.is_open())
+			return false;
+
+		if (options.guiSetOptions.empty())
+			cmd_to_stream(cmdFilestream, options);
+		else
+			gui_to_stream(cmdFilestream, options);
+
+		cmdFilestream.close();
+	}
 	return true;
 }
 
@@ -268,6 +242,76 @@ MDM_API void mdm_OptionsParser::add_option(po::options_description &config_optio
 // Private functions
 //****************************************************************************
 
+bool mdm_OptionsParser::all_to_stream(std::ostream& stream,
+	const mdm_InputOptions& options, const std::string& caller) const
+{
+	//Print out the config and cwd options first, commented so they don't get
+	//read in by the Boosts config reader
+	stream << "#" << caller << "\n";
+	stream << "#" << options.version.key() << " = " << MDM_VERSION << "\n";
+	stream << "#" << options.configFile.key() << " = " << options.configFile() << "\n";
+	stream << "#" << options.dataDir.key() << " = " << options.dataDir() << "\n";
+
+	return to_stream(stream, vm_, options, false);
+}
+
+bool mdm_OptionsParser::cmd_to_stream(std::ostream& stream,
+	const mdm_InputOptions& options) const
+{
+	//Print out the config and cwd options first, commented so they don't get
+	//read in by the Boosts config reader
+	return to_stream(stream, cmd_vm_, options, true);
+}
+
+bool mdm_OptionsParser::gui_to_stream(std::ostream& stream,
+	const mdm_InputOptions& options) const
+{
+	for (auto const& it : options.guiSetOptions)
+	{
+		stream << it.first  // string (key)
+			<< " = "
+			<< it.second // string's value 
+			<< std::endl;
+	}
+	return true;
+}
+
+bool mdm_OptionsParser::to_stream(std::ostream& stream, const po::variables_map& vm,
+	const mdm_InputOptions& options, bool nondefault_only) const
+{
+	for (const auto& it : vm)
+	{
+		auto& key = it.first;
+		if (key == options.configFile.key() || key == options.dataDir.key() ||
+			key == options.help.key() || key == options.version.key())
+			continue;
+
+		if (nondefault_only && vm[key].defaulted())
+			continue;
+
+		stream << key << " = ";
+		auto& value = it.second.value();
+		if (auto v = boost::any_cast<bool>(&value))
+			stream << *v;
+		else if (auto v = boost::any_cast<int>(&value))
+			stream << *v;
+		else if (auto v = boost::any_cast<double>(&value))
+			stream << *v;
+		else if (auto v = boost::any_cast<mdm_input_str>(&value))
+			stream << *v;
+		else if (auto v = boost::any_cast<mdm_input_string_list>(&value))
+			stream << *v;
+		else if (auto v = boost::any_cast<mdm_input_int_list>(&value))
+			stream << *v;
+		else if (auto v = boost::any_cast<mdm_input_double_list>(&value))
+			stream << *v;
+		else if (auto v = boost::any_cast<mdm_input_dicomTag>(&value))
+			stream << *v;
+		stream << "\n";
+	}
+	return true;
+}
+
 bool mdm_OptionsParser::parse_command_line(int argc, const char *argv[],
 	const po::options_description &combined_options)
 {
@@ -282,6 +326,10 @@ bool mdm_OptionsParser::parse_command_line(int argc, const char *argv[],
 	{
 		po::store(po::command_line_parser(argc+int(!argc), argv).
 			options(combined_options).run(), vm_); //
+
+		po::store(po::command_line_parser(argc + int(!argc), argv).
+			options(combined_options).run(), cmd_vm_); //
+
 		po::notify(vm_);	
 	}
 	catch (const po::error &e)

@@ -57,7 +57,8 @@ public:
 		key_(k),
 		key_short_(ks),
 		combined_key_(k),
-		info_(info)
+		info_(info),
+		default_(value)
 	{
 		if (!key_short_.empty())
 		{
@@ -103,6 +104,13 @@ public:
 	*/
 	MDM_API const T_unwrapped& operator() () const;
 
+	//! Return the default value in its wrapped form
+	/*!
+	\return wrapped default value of option
+	\see value
+	*/
+	MDM_API const T_wrapped& default_value() const { return default_; };
+
 	//! Return a reference to the wrapped value
 	/*!
 	To custom overload boost::program options, we wrap strings and vectors in container
@@ -130,6 +138,7 @@ public:
 
 private:
 	T_wrapped value_;
+	const T_wrapped default_;
 	const std::string key_;
 	const std::string key_short_;
 	std::string combined_key_;

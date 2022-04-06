@@ -81,8 +81,9 @@ public:
   parseInputs should always be called this, to ensure the mdm_InputOptions object
   is mapped into the mdm_OptionsParser variable map.
   \param filepath of saved config file
+	\param cmdFilepath of saved config file listing command-line only options
   */
-  MDM_API void saveConfigFile(const std::string &filepath) const;
+  MDM_API void saveConfigFile(const std::string &filepath, const std::string& cmdFilepath = "") const;
 
   //! Reference to options so it can be configured by GUI
   /*!

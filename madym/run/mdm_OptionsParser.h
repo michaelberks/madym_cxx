@@ -68,30 +68,16 @@ public:
 	//! Default constructor
 	MDM_API mdm_OptionsParser();
 
-	//! Write option keys and values to an output stream
-	/*!
-	The input options object will contain *all* madym options, however only
-	those in the options parser variables map will be output to the stream. This
-	allows writing output config files for specific tools (eg a T1 mapping config
-	file doesn't need all the additional options for a DCE analysis).
-
-	\param stream output stream to write to
-	\param options set of madym options
-	\param caller name of the calling tool
-	\return true if write successful, false if any errors
-	*/
-	MDM_API bool to_stream(std::ostream &stream, 
-		const mdm_InputOptions &options, const std::string &caller) const;
-
 	//! Write option keys and values to file
 	/*!
-	\param filename
+	\param filepath to output file
+	\param cmdFilepath to output file containing command only options
 	\param options set of madym options
 	\param caller name of the calling tool
 	\return true if write successful, false if any errors (eg unable to open file)
 	\see to_stream
 	*/
-	MDM_API bool to_file(const std::string &filename, 
+	MDM_API bool to_file(const std::string &filepath, const std::string& cmdFilepath,
 		const mdm_InputOptions &options, const std::string &caller) const;
 	
 	//! Parse inputs from command *and* config file
@@ -161,6 +147,18 @@ public:
 
 private:
 
+	bool all_to_stream(std::ostream& stream,
+		const mdm_InputOptions& options, const std::string& caller) const;
+
+	bool cmd_to_stream(std::ostream& stream,
+		const mdm_InputOptions& options) const;
+
+	bool gui_to_stream(std::ostream& stream,
+		const mdm_InputOptions& options) const;
+
+	bool to_stream(std::ostream& stream, const po::variables_map &vm,
+		const mdm_InputOptions& options, bool nondefault_only) const;
+
 	bool parse_command_line(int argc, const char *argv[],
 		const po::options_description &combined_options);
 
@@ -175,6 +173,7 @@ private:
 	void make_exe_args(int argc, const char *argv[]);
 	
 	po::variables_map vm_;
+	po::variables_map cmd_vm_;
 	std::string exe_args_;
 	std::string exe_cmd_;
 

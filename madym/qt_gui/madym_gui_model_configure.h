@@ -93,6 +93,9 @@ private slots: //
 	void on_fixedCheckBox_10_toggled(bool checked);
 
 private: // Variables
+  void setIntListOption(const std::vector<int> &values, mdm_input_ints& option);
+  void setDoubleListOption(const std::vector<double>& values, mdm_input_doubles& option);
+
   Ui::modelDialog ui;
 
   mdm_InputOptions &madym_options_;
