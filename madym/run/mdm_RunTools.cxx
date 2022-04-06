@@ -46,9 +46,9 @@ MDM_API int mdm_RunTools::parseInputs(const std::string &argv)
 }
 
 //
-MDM_API void mdm_RunTools::saveConfigFile(const std::string &filepath) const
+MDM_API void mdm_RunTools::saveConfigFile(const std::string &filepath, const std::string& cmdFilepath) const
 {
-  options_parser_.to_file(filepath, options_, who());
+  options_parser_.to_file(filepath, cmdFilepath, options_, who());
 }
 
 //
@@ -192,9 +192,13 @@ void mdm_RunTools::set_up_logging()
 	mdm_ProgramLogger::logProgramMessage("Command args: " + options_parser_.exe_args());
 	
 	//Save the config file of input options
-  std::string configName = exe_cmd + timeNow() + options_.outputConfigFileName();
+  std::string callerTime = exe_cmd + timeNow();
+  std::string configName = callerTime + options_.outputConfigFileName();
+  std::string configCmdName = callerTime + "override_" + options_.outputConfigFileName();
   fs::path configFilePath = outputPath_ / configName;
-  saveConfigFile(configFilePath.string());
+  fs::path configCmdFilePath = outputPath_ / configCmdName;
+
+  saveConfigFile(configFilePath.string(), configCmdFilePath.string());
 	mdm_ProgramLogger::logProgramMessage(
 		"Config file saved to " + configFilePath.string());
 }

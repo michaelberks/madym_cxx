@@ -176,13 +176,13 @@ void madym_gui_model_configure::on_okButton_clicked()
 		}
   }
 
-	madym_options_.initialParams.set(initialParams);
-	madym_options_.initMapParams.set(initMapParams);
-	madym_options_.fixedParams.set(fixedParams);
-	madym_options_.lowerBounds.set(lowerBounds);
-	madym_options_.upperBounds.set(upperBounds);
-	madym_options_.relativeLimitParams.set(relativeLimitParams);
-	madym_options_.relativeLimitValues.set(relativeLimitValues);
+	setDoubleListOption(initialParams, madym_options_.initialParams);
+	setIntListOption(initMapParams, madym_options_.initMapParams);
+	setIntListOption(fixedParams, madym_options_.fixedParams);
+	setDoubleListOption(lowerBounds, madym_options_.lowerBounds);
+	setDoubleListOption(upperBounds, madym_options_.upperBounds);
+	setIntListOption(relativeLimitParams, madym_options_.relativeLimitParams);
+	setDoubleListOption(relativeLimitValues, madym_options_.relativeLimitValues);
   done(0);
 }
 void madym_gui_model_configure::on_cancelButton_clicked()
@@ -249,4 +249,16 @@ void madym_gui_model_configure::on_fixedCheckBox_10_toggled(bool checked)
 	ui.lowerBoundLineEdit_10->setEnabled(!checked);
 	ui.upperBoundLineEdit_10->setEnabled(!checked);
 	ui.relLimitLineEdit_10->setEnabled(!checked);
+}
+
+void madym_gui_model_configure::setIntListOption(const std::vector<int>& values, mdm_input_ints& option)
+{
+	option.set(values);
+	madym_options_.trackGuiOptions(option.key(), option.value().toString());
+}
+
+void madym_gui_model_configure::setDoubleListOption(const std::vector<double>& values, mdm_input_doubles& option)
+{
+	option.set(values);
+	madym_options_.trackGuiOptions(option.key(), option.value().toString());
 }
