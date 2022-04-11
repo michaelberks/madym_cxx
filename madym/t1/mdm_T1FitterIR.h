@@ -21,8 +21,9 @@ public:
 	/*!
 	\param TIs vector of inversion recovery times in ms
 	\param TR repetition time in ms
+	\param fitEfficiencyWeighting flag to fit efficiency weighting
 	*/
-	MDM_API mdm_T1FitterIR(const std::vector<double> &TIs, const double TR);
+	MDM_API mdm_T1FitterIR(const std::vector<double> &TIs, const double TR, const bool fitEfficiencyWeighting);
 
 	//! Default denstructor
 	/*!
@@ -53,8 +54,9 @@ public:
 	/*!
 	\param T1value reference to hold computed T1
 	\param M0value reference to hold computed M0
+	\param EWvalue reference to hold computed efficiency weighting
 	*/
-	MDM_API mdm_ErrorTracker::ErrorCode fitT1(double &T1value, double &M0value);
+	MDM_API mdm_ErrorTracker::ErrorCode fitT1(double &T1value, double &M0value, double &EWvalue);
 
 	//! Set inputs for computing T1 from a single line of an input data stream buffer
 	/*!
@@ -88,14 +90,14 @@ public:
 	\return signal
 	*/
 	MDM_API static double T1toSignal(
-		const double T1, const double M0, const double IR, const double TR);
+		const double T1, const double M0, const double IR, const double TR, const double EW = 1.0);
 
 	
 private:
 
-	void computeSignalGradient(const double &T1, const double &M0,
+	void computeSignalGradient(const double &T1, const double &M0, const double &EW,
 		const double &TI,
-		double &signal, double &signal_dT1, double &signal_dM0);
+		double &signal, double &signal_dT1, double &signal_dM0, double &signal_dEW);
 
 	void computeSSEGradient(
 		const alglib::real_1d_array &x, double &func, alglib::real_1d_array &grad);
@@ -109,6 +111,7 @@ private:
 
 	std::vector<double> TIs_;
   double TR_;
+	bool fitEfficiencyWeighting_;
 	
 };
 

@@ -100,6 +100,12 @@ public:
 	*/
 	MDM_API const mdm_Image3D& M0() const;
 
+	//! Return read-only reference to efficiency map
+	/*!
+	\return read-only reference to efficiency map
+	*/
+	MDM_API const mdm_Image3D& efficiency() const;
+
   //! Return read-only reference to B1 map
   /*!
   \return read-only reference to B1 map
@@ -181,7 +187,7 @@ private:
 	mdm_Image3D &ROI_;
 
 	// Output image maps
-	mdm_Image3D T1_, M0_;
+	mdm_Image3D T1_, M0_, efficiencyWeighting_;
 
   //B1 correction map
   mdm_Image3D B1_;

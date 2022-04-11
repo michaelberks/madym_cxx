@@ -26,12 +26,14 @@
 
 //Names of output maps
 const std::string mdm_VolumeAnalysis::MAP_NAME_IAUC = "IAUC"; //Appended with IAUC time
-const std::string mdm_VolumeAnalysis::MAP_NAME_RESDIUALS = "residuals";
+const std::string mdm_VolumeAnalysis::MAP_NAME_RESIDUALS = "residuals";
 const std::string mdm_VolumeAnalysis::MAP_NAME_ENHANCING = "enhVox";
 const std::string mdm_VolumeAnalysis::MAP_NAME_ROI = "ROI";
 const std::string mdm_VolumeAnalysis::MAP_NAME_ERROR_TRACKER = "error_tracker";
 const std::string mdm_VolumeAnalysis::MAP_NAME_T1 = "T1";
 const std::string mdm_VolumeAnalysis::MAP_NAME_M0 = "M0";
+const std::string mdm_VolumeAnalysis::MAP_NAME_EFFICIENCY = "efficiency";
+
 //Signal derived concentration - appended with volume number
 const std::string mdm_VolumeAnalysis::MAP_NAME_CT_SIG = "Ct_sig"; 
 //Model estimated concentration - appended with volume number
@@ -372,7 +374,7 @@ MDM_API mdm_Image3D mdm_VolumeAnalysis::DCEMap(const std::string &mapName) const
   if (mapName == (MAP_NAME_IAUC + "_peak"))
     return IAUCMaps_.back();
 
-	if (mapName == MAP_NAME_RESDIUALS)
+	if (mapName == MAP_NAME_RESIDUALS)
 		return modelResidualsMap_;
 
 	if (mapName == MAP_NAME_ENHANCING)
@@ -417,7 +419,7 @@ MDM_API void mdm_VolumeAnalysis::setDCEMap(const std::string &mapName, const mdm
     return;
   }
 
-  if (mapName == MAP_NAME_RESDIUALS)
+  if (mapName == MAP_NAME_RESIDUALS)
   {
     modelResidualsMap_ = map;
     return;

@@ -43,7 +43,8 @@ public:
 		UNDEFINED, ///> Method not recognised
 		VFA, ///> Variable flip-angle method
     VFA_B1, ///> Variable flip-angle method B1 corrected
-		IR ///> Inversion recovery method
+		IR, ///> Inversion recovery method
+		IR_E, ///> Inversion recovery method with efficieny weighting
 	};
 
   //! Returns list of implemented model names
@@ -55,7 +56,8 @@ public:
 		return {
 	    toString(VFA),
       toString(VFA_B1),
-      toString(IR)
+      toString(IR),
+			toString(IR_E)
 		};
 	}
 
@@ -71,6 +73,7 @@ public:
     case VFA: return "VFA";
     case VFA_B1: return "VFA_B1";
     case IR: return "IR";
+		case IR_E: return "IR_E";
     default:
       throw mdm_exception(__func__, "T1 method " + std::to_string(methodType) + " not valid");
     }
@@ -99,6 +102,9 @@ public:
 		
     else if (method == toString(IR))
 			return IR;
+
+		else if (method == toString(IR_E))
+			return IR_E;
 
 		else
 			throw mdm_exception(__func__, "T1 method " + method + " not recognised");
@@ -151,8 +157,18 @@ public:
 
       double TR = inputImages[0].info().TR.value();
 
-      return std::make_unique<mdm_T1FitterIR>(TIs, TR);
+      return std::make_unique<mdm_T1FitterIR>(TIs, TR, false);
     }
+		case IR_E:
+		{
+			std::vector<double> TIs;
+			for (auto img : inputImages)
+				TIs.push_back(img.info().TI.value());
+
+			double TR = inputImages[0].info().TR.value();
+
+			return std::make_unique<mdm_T1FitterIR>(TIs, TR, true);
+		}
 		default:
       throw mdm_exception(__func__, "T1 method " + std::to_string(methodType) + " not valid");
 		}
@@ -187,9 +203,15 @@ public:
     case IR:
     {
       std::vector<double> empty;
-      auto T1Fitter = std::make_unique<mdm_T1FitterIR>(empty, options.TR());
+      auto T1Fitter = std::make_unique<mdm_T1FitterIR>(empty, options.TR(), false);
       return T1Fitter;
     }
+		case IR_E:
+		{
+			std::vector<double> empty;
+			auto T1Fitter = std::make_unique<mdm_T1FitterIR>(empty, options.TR(), true);
+			return T1Fitter;
+		}
 		default:
 			abort();
 		}

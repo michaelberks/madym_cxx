@@ -21,21 +21,6 @@
 MDM_API mdm_T1FitterBase::mdm_T1FitterBase()
 	: maxIterations_(500)
 {
-	//Pre-initialise the alglib state
-	alglib::real_1d_array x = "[1000,1000]";
-	alglib::real_1d_array s = "[1,1]";
-	double epsg = 0.00000001;
-	double epsf = 0.0000;
-	double epsx = 0.0001;
-#if _DEBUG
-	alglib::ae_int_t maxits = maxIterations_ > 100 ? 100 : maxIterations_;
-#else
-	alglib::ae_int_t maxits = maxIterations_;
-#endif
-
-	alglib::mincgcreate(x, state_);
-	alglib::mincgsetcond(state_, epsg, epsf, epsx, maxits);
-	alglib::mincgsetscale(state_, s);
 }
 
 //

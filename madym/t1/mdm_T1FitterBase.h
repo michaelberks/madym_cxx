@@ -44,8 +44,9 @@ public:
 
 	\param T1value reference to hold computed T1
 	\param M0value reference to hold computed M0 
+	\param EWvalue reference to hold computed efficiency weighting
 	*/
-	MDM_API virtual mdm_ErrorTracker::ErrorCode fitT1(double &T1value, double &M0value) = 0;
+	MDM_API virtual mdm_ErrorTracker::ErrorCode fitT1(double &T1value, double &M0value, double& EWvalue) = 0;
 
 	//! Set inputs for computing T1 from a single line of an input data stream buffer
 	/*!
