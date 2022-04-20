@@ -128,6 +128,9 @@ private:
 	std::vector<double> sinFAs_;
 
 	static const double PI;
+
+	alglib::mincgstate state_; //!< Cached ALGLIB internal
+	alglib::mincgreport rep_; //!< Cached ALGLIB internal
 	
 };
 

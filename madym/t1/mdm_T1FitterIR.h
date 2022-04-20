@@ -112,6 +112,9 @@ private:
 	std::vector<double> TIs_;
   double TR_;
 	bool fitEfficiencyWeighting_;
+
+	alglib::minbcstate  state_; //!< Cached ALGLIB internal
+	alglib::minbcreport rep_; //!< Cached ALGLIB internal
 	
 };
 

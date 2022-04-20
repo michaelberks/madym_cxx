@@ -29,14 +29,22 @@ MDM_API mdm_T1FitterIR::mdm_T1FitterIR(const std::vector<double> &TIs, const dou
 
 	//Pre-initialise the alglib state
 	int nParams = fitEfficiencyWeighting_ ? 3 : 2;
-	std::vector<double> init = { 1000, 1000, 1.0 };
-	std::vector<double> scale = { 1, 1, 1 };
+	std::vector<double> init = { 1000, 1000, 1.0};
+	std::vector<double> scale = { 1e3, 1e3, 1};
+
+	std::vector<double> lowerBounds = { 0, 0, 0};
+	std::vector<double> upperBounds = { 1e5, 1e5, 1};
 
 	alglib::real_1d_array x;
 	alglib::real_1d_array s;
+	alglib::real_1d_array bndl;
+	alglib::real_1d_array bndu;
 
 	x.setcontent(nParams, init.data());
 	s.setcontent(nParams, scale.data());
+	bndl.setcontent(nParams, lowerBounds.data());
+	bndu.setcontent(nParams, upperBounds.data());
+
 	double epsg = 0.00000000001;
 	double epsf = 0.0000;
 	double epsx = 0.0000000001;
@@ -47,15 +55,16 @@ MDM_API mdm_T1FitterIR::mdm_T1FitterIR(const std::vector<double> &TIs, const dou
 	alglib::ae_int_t maxits = maxIterations_;
 #endif
 
-	alglib::mincgcreate(x, state_);
-	alglib::mincgsetcond(state_, epsg, epsf, epsx, maxits);
-	alglib::mincgsetscale(state_, s);
+	alglib::minbccreate(x, state_);
+	alglib::minbcsetbc(state_, bndl, bndu);
+	alglib::minbcsetcond(state_, epsg, epsf, epsx, maxits);
+	alglib::minbcsetscale(state_, s);
 
 #if _DEBUG
 	//Provides numerical check of analytic gradient, useful in debugging, but should not be
 	//used in release versions
-	alglib::mincgoptguardsmoothness(state_);
-	alglib::mincgoptguardgradient(state_, 0.001);
+	alglib::minbcoptguardsmoothness(state_);
+	alglib::minbcoptguardgradient(state_, 0.001);
 #endif
 }
 
@@ -103,25 +112,44 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
 	//
 	// First, we create optimizer object and tune its properties
 	//
-	int nParams = fitEfficiencyWeighting_ ? 3 : 2;
-	std::vector<double> init_vals = { 1000.0, signals_.back(), 1.0 };
 	alglib::real_1d_array x;
-	x.attach_to_ptr(nParams, init_vals.data());
-	EWvalue = 0.0;
+	if (fitEfficiencyWeighting_)
+	{
+		//Run an initial fit with efficiency fixed to 1.0 to get
+		//initial values for T1 and M0
+		double init_T1, init_M0, init_EW;
+		mdm_T1FitterIR* fitter = new mdm_T1FitterIR(TIs_, TR_, false);
+		fitter->setInputs(signals_);
+		fitter->fitT1(init_T1, init_M0, init_EW);
+		delete fitter;
 
+		std::vector<double> init_vals = { init_T1, init_M0, 1.0 };
+		x.setcontent(3, init_vals.data());
+		EWvalue = 1.0;
+		
+	}
+	else
+	{
+		std::vector<double> init_vals = { 1000, signals_.back()};
+		x.setcontent(2, init_vals.data());
+	}
+	
+	
 	// Optimize and evaluate results
 	try
 	{
-		mincgrestartfrom(state_, x);
-		alglib::mincgoptimize(state_, &computeSSEGradientAlglib, NULL, this);
-		mincgresults(state_, x, rep_);
+		minbcrestartfrom(state_, x);
+		alglib::minbcoptimize(state_, &computeSSEGradientAlglib, NULL, this);
+		minbcresults(state_, x, rep_);
+	
+		
 
 #if _DEBUG
 		//
 		// Check that OptGuard did not report errors
 		//
 		alglib::optguardreport ogrep;
-		alglib::mincgoptguardresults(state_, ogrep);
+		alglib::minbcoptguardresults(state_, ogrep);
 		std::cout << "Optimisation guard results:\n";
 		std::cout << "Bad gradient suspected:" << (ogrep.badgradsuspected ? "true" : "false") << "\n"; // EXPECTED: false
 		std::cout << "Non c0 suspected:" << (ogrep.nonc0suspected ? "true" : "false") << "\n"; // EXPECTED: false

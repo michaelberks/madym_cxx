@@ -85,8 +85,6 @@ protected:
 	
   //! Maximum number of iterations in optimisation, if 0 runs to convergence
 	int maxIterations_;
-	alglib::mincgstate state_; //!< Cached ALGLIB internal
-	alglib::mincgreport rep_; //!< Cached ALGLIB internal
 
 private:
 	

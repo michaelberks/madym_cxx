@@ -167,12 +167,12 @@ public:
 	*/
 	MDM_API void  setNoiseThreshold(double t);
 
-  //! Override TR in input images
+  //! Set big TR used by inversion recovery methods
   /*!
   If zero passed as input, sets TR from first image
   \param TR recovery time
   */
-  MDM_API void  overrideTR(double TR);
+  MDM_API void  setBigTR(double TR);
 
 protected:
 
@@ -199,6 +199,8 @@ private:
 	double noiseThreshold_;
 
 	mdm_T1MethodGenerator::T1Methods method_;
+
+	double bigTR_;
 
 };
 #endif /* mdm_T1VolumeAnalysis_HDR */

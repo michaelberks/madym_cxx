@@ -25,7 +25,8 @@ MDM_API mdm_T1Mapper::mdm_T1Mapper(mdm_ErrorTracker &errorTracker, mdm_Image3D &
 	errorTracker_(errorTracker),
   ROI_(ROI),
 	noiseThreshold_(0),
-	method_(mdm_T1MethodGenerator::T1Methods::VFA)
+	method_(mdm_T1MethodGenerator::T1Methods::VFA),
+	bigTR_(1e5)
 {}
 
 //
@@ -86,7 +87,7 @@ MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 	auto nSignals = inputImages_.size();
 
 	//Instantiate T1 fitter object of required method type
-	auto T1Fitter = mdm_T1MethodGenerator::createFitter(method, inputImages_);
+	auto T1Fitter = mdm_T1MethodGenerator::createFitter(method, inputImages_, bigTR_);
 
 	mdm_ErrorTracker::ErrorCode errCode = mdm_ErrorTracker::OK;
 
@@ -275,10 +276,9 @@ MDM_API void  mdm_T1Mapper::setNoiseThreshold(double t)
 }
 
 //
-MDM_API void  mdm_T1Mapper::overrideTR(double TR)
+MDM_API void  mdm_T1Mapper::setBigTR(double TR)
 {
-  for (auto &img : inputImages_)
-    img.info().TR.setValue(TR);
+	bigTR_ = TR;
 }
 //******************************************************************
 //Private methods

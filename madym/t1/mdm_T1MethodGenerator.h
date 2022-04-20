@@ -117,10 +117,11 @@ public:
 	to run the method from the input signal images
 	\param methodType enum code of specified T1 method
 	\param inputImages signal input images
+	\param bigTR TR used by inversion recovery methods
 	\return shared pointer to T1 fitter using specified method
 	*/
 	MDM_API static std::unique_ptr<mdm_T1FitterBase> createFitter( 
-		T1Methods methodType, const std::vector<mdm_Image3D> &inputImages)
+		T1Methods methodType, const std::vector<mdm_Image3D> &inputImages, const double &bigTR)
   {
 		const auto &nSignals = inputImages.size();
     const auto PI = acos(-1.0);
@@ -155,9 +156,7 @@ public:
       for (auto img : inputImages)
         TIs.push_back(img.info().TI.value());
 
-      double TR = inputImages[0].info().TR.value();
-
-      return std::make_unique<mdm_T1FitterIR>(TIs, TR, false);
+      return std::make_unique<mdm_T1FitterIR>(TIs, bigTR, true);
     }
 		case IR_E:
 		{
@@ -165,9 +164,7 @@ public:
 			for (auto img : inputImages)
 				TIs.push_back(img.info().TI.value());
 
-			double TR = inputImages[0].info().TR.value();
-
-			return std::make_unique<mdm_T1FitterIR>(TIs, TR, true);
+			return std::make_unique<mdm_T1FitterIR>(TIs, bigTR, true);
 		}
 		default:
       throw mdm_exception(__func__, "T1 method " + std::to_string(methodType) + " not valid");
@@ -203,7 +200,7 @@ public:
     case IR:
     {
       std::vector<double> empty;
-      auto T1Fitter = std::make_unique<mdm_T1FitterIR>(empty, options.TR(), false);
+      auto T1Fitter = std::make_unique<mdm_T1FitterIR>(empty, options.TR(), true);
       return T1Fitter;
     }
 		case IR_E:
