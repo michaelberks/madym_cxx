@@ -19,17 +19,52 @@
 #include <madym/utils/mdm_ProgramLogger.h>
 #include <madym/utils/mdm_exception.h>
 //
-MDM_API mdm_T1FitterIR::mdm_T1FitterIR(const std::vector<double> &TIs, const double TR)
+MDM_API mdm_T1FitterIR::mdm_T1FitterIR(const std::vector<double> &TIs, const double TR, const bool fitEfficiencyWeighting)
   :
   mdm_T1FitterBase(),
   TIs_(TIs),
-  TR_(TR)
+  TR_(TR),
+	fitEfficiencyWeighting_(fitEfficiencyWeighting)
 {
+
+	//Pre-initialise the alglib state
+	int nParams = fitEfficiencyWeighting_ ? 3 : 2;
+	std::vector<double> init = { 1000, 1000, 1.0};
+	std::vector<double> scale = { 1e3, 1e3, 1};
+
+	std::vector<double> lowerBounds = { 0, 0, 0};
+	std::vector<double> upperBounds = { 1e5, 1e5, 1};
+
+	alglib::real_1d_array x;
+	alglib::real_1d_array s;
+	alglib::real_1d_array bndl;
+	alglib::real_1d_array bndu;
+
+	x.setcontent(nParams, init.data());
+	s.setcontent(nParams, scale.data());
+	bndl.setcontent(nParams, lowerBounds.data());
+	bndu.setcontent(nParams, upperBounds.data());
+
+	double epsg = 0.00000000001;
+	double epsf = 0.0000;
+	double epsx = 0.0000000001;
+
+#if _DEBUG
+	alglib::ae_int_t maxits = maxIterations_ > 100 ? 100 : maxIterations_;
+#else
+	alglib::ae_int_t maxits = maxIterations_;
+#endif
+
+	alglib::minbccreate(x, state_);
+	alglib::minbcsetbc(state_, bndl, bndu);
+	alglib::minbcsetcond(state_, epsg, epsf, epsx, maxits);
+	alglib::minbcsetscale(state_, s);
+
 #if _DEBUG
 	//Provides numerical check of analytic gradient, useful in debugging, but should not be
 	//used in release versions
-	alglib::mincgoptguardsmoothness(state_);
-	alglib::mincgoptguardgradient(state_, 0.001);
+	alglib::minbcoptguardsmoothness(state_);
+	alglib::minbcoptguardgradient(state_, 0.001);
 #endif
 }
 
@@ -68,7 +103,7 @@ MDM_API void mdm_T1FitterIR::setInputs(const std::vector<double> &inputs)
 
 //
 MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
-	double &T1value, double &M0value)
+	double &T1value, double &M0value, double& EWvalue)
 {
 	if (signals_.size() != TIs_.size())
     throw mdm_exception(__func__, "Number of signals (" + std::to_string(signals_.size()) +
@@ -77,23 +112,44 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
 	//
 	// First, we create optimizer object and tune its properties
 	//
-	std::vector<double> init_vals = { 1000.0, signals_.back() * 5.0 };
 	alglib::real_1d_array x;
-	x.attach_to_ptr(2, init_vals.data());
+	if (fitEfficiencyWeighting_)
+	{
+		//Run an initial fit with efficiency fixed to 1.0 to get
+		//initial values for T1 and M0
+		double init_T1, init_M0, init_EW;
+		mdm_T1FitterIR* fitter = new mdm_T1FitterIR(TIs_, TR_, false);
+		fitter->setInputs(signals_);
+		fitter->fitT1(init_T1, init_M0, init_EW);
+		delete fitter;
 
+		std::vector<double> init_vals = { init_T1, init_M0, 1.0 };
+		x.setcontent(3, init_vals.data());
+		EWvalue = 1.0;
+		
+	}
+	else
+	{
+		std::vector<double> init_vals = { 1000, signals_.back()};
+		x.setcontent(2, init_vals.data());
+	}
+	
+	
 	// Optimize and evaluate results
 	try
 	{
-		mincgrestartfrom(state_, x);
-		alglib::mincgoptimize(state_, &computeSSEGradientAlglib, NULL, this);
-		mincgresults(state_, x, rep_);
+		minbcrestartfrom(state_, x);
+		alglib::minbcoptimize(state_, &computeSSEGradientAlglib, NULL, this);
+		minbcresults(state_, x, rep_);
+	
+		
 
 #if _DEBUG
 		//
 		// Check that OptGuard did not report errors
 		//
 		alglib::optguardreport ogrep;
-		alglib::mincgoptguardresults(state_, ogrep);
+		alglib::minbcoptguardresults(state_, ogrep);
 		std::cout << "Optimisation guard results:\n";
 		std::cout << "Bad gradient suspected:" << (ogrep.badgradsuspected ? "true" : "false") << "\n"; // EXPECTED: false
 		std::cout << "Non c0 suspected:" << (ogrep.nonc0suspected ? "true" : "false") << "\n"; // EXPECTED: false
@@ -124,6 +180,7 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
 
 	T1value = x[0];
 	M0value = x[1];
+	EWvalue = fitEfficiencyWeighting_ ? x[2] : 1.0;
 	return mdm_ErrorTracker::OK;
 }
 
@@ -160,24 +217,27 @@ MDM_API int mdm_T1FitterIR::maximumInputs() const
 
 //
 MDM_API double mdm_T1FitterIR::T1toSignal(
-	const double T1, const double M0, const double TI, const double TR)
+	const double T1, const double M0, const double TI, const double TR, const double EW /*=1.0*/)
 {
 	double E_TI = std::exp(-TI / T1);
   double E_TR = std::exp(-TR / T1);
 
-  return std::abs(M0 * (1 - 2*E_TI + E_TR));
+  return std::abs(M0 * (1 - 2*EW*E_TI + E_TR));
 }
 
 //**********************************************************************
 //Private methods
 //**********************************************************************
 
-void mdm_T1FitterIR::computeSignalGradient(const double &T1, const double &M0,
+void mdm_T1FitterIR::computeSignalGradient(
+	const double &T1, const double &M0, const double& EW,
 	const double &TI,
-	double &signal, double &signal_dT1, double &signal_dM0)
+	double &signal, double &signal_dT1, double &signal_dM0, double &signal_dEW
+	)
 {
   //Signal model is:
-  //S = | M0*(1 - 2*exp(-TI/T1) + e(-TR/T1) ) |
+  //S = | M0*(1 - 2*EW*exp(-*TI/T1) + e(-TR/T1) ) |
+	//where we only fit EW if fitEfficiencyWeighting_ is true
 
   //If M0 or T1 are 0, the signal is 0 and the signal model is non-differentiable
   if (!M0 || !T1)
@@ -185,6 +245,7 @@ void mdm_T1FitterIR::computeSignalGradient(const double &T1, const double &M0,
     signal = 0;
     signal_dT1 = 1000000000.0; // something very big
     signal_dM0 = 1000000000.0; // something very big
+		signal_dEW = 1000000000.0; // something very big
     return;
   }
 
@@ -194,12 +255,15 @@ void mdm_T1FitterIR::computeSignalGradient(const double &T1, const double &M0,
 
 	// signal intensity relationship - most efficient to compute
 	//ds/dM0, then multiply to get s
-	signal_dM0 = 1 - 2*E_TI + E_TR;
+	signal_dM0 = 1 - 2*EW*E_TI + E_TR;
 	signal = M0 * signal_dM0;
 
 	//Compute deriavtives with respect to T1
 	// First derivative - ds/dT1
-	signal_dT1 = M0 * (-2*E_TI*TI + E_TR*TR_) / (T1*T1);
+	signal_dT1 = M0 * (-2*EW*E_TI*TI + E_TR*TR_) / (T1*T1);
+
+	//Compute derivatives with respect to lambda (L)
+	signal_dEW = fitEfficiencyWeighting_ ? -2 * M0 * E_TI : 0;
 
   //We haven't taken in to account the absolute operator on the signal model yet
   //If the signal is negative, invert the sign on the signal and the two
@@ -209,6 +273,7 @@ void mdm_T1FitterIR::computeSignalGradient(const double &T1, const double &M0,
     signal *= -1;
     signal_dM0 *= -1;
     signal_dT1 *= -1;
+		signal_dEW *= -1;
   }
 
 	
@@ -219,17 +284,24 @@ void mdm_T1FitterIR::computeSSEGradient(
 {
 	const double &T1 = x[0];
 	const double &M0 = x[1];
+	const double &EW = fitEfficiencyWeighting_ ? x[2] : 1.0;
+
 	func = 0;
 	grad[0] = 0;
 	grad[1] = 0;
-	double s, s_dT1, s_dM0;
+	if (fitEfficiencyWeighting_)
+		grad[2] = 0;
+
+	double s, s_dT1, s_dM0, s_dEW;
 	for (int i = 0; i < TIs_.size(); i++)
 	{
-		computeSignalGradient(T1, M0, TIs_[i],
-			s, s_dT1, s_dM0);
+		computeSignalGradient(T1, M0, EW, TIs_[i],
+			s, s_dT1, s_dM0, s_dEW);
 		double diff = s - signals_[i];
 		func += diff * diff;
 		grad[0] += 2 * s_dT1*diff;
 		grad[1] += 2 * s_dM0*diff;
+		if (fitEfficiencyWeighting_)
+			grad[2] += 2 * s_dEW * diff;
 	}
 }

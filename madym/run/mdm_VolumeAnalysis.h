@@ -31,7 +31,7 @@ public:
 	static const std::string   MAP_NAME_IAUC;
 
 	//! Name of model residuals maps
-	static const std::string   MAP_NAME_RESDIUALS;
+	static const std::string   MAP_NAME_RESIDUALS;
 
 	//! Name of enhancing map
 	static const std::string   MAP_NAME_ENHANCING;
@@ -50,6 +50,9 @@ public:
 
 	//! Name of M0 map
 	static const std::string   MAP_NAME_M0;
+
+	//! Name of M0 map
+	static const std::string   MAP_NAME_EFFICIENCY;
 
 	//! Name of signal derived concentration - appended with volume number
 	static const std::string   MAP_NAME_CT_SIG;

@@ -33,6 +33,31 @@ MDM_API mdm_T1FitterVFA::mdm_T1FitterVFA(const std::vector<double> &FAs, const d
 	if (!FAs_.empty())
 		initFAs();
 
+	//Pre-initialise the alglib state
+	//Pre-initialise the alglib state
+	int nParams = 2;
+	std::vector<double> init = { 1000, 1000 };
+	std::vector<double> scale = { 1000, 1000 };
+
+	alglib::real_1d_array x;
+	alglib::real_1d_array s;
+
+	x.setcontent(nParams, init.data());
+	s.setcontent(nParams, scale.data());
+
+	double epsg = 0.00000001;
+	double epsf = 0.0000;
+	double epsx = 0.0001;
+#if _DEBUG
+	alglib::ae_int_t maxits = maxIterations_ > 100 ? 100 : maxIterations_;
+#else
+	alglib::ae_int_t maxits = maxIterations_;
+#endif
+
+	alglib::mincgcreate(x, state_);
+	alglib::mincgsetcond(state_, epsg, epsf, epsx, maxits);
+	alglib::mincgsetscale(state_, s);
+
 #if _DEBUG
 	//Provides numerical check of analytic gradient, useful in debugging, but should not be
 	//used in release versions
@@ -98,7 +123,7 @@ MDM_API void mdm_T1FitterVFA::setInputs(const std::vector<double> &inputs)
 
 //
 MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
-	double &T1value, double &M0value)
+	double &T1value, double &M0value, double& EWvalue)
 {
 	if (signals_.size() != nFAs_)
     throw mdm_exception(__func__, "Number of signals (" + std::to_string(signals_.size()) +

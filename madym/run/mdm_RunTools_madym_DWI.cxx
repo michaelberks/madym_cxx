@@ -80,6 +80,7 @@ MDM_API int mdm_RunTools_madym_DWI::parseInputs(int argc, const char *argv[])
 
 	//DWI input options_
 	options_parser_.add_option(config_options, options_.DWImodel);
+	options_parser_.add_option(config_options, options_.DWIDir);
 	options_parser_.add_option(config_options, options_.DWIinputNames);
 	options_parser_.add_option(config_options, options_.BvalsThresh);
   

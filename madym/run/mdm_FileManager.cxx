@@ -104,8 +104,8 @@ MDM_API void mdm_FileManager::loadParameterMaps(const std::string &paramDir,
 MDM_API void mdm_FileManager::loadModelResiduals(const std::string &path)
 {
   auto setFunc = std::bind(
-    &mdm_VolumeAnalysis::setDCEMap, &volumeAnalysis_, mdm_VolumeAnalysis::MAP_NAME_RESDIUALS, std::placeholders::_1);
-  loadAndSetImage(path, mdm_VolumeAnalysis::MAP_NAME_RESDIUALS, setFunc,
+    &mdm_VolumeAnalysis::setDCEMap, &volumeAnalysis_, mdm_VolumeAnalysis::MAP_NAME_RESIDUALS, std::placeholders::_1);
+  loadAndSetImage(path, mdm_VolumeAnalysis::MAP_NAME_RESIDUALS, setFunc,
     mdm_Image3D::ImageType::TYPE_KINETICMAP, false);
 
 }
@@ -129,6 +129,10 @@ MDM_API void mdm_FileManager::saveT1OutputMaps(const std::string& outputDir)
   if (volumeAnalysis_.T1Mapper().M0())
     saveOutputMap(volumeAnalysis_.MAP_NAME_M0,
       volumeAnalysis_.T1Mapper().M0(), outputDir, true);
+
+  if (volumeAnalysis_.T1Mapper().efficiency())
+    saveOutputMap(volumeAnalysis_.MAP_NAME_EFFICIENCY,
+      volumeAnalysis_.T1Mapper().efficiency(), outputDir, true);
 }
 
 MDM_API void mdm_FileManager::saveDynamicOutputMaps(const std::string& outputDir,
@@ -212,7 +216,7 @@ MDM_API void mdm_FileManager::saveDWIOutputMaps(const std::string& outputDir)
 //
 MDM_API void mdm_FileManager::saveModelResiduals(const std::string &outputDir)
 {
-  saveOutputMap(volumeAnalysis_.MAP_NAME_RESDIUALS, outputDir, false);
+  saveOutputMap(volumeAnalysis_.MAP_NAME_RESIDUALS, outputDir, false);
 }
 
 //

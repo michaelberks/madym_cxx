@@ -80,8 +80,8 @@ MDM_API void mdm_RunTools_madym_T1_lite::run()
 			break;
 
 		//If valid inputs, fit T1 and write to output stream
-		double T1, M0;
-		int errCode = T1Fitter->fitT1(T1, M0);
+		double T1, M0, EW;
+		int errCode = T1Fitter->fitT1(T1, M0, EW);
 
 		outputData <<
 			T1 << " " <<

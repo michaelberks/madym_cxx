@@ -251,4 +251,88 @@ BOOST_AUTO_TEST_CASE(test_madym_T1_IR) {
   fs::remove_all(T1_output_dir);
 }
 
+BOOST_AUTO_TEST_CASE(test_madym_T1_IR_EW) {
+  BOOST_TEST_MESSAGE("======= Testing tool: madym T1 IR =======");
+
+  //Generate some signals from sample FA, TR, T1 and S0 values
+  std::vector<double> TIs = { 50, 300, 800, 1000, 2000, 4000 };
+  int nTIs = (int)TIs.size();
+  double T1 = 1500;
+  double M0 = 1000;
+  double TR = 1e5;
+  double EW = 0.9;
+
+  std::string test_dir = mdm_test_utils::temp_dir();
+  std::string IR_dir = test_dir + "/IRs/";
+  fs::create_directories(IR_dir);
+
+  //Compute signal for each IR and write out image
+  std::vector<std::string> IR_names(nTIs);
+  for (int i_ti = 0; i_ti < nTIs; i_ti++)
+  {
+    //Create inversion recovery signal image
+    mdm_Image3D IR_img;
+    IR_img.setDimensions(1, 1, 1);
+    IR_img.setVoxelDims(1, 1, 1);
+    IR_img.info().TI.setValue(TIs[i_ti]);
+    IR_img.info().TR.setValue(TR);
+    IR_img.setVoxel(0, mdm_T1FitterIR::T1toSignal(T1, M0, TIs[i_ti], TR, EW));
+
+    IR_names[i_ti] = IR_dir + "IR_" + std::to_string((int)TIs[i_ti]);
+
+    mdm_NiftiFormat::writeImage3D(IR_names[i_ti], IR_img,
+      mdm_ImageDatatypes::DT_FLOAT, mdm_XtrFormat::NEW_XTR, false);
+  }
+
+  //Call madym_T1 to fit T1 and S0
+  std::string T1_output_dir = test_dir + "/madym_T1/";
+  std::stringstream cmd;
+  cmd << mdm_test_utils::tools_exe_dir() << "madym_T1"
+    << " -T IR_E "
+    << " --T1_vols " << IR_names[0];
+  for (int i_ti = 1; i_ti < nTIs; i_ti++)
+    cmd << "," << IR_names[i_ti];
+
+  cmd << " --TR " << TR
+    << " -o " << T1_output_dir
+    << " --overwrite"
+    << " --no_audit";
+
+  BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
+
+  int error;
+  try
+  {
+    error = std::system(cmd.str().c_str());
+  }
+  catch (...)
+  {
+    BOOST_CHECK_MESSAGE(false, "Running madym_T1 failed");
+    return;
+  }
+
+  BOOST_CHECK_MESSAGE(!error, "Error returned from madym_T1 tool");
+
+  //Load in the parameter img vols and extract the single voxel from each
+  mdm_Image3D T1_fit = mdm_NiftiFormat::readImage3D(T1_output_dir + "T1", false);
+  mdm_Image3D M0_fit = mdm_NiftiFormat::readImage3D(T1_output_dir + "M0", false);
+  mdm_Image3D EW_fit = mdm_NiftiFormat::readImage3D(T1_output_dir + "efficiency", false);
+
+  //Check the model parameters have fitted correctly
+  double tol = 0.1;
+  BOOST_TEST_MESSAGE("Testing fitted T1");
+  BOOST_CHECK_CLOSE(T1_fit.voxel(0), T1, tol);
+  BOOST_TEST_MESSAGE("Testing fitted M0");
+  BOOST_CHECK_CLOSE(M0_fit.voxel(0), M0, tol);
+  BOOST_TEST_MESSAGE("Testing fitted efficiency");
+  BOOST_CHECK_CLOSE(EW_fit.voxel(0), EW, tol);
+
+  // Repeat the test with inversion recovery
+
+  //Tidy up
+  fs::remove_all(IR_dir);
+  fs::remove_all(T1_output_dir);
+}
+
 BOOST_AUTO_TEST_SUITE_END() //
+

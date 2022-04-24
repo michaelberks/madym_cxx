@@ -25,7 +25,8 @@ MDM_API mdm_T1Mapper::mdm_T1Mapper(mdm_ErrorTracker &errorTracker, mdm_Image3D &
 	errorTracker_(errorTracker),
   ROI_(ROI),
 	noiseThreshold_(0),
-	method_(mdm_T1MethodGenerator::T1Methods::VFA)
+	method_(mdm_T1MethodGenerator::T1Methods::VFA),
+	bigTR_(1e5)
 {}
 
 //
@@ -86,7 +87,7 @@ MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 	auto nSignals = inputImages_.size();
 
 	//Instantiate T1 fitter object of required method type
-	auto T1Fitter = mdm_T1MethodGenerator::createFitter(method, inputImages_);
+	auto T1Fitter = mdm_T1MethodGenerator::createFitter(method, inputImages_, bigTR_);
 
 	mdm_ErrorTracker::ErrorCode errCode = mdm_ErrorTracker::OK;
 
@@ -99,6 +100,15 @@ MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 
   bool useROI = (bool)ROI_;
   bool useB1_ = (bool)B1_ && method == mdm_T1MethodGenerator::VFA_B1;
+	bool fitEfficiencyWeighting = method == mdm_T1MethodGenerator::IR_E;
+
+	//Only initialise the efficiency weighting map if it is being fitted
+	if (fitEfficiencyWeighting)
+	{
+		efficiencyWeighting_.copy(inputImages_[0]);
+		efficiencyWeighting_.setType(mdm_Image3D::ImageType::TYPE_M0MAP);
+	}
+		
 
 	int numFitted = 0;
 	int numErrors = 0;
@@ -129,12 +139,11 @@ MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
           continue;
         }
       }
-        
 
 			//Compute T1 and M0
-			double T1, M0;
+			double T1, M0, EW;
 			T1Fitter->setInputs(signal);
-			errCode = T1Fitter->fitT1(T1, M0);
+			errCode = T1Fitter->fitT1(T1, M0, EW);
 
 			//Check for errors
 			if (errCode != mdm_ErrorTracker::OK)
@@ -146,6 +155,9 @@ MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 			//Fill the image maps.
 			T1_.setVoxel(voxelIndex, T1);
 			M0_.setVoxel(voxelIndex, M0);
+
+			if (fitEfficiencyWeighting)
+				efficiencyWeighting_.setVoxel(voxelIndex, EW);
 		}
 		else
 		{
@@ -200,6 +212,12 @@ MDM_API const mdm_Image3D& mdm_T1Mapper::T1() const
 MDM_API const mdm_Image3D& mdm_T1Mapper::M0() const
 {
 	return M0_;
+}
+
+//
+MDM_API const mdm_Image3D& mdm_T1Mapper::efficiency() const
+{
+	return efficiencyWeighting_;
 }
 
 //
@@ -258,10 +276,9 @@ MDM_API void  mdm_T1Mapper::setNoiseThreshold(double t)
 }
 
 //
-MDM_API void  mdm_T1Mapper::overrideTR(double TR)
+MDM_API void  mdm_T1Mapper::setBigTR(double TR)
 {
-  for (auto &img : inputImages_)
-    img.info().TR.setValue(TR);
+	bigTR_ = TR;
 }
 //******************************************************************
 //Private methods

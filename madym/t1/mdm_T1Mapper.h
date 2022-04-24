@@ -100,6 +100,12 @@ public:
 	*/
 	MDM_API const mdm_Image3D& M0() const;
 
+	//! Return read-only reference to efficiency map
+	/*!
+	\return read-only reference to efficiency map
+	*/
+	MDM_API const mdm_Image3D& efficiency() const;
+
   //! Return read-only reference to B1 map
   /*!
   \return read-only reference to B1 map
@@ -161,12 +167,12 @@ public:
 	*/
 	MDM_API void  setNoiseThreshold(double t);
 
-  //! Override TR in input images
+  //! Set big TR used by inversion recovery methods
   /*!
   If zero passed as input, sets TR from first image
   \param TR recovery time
   */
-  MDM_API void  overrideTR(double TR);
+  MDM_API void  setBigTR(double TR);
 
 protected:
 
@@ -181,7 +187,7 @@ private:
 	mdm_Image3D &ROI_;
 
 	// Output image maps
-	mdm_Image3D T1_, M0_;
+	mdm_Image3D T1_, M0_, efficiencyWeighting_;
 
   //B1 correction map
   mdm_Image3D B1_;
@@ -193,6 +199,8 @@ private:
 	double noiseThreshold_;
 
 	mdm_T1MethodGenerator::T1Methods method_;
+
+	double bigTR_;
 
 };
 #endif /* mdm_T1VolumeAnalysis_HDR */

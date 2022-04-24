@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(test_T1_VFA) {
   T1FileStream.close();
 
   BOOST_TEST_MESSAGE(boost::format(
-    "Read T1 calibration file, T1 = %1% , M0 =%2%, TR = %3%")
+    "Read T1 calibration file, T1 = %1% , M0 = %2%, TR = %3%")
     % T1 % M0 % TR);
 
   //Now compute signals
@@ -50,10 +50,10 @@ BOOST_AUTO_TEST_CASE(test_T1_VFA) {
   BOOST_CHECK_VECTORS(signals, signalsCalibration);
 
   //Next fit the signals to recover M0 and T1
-  double T1fit, M0fit;
+  double T1fit, M0fit, EWfit;
   mdm_T1FitterVFA T1CalculatorVFA(FAs, TR, false);
   T1CalculatorVFA.setInputs(signalsCalibration);
-  auto errCode = T1CalculatorVFA.fitT1(T1fit, M0fit);
+  auto errCode = T1CalculatorVFA.fitT1(T1fit, M0fit, EWfit);
   BOOST_CHECK_MESSAGE(!errCode, "T1 fit returned error " << errCode);
 
   BOOST_TEST_MESSAGE("Testing fitted T1 match using VFA");
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(test_T1_VFA) {
 
   mdm_T1FitterVFA T1CalculatorB1(FAsB1, TR, true);
   T1CalculatorB1.setInputs(signalsCalibrationB1);
-  errCode = T1CalculatorB1.fitT1(T1fit, M0fit);
+  errCode = T1CalculatorB1.fitT1(T1fit, M0fit, EWfit);
   BOOST_CHECK_MESSAGE(!errCode, "T1 fit returned error " << errCode);
 
   BOOST_TEST_MESSAGE("Testing fitted T1 match using VFA B1 correction");
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(test_T1_IR) {
   T1FileStream.close();
 
   BOOST_TEST_MESSAGE(boost::format(
-    "Read T1 calibration file, T1 = %1% , M0 =%2%, TR = %3%")
+    "Read T1 calibration file, T1 = %1% , M0 = %2%, TR = %3%")
     % T1 % M0 % TR);
  
   std::vector<double> signals(nTIs);
@@ -119,17 +119,71 @@ BOOST_AUTO_TEST_CASE(test_T1_IR) {
       % signalsCalibration[i] % signals[i]);
   }
 
-  mdm_T1FitterIR T1CalculatorIR(TIs, TR);
+  mdm_T1FitterIR T1CalculatorIR(TIs, TR, false);
   T1CalculatorIR.setInputs(signalsCalibration);
 
-  double T1fit, M0fit;
-  auto errCode = T1CalculatorIR.fitT1(T1fit, M0fit);
+  double T1fit, M0fit, EWfit;
+  auto errCode = T1CalculatorIR.fitT1(T1fit, M0fit, EWfit);
   BOOST_CHECK_MESSAGE(!errCode, "T1 fit returned error " << errCode);
 
   BOOST_TEST_MESSAGE("Testing fitted T1 match using inversion recovery");
   BOOST_CHECK_CLOSE(T1fit, T1, 0.01);
   BOOST_TEST_MESSAGE("Testing fitted M0 match using inversion recovery");
   BOOST_CHECK_CLOSE(M0fit, M0, 0.01);
+
+}
+
+BOOST_AUTO_TEST_CASE(test_T1_IR_EW) {
+  BOOST_TEST_MESSAGE("======= Testing T1 inversion recovery mapping with efficiency weighting =======");
+  //Test inversion recovery method
+
+  //Read in T1 calibration file
+  int nTIs;
+  double T1;
+  double M0;
+  double TR;
+  double EW = 0.9;
+  std::string T1FileName(mdm_test_utils::calibration_dir() + "T1_IR.dat");
+  std::ifstream T1FileStream(T1FileName, std::ios::in | std::ios::binary);
+  T1FileStream.read(reinterpret_cast<char*>(&nTIs), sizeof(int));
+
+  std::vector<double> TIs(nTIs);
+  std::vector<double> signalsCalibration(nTIs);
+  for (double& ti : TIs)
+    T1FileStream.read(reinterpret_cast<char*>(&ti), sizeof(double));
+  
+  for (double& s : signalsCalibration) //Need to read these to clear from the filestream but we don't use
+    T1FileStream.read(reinterpret_cast<char*>(&s), sizeof(double));
+
+  T1FileStream.read(reinterpret_cast<char*>(&T1), sizeof(double));
+  T1FileStream.read(reinterpret_cast<char*>(&M0), sizeof(double));
+  T1FileStream.read(reinterpret_cast<char*>(&TR), sizeof(double));
+
+  T1FileStream.close();
+
+  BOOST_TEST_MESSAGE(boost::format(
+    "Read T1 calibration file, T1 = %1% , M0 = %2%, TR = %3%")
+    % T1 % M0 % TR);
+
+  //Recompute signals with efficieny weighting parameter
+  for (int i = 0; i < nTIs; i++)
+    signalsCalibration[i] = mdm_T1FitterIR::T1toSignal(T1, M0, TIs[i], TR, EW);
+  
+
+  //Create a fitter with efficiency weighting set on
+  mdm_T1FitterIR T1CalculatorIR(TIs, TR, true);
+  T1CalculatorIR.setInputs(signalsCalibration);
+
+  double T1fit, M0fit, EWfit;
+  auto errCode = T1CalculatorIR.fitT1(T1fit, M0fit, EWfit);
+  BOOST_CHECK_MESSAGE(!errCode, "T1 fit returned error " << errCode);
+
+  BOOST_TEST_MESSAGE("Testing fitted T1 match using inversion recovery");
+  BOOST_CHECK_CLOSE(T1fit, T1, 0.01);
+  BOOST_TEST_MESSAGE("Testing fitted M0 match using inversion recovery");
+  BOOST_CHECK_CLOSE(M0fit, M0, 0.01);
+  BOOST_TEST_MESSAGE("Testing fitted EW match using inversion recovery");
+  BOOST_CHECK_CLOSE(EWfit, EW, 0.01);
 
 }
 
