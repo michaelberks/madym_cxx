@@ -54,12 +54,6 @@ public:
 	//! Name of M0 map
 	static const std::string   MAP_NAME_EFFICIENCY;
 
-	//! Name of signal derived concentration - appended with volume number
-	static const std::string   MAP_NAME_CT_SIG;
-
-	//! Name of modelled concentration - appended with volume number
-	static const std::string   MAP_NAME_CT_MOD;
-
 	//! Default constructor
 	/*!
 	*/

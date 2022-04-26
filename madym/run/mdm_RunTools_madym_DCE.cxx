@@ -191,7 +191,9 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
 
 		//DCE only output options_
 	options_parser_.add_option(config_options, options_.outputCt_sig);
+	options_parser_.add_option(config_options, options_.Ct_sigPrefix);
 	options_parser_.add_option(config_options, options_.outputCt_mod);
+	options_parser_.add_option(config_options, options_.Ct_modPrefix);
 	options_parser_.add_option(config_options, options_.IAUCTimes);
 	options_parser_.add_option(config_options, options_.IAUCAtPeak);
 
@@ -340,6 +342,7 @@ void mdm_RunTools_madym_DCE::writeOutput()
 
 	fileManager_.saveGeneralOutputMaps(outputPath_.string());
 	fileManager_.saveDynamicOutputMaps(outputPath_.string(),
+		options_.Ct_sigPrefix(), options_.Ct_modPrefix(),
 		options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
 	fileManager_.saveDCEOutputMaps(outputPath_.string());
 }

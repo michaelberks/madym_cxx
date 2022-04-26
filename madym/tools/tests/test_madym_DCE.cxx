@@ -26,7 +26,6 @@ void check_output(
   double tol = 1.0;
 
   //Even with empty model, these should be created
-  mdm_Image3D model_fit = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "residuals", false);
   mdm_Image3D error_codes = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "error_tracker", false);
   mdm_Image3D enhancing = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "enhVox", false);
 
@@ -43,6 +42,7 @@ void check_output(
     mdm_Image3D ve_fit = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "v_e", false);
     mdm_Image3D vp_fit = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "v_p", false);
     mdm_Image3D tau_fit = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "tau_a", false);
+    mdm_Image3D model_fit = mdm_ImageIO::readImage3D(imageFormat, Ct_output_dir + "residuals", false);
 
     //Check the model parameters have fitted correctly
     BOOST_TEST_MESSAGE(boost::format("Fitted ktrans (%1.2f, %2.2f)")
@@ -84,8 +84,6 @@ void check_output(
 		BOOST_TEST_MESSAGE("Fitted IAUC" + std::to_string((int)IAUCTimes[i]));
 		BOOST_CHECK_CLOSE(iauc.voxel(0), IAUCVals[i], tol);
 	}
-
-	
 
 	//Tidy up
 	fs::remove_all(Ct_output_dir);

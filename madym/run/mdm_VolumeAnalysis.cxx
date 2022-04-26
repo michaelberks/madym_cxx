@@ -34,11 +34,6 @@ const std::string mdm_VolumeAnalysis::MAP_NAME_T1 = "T1";
 const std::string mdm_VolumeAnalysis::MAP_NAME_M0 = "M0";
 const std::string mdm_VolumeAnalysis::MAP_NAME_EFFICIENCY = "efficiency";
 
-//Signal derived concentration - appended with volume number
-const std::string mdm_VolumeAnalysis::MAP_NAME_CT_SIG = "Ct_sig"; 
-//Model estimated concentration - appended with volume number
-const std::string mdm_VolumeAnalysis::MAP_NAME_CT_MOD = "Ct_mod"; 
-
 MDM_API mdm_VolumeAnalysis::mdm_VolumeAnalysis()
 	:
 	T1Mapper_(errorTracker_, ROI_),
@@ -681,7 +676,7 @@ void mdm_VolumeAnalysis::initialiseParameterMaps(
     createMap(map);
 
   //Model residuals may already have been loaded
-  if (!modelResidualsMap_)
+  if (!modelResidualsMap_ && model.numParams())
     createMap(modelResidualsMap_);
 
   //Create enhancing map
@@ -811,9 +806,11 @@ void mdm_VolumeAnalysis::setVoxelPostFit(size_t voxelIndex,
   const mdm_DCEModelBase &model, const mdm_DCEVoxel  &vox, const mdm_DCEModelFitter &fitter,
   int &numErrors)
 {
+  if (!model.numParams())
+    return; //When model type is NONE, do nothing
 
   //Check if any model fitting error codes generated
-  mdm_ErrorTracker::ErrorCode errorCode = model.getModelErrorCode();
+  auto errorCode = model.getModelErrorCode();
   if (errorCode != mdm_ErrorTracker::OK)
   {
     errorTracker_.updateVoxel(voxelIndex, errorCode);
