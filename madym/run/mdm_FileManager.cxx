@@ -136,36 +136,34 @@ MDM_API void mdm_FileManager::saveT1OutputMaps(const std::string& outputDir)
 }
 
 MDM_API void mdm_FileManager::saveDynamicOutputMaps(const std::string& outputDir,
+  const  std::string& Ct_sigPrefix, const  std::string& Ct_modPrefix,
   const std::string& indexPattern,
   const int startIndex, const int stepSize)
 {
   if (writeCtDataMaps_)
   {
-    const std::string& ctSigPrefix = volumeAnalysis_.MAP_NAME_CT_SIG;
-    auto ctOutputDir = fs::path(outputDir) / ctSigPrefix;
-    fs::create_directories(ctOutputDir);
-
     for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
     {
       std::string ctName = mdm_SequenceNames::makeSequenceFilename(
-        "", ctSigPrefix, i + 1, indexPattern,
+        "", Ct_sigPrefix, i + 1, indexPattern,
         startIndex, stepSize);
 
-      saveOutputMap(ctName, volumeAnalysis_.CtDataMap(i), ctOutputDir.string(), true);
+      if (!i)
+        fs::create_directories((fs::path(outputDir) / ctName).parent_path());
+
+      saveOutputMap(ctName, volumeAnalysis_.CtDataMap(i), outputDir, true);
     }
   }
   if (writeCtModelMaps_)
   {
-    const std::string& ctModPrefix = volumeAnalysis_.MAP_NAME_CT_MOD;
-    auto ctOutputDir = fs::path(outputDir) / ctModPrefix;
-    fs::create_directories(ctOutputDir);
-
     for (int i = 0; i < volumeAnalysis_.numDynamics(); i++)
     {
-      std::string cmodName = mdm_SequenceNames::makeSequenceFilename(
-        "", ctModPrefix, i + 1, indexPattern,
+      std::string ctName = mdm_SequenceNames::makeSequenceFilename(
+        "", Ct_modPrefix, i + 1, indexPattern,
         startIndex, stepSize);
-      saveOutputMap(cmodName, volumeAnalysis_.CtModelMap(i), ctOutputDir.string(), false);
+      if (!i)
+        fs::create_directories((fs::path(outputDir) / ctName).parent_path());
+      saveOutputMap(ctName, volumeAnalysis_.CtModelMap(i), outputDir, false);
     }
   }
 }
@@ -489,7 +487,7 @@ void mdm_FileManager::saveOutputMap(const std::string &mapName, const mdm_Image3
   const std::string &outputDir, bool writeXtr/* = true*/,
   const mdm_ImageDatatypes::DataType format /*= mdm_ImageDatatypes::DT_FLOAT*/)
 {
-	std::string saveName = outputDir + "/" + mapName;
+	std::string saveName = (fs::path(outputDir) / mapName).string();
 
   mdm_XtrFormat::XTR_type xtr = (writeXtr ? 
     mdm_XtrFormat::XTR_type::NEW_XTR : 

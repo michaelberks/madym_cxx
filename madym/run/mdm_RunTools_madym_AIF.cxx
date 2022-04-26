@@ -95,7 +95,8 @@ MDM_API void mdm_RunTools_madym_AIF::run()
   //Write outputs
   fileManager_.saveGeneralOutputMaps(outputPath_.string());
   fileManager_.saveDynamicOutputMaps(outputPath_.string(),
-      options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
+    options_.Ct_sigPrefix(), options_.Ct_modPrefix(),
+    options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
 
   //Reset the volume analysis
   volumeAnalysis_.reset();

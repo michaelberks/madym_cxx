@@ -157,6 +157,7 @@ public:
 	MDM_API void saveT1OutputMaps(const std::string& outputDir);
 
 	MDM_API void saveDynamicOutputMaps(const std::string& outputDir,
+		const  std::string& Ct_sigPrefix, const  std::string& Ct_modPrefix,
 		const std::string& indexPattern,
 		const int startIndex, const int stepSize);
 

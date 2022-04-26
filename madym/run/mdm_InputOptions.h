@@ -199,9 +199,15 @@ struct mdm_InputOptions {
 	mdm_input_bool outputCt_sig = mdm_input_bool(
 		false, "Ct_sig", "",
 		"Flag to save signal-derived dynamic concentration maps"); //!< See initial value
+	mdm_input_string Ct_sigPrefix = mdm_input_string(
+		mdm_input_str("Ct_sig/Ct_sig"), "Ct_sig_prefix", "",
+		"Prefix used to name signal-derived dynamic concentration maps"); //!< See initial value
 	mdm_input_bool outputCt_mod = mdm_input_bool(
 		false, "Ct_mod", "",
 		"Flag to save modelled dynamic concentration maps"); //!< See initial value
+	mdm_input_string Ct_modPrefix = mdm_input_string(
+		mdm_input_str("Ct_mod/Ct_mod"), "Ct_mod_prefix", "",
+		"Prefix used to name modelled dynamic concentration maps"); //!< See initial value
 	mdm_input_doubles IAUCTimes = mdm_input_doubles(
 		mdm_input_double_list(std::vector<double>{ 60.0,90.0,120.0 }), "iauc", "I",
 		"Times (in s, post-bolus injection) at which to compute IAUC"); //!< See initial value
