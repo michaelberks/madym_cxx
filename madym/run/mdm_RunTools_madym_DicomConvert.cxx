@@ -126,6 +126,7 @@ MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *a
   options_parser_.add_option(config_options, options_.flipX);
   options_parser_.add_option(config_options, options_.flipY);
   options_parser_.add_option(config_options, options_.flipZ);
+  options_parser_.add_option(config_options, options_.niftiScaling);
 
   //Dicom options
   options_parser_.add_option(config_options, options_.dicomDir);
@@ -222,6 +223,21 @@ template <class T> bool getNumericInfo(DcmFileFormat &fileformat, const DcmTagKe
     return true;
   }
   catch (mdm_DicomMissingFieldException &e)
+  {
+    mdm_ProgramLogger::logProgramWarning(__func__, e.what());
+    return false;
+  }
+}
+
+//! Template method for getting numeric info from DICOM header in different numeric formats
+template <class T> bool getTextInfo(DcmFileFormat& fileformat, const DcmTagKey& key, T& info)
+{
+  try
+  {
+    info = (T)mdm_DicomFormat::getTextField(fileformat, key);
+    return true;
+  }
+  catch (mdm_DicomMissingFieldException& e)
   {
     mdm_ProgramLogger::logProgramWarning(__func__, e.what());
     return false;
@@ -353,6 +369,18 @@ void mdm_RunTools_madym_DicomConvert::getScannerSetting(
   else
     setDicomTag(customTag, tagKey);
 
+  getScannerSetting(fileFormat, seriesName, settingName, tagKey,
+    required, setting);
+}
+
+void mdm_RunTools_madym_DicomConvert::getScannerSetting(
+  DcmFileFormat& fileFormat,
+  const std::string& seriesName,
+  const std::string& settingName,
+  const DcmTagKey& tagKey,
+  const bool required,
+  double& setting)
+{
   try { setting = mdm_DicomFormat::getNumericField(fileFormat, tagKey); }
   catch (mdm_DicomMissingFieldException) {
     if (required)
@@ -379,6 +407,19 @@ void mdm_RunTools_madym_DicomConvert::getScannerSetting(
   else
     setDicomTag(customTag, tagKey);
 
+  getScannerSetting(fileFormat, seriesName, settingName, tagKey,
+    required, setting, numValues);
+}
+
+void mdm_RunTools_madym_DicomConvert::getScannerSetting(
+  DcmFileFormat& fileFormat,
+  const std::string& seriesName,
+  const std::string& settingName,
+  const DcmTagKey& tagKey,
+  const bool required,
+  std::vector<double>& setting,
+  size_t numValues)
+{
   try { setting = mdm_DicomFormat::getNumericVector(fileFormat, tagKey, numValues); }
   catch (mdm_DicomMissingFieldException) {
     if (required)
@@ -387,6 +428,108 @@ void mdm_RunTools_madym_DicomConvert::getScannerSetting(
           "Series %1% missing %2% expected in field %3%."
         ) % seriesName % settingName % tagKey.toString()).str());
   };
+}
+
+//-----------------------------------------------------------------
+void mdm_RunTools_madym_DicomConvert::getSeriesName(dcmSeriesInfo& series, DcmFileFormat& fileformat)
+{
+  //1st try series description
+  getTextInfo(fileformat, DCM_SeriesDescription, series.name);
+
+  //Then try Protocol name
+  if (series.name.empty())
+    getTextInfo(fileformat, DCM_ProtocolName, series.name);
+
+  //Finally, create using series number if still empty
+  if (series.name.empty())
+    series.name = "series " + std::to_string(series.index);
+}
+
+//-----------------------------------------------------------------
+void mdm_RunTools_madym_DicomConvert::getSeriesAxesDirections(dcmSeriesInfo& series, DcmFileFormat& fileformat)
+{
+  //Get the image position and orientation from the first slice
+  getScannerSetting(
+    fileformat, series.name, "ImagePositionPatient",
+    DCM_ImagePositionPatient, true, series.imagePosition, 3);
+
+  getScannerSetting(
+    fileformat, series.name, "ImageOrientationPatient",
+    DCM_ImageOrientationPatient, true, series.imageOrientation, 6);
+
+  //Now workout the slice direction relative to the row and column axes orientation
+  series.zDirection = 1.0;
+
+  //Only continue if position and orientation of first slice found
+  if (series.imagePosition.size() != 3 || series.imageOrientation.size() != 6)
+    return;
+
+  //Find the last slice
+  auto nSlices = series.numericInfo.size();
+  size_t lastSlice = 1;
+  for (; lastSlice < nSlices; lastSlice++)
+    if (series.numericInfo[lastSlice].sliceLocation <= series.numericInfo[lastSlice-1].sliceLocation)
+      break;
+  
+  lastSlice--;   
+
+  //Only 1 slice in volume, so can't determine z-axis
+  if (!lastSlice)
+    return;
+
+  //Load in the final slice and get it's image position
+  DcmFileFormat lastSliceFile;
+  OFCondition status = lastSliceFile.loadFile(series.filenames[lastSlice].c_str());
+
+  if (!status.good())
+    throw mdm_exception(__func__, "Unable to open " + series.filenames[lastSlice]);
+
+  const auto& pos1 = series.imagePosition;
+  std::vector<double> pos2;
+  getScannerSetting(
+    lastSliceFile, series.name, "ImagePositionPatient",
+    DCM_ImagePositionPatient, true, pos2, 3);
+
+  if (pos2.size() != 3)
+    return;
+
+  //Get vector from first to last frame
+  auto dx = pos2[0] - pos1[0];
+  auto dy = pos2[1] - pos1[1];
+  auto dz = pos2[2] - pos1[2];
+  auto mag = std::sqrt(dx * dx + dy * dy + dz * dz);
+  dx /= mag;
+  dy /= mag;
+  dz /= mag;
+
+  //Compute the distance between slices
+  auto zd = mag / lastSlice;
+
+  //Compute cross product of row and column axes
+  auto ux = series.imageOrientation[0];
+  auto uy = series.imageOrientation[1];
+  auto uz = series.imageOrientation[2];
+
+  auto vx = series.imageOrientation[3];
+  auto vy = series.imageOrientation[4];
+  auto vz = series.imageOrientation[5];
+
+  auto wx = uy * vz - uz * vy;
+  auto wy = uz * vx - ux * vz;
+  auto wz = ux * vy - uy * vx;
+
+  //w(x,y,z) should be approximately parallel to d(x,y,z), so
+  //their dot product should be either 1 or -1
+  auto dot = dx * wx + dy * wy + dz * wz;
+
+  if (std::abs(std::abs(dot) - 1.0) > 1e-3)
+    mdm_ProgramLogger::logProgramWarning(__func__,
+      series.name + ": cross product of row and column axes orientation does not match "
+      "the orientation of the vector from first to last slice image positions");
+
+  //The z-direction is the sign of dot multiple by the distance between slices
+  series.zDirection = dot > 0  ? zd : -zd;
+
 }
 
 //-----------------------------------------------------------------
@@ -401,14 +544,12 @@ void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series, 
   if (!status.good())
     throw mdm_exception(__func__, "Unable to open " + series.filenames[0]);
 
+  //Complete series name if it's empty
   if (series.name.empty())
-  {
-    series.name = mdm_DicomFormat::getTextField(fileformat, DCM_SeriesDescription);
-    if (series.name.empty())
-      series.name = mdm_DicomFormat::getTextField(fileformat, DCM_ProtocolName);
-  }
-
-  series.manufacturer =  mdm_DicomFormat::getTextField(fileformat, DCM_Manufacturer);
+    getSeriesName(series, fileformat);
+  
+  getTextInfo(fileformat, DCM_Manufacturer, series.manufacturer);
+  
   getNumericInfo(fileformat, DCM_NumberOfTemporalPositions, series.nTimes);
 
   if (nDyns > series.nTimes)
@@ -419,11 +560,18 @@ void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series, 
   getNumericInfo(fileformat, DCM_Columns, series.nX);
   getNumericInfo(fileformat, DCM_Rows, series.nY);
 
-  auto pixelSpacing = mdm_DicomFormat::getNumericVector(fileformat, DCM_PixelSpacing, 2);
+  std::vector<double> pixelSpacing;
+  getScannerSetting(
+    fileformat, series.name, "PixelSpacing",
+    DCM_PixelSpacing, true, pixelSpacing, 2);
   series.Xmm = pixelSpacing[0];
   series.Ymm = pixelSpacing[1];
   getNumericInfo(fileformat, DCM_SliceThickness, series.Zmm);
 
+  //Get image position information
+  getSeriesAxesDirections(series, fileformat);
+
+  //Get scanner settings
   getScannerSetting(
     fileformat, series.name, "FA", options_.FATag, 
     DCM_FlipAngle, options_.FARequired(), series.FA);
@@ -450,7 +598,7 @@ void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series, 
 
   getScannerSetting(
     fileformat, series.name, "acquisitionTime", options_.dynTimeTag,
-    DCM_DiffusionGradientOrientation, options_.dynTimeRequired(), series.acquisitionTime);
+    DCM_AcquisitionTime, options_.dynTimeRequired(), series.acquisitionTime);
 }
 
 //-----------------------------------------------------------------
@@ -701,14 +849,9 @@ void mdm_RunTools_madym_DicomConvert::sortDicomDir()
         throw mdm_exception(__func__, "Unable to open " + filename[0]);
 
       std::string seriesName;
-      try
-      {
-        seriesName = mdm_DicomFormat::getTextField(fileformat, DCM_SeriesDescription);
-      }
-      catch (mdm_DicomMissingFieldException)
-      {
-        seriesName = mdm_DicomFormat::getTextField(fileformat, DCM_ProtocolName);
-      }
+      getTextInfo(fileformat, DCM_SeriesDescription, seriesName);
+      if (seriesName.empty())
+        getTextInfo(fileformat, DCM_ProtocolName, seriesName);
 
       //Create a series info struct and push onto the seriesInfo container
       dcmSeriesInfo series;
@@ -768,21 +911,47 @@ mdm_Image3D mdm_RunTools_madym_DicomConvert::loadDicomImage(const dcmSeriesInfo&
     options_.flipX(), options_.flipY(), options_.flipZ());
 
   //Now set meta data from DICOM fields
+  auto& info = img.info();
+
+  //Set scl slope and intercept from scale and offset - note sclSlope is a multiplier not a divisor, so take reciprocal
+  info.sclSlope.setValue(1 / scale);
+  info.sclInter.setValue(offset);
+
+  //Check if image position and orientation are set
+  if (series.imagePosition.size() == 3) {
+    info.originX.setValue(series.imagePosition[0]);
+    info.originY.setValue(series.imagePosition[1]);
+    info.originZ.setValue(series.imagePosition[2]);
+  }
+  if (series.imageOrientation.size() == 6) {
+    info.rowDirCosX.setValue(series.imageOrientation[0]);
+    info.rowDirCosY.setValue(series.imageOrientation[1]);
+    info.rowDirCosZ.setValue(series.imageOrientation[2]);
+    info.colDirCosX.setValue(series.imageOrientation[3]);
+    info.colDirCosY.setValue(series.imageOrientation[4]);
+    info.colDirCosZ.setValue(series.imageOrientation[5]);
+  }
+  info.zDirection.setValue(series.zDirection);
+
+  info.flipX.setValue(options_.flipX());
+  info.flipY.setValue(options_.flipY());
+  info.flipZ.setValue(options_.flipZ());
+
   if (series.FA)
-    img.info().flipAngle.setValue(series.FA);
+    info.flipAngle.setValue(series.FA);
   if (series.TR)
-    img.info().TR.setValue(series.TR);
+    info.TR.setValue(series.TR);
   if (series.TE)
-    img.info().TE.setValue(series.TE);
+    info.TE.setValue(series.TE);
   if (series.TI)
-    img.info().TI.setValue(series.TI);
+    info.TI.setValue(series.TI);
 
   if (Bvalue >= 0)
   {
-    img.info().B.setValue(Bvalue);
-    img.info().gradOriX.setValue(gradOri[0]);
-    img.info().gradOriY.setValue(gradOri[1]);
-    img.info().gradOriZ.setValue(gradOri[2]);
+    info.B.setValue(Bvalue);
+    info.gradOriX.setValue(gradOri[0]);
+    info.gradOriY.setValue(gradOri[1]);
+    info.gradOriZ.setValue(gradOri[2]);
   }
     
   double acquisitionTime = isDynamic ?
@@ -1029,7 +1198,7 @@ void mdm_RunTools_madym_DicomConvert::makeSingleVol(
     fs::create_directories(volumeName.parent_path());
 
     mdm_ImageIO::writeImage3D(imageWriteFormat,
-      volumeName.string(), img, imageDatatype, mdm_XtrFormat::NEW_XTR);
+      volumeName.string(), img, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
     mdm_ProgramLogger::logProgramMessage("Created 3D image " + volumeName.string() + " from series " + 
       std::to_string(series.index) + ": " + series.name);
   }
@@ -1094,7 +1263,7 @@ void mdm_RunTools_madym_DicomConvert::makeT1InputVols(
 
       //Write the output image and xtr file
       mdm_ImageIO::writeImage3D(imageWriteFormat,
-        outputName, img, imageDatatype, mdm_XtrFormat::NEW_XTR);
+        outputName, img, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
       mdm_ProgramLogger::logProgramMessage("Created T1 input file " + outputName);
 
       if (options_.makeT1Means())
@@ -1113,7 +1282,7 @@ void mdm_RunTools_madym_DicomConvert::makeT1InputVols(
       meanImg /= series.nTimes;
       auto meanName = T1Dir.string() + options_.meanSuffix();
       mdm_ImageIO::writeImage3D(imageWriteFormat,
-        meanName, meanImg, imageDatatype, mdm_XtrFormat::NEW_XTR);
+        meanName, meanImg, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
       mdm_ProgramLogger::logProgramMessage("Created mean T1 input file " + meanName);
     }
   }
@@ -1306,7 +1475,7 @@ void mdm_RunTools_madym_DicomConvert::makeDWIInputVols(
 
       //Write the output image and xtr file
       mdm_ImageIO::writeImage3D(imageWriteFormat,
-        outputName, img, imageDatatype, mdm_XtrFormat::NEW_XTR);
+        outputName, img, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
       mdm_ProgramLogger::logProgramMessage("Created DWI input file " + outputName);
 
       if (options_.makeBvalueMeans())
@@ -1327,7 +1496,7 @@ void mdm_RunTools_madym_DicomConvert::makeDWIInputVols(
       auto meanName = (boost::format("%1%%2%") % DWIDir.string() % options_.meanSuffix()).str();
 
       mdm_ImageIO::writeImage3D(imageWriteFormat,
-        meanName, meanImg, imageDatatype, mdm_XtrFormat::NEW_XTR);
+        meanName, meanImg, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
       mdm_ProgramLogger::logProgramMessage("Created mean DWI input file " + meanName);
     }
   }
@@ -1387,7 +1556,7 @@ void mdm_RunTools_madym_DicomConvert::makeDynamicVols(
 
     //Write the output image and xtr file
     mdm_ImageIO::writeImage3D(imageWriteFormat,
-      outputName, img, imageDatatype, mdm_XtrFormat::NEW_XTR);
+      outputName, img, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
     mdm_ProgramLogger::logProgramMessage("Created dynamic image " + outputName);
 
     if (options_.makeDynMean())
@@ -1406,7 +1575,7 @@ void mdm_RunTools_madym_DicomConvert::makeDynamicVols(
     meanImg /= nTimes;
     auto meanName = dynDir / (options_.dynName() + options_.meanSuffix());
     mdm_ImageIO::writeImage3D(imageWriteFormat,
-      meanName.string(), meanImg, imageDatatype, mdm_XtrFormat::NEW_XTR);
+      meanName.string(), meanImg, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
     mdm_ProgramLogger::logProgramMessage("Created temporal mean of dynamic images " + meanName.string());
   }
 }

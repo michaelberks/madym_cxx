@@ -42,6 +42,12 @@ class mdm_Image3D
 				value_(NAN)
 			{};
 
+			KeyPair(const std::string& key, const double value)
+				:
+				key_(key),
+				value_(value)
+			{};
+
 			//! Return meta data key name
 			/*!
 			\return key name
@@ -95,12 +101,22 @@ class mdm_Image3D
 		KeyPair Xmm; //!< X0
 		KeyPair Ymm; //!< Y0
 		KeyPair Zmm; //!< Z0
-		KeyPair rowDirCosX; //!< rowDirCosX
-		KeyPair rowDirCosY; //!< rowDirCosY
-		KeyPair rowDirCosZ; //!< rowDirCosZ
-		KeyPair colDirCosX; //!< colDirCosX
-		KeyPair colDirCosY; //!< colDirCosY
-		KeyPair colDirCosZ; //!< colDirCosZ
+		KeyPair originX; //!< x co-ordinate of the image grid origin in 3D space
+		KeyPair originY; //!< y co-ordinate of the image grid origin in 3D space
+		KeyPair originZ; //!< z co-ordinate of the image grid origin in 3D space
+		KeyPair rowDirCosX; //!< x co-ordinate of the direction cosine for the first row of the image grid
+		KeyPair rowDirCosY; //!< y co-ordinate of the direction cosine for the first row of the image grid
+		KeyPair rowDirCosZ; //!< z co-ordinate of the direction cosine for the first row of the image grid
+		KeyPair colDirCosX; //!< x co-ordinate of the direction cosine for the first column of the image grid
+		KeyPair colDirCosY; //!< y co-ordinate of the direction cosine for the first column of the image grid
+		KeyPair colDirCosZ; //!< z co-ordinate of the direction cosine for the first column of the image grid
+		KeyPair flipX; //!< x co-ordinate of the direction cosine for the slices of the image grid
+		KeyPair flipY; //!< y co-ordinate of the direction cosine for the slices column of the image grid
+		KeyPair flipZ; //!< z co-ordinate of the direction cosine for the slices column of the image grid
+		KeyPair zDirection; ///!< Direction of slice axis relative to cross product of row and column axes
+		KeyPair temporalResolution; ///!< Temporal resolution of dynamic images in minutes. Required for 4D image input.
+		KeyPair sclSlope; ///!< Scale value applied to signal intensities
+		KeyPair sclInter; ///!< Offset value applied to signal intensities
 		KeyPair noiseSigma; //!< Estimate of noise standard deviation
 		std::string xtrSource; //!< File from which meta information set
 

@@ -86,12 +86,12 @@ MDM_API void mdm_RunTools_madym_DCE::run()
 	*/
 	if (options_.inputCt())
 		//Case 4: load pre-computed concentration maps
-		loadCt(); 
+		loadDynamicTimeSeries(true);
 
 	else 
 	{
 		//Cases 1 - 3: Load signal
-		loadSt();
+		loadDynamicTimeSeries(false);
 		
 		if (!options_.T1Name().empty())
 			//Case 2- 3: supplied an existing T1 map
@@ -205,6 +205,8 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
   //Image format options
   options_parser_.add_option(config_options, options_.imageReadFormat);
   options_parser_.add_option(config_options, options_.imageWriteFormat);
+	options_parser_.add_option(config_options, options_.niftiScaling);
+	options_parser_.add_option(config_options, options_.nifti4D);
 
 		//Logging options_
   options_parser_.add_option(config_options, options_.voxelSizeWarnOnly);

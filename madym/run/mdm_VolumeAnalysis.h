@@ -132,7 +132,6 @@ public:
 	//! Add a signal map to the end of the dynamic time-series S(t)
 	/*!
 	\param dynImg signal image
-	\return
 	*/
 	MDM_API void addStDataMap(const mdm_Image3D dynImg);
 

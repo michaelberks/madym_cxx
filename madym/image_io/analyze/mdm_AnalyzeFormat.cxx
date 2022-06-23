@@ -42,10 +42,18 @@ MDM_API mdm_Image3D mdm_AnalyzeFormat::readImage3D(const std::string &fileName,
   std::string imgFileName = baseName + ".img";
   std::string xtrFileName = baseName + ".xtr";
 
-  bool  xtrExistsFlag = boost::filesystem::exists(xtrFileName);
-
+  
   if (!filesExist(baseName, false))
     throw mdm_exception(__func__, "Missing Analyze file " + baseName + ".hdr / img");
+
+	if (load_xtr)
+	{
+		auto xtrExistsFlag = boost::filesystem::exists(xtrFileName);
+		if (xtrExistsFlag)
+			mdm_XtrFormat::readAnalyzeXtr(xtrFileName, img);
+		else
+			throw mdm_exception(__func__, "No xtr file matching " + hdrFileName);
+	}
 
   // Files seem to exist, so let's start reading them ...
   readAnalyzeHdr(hdrFileName, hdr);
@@ -124,13 +132,6 @@ MDM_API mdm_Image3D mdm_AnalyzeFormat::readImage3D(const std::string &fileName,
     mdm_Image3D::swapBytes(hdr.dimensions_.datatype);
 
   readAnalyzeImg(imgFileName, img, hdr, swapFlag);
-  if (load_xtr)
-  {
-    if (xtrExistsFlag)
-      mdm_XtrFormat::readAnalyzeXtr(xtrFileName, img);
-    else
-      throw mdm_exception(__func__, "No xtr file matching " + hdrFileName);
-  }
 
 	return img;
 }

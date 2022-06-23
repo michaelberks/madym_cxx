@@ -35,6 +35,7 @@ void mdm_RunToolsVolumeAnalysis::setFileManagerParams()
 {
   fileManager_.setImageReadFormat(options_.imageReadFormat());
   fileManager_.setImageWriteFormat(options_.imageWriteFormat());
+  fileManager_.setApplyNiftiScaling(options_.niftiScaling());
 }
 
 //
@@ -59,7 +60,7 @@ MDM_API void mdm_RunToolsVolumeAnalysis::loadROI()
 }
 
 //
-void mdm_RunToolsVolumeAnalysis::loadSt()
+void mdm_RunToolsVolumeAnalysis::loadDynamicTimeSeries(bool Ct)
 {
   fs::path dynPath = fs::absolute(fs::path(options_.dynDir()) / options_.dynName());
   std::string dynPrefix = dynPath.filename().string();
@@ -70,22 +71,12 @@ void mdm_RunToolsVolumeAnalysis::loadSt()
     throw mdm_exception(__func__, "paths and/or prefix to dynamic images not set");
 
   //Load the dynamic images
-  fileManager_.loadStDataMaps(dynBasePath, dynPrefix, options_.nDyns(), 
-    options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
+  if (options_.nifti4D())
+    fileManager_.loadDynamicTimeseries(dynBasePath, dynPrefix, Ct);
+  else
+    fileManager_.loadDynamicTimeseries(dynBasePath, dynPrefix, options_.nDyns(),
+      options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep(), Ct);
 
-}
-
-//
-void mdm_RunToolsVolumeAnalysis::loadCt()
-{
-  fs::path CtPath = fs::absolute(fs::path(options_.dynDir()) / options_.dynName());
-  std::string CtPrefix = CtPath.filename().string();
-  std::string CtBasePath = CtPath.remove_filename().string();
-  if (CtBasePath.empty() && CtPrefix.empty())
-    throw mdm_exception(__func__, "Ct flag set to true, but paths and/or prefix to Ct maps not set");
-
-  fileManager_.loadCtDataMaps(CtBasePath, CtPrefix, options_.nDyns(), 
-    options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
 }
 
 //
@@ -117,7 +108,7 @@ MDM_API void mdm_RunToolsVolumeAnalysis::loadT1Inputs()
 	for (std::string mapName : options_.T1inputNames())
 		T1inputPaths.push_back(fs::absolute(fs::path(options_.T1Dir()) / mapName).string());
   
-  fileManager_.loadT1MappingInputImages(T1inputPaths);
+  fileManager_.loadT1MappingInputImages(T1inputPaths, options_.nifti4D());
 }
 
 //! Load B1 correction map

@@ -31,6 +31,7 @@ MDM_API mdm_FileManager::mdm_FileManager(mdm_VolumeAnalysis &volumeAnalysis)
 	volumeAnalysis_(volumeAnalysis),
 	writeCtDataMaps_(false),
   writeCtModelMaps_(false),
+  applyNiftiScaling_(false),
   imageWriteFormat_(mdm_ImageIO::ImageFormat::NIFTI),
   imageReadFormat_(mdm_ImageIO::ImageFormat::NIFTI)
 {
@@ -257,7 +258,7 @@ MDM_API void mdm_FileManager::saveErrorTracker(const std::string &outputDir, con
 }
 
 /*Does what is says on the tin*/
-MDM_API void mdm_FileManager::loadT1MappingInputImages(const std::vector<std::string> &T1InputPaths)
+MDM_API void mdm_FileManager::loadT1MappingInputImages(const std::vector<std::string> &T1InputPaths, bool useNifti4D)
 {
 	//Check we haven't been given too many or too few images
 	auto nNumImgs = T1InputPaths.size();
@@ -265,10 +266,35 @@ MDM_API void mdm_FileManager::loadT1MappingInputImages(const std::vector<std::st
 	//Loop through filePaths, loaded each variable flip angle images
   for (int i = 0; i < nNumImgs; i++)
   {
-    auto setFunc = std::bind(
-      &mdm_T1Mapper::addInputImage, &volumeAnalysis_.T1Mapper(), std::placeholders::_1);
-    loadAndSetImage(T1InputPaths[i], "T1 input", setFunc,
-      mdm_Image3D::ImageType::TYPE_T1WTSPGR, true);
+    if (useNifti4D)
+    {
+      //Read in 4D image
+      auto imgs = mdm_ImageIO::readImage4D(imageReadFormat_, T1InputPaths[i], true, applyNiftiScaling_);
+      if (imgs.size() == 1)
+        //If it's just a single 3D image, set in T1 mapper
+        volumeAnalysis_.T1Mapper().addInputImage(imgs[0]);
+
+      else
+      {
+        //Otherwise, compute mean image and set that in T1 mapper
+        mdm_Image3D mean_img;
+        mean_img.copy(imgs[0]);
+        for (const auto& img : imgs)
+          mean_img += img;
+
+        mean_img /= imgs.size();
+        volumeAnalysis_.T1Mapper().addInputImage(mean_img);
+      }
+    }
+    else
+    {
+      //For 3D input, can just use the standard loadAndSetImage bind function
+      auto setFunc = std::bind(
+        &mdm_T1Mapper::addInputImage, &volumeAnalysis_.T1Mapper(), std::placeholders::_1);
+      loadAndSetImage(T1InputPaths[i], "T1 input", setFunc,
+        mdm_Image3D::ImageType::TYPE_T1WTSPGR, true);
+    }
+    
   }
 }
 
@@ -316,9 +342,9 @@ MDM_API void mdm_FileManager::loadDWIMappingInputImages(const std::vector<std::s
 }
 
 //
-MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
+MDM_API void mdm_FileManager::loadDynamicTimeseries(const std::string &dynBasePath,
 	const std::string &dynPrefix, int nDyns, const std::string &indexPattern,
-  const int startIndex, const int stepSize)
+  const int startIndex, const int stepSize, bool Ct)
 {
 	bool dynFilesExist = true;
 	int nDyn = 0;
@@ -373,80 +399,51 @@ MDM_API void mdm_FileManager::loadStDataMaps(const std::string &dynBasePath,
 		}
 		else
 		{
-      auto msg = "dynamic image " + std::to_string(nDyn);
-      auto setFunc = std::bind(
-        &mdm_VolumeAnalysis::addStDataMap, &volumeAnalysis_, std::placeholders::_1);
-      loadAndSetImage(dynPath, msg, setFunc,
-        mdm_Image3D::ImageType::TYPE_T1DYNAMIC, true);
+      if (Ct)
+      {
+        auto msg = "concentration map " + std::to_string(nDyn);
+        auto setFunc = std::bind(
+          &mdm_VolumeAnalysis::addCtDataMap, &volumeAnalysis_, std::placeholders::_1);
+        loadAndSetImage(dynPath, msg, setFunc,
+          mdm_Image3D::ImageType::TYPE_CAMAP, true);
+      }
+      else
+      {
+        auto msg = "dynamic image " + std::to_string(nDyn);
+        auto setFunc = std::bind(
+          &mdm_VolumeAnalysis::addStDataMap, &volumeAnalysis_, std::placeholders::_1);
+        loadAndSetImage(dynPath, msg, setFunc,
+          mdm_Image3D::ImageType::TYPE_T1DYNAMIC, true);
+      }
+      
 		}
 	}
 }
 
 //
-MDM_API void mdm_FileManager::loadCtDataMaps(const std::string &CtBasePath,
-	const std::string &CtPrefix, int nDyns, const std::string &indexPattern,
-  const int startIndex, const int stepSize)
+MDM_API void mdm_FileManager::loadDynamicTimeseries(const std::string& basePath,
+  const std::string& StName, bool Ct)
 {
-	bool CtFilesExist = true;
-	int nCt = 0;
+  auto imgName = basePath.empty() ? StName :
+    (fs::path(basePath) / StName).string();
+  auto imgs = mdm_ImageIO::readImage4D(imageReadFormat_, imgName, true, applyNiftiScaling_);
+  double dynTime = 0;
+  for (auto img : imgs)
+  {
+    img.setTimeStampFromSecs(dynTime);
+    if (Ct)
+    {
+      img.setType(mdm_Image3D::ImageType::TYPE_CAMAP);
+      volumeAnalysis_.addCtDataMap(img);
+    }
+    else
+    {
+      img.setType(mdm_Image3D::ImageType::TYPE_T1DYNAMIC);
+      volumeAnalysis_.addStDataMap(img);
+    }
+    dynTime += img.info().temporalResolution.value();
+  }
 
-	//Set flags for missing data and reaching max images based on whether
-	//nDyns was set or not
-	bool errorIfMissing, warnIfMax;
-
-	if (nDyns <= 0)
-	{
-		//If nDyns not set, keep reading images until we hit memory max
-		//warn if we hit max, but don't error when we run out of images
-		nDyns = MAX_DYN_IMAGES;
-		errorIfMissing = false;
-		warnIfMax = true;
-	}
-	else
-	{
-		//If nDyns not set, read in nDyns images
-		//Don't warn if we hit max, but error if we run out of images
-		errorIfMissing = true;
-		warnIfMax = false;
-	}
-
-	while (CtFilesExist)
-	{
-		if (nCt == nDyns)
-		{
-			if (warnIfMax)
-        mdm_ProgramLogger::logProgramWarning(__func__,
-          "Reached maximum number of images " + std::to_string(MAX_DYN_IMAGES));
-
-			break;
-		}
-		nCt++;
-
-		/* This sets various globals (see function header comment) */
-		std::string CtPath = mdm_SequenceNames::makeSequenceFilename(
-      CtBasePath, CtPrefix, nCt, indexPattern,
-      startIndex, stepSize);
-
-		if (!mdm_ImageIO::filesExist(imageReadFormat_, CtPath, false))
-		{
-			//If nDyns was set, we expect to load in that many images, so error and return false
-			//if any of them don't exist
-			if (errorIfMissing)
-        throw mdm_exception(__func__, CtPath + " does not exist.");
-			
-			//However if nDyns wasn't set, this is expected behaviour - we keep loading images
-			//until we don't find them - just set CtFilesExist to false so we break the loop
-			CtFilesExist = false;
-		}
-		else
-		{
-      auto msg = "concentration image " + std::to_string(nCt);
-      auto setFunc = std::bind(
-        &mdm_VolumeAnalysis::addCtDataMap, &volumeAnalysis_, std::placeholders::_1);
-      loadAndSetImage(CtPath, msg, setFunc,
-        mdm_Image3D::ImageType::TYPE_CAMAP, true);
-		}
-	}
 }
 
 MDM_API void mdm_FileManager::setSaveCtDataMaps(bool b)
@@ -469,6 +466,12 @@ MDM_API void mdm_FileManager::setImageReadFormat(const std::string &fmt)
 MDM_API void mdm_FileManager::setImageWriteFormat(const std::string &fmt)
 {
   imageWriteFormat_ = mdm_ImageIO::formatFromString(fmt);
+}
+
+//
+MDM_API void mdm_FileManager::setApplyNiftiScaling(bool flag)
+{
+  applyNiftiScaling_ = flag;
 }
 
 //---------------------------------------------------------------------------
@@ -496,7 +499,7 @@ void mdm_FileManager::saveOutputMap(const std::string &mapName, const mdm_Image3
 
   try {
     mdm_ImageIO::writeImage3D(imageWriteFormat_, saveName, img,
-      format, xtr);
+      format, xtr, applyNiftiScaling_);
   }
   catch (mdm_exception &e)
   {
@@ -560,7 +563,7 @@ template <class T> void  mdm_FileManager::loadAndSetImage(
 {
   try {
     //Read in image and set type
-    mdm_Image3D img = mdm_ImageIO::readImage3D(imageReadFormat_, path, loadXtr);
+    mdm_Image3D img = mdm_ImageIO::readImage3D(imageReadFormat_, path, loadXtr, applyNiftiScaling_);
     img.setType(type);
 
     //Scale if necessary

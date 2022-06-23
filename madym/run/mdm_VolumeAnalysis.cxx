@@ -302,9 +302,8 @@ MDM_API void mdm_VolumeAnalysis::addCtDataMap(const mdm_Image3D ctMap)
   if (!dynamicMetaData_)
     setDynamicMetaData(ctMap);
 
-
 	//Extract the time from the header, converted to minutes
-	dynamicTimes_.push_back(ctMap.minutesFromTimeStamp());
+  setDynamicTime(ctMap);
 
   //Check if there is a noise variance associated with the volume
   if (useNoise_)

@@ -59,23 +59,23 @@ MDM_API mdm_ImageIO::ImageFormat mdm_ImageIO::formatFromString(const std::string
 //
 MDM_API mdm_Image3D mdm_ImageIO::readImage3D(ImageFormat imgFormat, 
   const std::string &fileName,
-	bool load_xtr)
+	bool loadXtr, bool applyScaling)
 {
   switch (imgFormat)
   {
   case ImageFormat::ANALYZE:
     ; //Fall through to use Analyze
   case ImageFormat::ANALYZE_SPARSE:
-    return mdm_AnalyzeFormat::readImage3D(fileName, load_xtr);
+    return mdm_AnalyzeFormat::readImage3D(fileName, loadXtr);
 
   case ImageFormat::NIFTI:
     ; //Fall through to use nifti
   case ImageFormat::NIFTI_GZ:
-    return mdm_NiftiFormat::readImage3D(fileName, load_xtr);
+    return mdm_NiftiFormat::readImage3D(fileName, loadXtr, applyScaling);
 
   case DICOM:
 #ifdef USING_DCMTK
-    return mdm_DicomFormat::readImage3D(fileName, load_xtr);
+    return mdm_DicomFormat::readImage3D(fileName, loadXtr);
 #else
     throw mdm_exception(__func__, "Unable to read DICOM image: this version of madym has been built without DICOM support ");
 #endif
@@ -89,11 +89,44 @@ MDM_API mdm_Image3D mdm_ImageIO::readImage3D(ImageFormat imgFormat,
   
 }
 
+MDM_API std::vector<mdm_Image3D> mdm_ImageIO::readImage4D(ImageFormat imgFormat,
+  const std::string& fileName,
+  bool loadXtr, bool applyScaling)
+{
+  switch (imgFormat)
+  {
+  case ImageFormat::ANALYZE:
+    ; //Fall through to use Analyze
+  case ImageFormat::ANALYZE_SPARSE:
+    throw mdm_exception(__func__, "Reading 4D Analyze not yet supported, please use NIFTI instead.");
+
+  case ImageFormat::NIFTI:
+    ; //Fall through to use nifti
+  case ImageFormat::NIFTI_GZ:
+    return mdm_NiftiFormat::readImage4D(fileName, loadXtr, applyScaling);
+
+  case DICOM:
+#ifdef USING_DCMTK
+    throw mdm_exception(__func__, "Reading 4D DICOM not yet supported ");
+#else
+    throw mdm_exception(__func__, "Unable to read DICOM image: this version of madym has been built without DICOM support ");
+#endif
+
+  case ImageFormat::UNKNOWN:
+    ; //Fall through to error
+
+  default:
+    throw mdm_exception(__func__, "Unrecognized image format " + std::to_string(imgFormat));
+  }
+}
+
 //
 MDM_API void mdm_ImageIO::writeImage3D(ImageFormat imgFormat, 
   const std::string &baseName,
 	const mdm_Image3D &img,
-	const mdm_ImageDatatypes::DataType dataTypeFlag, const mdm_XtrFormat::XTR_type xtrTypeFlag)
+	const mdm_ImageDatatypes::DataType dataTypeFlag, 
+  const mdm_XtrFormat::XTR_type xtrTypeFlag,
+  bool applyScaling)
 {
   switch (imgFormat)
   {
@@ -106,11 +139,11 @@ MDM_API void mdm_ImageIO::writeImage3D(ImageFormat imgFormat,
     break;
 
   case ImageFormat::NIFTI:
-    mdm_NiftiFormat::writeImage3D(baseName, img, dataTypeFlag, xtrTypeFlag, false);
+    mdm_NiftiFormat::writeImage3D(baseName, img, dataTypeFlag, xtrTypeFlag, false, applyScaling);
     break;
 
   case ImageFormat::NIFTI_GZ:
-    mdm_NiftiFormat::writeImage3D(baseName, img, dataTypeFlag, xtrTypeFlag, true);
+    mdm_NiftiFormat::writeImage3D(baseName, img, dataTypeFlag, xtrTypeFlag, true, applyScaling);
     break;
 
   case DICOM:

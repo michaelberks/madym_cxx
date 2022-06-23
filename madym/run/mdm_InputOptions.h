@@ -254,6 +254,12 @@ struct mdm_InputOptions {
     "Image format for writing output"); //!< See initial value
   mdm_input_int imageDataType = mdm_input_int(
     16, "img_dt_type", "", "Data type of output images - see Analyze format type specifiers"); //!< See initial value
+	mdm_input_bool niftiScaling = mdm_input_bool(
+		false, "nifti_scaling", "",
+		"If set, applies intensity scaling and offset when reading/writing NIFTI images"); //!< See initial value
+	mdm_input_bool nifti4D = mdm_input_bool(
+		false, "nifti_4D", "",
+		"If set, reads NIFTI 4D images for T1 mapping and dynamic inputs"); //!< See initial value
 
 	//Logging options
   mdm_input_bool voxelSizeWarnOnly = mdm_input_bool(

@@ -132,6 +132,8 @@ private slots:
   //Image format options
   void on_imageReadComboBox_currentIndexChanged(const QString &text);
   void on_imageWriteComboBox_currentIndexChanged(const QString &text);
+  void on_niftiScalingCheckBox_stateChanged(int state);
+  void on_nifti4DCheckBox_stateChanged(int state);
 
   //Logging options
   void on_logNameLineEdit_textChanged(const QString &text);
@@ -296,6 +298,7 @@ private: // Methods
   void connect_signals_to_slots();
 
   void setup_general_tab(bool show);
+  void setup_image_format_tab(bool show);
   void setup_logging_tab(bool show);
   void setup_DCE_data_tab(bool show);
   void setup_conc_tab(bool show);

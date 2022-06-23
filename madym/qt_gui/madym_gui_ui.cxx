@@ -513,6 +513,16 @@ void madym_gui_ui::on_imageWriteComboBox_currentIndexChanged(const QString &text
 {
   setStringOption(text, processor_.madym_exe().options().imageWriteFormat);
 }
+
+void madym_gui_ui::on_niftiScalingCheckBox_stateChanged(int state)
+{
+  setBoolOption(state, processor_.madym_exe().options().niftiScaling);
+}
+
+void madym_gui_ui::on_nifti4DCheckBox_stateChanged(int state)
+{
+  setBoolOption(state, processor_.madym_exe().options().nifti4D);
+}
  
 //-------------------------------------------------------------------------
 //:Logging options
@@ -1421,10 +1431,6 @@ void madym_gui_ui::setup_general_tab(bool show)
     ui.roiPathLineEdit->setText(options.roiName().c_str());
     ui.errorTrackerLineEdit->setText(options.errorTrackerName().c_str());
 
-    //Image format options
-    initialize_image_format_options(*ui.imageReadComboBox, options.imageReadFormat);
-    initialize_image_format_options(*ui.imageWriteComboBox, options.imageWriteFormat);
-
     //Ouput options - visible for all tools
     ui.outputDirLineEdit->setText(options.outputDir().c_str());
     ui.overwriteCheckBox->setChecked(options.overwrite());
@@ -1441,10 +1447,6 @@ void madym_gui_ui::setup_general_tab(bool show)
     ui.errorTrackerLabel->setVisible(!xtr && !dicom);
     ui.errorTrackerLineEdit->setVisible(!xtr && !dicom);
     ui.errorTrackerSelect->setVisible(!xtr && !dicom);
-    ui.imageReadLabel->setVisible(!xtr && !dicom);
-    ui.imageReadComboBox->setVisible(!xtr && !dicom);
-    ui.imageWriteLabel->setVisible(!xtr && !dicom);
-    ui.imageWriteComboBox->setVisible(!xtr && !dicom);
     ui.overwriteCheckBox->setVisible(!xtr);
   }
   else
@@ -1454,6 +1456,28 @@ void madym_gui_ui::setup_general_tab(bool show)
       ui.outputTabWidget->removeTab(idx);
   }
   
+}
+
+void madym_gui_ui::setup_image_format_tab(bool show)
+{
+  if (show)
+  {
+    if (ui.outputTabWidget->indexOf(ui.imageFormatTab) < 0)
+      ui.outputTabWidget->insertTab(0, ui.imageFormatTab, "Image format");
+
+    //Image format options
+    auto& options = processor_.madym_exe().options();
+    initialize_image_format_options(*ui.imageReadComboBox, options.imageReadFormat);
+    initialize_image_format_options(*ui.imageWriteComboBox, options.imageWriteFormat);
+    ui.niftiScalingCheckBox->setChecked(options.niftiScaling());
+    ui.nifti4DCheckBox->setChecked(options.nifti4D());
+  }
+  else
+  {
+    auto idx = ui.outputTabWidget->indexOf(ui.imageFormatTab);
+    if (idx >= 0)
+      ui.outputTabWidget->removeTab(idx);
+  }
 }
 
 void madym_gui_ui::setup_logging_tab(bool show)
@@ -1764,8 +1788,8 @@ void madym_gui_ui::setup_dicom_format_tab(bool show)
     auto& options = processor_.madym_exe().options();
     
     //DICOM convert format options
-    if (ui.outputTabWidget->indexOf(ui.formatTab) < 0)
-      ui.outputTabWidget->insertTab(0, ui.formatTab, "Image formats");
+    if (ui.outputTabWidget->indexOf(ui.dicomFormatTab) < 0)
+      ui.outputTabWidget->insertTab(0, ui.dicomFormatTab, "Image formats");
 
     //Set up GUI widgets
     initialize_image_format_options(*ui.dicomImageWriteComboBox, options.imageWriteFormat);
@@ -1789,7 +1813,7 @@ void madym_gui_ui::setup_dicom_format_tab(bool show)
   else
   {
     //Hide the tab
-    auto idx = ui.outputTabWidget->indexOf(ui.formatTab);
+    auto idx = ui.outputTabWidget->indexOf(ui.dicomFormatTab);
     if (idx >= 0)
       ui.outputTabWidget->removeTab(idx);
   }
@@ -2153,6 +2177,8 @@ void madym_gui_ui::initialize_widget_values()
 
   //General and logging tabs used by all
   setup_general_tab(true);
+  setup_image_format_tab(
+    runType_ != madym_gui_processor::XTR && runType_ != madym_gui_processor::DICOM);
   setup_logging_tab(runType_ != madym_gui_processor::XTR);
 
   //Configure tabs for different run types

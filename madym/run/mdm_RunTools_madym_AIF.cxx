@@ -59,10 +59,7 @@ MDM_API void mdm_RunTools_madym_AIF::run()
   loadROI();
 
   //Load dynamic volumes
-  if (options_.inputCt())
-    loadCt();
-  else
-    loadSt();
+  loadDynamicTimeSeries(options_.inputCt());
 
   //set dyn times in AIF
   AIF_.setAIFTimes(volumeAnalysis_.dynamicTimes());
@@ -159,6 +156,8 @@ MDM_API int mdm_RunTools_madym_AIF::parseInputs(int argc, const char *argv[])
   //Image format options
   options_parser_.add_option(config_options, options_.imageReadFormat);
   options_parser_.add_option(config_options, options_.imageWriteFormat);
+  options_parser_.add_option(config_options, options_.niftiScaling);
+  options_parser_.add_option(config_options, options_.nifti4D);
 
   //Logging options_
   options_parser_.add_option(config_options, options_.voxelSizeWarnOnly);
