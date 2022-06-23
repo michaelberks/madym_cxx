@@ -62,6 +62,8 @@ def run(
     test_enhancement:bool = None,
     img_fmt_r:str = None,
     img_fmt_w:str = None,
+    nifti_scaling:bool = None,
+    nifti_4D:bool = None,
     voxel_size_warn_only:bool = None,
     overwrite:bool = None,
     program_log_name:str = None,
@@ -199,6 +201,10 @@ def run(
             Image format for reading input
         img_fmt_w : str = None
             Image format for writing output
+        nifti_scaling:bool = None,
+            If set, applies intensity scaling and offset when reading/writing NIFTI images
+        nifti_4D : bool = None,
+            If set, reads NIFTI 4D images for T1 mapping and dynamic inputs
         voxel_size_warn_only : bool = False
             If true, only warn if voxel sizes don't match for subsequent images
         overwrite : bool = False,
@@ -304,6 +310,10 @@ def run(
     add_option('string', cmd_args, '--img_fmt_r', img_fmt_r)
 
     add_option('string', cmd_args, '--img_fmt_w', img_fmt_w)
+
+    add_option('bool', cmd_args, '--nifti_scaling', nifti_scaling)
+
+    add_option('bool', cmd_args, '--nifti_4D', nifti_4D)
 
     #Now set any args that require option inputs
     add_option('bool', cmd_args, '--Ct', input_Ct)

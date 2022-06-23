@@ -21,15 +21,14 @@ def run(
     sequence_step:str = None,
     n_dyns:int = None,
     img_fmt_w:str = None,
+    nifti_scaling:bool = None,
     dicom_dir : str = None,
     dicom_series_file : str = None,
     T1_input_series : list = None,
     dyn_series : int = None,
-    single_series : list = None,
+    single_series : int = None,
     dicom_filter : str = None,
-    slice_filter_tag : str = None,
-    slice_filter_match_value : list = None,
-    single_vol_names : list = None,
+    vol_name : str = None,
     sort : bool = None,
     make_t1 : bool = None,
     make_single : bool = None,
@@ -95,6 +94,8 @@ def run(
             Number of dynamic sequence maps to load. If <=0, loads all maps in dynamic dir matching -dyn pattern
         img_fmt_w : str = None
             Image format for writing output
+        nifti_scaling:bool = None,
+            If set, applies intensity scaling and offset when reading/writing NIFTI images
         dicom_dir : str = None
             Folder containing DICOM data
         dicom_series_file : str = None
@@ -103,16 +104,12 @@ def run(
             Indices of the dicom series for each T1 input
         dyn_series : int = None
             Index of the dicom series for the dynamic DCE time-series
-        single_series : list = None
+        single_series : int = None
             Index of the dicom series for converting a generic single volume
         dicom_filter : str = None
             File filter for dicom sort (eg IM_)
-        slice_filter_tag : str = None
-            Custom Dicom tag key (group,element) for filtering slices against a user set value
-        slice_filter_match_value : list = None
-            Value(s) of attribute set by slice_filter_tag that slices must match to be included
-        single_vol_names : list = None
-            Output filename(s) for converting a single dicom volume
+        vol_name : str = None
+            Output filename for converting a single dicom volume
         sort : bool = None
             "Sort the files in Dicom dir into separate series, writing out the series information")
         make_t1 : bool = None
@@ -236,6 +233,10 @@ def run(
 
     add_option('string', cmd_args, '--img_fmt_w', img_fmt_w)
 
+    add_option('bool', cmd_args, '--nifti_scaling', nifti_scaling)
+
+    add_option('bool', cmd_args, '--nifti_4D', nifti_4D)
+
     add_option('string_list', cmd_args, '--T1_vols', T1_vols)
 
     add_option('string', cmd_args, '--T1_dir', T1_dir)
@@ -248,15 +249,11 @@ def run(
 
     add_option('int', cmd_args, '--dyn_series', dyn_series)
 
-    add_option('int_list', cmd_args, '--single_series', single_series)
+    add_option('int', cmd_args, '--single_series', single_series)
 
     add_option('string', cmd_args, '--dicom_filter', dicom_filter)
 
-    add_option('string', cmd_args, '--slice_filter_tag', slice_filter_tag)
-
-    add_option('string_list', cmd_args, '--slice_filter_match_value', slice_filter_match_value)
-
-    add_option('string_list', cmd_args, '--single_vol_names', single_vol_names)
+    add_option('string', cmd_args, '--vol_name', vol_name)
 
     add_option('bool', cmd_args, '--sort', sort)
 

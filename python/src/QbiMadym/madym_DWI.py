@@ -18,6 +18,7 @@ def run(
     roi_name:str = None,
     img_fmt_r:str = None,
     img_fmt_w:str = None,
+    nifti_scaling:bool = None,
     overwrite:bool = None,
     program_log_name:str = None,
     audit_dir:str = None,
@@ -67,6 +68,8 @@ def run(
             Image format for reading input
         img_fmt_w : str = None
             Image format for writing output
+        nifti_scaling:bool = None,
+            If set, applies intensity scaling and offset when reading/writing NIFTI images
         overwrite : bool = False,
             Set overwrite existing analysis in output dir
         program_log_name : str = None, 
@@ -141,6 +144,8 @@ def run(
     add_option('string', cmd_args, '--img_fmt_r', img_fmt_r)
 
     add_option('string', cmd_args, '--img_fmt_w', img_fmt_w)
+
+    add_option('bool', cmd_args, '--nifti_scaling', nifti_scaling)
 
     add_option('string_list', cmd_args, '--DWI_vols', DWI_vols)
         
