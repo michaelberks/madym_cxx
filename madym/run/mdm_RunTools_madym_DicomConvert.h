@@ -36,6 +36,9 @@ struct dcmSeriesInfo {
   double Xmm; ///< size of voxels in X-axis in mm
   double Ymm; ///< size of voxels in X-axis in mm
   double Zmm; ///< size of voxels in X-axis in mm
+  std::vector<double> imagePosition; ///< 3-element vector: (x,y,z) co-ordinates of the image grid origin
+  std::vector<double> imageOrientation; ///< 6-element vector: (x,y,z) cosines of the first row, then first column of the image grid
+  double zDirection; ///!< Direction of slice axis relative to cross product of row and column axes
   double FA = 0; ///< Flip-angle 
   double TR = 0; ///< Repetition time in ms
   double TE = 0; ///< echo time in ms
@@ -160,11 +163,34 @@ private:
     DcmFileFormat& fileFormat,
     const std::string& seriesName,
     const std::string& settingName,
+    const DcmTagKey& tag,
+    const bool required,
+    double& setting);
+
+  void getScannerSetting(
+    DcmFileFormat& fileFormat,
+    const std::string& seriesName,
+    const std::string& settingName,
     const mdm_input_dicom_tag& customTag,
     const DcmTagKey& defaultTag,
     const bool required,
     std::vector<double>& setting,
     size_t numValues);
+
+  void getScannerSetting(
+    DcmFileFormat& fileFormat,
+    const std::string& seriesName,
+    const std::string& settingName,
+    const DcmTagKey& tag,
+    const bool required,
+    std::vector<double>& setting,
+    size_t numValues);
+
+  //
+  void getSeriesName(dcmSeriesInfo& series, DcmFileFormat &fileformat);
+
+  //
+  void getSeriesAxesDirections(dcmSeriesInfo& series, DcmFileFormat& fileformat);
 
   //
   void completeSeriesInfo(dcmSeriesInfo &series, int nDyns = 0);

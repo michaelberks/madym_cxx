@@ -39,12 +39,22 @@ mdm_Image3D::MetaData::MetaData()
 	Xmm("Xmm"),
 	Ymm("Ymm"),
 	Zmm("Zmm"),
-	rowDirCosX("RowDirCosX"),
-	rowDirCosY("RowDirCosY"),
-	rowDirCosZ("RowDirCosZ"),
-	colDirCosX("ColDirCosX"),
-	colDirCosY("ColDirCosY"),
-	colDirCosZ("ColDirCosZ"),
+	originX("originX"),
+	originY("originY"),
+	originZ("originZ"),
+	rowDirCosX("rowDirCosX", 1.0),
+	rowDirCosY("rowDirCosY", 0.0),
+	rowDirCosZ("rowDirCosZ", 0.0),
+	colDirCosX("colDirCosX", 0.0),
+	colDirCosY("colDirCosY", 1.0),
+	colDirCosZ("colDirCosZ", 0.0),
+	flipX("flipX", 0),
+	flipY("flipY", 0),
+	flipZ("flipZ", 0),
+	zDirection("zDirection", 1.0),
+	temporalResolution("TemporalResolution"),
+	sclSlope("sclSlope"),
+	sclInter("sclInter"),
 	noiseSigma("NoiseSigma"),
 	xtrSource("from API")
 {}
@@ -321,6 +331,12 @@ void mdm_Image3D::setMetaData(const std::string &key, const double &value)
 		info_.Ymm.setValue(value);
 	else if (key.compare(info_.Zmm.key()) == 0)
 		info_.Zmm.setValue(value);
+	else if (key.compare(info_.originX.key()) == 0)
+		info_.originX.setValue(value);
+	else if (key.compare(info_.originY.key()) == 0)
+		info_.originY.setValue(value);
+	else if (key.compare(info_.originZ.key()) == 0)
+		info_.originZ.setValue(value);
 	else if (key.compare(info_.rowDirCosX.key()) == 0)
 		info_.rowDirCosX.setValue(value);
 	else if (key.compare(info_.rowDirCosY.key()) == 0)
@@ -333,6 +349,20 @@ void mdm_Image3D::setMetaData(const std::string &key, const double &value)
 		info_.colDirCosY.setValue(value);
 	else if (key.compare(info_.colDirCosZ.key()) == 0)
 		info_.colDirCosZ.setValue(value);
+	else if (key.compare(info_.flipX.key()) == 0)
+		info_.flipX.setValue(value);
+	else if (key.compare(info_.flipY.key()) == 0)
+		info_.flipY.setValue(value);
+	else if (key.compare(info_.flipZ.key()) == 0)
+		info_.flipZ.setValue(value);
+	else if (key.compare(info_.zDirection.key()) == 0)
+		info_.zDirection.setValue(value);
+	else if (key.compare(info_.temporalResolution.key()) == 0)
+		info_.temporalResolution.setValue(value);
+	else if (key.compare(info_.sclSlope.key()) == 0)
+		info_.sclSlope.setValue(value);
+	else if (key.compare(info_.sclInter.key()) == 0)
+		info_.sclInter.setValue(value);
   else if (key.compare(info_.noiseSigma.key()) == 0)
     info_.noiseSigma.setValue(value);
 	else
@@ -405,6 +435,18 @@ MDM_API void mdm_Image3D::getSetKeyValuePairs(std::vector<std::string> &keys,
 		keys.push_back(info_.Zmm.key()); 
 		values.push_back(info_.Zmm.value());
 	}
+	if (info_.originX.isSet()) {
+		keys.push_back(info_.originX.key());
+		values.push_back(info_.originX.value());
+	}
+	if (info_.originY.isSet()) {
+		keys.push_back(info_.originY.key());
+		values.push_back(info_.originY.value());
+	}
+	if (info_.originZ.isSet()) {
+		keys.push_back(info_.originZ.key());
+		values.push_back(info_.originZ.value());
+	}
 	if (info_.rowDirCosX.isSet()){
 		keys.push_back(info_.rowDirCosX.key()); 
 		values.push_back(info_.rowDirCosX.value());
@@ -428,6 +470,34 @@ MDM_API void mdm_Image3D::getSetKeyValuePairs(std::vector<std::string> &keys,
 	if (info_.colDirCosZ.isSet()){
 		keys.push_back(info_.colDirCosZ.key()); 
 		values.push_back(info_.colDirCosZ.value());
+	}
+	if (info_.flipX.isSet()) {
+		keys.push_back(info_.flipX.key());
+		values.push_back(info_.flipX.value());
+	}
+	if (info_.flipY.isSet()) {
+		keys.push_back(info_.flipY.key());
+		values.push_back(info_.flipY.value());
+	}
+	if (info_.flipZ.isSet()) {
+		keys.push_back(info_.flipZ.key());
+		values.push_back(info_.flipZ.value());
+	}
+	if (info_.zDirection.isSet()) {
+		keys.push_back(info_.zDirection.key());
+		values.push_back(info_.zDirection.value());
+	}
+	if (info_.temporalResolution.isSet()) {
+		keys.push_back(info_.temporalResolution.key());
+		values.push_back(info_.temporalResolution.value());
+	}
+	if (info_.sclSlope.isSet()) {
+		keys.push_back(info_.sclSlope.key());
+		values.push_back(info_.sclSlope.value());
+	}
+	if (info_.sclInter.isSet()) {
+		keys.push_back(info_.sclInter.key());
+		values.push_back(info_.sclInter.value());
 	}
 	if (info_.noiseSigma.isSet()){
 		keys.push_back(info_.noiseSigma.key()); 
@@ -471,6 +541,10 @@ MDM_API void mdm_Image3D::copy(const mdm_Image3D &imgToCopy)
 
 	//Set dimension from the copy, this will reset and resize the data array
 	setDimensions(imgToCopy);
+
+	//Reset sclSlope and Inter as we do NOT want these copied
+	info_.sclSlope.setValue(1.0);
+	info_.sclInter.setValue(0.0);
 
 }
 

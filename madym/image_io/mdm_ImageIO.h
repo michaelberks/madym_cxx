@@ -66,11 +66,24 @@ public:
   \param    imgFormat format of image (Analyze, NIFTI etc) to check
 	\param    fileName		name of file from which to read the data
 	\param		loadXtr			flag, if true tries to load .xtr file too
+  \param    applyScaling If the scl slope and intercept fields are set in NIFTI headers, use to recsale the image intensities
 	\return   mdm_Image3D object containing image read from disk
 	*/
 	MDM_API static mdm_Image3D readImage3D(ImageFormat imgFormat, 
     const std::string& fileName,
-    bool loadXtr);
+    bool loadXtr, bool applyScaling);
+
+  //!    Read Analyze/NIFTI format file(s) and return mdm_Image3D object
+  /*!
+  \param    imgFormat format of image (Analyze, NIFTI etc) to check
+  \param    fileName		name of file from which to read the data
+  \param		loadXtr			flag, if true tries to load .xtr file too
+  \param    applyScaling If the scl slope and intercept fields are set in NIFTI headers, use to recsale the image intensities
+  \return   mdm_Image3D object containing image read from disk
+  */
+  MDM_API static std::vector<mdm_Image3D> readImage4D(ImageFormat imgFormat,
+    const std::string& fileName,
+    bool loadXtr, bool applyScaling);
 
 	
 	//!    Write mdm_Image3D to QBI extended Analyze (hdr/img/xtr) or NIFTI (nii/xtr) file set
@@ -80,11 +93,14 @@ public:
 	\param    img           mdm_Image3D holding the data to be written to file
 	\param    dataTypeFlag  integer data type flag; see Data_type enum
 	\param    xtrTypeFlag   integer xtr type flag; 0 for old, 1 for new
+  \param    applyScaling  If set in image meta info use scl slope and intercept fields to recsale the image intensities before writing to NIFTI
 	*/
 	MDM_API static void writeImage3D(ImageFormat imgFormat,
 		const std::string & baseName,
     const mdm_Image3D &img,
-		const mdm_ImageDatatypes::DataType dataTypeFlag, const mdm_XtrFormat::XTR_type xtrTypeFlag);
+		const mdm_ImageDatatypes::DataType dataTypeFlag, 
+    const mdm_XtrFormat::XTR_type xtrTypeFlag, 
+    bool applyScaling);
 
   //!    Test for existence of the file with the specified basename and format appropriate extension
   /*!

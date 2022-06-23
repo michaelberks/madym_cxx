@@ -44,8 +44,9 @@ public:
 	//! Load signal image volumes for mapping baseline T1
 	/*!
 	\param T1InputPaths list of filepaths to input signal images
+	\param useNifti4D if true, load 4D NIFTI images and return average of repeats for each input
 	*/
-	MDM_API void loadT1MappingInputImages(const std::vector<std::string> &T1InputPaths);
+	MDM_API void loadT1MappingInputImages(const std::vector<std::string> &T1InputPaths, bool useNifti4D);
 
 	//! Load baseline T1 image
 	/*!
@@ -84,24 +85,21 @@ public:
 	\param indexPattern string format specification, to convert integers 1,...,nDyns into a string
   \param startIndex start index of sequence names
   \param stepSize step size between indices in sequence names
+	\param Ct if true, loads as concentration maps, if false signal images
 	*/
-	MDM_API void loadStDataMaps(const std::string &basePath,
+	MDM_API void loadDynamicTimeseries(const std::string &basePath,
 		const std::string &StPrefix, int nDyns, const std::string &indexPattern,
-    const int startIndex, const int stepSize);
+    const int startIndex, const int stepSize, bool Ct);
 
-	//! Load DCE time-series contrast-agent concentration volumes
+	//! Load DCE time-series signal volumes from a 4D nifti
 	/*!
-	\param basePath base of filepath to dynamic time-series images, to which dynPrefix is appended
-	\param CtPrefix appended to basePath, forming base pattern to match files using series index
-	\param nDyns number of images to load. If 0, loads all images matching filename pattern
-	\param indexPattern string format specification, to convert integers 1,...,nDyns into a string
-  \param startIndex start index of sequence names
-  \param stepSize step size between indices in sequence names
-	\see loadStDataMaps
+	DCE time-series loaded from a single 4D NIFTI image
+	\param basePath base of filepath to dynamic time-series images, to which StPrefix is appended
+	\param StName appended to basePath, forming full path to image
+	\param Ct if true, loads as concentration maps, if false signal images
 	*/
-	MDM_API void loadCtDataMaps(const std::string &basePath,
-		const std::string &CtPrefix, int nDyns, const std::string &indexPattern,
-    const int startIndex, const int stepSize);
+	MDM_API void loadDynamicTimeseries(const std::string& basePath,
+		const std::string& StName, bool Ct);
 
 	//! Load ROI mask image
 	/*!
@@ -211,6 +209,13 @@ public:
   */
   MDM_API void setImageWriteFormat(const std::string &fmt);
 
+	//! Set NIFTI rescaling flag
+	/*!
+	\param flag if true, applies scl slope intercept rescaling when reading/writing NIFTI images
+	\see mdm_ImageIO
+	*/
+	MDM_API void setApplyNiftiScaling(bool flag);
+
 protected:
 
 private:
@@ -243,6 +248,7 @@ private:
   bool writeCtModelMaps_;
   mdm_ImageIO::ImageFormat imageWriteFormat_;
   mdm_ImageIO::ImageFormat imageReadFormat_;
+	bool applyNiftiScaling_;
 };
 
 #endif /* MDM_FILELOAD_HDR */

@@ -38,7 +38,7 @@ const std::string mdm_NiftiFormat::extgz = ".gz";
 
 //
 MDM_API mdm_Image3D mdm_NiftiFormat::readImage3D(const std::string &fileName,
-	bool load_xtr)
+	bool loadXtr, bool applyScaling)
 {
   if (fileName.empty())
     throw mdm_exception(__func__, "Filename image must not be empty");
@@ -52,13 +52,24 @@ MDM_API mdm_Image3D mdm_NiftiFormat::readImage3D(const std::string &fileName,
 
   std::string xtrFileName = baseName + ".xtr";
 
-  bool  xtrExistsFlag = fs::exists(xtrFileName);
-
   //Try and read the main NIFTI image file
   mdm_Image3D img;
+
   nifti_image nii = nifti_image_read(fileName, 1);
   if (!nii.data)
     throw mdm_exception(__func__,  "Error reading " + fileName);
+
+  //Try loading the XTR file first as this may contain info 
+  // on axes flipping we need
+  //to convert NIFTI transform matrices correctly
+  if (loadXtr)
+  {
+    auto  xtrExistsFlag = fs::exists(xtrFileName);
+    if (xtrExistsFlag)
+      mdm_XtrFormat::readAnalyzeXtr(xtrFileName, img);
+    else
+      throw mdm_exception(__func__, "No xtr file matching " + fileName);
+  }
 
   // Store the voxel matrix dimensions
   int nX = nii.dim[1];
@@ -109,48 +120,51 @@ MDM_API mdm_Image3D mdm_NiftiFormat::readImage3D(const std::string &fileName,
 
   img.setVoxelDims(xmm, ymm, zmm);
 
+  //Set the voxel grid axes from the NIFTI sform matrix
+  nifti_nii_transform_to_img(nii, img);
+
   //Copy the data
   // ------------------------------------------------------------------------
   switch (nii.datatype)
   {
     case NIFTI_TYPE_UINT8: {
-      fromData<uint8_t>(nii, img);
+      fromData<uint8_t>(nii, img, applyScaling);
       break;
     }
     case NIFTI_TYPE_UINT16:  {
-      fromData<uint16_t>(nii, img);
+      fromData<uint16_t>(nii, img, applyScaling);
       break;
     }
     case NIFTI_TYPE_UINT32:  { 
-      fromData<uint32_t>(nii, img);
+      fromData<uint32_t>(nii, img, applyScaling);
       break;
     }
     case NIFTI_TYPE_UINT64:  { 
-      fromData<uint64_t>(nii, img);
+      fromData<uint64_t>(nii, img, applyScaling);
       break;
     }
     case NIFTI_TYPE_INT8:  { 
-      fromData<int8_t>(nii, img);
+      fromData<int8_t>(nii, img, applyScaling);
       break;
     }
     case NIFTI_TYPE_INT16:  { 
-      fromData<int16_t>(nii, img);
+      fromData<int16_t>(nii, img, applyScaling);
       break;
     }
     case NIFTI_TYPE_INT32:  { 
-      fromData<int32_t>(nii, img);
+      fromData<int32_t>(nii, img, applyScaling);
       break;
     }
     case NIFTI_TYPE_INT64:  { 
-      fromData<int64_t>(nii, img);
+      fromData<int64_t>(nii, img, applyScaling);
       break;
     }
     case NIFTI_TYPE_FLOAT32:  { 
-      fromData<float>(nii, img);
+      fromData<float>(nii, img, applyScaling);
       break;
     }
     case NIFTI_TYPE_FLOAT64:  { 
-      fromData<double>(nii, img);
+      fromData<double>(nii, img, applyScaling);
       break;
     }
     default: {
@@ -159,18 +173,156 @@ MDM_API mdm_Image3D mdm_NiftiFormat::readImage3D(const std::string &fileName,
         % fileName % nii.datatype);
     }
   }
+
   //Can now free the nifti image structure
   nifti_image_free(nii);
-  
-  if (load_xtr)
-  {
-    if (xtrExistsFlag)
-      mdm_XtrFormat::readAnalyzeXtr(xtrFileName, img);
-    else
-      throw mdm_exception(__func__, "No xtr file matching " + fileName);
-  }
 
 	return img;
+}
+
+MDM_API std::vector<mdm_Image3D> mdm_NiftiFormat::readImage4D(const std::string& fileName,
+  bool loadXtr, bool applyScaling)
+{
+  if (fileName.empty())
+    throw mdm_exception(__func__, "Filename image must not be empty");
+
+  //Parse the filename
+  std::string baseName;
+  std::string ext;
+  bool gz;
+  parseName(fileName,
+    baseName, ext, gz);
+
+  nifti_image nii = nifti_image_read(fileName, 1);
+  if (!nii.data)
+    throw mdm_exception(__func__, "Error reading " + fileName);
+
+  // Store the voxel matrix dimensions
+  int nX = nii.dim[1];
+  int nY = nii.dim[2];
+  int nZ = nii.dim[3];
+  int nImages = nii.dim[4];
+
+  if (nX <= 0)
+    throw mdm_exception(__func__, boost::format(
+      "Error reading %1%, nX = %2%, should be strictly positive")
+      % fileName % nX);
+
+  if (nY <= 0)
+    throw mdm_exception(__func__, boost::format(
+      "Error reading %1%, nY = %2%, should be strictly positive")
+      % fileName % nY);
+
+  if (nZ <= 0)
+    throw mdm_exception(__func__, boost::format(
+      "Error reading %1%, nZ = %2%, should be strictly positive")
+      % fileName % nZ);
+
+  if (nZ <= 0)
+    throw mdm_exception(__func__, boost::format(
+      "Error reading %1%, nImages = %2%, should be strictly positive")
+      % fileName % nImages);
+
+  //Try and read the main NIFTI image file
+  std::vector<mdm_Image3D> imgs(nImages);
+
+  //Store the voxel mm dimensions
+  double xmm = nii.pixdim[1];
+  double ymm = nii.pixdim[2];
+  double zmm = nii.pixdim[3];
+  if (xmm <= 0)
+    throw mdm_exception(__func__, boost::format(
+      "Error reading %1%, xmm = %2%, should be strictly positive")
+      % fileName % xmm);
+
+  if (ymm <= 0)
+    throw mdm_exception(__func__, boost::format(
+      "Error reading %1%, ymm = %2%, should be strictly positive")
+      % fileName % ymm);
+
+  if (zmm <= 0)
+    throw mdm_exception(__func__, boost::format(
+      "Error reading %1%, zmm = %2%, should be strictly positive")
+      % fileName % zmm);
+
+  for (auto& img : imgs)
+  {
+    //Try loading the XTR file first as this may contain info 
+    // on axes flipping we need
+    //to convert NIFTI transform matrices correctly
+      if (loadXtr)
+      {
+        std::string xtrFileName = baseName + ".xtr";
+        auto  xtrExistsFlag = fs::exists(xtrFileName);
+        if (xtrExistsFlag)
+          mdm_XtrFormat::readAnalyzeXtr(xtrFileName, img);
+        else
+          throw mdm_exception(__func__, "No xtr file matching " + fileName);
+      }
+
+    //Set dimensions of each image
+    img.setDimensions(nX, nY, nZ);
+    img.setVoxelDims(xmm, ymm, zmm);
+
+    //Set the voxel grid axes from the NIFTI sform matrix
+    nifti_nii_transform_to_img(nii, img);
+  }
+
+  //Copy the data
+  // ------------------------------------------------------------------------
+  switch (nii.datatype)
+  {
+  case NIFTI_TYPE_UINT8: {
+    fromData<uint8_t>(nii, imgs, applyScaling);
+    break;
+  }
+  case NIFTI_TYPE_UINT16: {
+    fromData<uint16_t>(nii, imgs, applyScaling);
+    break;
+  }
+  case NIFTI_TYPE_UINT32: {
+    fromData<uint32_t>(nii, imgs, applyScaling);
+    break;
+  }
+  case NIFTI_TYPE_UINT64: {
+    fromData<uint64_t>(nii, imgs, applyScaling);
+    break;
+  }
+  case NIFTI_TYPE_INT8: {
+    fromData<int8_t>(nii, imgs, applyScaling);
+    break;
+  }
+  case NIFTI_TYPE_INT16: {
+    fromData<int16_t>(nii, imgs, applyScaling);
+    break;
+  }
+  case NIFTI_TYPE_INT32: {
+    fromData<int32_t>(nii, imgs, applyScaling);
+    break;
+  }
+  case NIFTI_TYPE_INT64: {
+    fromData<int64_t>(nii, imgs, applyScaling);
+    break;
+  }
+  case NIFTI_TYPE_FLOAT32: {
+    fromData<float>(nii, imgs, applyScaling);
+    break;
+  }
+  case NIFTI_TYPE_FLOAT64: {
+    fromData<double>(nii, imgs, applyScaling);
+    break;
+  }
+  default: {
+    throw mdm_exception(__func__, boost::format(
+      "Error reading %1%, datatype = %2% not recognised")
+      % fileName % nii.datatype);
+  }
+  }
+
+  //Can now free the nifti image structure
+  nifti_image_free(nii);
+
+  return imgs;
 }
 
 //
@@ -178,7 +330,7 @@ MDM_API void mdm_NiftiFormat::writeImage3D(const std::string &fileName,
 	const mdm_Image3D &img,
 	const mdm_ImageDatatypes::DataType dataTypeFlag, 
   const mdm_XtrFormat::XTR_type xtrTypeFlag,
-	bool compress)
+	bool compress, bool applyScaling)
 {
   if (!img)
     throw mdm_exception(__func__, "Image for writing image must not be empty");
@@ -208,6 +360,8 @@ MDM_API void mdm_NiftiFormat::writeImage3D(const std::string &fileName,
   nii.dx = img.info().Xmm.value();
   nii.dy = img.info().Ymm.value();
   nii.dz = img.info().Zmm.value();
+  nii.scl_slope = 1.0;
+  nii.scl_inter = 0.0;
 
   //Set datatype
   nii.nifti_type = NIFTI_FTYPE::NIFTI1_1;
@@ -219,6 +373,16 @@ MDM_API void mdm_NiftiFormat::writeImage3D(const std::string &fileName,
   for (size_t s = descrip.size(); s < sizeof(nii.descrip); s++)
     nii.descrip[s] = '\0';
   nii.aux_file[0] = '\0';
+
+  //Set transform matrix
+  nifti_img_to_nii_transform(img, nii);
+
+  //Apply scaling if set
+  if (applyScaling && img.info().sclSlope.isSet() && img.info().sclInter.isSet())
+  {
+    nii.scl_slope = img.info().sclSlope.value();
+    nii.scl_inter = img.info().sclInter.value();
+  }
 
   //Set data field
   // ------------------------------------------------------------------------
@@ -336,12 +500,36 @@ MDM_API bool mdm_NiftiFormat::filesExist(const std::string & fileName,
 //
 
 //
-template <class T> void mdm_NiftiFormat::fromData(const nifti_image &nii, mdm_Image3D &img)
+template <class T> void mdm_NiftiFormat::fromData(const nifti_image &nii, mdm_Image3D &img, bool applyScaling)
 {
   auto nVoxels = img.numVoxels();
   T* nii_data = static_cast<T*>(nii.data);
+  auto slope = applyScaling && !std::isnan(nii.scl_slope) ? nii.scl_slope : 1.0;
+  auto inter = applyScaling && !std::isnan(nii.scl_inter) ? nii.scl_inter : 0.0;
   for (size_t i = 0; i < nVoxels; ++i)
-    img.setVoxel(i, static_cast<double>(*(nii_data + i)));
+    img.setVoxel(i, static_cast<double>(*(nii_data + i))*slope + inter);
+    
+}
+
+//
+template <class T> void mdm_NiftiFormat::fromData(const nifti_image& nii, std::vector<mdm_Image3D>& imgs, bool applyScaling)
+{
+  auto nImages = imgs.size();
+  size_t currImg = 0;
+  T* nii_data = static_cast<T*>(nii.data);
+  auto nVoxels = imgs[0].numVoxels();
+  auto slope = applyScaling && !std::isnan(nii.scl_slope) ? nii.scl_slope : 1.0;
+  auto inter = applyScaling && !std::isnan(nii.scl_inter) ? nii.scl_inter : 0.0;
+
+  for (auto& img : imgs)
+  {
+    auto offset = nVoxels * currImg;
+    for (size_t i = 0; i < nVoxels; ++i)
+      img.setVoxel(i, static_cast<double>(*(nii_data + offset + i))*slope + inter);
+
+    currImg++;
+  }
+  
 }
 
 //
@@ -349,9 +537,11 @@ template <class T> void mdm_NiftiFormat::toData(const mdm_Image3D &img, nifti_im
 {
   nii.nbyper = sizeof(T);
   nii.data = malloc(nii.nvox*nii.nbyper);
+  auto scale = std::isnan(nii.scl_slope) ? 1.0 : nii.scl_slope;
+  auto offset = std::isnan(nii.scl_inter) ? 1.0 : nii.scl_inter;
   T* nii_data = static_cast<T*>(nii.data);
   for (size_t i = 0; i < nii.nvox; ++i)
-    *(nii_data + i) = (T)img.voxel(i);
+    *(nii_data + i) = (T)((img.voxel(i) - offset) / scale);
 }
 
 //
@@ -2590,6 +2780,167 @@ int64_t mdm_NiftiFormat::nifti_write_buffer(znzFile fp, const void *buffer, int6
   }
   ss = znzwrite((const void*)buffer, 1, numbytes, fp);
   return ss;
+}
+
+void  mdm_NiftiFormat::nifti_img_to_nii_transform(const mdm_Image3D& img, nifti_image& nim)
+{
+  //Convert the image position and orientation for Madym's 3D image meta data
+  //to NIFTI's sform fields
+
+  //Get the row (u) and column (v) axes vectors
+  const auto& info = img.info();
+  auto ux = info.rowDirCosX.value();
+  auto uy = info.rowDirCosY.value();
+  auto uz = info.rowDirCosZ.value();
+
+  auto vx = info.colDirCosX.value();
+  auto vy = info.colDirCosY.value();
+  auto vz = info.colDirCosZ.value();
+
+  //Compute the slice xes vector (w) as the cross-product of these
+  //corrected by the z-Direction
+  auto zdir = info.zDirection.value();
+  auto wx = zdir * (uy * vz - uz * vy);
+  auto wy = zdir * (uz * vx - ux * vz);
+  auto wz = zdir * (ux * vy - uy * vx);
+
+  //The z-direction also encodes the slice distance, so w is now scaled
+  //but we need to scale U and V by the pixel dimesnions of the grid
+  auto dx = info.Xmm.value();
+  auto dy = info.Ymm.value();
+  ux *= dx;
+  uy *= dx;
+  uz *= dx;
+
+  vx *= dy;
+  vy *= dy;
+  vz *= dy;
+
+  //The origin for NIFTI will be offset from the DICOM origin, depending
+  //on whether the image was flipped in X/Y/Z when loaded from the DICOM slices
+  //so account for these offsets
+  auto offset_ux = info.flipX.value() ? ux * (nim.nx - 1) : 0;
+  auto offset_uy = info.flipX.value() ? uy * (nim.nx - 1) : 0;
+  auto offset_uz = info.flipX.value() ? uz * (nim.nx - 1) : 0;
+
+  auto offset_vx = info.flipY.value() ? vx * (nim.ny - 1) : 0;
+  auto offset_vy = info.flipY.value() ? vy * (nim.ny - 1) : 0;
+  auto offset_vz = info.flipY.value() ? vz * (nim.ny - 1) : 0;
+
+  auto offset_wx = info.flipZ.value() ? wx * (nim.nz - 1) : 0;
+  auto offset_wy = info.flipZ.value() ? wy * (nim.nz - 1) : 0;
+  auto offset_wz = info.flipZ.value() ? wz * (nim.nz - 1) : 0;
+
+  auto tx = info.originX.value() + offset_ux + offset_vx + offset_wx;
+  auto ty = info.originY.value() + offset_uy + offset_vy + offset_wy;
+  auto tz = info.originZ.value() + offset_uz + offset_vz + offset_wz;
+
+  //Flipping axes also changes their sign in the transform matrix
+  auto sign_u = info.flipX.value() ? -1.0 : 1.0;
+  auto sign_v = info.flipY.value() ? -1.0 : 1.0;
+  auto sign_w = info.flipZ.value() ? -1.0 : 1.0;
+  
+  //Finally we can fill the transform matrix. DICOM uses LPS co-ordinates
+  //while NIFTI uses RAS, so the top two rows are negated UNLESS X/Y
+  //flips have been used.
+  nim.sto_xyz.m[0][0] = -sign_u * ux;
+  nim.sto_xyz.m[0][1] = -sign_v * vx;
+  nim.sto_xyz.m[0][2] = -sign_w * wx;
+  nim.sto_xyz.m[0][3] = -tx;
+
+  nim.sto_xyz.m[1][0] = -sign_u * uy;
+  nim.sto_xyz.m[1][1] = -sign_v * vy;
+  nim.sto_xyz.m[1][2] = -sign_w * wy;
+  nim.sto_xyz.m[1][3] = -ty;
+
+  nim.sto_xyz.m[2][0] = sign_u * uz;
+  nim.sto_xyz.m[2][1] = sign_v * vz;
+  nim.sto_xyz.m[2][2] = sign_w * wz;
+  nim.sto_xyz.m[2][3] = tz;
+
+  //The last row is always [ 0 0 0 1 ]
+  nim.sto_xyz.m[3][0] = nim.sto_xyz.m[3][1] = nim.sto_xyz.m[3][2] = 0.0f;
+  nim.sto_xyz.m[3][3] = 1.0f;
+
+  //Use the inbuilt function to create the S to IJK matrix
+  nim.sto_ijk = nifti_dmat44_inverse(nim.sto_xyz);
+  nim.sform_code = 1;
+
+  //Complete du, dv and dw fields
+  nim.du = dx;
+  nim.dv = dy;
+  nim.dw = std::abs(zdir);
+}
+
+void  mdm_NiftiFormat::nifti_nii_transform_to_img(const nifti_image& nim, mdm_Image3D& img)
+{
+  //Convert the image position and orientation from NIFTI's sform fields
+  //to Madym's 3D image meta data
+
+  //Compute the row (u) and column (v) axes vectors from the Sform matrix
+  auto& info = img.info();
+  auto dx = nim.dx;
+  auto dy = nim.dy;
+  
+  //Flipping axes also changes their sign in the transform matrix
+  auto sign_u = info.flipX.value() ? -1.0 : 1.0;
+  auto sign_v = info.flipY.value() ? -1.0 : 1.0;
+  auto sign_w = info.flipZ.value() ? -1.0 : 1.0;
+
+  info.rowDirCosX.setValue(-sign_u * nim.sto_xyz.m[0][0] / dx);
+  info.colDirCosX.setValue(-sign_v * nim.sto_xyz.m[0][1] / dy);
+
+  info.rowDirCosY.setValue(-sign_u * nim.sto_xyz.m[1][0] / dx);
+  info.colDirCosY.setValue(-sign_v * nim.sto_xyz.m[1][1] / dy);
+
+  info.rowDirCosZ.setValue(sign_u * nim.sto_xyz.m[2][0] / dx);
+  info.colDirCosZ.setValue(sign_v * nim.sto_xyz.m[2][1] / dy);
+  
+  //Transform the slice direction vector (Wxyz) too, even though
+  //this isn't saved directly in the image meta-data
+  auto wx = -sign_w * nim.sto_xyz.m[0][2];
+  auto wy = -sign_w * nim.sto_xyz.m[1][2];
+  auto wz = sign_w * nim.sto_xyz.m[2][2];
+  auto dz = std::sqrt(wx*wx + wy*wy + wz*wz);
+  wx /= dz;
+  wy /= dz;
+  wz /= dz;
+
+  //Compute the cross-product of U and V to workout the z-directions
+  //corrected by the z-Direction
+  auto ux = info.rowDirCosX.value();
+  auto uy = info.rowDirCosY.value();
+  auto uz = info.rowDirCosZ.value();
+
+  auto vx = info.colDirCosX.value();
+  auto vy = info.colDirCosY.value();
+  auto vz = info.colDirCosZ.value();
+
+  auto cx = uy * vz - uz * vy;
+  auto cy = uz * vx - ux * vz;
+  auto cz = ux * vy - uy * vx;
+  auto w_dot_c = cx * wx + cy * wy + cz * wz;
+  auto zdir = w_dot_c > 0 ? dz : -dz;
+  info.zDirection.setValue(zdir);
+
+  //The origin for NIFTI will be offset from the DICOM origin, depending
+  //on whether the image was flipped in X/Y/Z when loaded from the DICOM slices
+  //so account for these offsets
+  auto offset_ux = info.flipX.value() ? -dx * ux * (nim.nx - 1) : 0;
+  auto offset_uy = info.flipX.value() ? -dx * uy * (nim.nx - 1) : 0;
+  auto offset_uz = info.flipX.value() ? -dx * uz * (nim.nx - 1) : 0;
+
+  auto offset_vx = info.flipY.value() ? -dy * vx * (nim.ny - 1) : 0;
+  auto offset_vy = info.flipY.value() ? -dy * vy * (nim.ny - 1) : 0;
+  auto offset_vz = info.flipY.value() ? -dy * vz * (nim.ny - 1) : 0;
+
+  auto offset_wx = info.flipZ.value() ? -dz * wx * (nim.nz - 1) : 0;
+  auto offset_wy = info.flipZ.value() ? -dz * wy * (nim.nz - 1) : 0;
+  auto offset_wz = info.flipZ.value() ? -dz * wz * (nim.nz - 1) : 0;
+
+  info.originX.setValue(-nim.sto_xyz.m[0][3] + offset_ux + offset_vx + offset_wx);
+  info.originY.setValue(-nim.sto_xyz.m[1][3] + offset_uy + offset_vy + offset_wy);
+  info.originZ.setValue(nim.sto_xyz.m[2][3] + offset_uz + offset_vz + offset_wz);
 }
 
 /*----------------------------------------------------------------------*/

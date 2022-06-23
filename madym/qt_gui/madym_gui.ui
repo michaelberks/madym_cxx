@@ -40,9 +40,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>-26</y>
+         <y>0</y>
          <width>1145</width>
-         <height>806</height>
+         <height>803</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -688,33 +688,47 @@
                    <string>General options</string>
                   </attribute>
                   <layout class="QGridLayout" name="gridLayout_11">
-                   <item row="4" column="4" colspan="2">
-                    <widget class="QCheckBox" name="overwriteCheckBox">
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="roiPathLabel">
                      <property name="text">
-                      <string>Overwrite existing output</string>
+                      <string>ROI:</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="4" column="3">
-                    <widget class="QComboBox" name="imageWriteComboBox"/>
-                   </item>
-                   <item row="4" column="2">
-                    <widget class="QLabel" name="imageWriteLabel">
-                     <property name="text">
-                      <string>Output format:</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1" colspan="4">
+                   <item row="2" column="1" colspan="2">
                     <widget class="QLineEdit" name="roiPathLineEdit">
                      <property name="sizePolicy">
                       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="errorTrackerLabel">
+                     <property name="text">
+                      <string>Error tracker:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1" colspan="2">
+                    <widget class="QLineEdit" name="dataDirLineEdit"/>
+                   </item>
+                   <item row="3" column="1" colspan="2">
+                    <widget class="QLineEdit" name="errorTrackerLineEdit"/>
+                   </item>
+                   <item row="0" column="3">
+                    <widget class="QToolButton" name="dataDirSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="outputDirLabel">
+                     <property name="text">
+                      <string>Output folder:</string>
                      </property>
                     </widget>
                    </item>
@@ -728,28 +742,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="outputDirLabel">
-                     <property name="text">
-                      <string>Output folder:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="5">
-                    <widget class="QToolButton" name="errorTrackerSelect">
-                     <property name="text">
-                      <string>...</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="roiPathLabel">
-                     <property name="text">
-                      <string>ROI:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1" colspan="4">
+                   <item row="1" column="1" colspan="2">
                     <widget class="QLineEdit" name="outputDirLineEdit"/>
                    </item>
                    <item row="5" column="1">
@@ -765,53 +758,94 @@
                      </property>
                     </spacer>
                    </item>
-                   <item row="0" column="5">
-                    <widget class="QToolButton" name="dataDirSelect">
-                     <property name="text">
-                      <string>...</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="0">
-                    <widget class="QLabel" name="errorTrackerLabel">
-                     <property name="text">
-                      <string>Error tracker:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1" colspan="4">
-                    <widget class="QLineEdit" name="dataDirLineEdit"/>
-                   </item>
-                   <item row="2" column="5">
+                   <item row="2" column="3">
                     <widget class="QToolButton" name="roiPathSelect">
                      <property name="text">
                       <string>...</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="3" column="1" colspan="4">
-                    <widget class="QLineEdit" name="errorTrackerLineEdit"/>
+                   <item row="3" column="3">
+                    <widget class="QToolButton" name="errorTrackerSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
                    </item>
-                   <item row="1" column="5">
+                   <item row="1" column="3">
                     <widget class="QToolButton" name="outputDirSelect">
                      <property name="text">
                       <string>...</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="4" column="1">
-                    <widget class="QComboBox" name="imageReadComboBox"/>
-                   </item>
                    <item row="4" column="0">
+                    <widget class="QCheckBox" name="overwriteCheckBox">
+                     <property name="text">
+                      <string>Overwrite existing output</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="imageFormatTab">
+                  <attribute name="title">
+                   <string>Image format</string>
+                  </attribute>
+                  <layout class="QGridLayout" name="gridLayout_26">
+                   <item row="1" column="1">
+                    <widget class="QCheckBox" name="nifti4DCheckBox">
+                     <property name="text">
+                      <string>Use 4D NIFTI</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
                     <widget class="QLabel" name="imageReadLabel">
                      <property name="text">
                       <string>Input format:</string>
                      </property>
                     </widget>
                    </item>
+                   <item row="1" column="0">
+                    <widget class="QCheckBox" name="niftiScalingCheckBox">
+                     <property name="text">
+                      <string>Apply NIFTI scaling</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="1">
+                    <widget class="QComboBox" name="imageReadComboBox"/>
+                   </item>
+                   <item row="0" column="3">
+                    <widget class="QComboBox" name="imageWriteComboBox"/>
+                   </item>
+                   <item row="0" column="2">
+                    <widget class="QLabel" name="imageWriteLabel">
+                     <property name="text">
+                      <string>Output format:</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="0">
+                    <spacer name="verticalSpacer_13">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
                   </layout>
                  </widget>
-                 <widget class="QWidget" name="formatTab">
+                 <widget class="QWidget" name="dicomFormatTab">
                   <attribute name="title">
                    <string>Image formats</string>
                   </attribute>

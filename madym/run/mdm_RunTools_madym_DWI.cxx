@@ -93,6 +93,7 @@ MDM_API int mdm_RunTools_madym_DWI::parseInputs(int argc, const char *argv[])
 	//Image format options
 	options_parser_.add_option(config_options, options_.imageReadFormat);
 	options_parser_.add_option(config_options, options_.imageWriteFormat);
+	options_parser_.add_option(config_options, options_.niftiScaling);
 
 	//Logging options_
 	options_parser_.add_option(config_options, options_.voxelSizeWarnOnly);

@@ -27,10 +27,21 @@ public:
 	/*!
 	\param    fileName		name of file from which to read the data
 	\param		loadXtr			flag, if true tries to load .xtr file too
+  \param    applyScaling use the scl slope and intercept fields to recsale the image intensities
 	\return   mdm_Image3D object containing image read from disk
 	*/
 	MDM_API static mdm_Image3D readImage3D(const std::string& fileName,
-		bool loadXtr);
+		bool loadXtr, bool applyScaling = false);
+
+  //!    Read Analyze format file(s) and return mdm_Image3D object
+  /*!
+  \param    fileName		name of file from which to read the data
+  \param		loadXtr			flag, if true tries to load .xtr file too
+  \param    applyScaling use the scl slope and intercept fields to recsale the image intensities
+  \return   mdm_Image3D object containing image read from disk
+  */
+  MDM_API static std::vector<mdm_Image3D> readImage4D(const std::string& fileName,
+    bool loadXtr, bool applyScaling = false);
 
 	
 	//!    Write mdm_Image3D to QBI extended Analyze hdr/img/xtr file set
@@ -40,13 +51,14 @@ public:
 	\param    dataTypeFlag  integer data type flag; see Data_type enum
 	\param    xtrTypeFlag   integer xtr type flag; 0 for old, 1 for new
 	\param		compress			flag, if true, write out compressed image (nii.gz)
+  \param    applyScaling use the scl slope and intercept fields to recsale the image intensities
 	\return   bool 0 for success or 1 for failure
 	*/
 	MDM_API static void writeImage3D(const std::string & fileName,
 		const mdm_Image3D &img,
 		const mdm_ImageDatatypes::DataType dataTypeFlag, 
     const mdm_XtrFormat::XTR_type xtrTypeFlag,
-		bool compress = false);
+		bool compress = false, bool applyScaling = false);
 
   //!    Test for existence of the file with the specified basename and all NIFTI extensions (.img, .hdr, .nii etc)
   /*!
@@ -310,6 +322,10 @@ private:
   static int nifti_write_all_data(znzFile fp, nifti_image &nim);
 
   static int64_t nifti_write_buffer(znzFile fp, const void *buffer, int64_t numbytes);
+
+  static void nifti_img_to_nii_transform(const mdm_Image3D& img, nifti_image& nim);
+
+  static void nifti_nii_transform_to_img(const nifti_image& nim, mdm_Image3D& img);
   
 
   //----------------------------------------------------------------------------
@@ -487,7 +503,8 @@ private:
   static void nifti_mat44_to_orientation(mat44 R, int *icod, int *jcod, int *kcod);
 
   //Copy to/from nifit_image data to Madym mdm_Image3D
-  template <class T> static void fromData(const nifti_image &nii, mdm_Image3D &img);
+  template <class T> static void fromData(const nifti_image &nii, mdm_Image3D &img, bool applyScaling);
+  template <class T> static void fromData(const nifti_image& nii, std::vector<mdm_Image3D>& imgs, bool applyScaling);
   template <class T> static void toData(const mdm_Image3D &img, nifti_image &nii);
 
   //Variable constants

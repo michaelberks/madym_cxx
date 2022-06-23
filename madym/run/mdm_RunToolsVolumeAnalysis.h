@@ -48,11 +48,8 @@ protected:
 	//! Check if user has specified an ROI mask, and if so, load it
 	MDM_API void loadROI();
 
-  //! Load set of dynamic signal images
-  MDM_API void loadSt();
-
-  //! Load set of dynamic contrast agent concentration maps
-  MDM_API void loadCt();
+  //! Load set of dynamic time-series images
+  MDM_API void loadDynamicTimeSeries(bool Ct);
 
   //! Load precomputed T1 map
   MDM_API void loadT1();
