@@ -214,6 +214,40 @@ double mdm_DCEModelFitter::computeSSD(
 //
 void mdm_DCEModelFitter::optimiseModel()
 {
+  //Check if we're repeating fits at a given parameter
+  if (model_.singleFit())
+    optimiseModelOnce();
+
+  else
+  {
+    //For repeat fits, we loop over the repeats, saving the parameters that provide best fit
+    lowestModelFitError_ = DBL_MAX;
+    while (model_.nextRepeatParam())
+    {
+      optimiseModelOnce();
+      if (modelFitError_ < lowestModelFitError_)
+      {
+        bestParams_ = model_.params();
+        lowestModelFitError_ = modelFitError_;
+      }
+    }
+    //Once complete, set the model parameters to the saved best ones
+    //Recompute modelled C(t), and set the model fit error
+    model_.setParams(bestParams_);
+    model_.computeCtModel(timepointN_);
+    modelFitError_ = lowestModelFitError_;
+  }
+    
+
+  //Reset CtData_ to NULL, this forces the user to call initialiseModelFit before fitModel
+  //and avoids potential dangling pointer. No danger of memory leak because CtData_ is never 
+  //created from new.
+  CtData_ = NULL;
+}
+
+//
+void mdm_DCEModelFitter::optimiseModelOnce()
+{
   bool use_nonlinear = type_ != FitterTypes::LLS;
   auto optimisedParams = model_.optimisedParams();
 
@@ -254,11 +288,6 @@ void mdm_DCEModelFitter::optimiseModel()
 
   //Get the final model fit error
   modelFitError_ = CtSSD();
-
-  //Reset CtData_ to NULL, this forces the user to call initialiseModelFit before fitModel
-  //and avoids potential dangling pointer. No danger of memory leak because CtData_ is never 
-  //created from new.
-  CtData_ = NULL;
 }
 
 void mdm_DCEModelFitter::optimiseModel_ns(alglib::real_1d_array &x, alglib::ae_int_t maxits)

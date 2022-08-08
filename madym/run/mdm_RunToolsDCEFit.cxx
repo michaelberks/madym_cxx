@@ -38,7 +38,9 @@ void mdm_RunToolsDCEFit::setModel(const std::string &modelName,
   const std::vector<double>& lowerBounds,
   const std::vector<double>& upperBounds,
 	const std::vector<int> &relativeLimitParams,
-	const std::vector<double> &relativeLimitValues)
+	const std::vector<double> &relativeLimitValues,
+  int repeatParam,
+  const std::vector<double>& repeatValues)
 {
 	auto modelType = mdm_DCEModelGenerator::ParseModelName(modelName);
 	if (modelType == mdm_DCEModelGenerator::UNDEFINED)
@@ -51,7 +53,8 @@ void mdm_RunToolsDCEFit::setModel(const std::string &modelName,
 		modelType, paramNames,
 		initialParams, fixedParams, fixedValues,
     lowerBounds, upperBounds,
-		relativeLimitParams, relativeLimitValues);
+		relativeLimitParams, relativeLimitValues,
+    repeatParam, repeatValues);
 }
 
 void mdm_RunToolsDCEFit::setAIF()

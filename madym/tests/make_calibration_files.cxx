@@ -43,7 +43,7 @@ void make_model_time_series(
   AIF.setPIFType(mdm_AIF::PIF_TYPE::PIF_POP);
 	auto model = mdm_DCEModelGenerator::createModel(AIF,
 		modelType, {},
-    initialParams, {}, {}, {}, {}, {}, {});
+    initialParams, {}, {}, {}, {}, {}, {}, -1, {});
 	
 
 	//Compute model Ct

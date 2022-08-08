@@ -69,7 +69,7 @@ madym_DCE.run(
 ## 3) How to run the examples without the config files
 # In this example we show how to run the analysis that would be performed
 # by calling the madym_ETM_map_config.txt config file, but instead sets all
-# options via the Matlab wrapper
+# options via the python wrapper
 madym_DCE.run(
     working_directory = data_dir +'test_dataset',
     model = 'ETM',
@@ -78,7 +78,6 @@ madym_DCE.run(
     output_Ct_sig = 1,
     M0_ratio = 1,
     T1_name = 'madym_output/T1/T1.hdr',
-    T1_method = 'VFA',
     aif_map = 'madym_output/AIF/slice_0-4_Auto_AIF.hdr',
     dynamic_basename = 'dynamic/dyn_',
     img_fmt_r = 'ANALYZE',
@@ -89,4 +88,3 @@ madym_DCE.run(
     error_name = 'madym_output/T1/error_tracker.hdr',
     no_audit = 1,
     overwrite = 1)
-# %%

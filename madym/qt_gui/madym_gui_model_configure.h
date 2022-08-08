@@ -29,7 +29,7 @@ struct paramControls {
   */
   paramControls(QLabel *name, QLineEdit *value, 
 		QCheckBox *fixed, QCheckBox *maps,
-    QLineEdit *lowerBound, QLineEdit* upperBound, QLineEdit* relativeLimit)
+    QLineEdit *lowerBound, QLineEdit* upperBound, QLineEdit* relativeLimit, QLineEdit* repeatValues)
     :
     name_(name), 
     value_(value), 
@@ -37,7 +37,8 @@ struct paramControls {
     maps_(maps),
     lowerBound_(lowerBound),
     upperBound_(upperBound),
-    relativeLimit_(relativeLimit)
+    relativeLimit_(relativeLimit),
+    repeatValues_(repeatValues)
   {};
 
   QLabel *name_; //!<name of parameter in widget label
@@ -47,6 +48,7 @@ struct paramControls {
   QLineEdit* lowerBound_; //!< value of lower bound in widget linedit
   QLineEdit* upperBound_; //!< value of upper bound in widget linedit
 	QLineEdit *relativeLimit_; //!< value of relative limit in widget linedit
+  QLineEdit* repeatValues_; //!< value of repeat values in widget linedit
 };
 
 //! QT UI class for configuring tracer-kinetic model parameters in pop-up window of main GUI
@@ -92,11 +94,26 @@ private slots: //
 	void on_fixedCheckBox_9_toggled(bool checked);
 	void on_fixedCheckBox_10_toggled(bool checked);
 
+  void on_rptValuesLineEdit_1_textChanged(const QString &text);
+  void on_rptValuesLineEdit_2_textChanged(const QString &text);
+  void on_rptValuesLineEdit_3_textChanged(const QString &text);
+  void on_rptValuesLineEdit_4_textChanged(const QString &text);
+  void on_rptValuesLineEdit_5_textChanged(const QString &text);
+  void on_rptValuesLineEdit_6_textChanged(const QString &text);
+  void on_rptValuesLineEdit_7_textChanged(const QString &text);
+  void on_rptValuesLineEdit_8_textChanged(const QString &text);
+  void on_rptValuesLineEdit_9_textChanged(const QString &text);
+  void on_rptValuesLineEdit_10_textChanged(const QString &text);
+
 private: // Variables
   void setIntListOption(const std::vector<int> &values, mdm_input_ints& option);
   void setDoubleListOption(const std::vector<double>& values, mdm_input_doubles& option);
+  void validateRepeatValues(const QString &text, const size_t param);
 
   Ui::modelDialog ui;
+
+  //Validator to check range inputs
+  QValidator* doubleListValidator;
 
   mdm_InputOptions &madym_options_;
   const mdm_DCEModelBase &model_;

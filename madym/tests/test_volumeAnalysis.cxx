@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(test_volumeAnalysis) {
   AIF.setPIFType(mdm_AIF::PIF_TYPE::PIF_POP);
   auto model = mdm_DCEModelGenerator::createModel(AIF,
     modelType, {},
-    {}, {}, {}, {}, {}, {}, {});
+    {}, {}, {}, {}, {}, {}, {}, -1, {});
 
   BOOST_CHECK_NO_THROW(v.setModel(model));
   BOOST_CHECK_NO_THROW(v.setDCEMap(model->paramName(0), img));
