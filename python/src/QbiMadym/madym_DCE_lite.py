@@ -395,8 +395,6 @@ def run(model=None, input_data=None,
     add_option('float_list', cmd_args, '--relative_limit_values',
         relative_limit_values)
 
-    add_option('bool', cmd_args, '--quiet', quiet)
-
     #Args structure complete, convert to string for printing
     cmd_str = ' '.join(cmd_args)
 
