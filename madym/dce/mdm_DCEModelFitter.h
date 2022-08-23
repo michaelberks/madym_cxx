@@ -135,6 +135,8 @@ private:
 	//
 	void optimiseModel();
 
+	void optimiseModelOnce();
+
 	void optimiseModel_ns(alglib::real_1d_array& x, alglib::ae_int_t maxits);
 
 	void optimiseModel_bleic(alglib::real_1d_array& x, alglib::ae_int_t maxits);
@@ -160,6 +162,11 @@ private:
 
 	//Maximum number of iterations applied
 	int maxIterations_;
+
+	double lowestModelFitError_;
+
+	std::vector<double> bestParams_;
+
 
   const double BAD_FIT_SSD; //!< Value returned for SSD for failed model fits
 };

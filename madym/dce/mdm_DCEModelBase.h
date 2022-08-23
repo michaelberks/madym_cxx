@@ -46,34 +46,22 @@ public:
 		const std::vector<double>& lowerBounds = std::vector<double>(0),
 		const std::vector<double>& upperBounds = std::vector<double>(0),
 		const std::vector<int>& relativeLimitParams = std::vector<int>(0),
-		const std::vector<double>& relativeLimitValues = std::vector<double>(0));
+		const std::vector<double>& relativeLimitValues = std::vector<double>(0),
+		int repeatParam = -1,
+		const std::vector<double>& repeatValues = std::vector<double>(0));
 
 	//! Default destructor
 	/*!
 	*/
   MDM_API virtual ~mdm_DCEModelBase();
 
-  //! Initialise the model
-	/*!
-	Sets initial values and fixed status flags for parameters, and computes initial modelled Cm(t)
-	\param fixedParams  indices of parameters not optimised  (default {})
-	\param fixedValues  values for fixed parameters (if set, overrides initialParams - default {})
-	\param relativeLimitParams  indices of parameters to which relative limits are applied  (default {})
-	\param relativeLimitValues  values for relative limits (default {})
-	*/
-	MDM_API virtual void init(
-		const std::vector<int> &fixedParams, 
-		const std::vector<double> &fixedValues,
-		const std::vector<int> &relativeLimitParams, 
-		const std::vector<double> &relativeLimitValues);
-
   //! Resets models
 	/*! Clears optimised values and fixed status flags for parameters, clears modelled
 	concentration time-series and resets to specified length
 	
-	\param nTimes number of time-points in reset Cm(t)
+	\param nTimes number of time-points in reset Cm(t). If 0, CtData is not reset
 	*/
-	MDM_API virtual void reset(size_t nTimes);
+	MDM_API virtual void reset(size_t nTimes = 0);
 
   //! Return the number of model parameters
 	/*!	
@@ -110,6 +98,12 @@ public:
 	\return current values of optimised parameters
 	*/
 	MDM_API virtual std::vector<double>& optimisedParams();
+
+	//! Set all parameters
+	/*!
+	\param params initial value for each parameter, length must equal numParams()
+	*/
+	MDM_API virtual void setParams(const std::vector<double>& params);
 
   //! Set the initial value of parameters
 	/*!
@@ -218,6 +212,18 @@ public:
 	*/
 	MDM_API const std::vector<double>& relativeBounds() const;
 
+	//! Return the index of the repeat parameter (if set)
+	/*!
+	\return repeat parameter index.
+	*/
+	MDM_API const int repeatParam() const;
+
+	//! Return the repeat values for the repeat parameter (if set)
+	/*!
+	\return repeat values.
+	*/
+	MDM_API const std::vector<double>& repeatValues() const;
+
 	//! Return the relative AIF object used by the model
 	/*!
 	\return AIF object used by the model
@@ -270,7 +276,30 @@ public:
 	*/
 	MDM_API virtual void transformLLSolution(const double* B);
 
+	//! Return true if there are no repeat values to fit for a parameter
+	/*!
+	*/
+	MDM_API bool singleFit();
+
+	//! Set value of current repeat in pkParams_ and increment index
+	/*!
+	*/
+	MDM_API bool nextRepeatParam();
+
 protected:
+	//! Initialise the model
+	/*!
+	Sets initial values and fixed status flags for parameters, and computes initial modelled Cm(t)
+	\param fixedParams  indices of parameters not optimised  (default {})
+	\param fixedValues  values for fixed parameters (if set, overrides initialParams - default {})
+	\param relativeLimitParams  indices of parameters to which relative limits are applied  (default {})
+	\param relativeLimitValues  values for relative limits (default {})
+	*/
+	MDM_API virtual void init(
+		const std::vector<int>& fixedParams,
+		const std::vector<double>& fixedValues,
+		const std::vector<int>& relativeLimitParams,
+		const std::vector<double>& relativeLimitValues);
 
   //VARIABLES USED BY ALL BASE CLASSES
   std::vector<double> CtModel_; //!< Fitted concentration time-series using model parameters
@@ -279,6 +308,8 @@ protected:
   std::vector<double> pkInitParams_; //!< Initial values
   std::vector<bool> optParamFlags_; //!< Flags specifying variables that are fixed (flag=0) or to be optimised (flag=1)
   std::vector<std::string>	pkParamNames_; //!< Names of the parameters
+	int repeatParam_; //!< Index of parameter to be repeat fitted
+	std::vector<double> repeatValues_; //!< Values of repeat parameter to be fitted
                                           
   //Upper and lower bounds to use with optimiser
   std::vector<double> lowerBounds_; //!< Lower bounds for all parameters
@@ -292,6 +323,9 @@ protected:
 
 	//! Error code of the model after fitting
 	mdm_ErrorTracker::ErrorCode errorCode_;
+
+	//! Current index into repeat parameter values (if any)
+	size_t currRpt_;
 
 private:
   //METHODS:

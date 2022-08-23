@@ -23,13 +23,17 @@ MDM_API mdm_DCEModel2CXM::mdm_DCEModel2CXM(
   const std::vector<double>& lowerBounds,
   const std::vector<double>& upperBounds,
   const std::vector<int>& relativeLimitParams,
-  const std::vector<double>& relativeLimitValues)
+  const std::vector<double>& relativeLimitValues,
+  int repeatParam,
+  const std::vector<double>& repeatValues)
   :mdm_DCEModelBase(
     AIF, paramNames, initialParams,
     fixedParams, fixedValues,
     lowerBounds, upperBounds,
     relativeLimitParams,
-    relativeLimitValues)
+    relativeLimitValues,
+    repeatParam,
+    repeatValues)
 {
   if (pkParamNames_.empty())
     pkParamNames_ = { "F_p", "PS", "v_e", "v_p", "tau_a"};

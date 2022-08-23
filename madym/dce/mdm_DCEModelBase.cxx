@@ -21,7 +21,9 @@ MDM_API mdm_DCEModelBase::mdm_DCEModelBase(
   const std::vector<double>& lowerBounds,
   const std::vector<double>& upperBounds,
 	const std::vector<int> &relativeLimitParams,
-	const std::vector<double> &relativeLimitValues)
+	const std::vector<double> &relativeLimitValues,
+  int repeatParam,
+  const std::vector<double>& repeatValues)
   :CtModel_(0),
   AIF_(AIF),
   pkParams_(0),
@@ -30,7 +32,10 @@ MDM_API mdm_DCEModelBase::mdm_DCEModelBase(
   pkInitParams_(initialParams),
   lowerBounds_(lowerBounds),
   upperBounds_(upperBounds),
-	errorCode_(mdm_ErrorTracker::OK)
+  repeatParam_(repeatParam-1),
+  repeatValues_(repeatValues),
+	errorCode_(mdm_ErrorTracker::OK),
+  currRpt_(0)
 {
   
 }
@@ -65,6 +70,10 @@ MDM_API void mdm_DCEModelBase::init(
     }    
   }
 
+  //If we have repeat parameter, this also is fixed
+  if (repeatParam_ >= 0 && repeatParam_ < optParamFlags_.size())
+    optParamFlags_[repeatParam_] = 0;
+
 	//Set relative limits for any specified parameters
 	relativeBounds_.resize(numParams(), 0);
 	for (int i = 0; i < relativeLimitParams.size(); i++)
@@ -95,7 +104,8 @@ MDM_API void mdm_DCEModelBase::init(
 
 MDM_API void mdm_DCEModelBase::reset(size_t nTimes)
 {
-  CtModel_.resize(nTimes);
+  if (nTimes)
+    CtModel_.resize(nTimes);
 
   if (!numParams())
     return;
@@ -146,6 +156,11 @@ MDM_API void mdm_DCEModelBase::setOptimisedParams(const std::vector<double>& opt
       j++;
     }
   }
+}
+
+MDM_API void mdm_DCEModelBase::setParams(const std::vector<double>& params)
+{
+  pkParams_ = params;
 }
 
 MDM_API void mdm_DCEModelBase::setInitialParams(const std::vector<double>& params)
@@ -252,6 +267,16 @@ MDM_API const std::vector<double>& mdm_DCEModelBase::relativeBounds() const
   return relativeBounds_;
 }
 
+MDM_API const int mdm_DCEModelBase::repeatParam() const
+{
+  return repeatParam_;
+}
+
+MDM_API const std::vector<double>& mdm_DCEModelBase::repeatValues() const
+{
+  return repeatValues_;
+}
+
 MDM_API const mdm_AIF& mdm_DCEModelBase::AIF() const
 {
   return AIF_;
@@ -274,4 +299,23 @@ MDM_API void mdm_DCEModelBase::transformLLSolution(const double* B)
   throw mdm_exception(__func__, boost::format(
     "Model (%1%) does support LLS solving")
     % modelType());
+}
+
+MDM_API bool mdm_DCEModelBase::singleFit()
+{
+  return repeatValues_.empty();
+}
+
+MDM_API bool mdm_DCEModelBase::nextRepeatParam()
+{
+  if (currRpt_ >= repeatValues_.size())
+  {
+    currRpt_ = 0;
+    return false;
+  }
+
+  pkInitParams_[repeatParam_] = repeatValues_[currRpt_++];
+  reset();
+  return true;
+
 }

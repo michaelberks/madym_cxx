@@ -21,13 +21,17 @@ MDM_API mdm_DCEModelPatlak::mdm_DCEModelPatlak(
   const std::vector<double>& lowerBounds,
   const std::vector<double>& upperBounds,
   const std::vector<int>& relativeLimitParams,
-  const std::vector<double>& relativeLimitValues)
+  const std::vector<double>& relativeLimitValues,
+  int repeatParam,
+  const std::vector<double>& repeatValues)
   :mdm_DCEModelBase(
     AIF, paramNames, initialParams,
     fixedParams, fixedValues,
     lowerBounds, upperBounds,
     relativeLimitParams,
-    relativeLimitValues)
+    relativeLimitValues,
+    repeatParam,
+    repeatValues)
 {
   //Default values specific to tofts model
   if (pkParamNames_.empty())

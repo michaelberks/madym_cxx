@@ -160,7 +160,9 @@ public:
 		const std::vector<double>& lowerBounds,
 		const std::vector<double>& upperBounds,
 		const std::vector<int>& relativeLimitParams,
-		const std::vector<double>& relativeLimitValues)
+		const std::vector<double>& relativeLimitValues,
+		int repeatParam,
+		const std::vector<double>& repeatValues)
   {
     switch (modelType)
 		{
@@ -173,42 +175,48 @@ public:
 		{
 			return std::make_shared<mdm_DCEModelETM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues, lowerBounds, upperBounds,
-				relativeLimitParams, relativeLimitValues);
+				relativeLimitParams, relativeLimitValues,
+				repeatParam, repeatValues);
 		}
 
 		case ETM:
 		{
 			return std::make_shared < mdm_DCEModelETM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues, lowerBounds, upperBounds,
-				relativeLimitParams, relativeLimitValues);
+				relativeLimitParams, relativeLimitValues,
+				repeatParam, repeatValues);
 		}
 
 		case DIETM:
 		{
 			return std::make_shared < mdm_DCEModelDIETM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues, lowerBounds, upperBounds,
-				relativeLimitParams, relativeLimitValues);
+				relativeLimitParams, relativeLimitValues,
+				repeatParam, repeatValues);
 		}
 
 		case AUEM:
 		{
 			return std::make_shared < mdm_DCEModelAUEM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues, lowerBounds, upperBounds,
-				relativeLimitParams, relativeLimitValues);
+				relativeLimitParams, relativeLimitValues,
+				repeatParam, repeatValues);
 		}
 
 		case DISCM:
 		{
 			return std::make_shared < mdm_DCEModelDISCM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues, lowerBounds, upperBounds,
-				relativeLimitParams, relativeLimitValues);
+				relativeLimitParams, relativeLimitValues,
+				repeatParam, repeatValues);
 		}
 
 		case CXM:
 		{
 			return std::make_shared < mdm_DCEModel2CXM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues, lowerBounds, upperBounds,
-				relativeLimitParams, relativeLimitValues);
+				relativeLimitParams, relativeLimitValues,
+				repeatParam, repeatValues);
 
 		}
 
@@ -216,7 +224,8 @@ public:
 		{
 			return std::make_shared < mdm_DCEModel2CFM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues, lowerBounds, upperBounds,
-				relativeLimitParams, relativeLimitValues);
+				relativeLimitParams, relativeLimitValues,
+				repeatParam, repeatValues);
 
 		}
 
@@ -224,21 +233,24 @@ public:
 		{
 			return std::make_shared < mdm_DCEModelDI2CXM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues, lowerBounds, upperBounds,
-				relativeLimitParams, relativeLimitValues);
+				relativeLimitParams, relativeLimitValues,
+				repeatParam, repeatValues);
 		}
 
 		case DIBEM:
 		{
 			return std::make_shared < mdm_DCEModelDIBEM>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues, lowerBounds, upperBounds,
-				relativeLimitParams, relativeLimitValues);
+				relativeLimitParams, relativeLimitValues,
+				repeatParam, repeatValues);
 		}
 
 		case DIBEM_FP:
 		{
 			return std::make_shared < mdm_DCEModelDIBEM_Fp>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues, lowerBounds, upperBounds,
-				relativeLimitParams, relativeLimitValues);
+				relativeLimitParams, relativeLimitValues,
+				repeatParam, repeatValues);
 
 		}
 
@@ -246,7 +258,8 @@ public:
 		{
 			return std::make_shared < mdm_DCEModelPatlak>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues, lowerBounds, upperBounds,
-				relativeLimitParams, relativeLimitValues);
+				relativeLimitParams, relativeLimitValues,
+				repeatParam, repeatValues);
 
 		}
 		default:

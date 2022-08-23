@@ -1260,7 +1260,7 @@ void madym_gui_ui::on_modelSelectComboBox_currentIndexChanged(const QString &tex
   aif.setPIFType(mdm_AIF::PIF_TYPE::PIF_POP);
   model_ = mdm_DCEModelGenerator::createModel(aif,
     modelType, {},
-    {}, {}, {}, {}, {}, {}, {});
+    {}, {}, {}, {}, {}, {}, {}, -1, {});
 	setStringOption(text, processor_.madym_exe().options().model);
   processor_.madym_exe().options().paramNames.set({});
   processor_.madym_exe().options().initialParams.set({});
@@ -1294,7 +1294,8 @@ void madym_gui_ui::on_configureModelButton_clicked()
     processor_.madym_exe().options().initialParams(), 
 		processor_.madym_exe().options().fixedParams(), processor_.madym_exe().options().fixedValues(),
     processor_.madym_exe().options().lowerBounds(), processor_.madym_exe().options().upperBounds(),
-		processor_.madym_exe().options().relativeLimitParams(), processor_.madym_exe().options().relativeLimitValues());
+		processor_.madym_exe().options().relativeLimitParams(), processor_.madym_exe().options().relativeLimitValues(),
+    processor_.madym_exe().options().repeatParam(), processor_.madym_exe().options().repeatValues());
 
   madym_gui_model_configure optionsWindow(
     *model_, modelName, processor_.madym_exe().options(), this);

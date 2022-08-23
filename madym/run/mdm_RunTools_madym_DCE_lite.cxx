@@ -60,7 +60,8 @@ MDM_API void mdm_RunTools_madym_DCE_lite::run()
 		options_.paramNames(), options_.initialParams(),
 		options_.fixedParams(), options_.fixedValues(),
 		options_.lowerBounds(), options_.upperBounds(),
-		options_.relativeLimitParams(), options_.relativeLimitValues());
+		options_.relativeLimitParams(), options_.relativeLimitValues(),
+		options_.repeatParam(), options_.repeatValues());
 	AIF_.setPrebolus(options_.injectionImage());
 	AIF_.setHct(options_.hct());
 	AIF_.setDose(options_.dose());
@@ -308,6 +309,8 @@ MDM_API int mdm_RunTools_madym_DCE_lite::parseInputs(int argc, const char *argv[
 	options_parser_.add_option(config_options, options_.upperBounds);
 	options_parser_.add_option(config_options, options_.relativeLimitParams);
 	options_parser_.add_option(config_options, options_.relativeLimitValues);
+	options_parser_.add_option(config_options, options_.repeatParam);
+	options_parser_.add_option(config_options, options_.repeatValues);
 	options_parser_.add_option(config_options, options_.firstImage);
 	options_parser_.add_option(config_options, options_.lastImage);
 

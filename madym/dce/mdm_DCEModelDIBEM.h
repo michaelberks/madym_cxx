@@ -30,7 +30,9 @@ public:
     const std::vector<double>& lowerBounds = std::vector<double>(0),
     const std::vector<double>& upperBounds = std::vector<double>(0),
 		const std::vector<int> &relativeLimitParams = std::vector<int>(0),
-		const std::vector<double> &relativeLimitValues = std::vector<double>(0));
+		const std::vector<double> &relativeLimitValues = std::vector<double>(0),
+    int repeatParam = -1,
+    const std::vector<double>& repeatValues = std::vector<double>(0));
 
   MDM_API ~mdm_DCEModelDIBEM();
 

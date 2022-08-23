@@ -49,6 +49,8 @@ def run(
     init_params:np.array = None,
     fixed_params:np.array = None,
     fixed_values:np.array = None,
+    repeat_param:int = None,
+    repeat_values:np.array = None,
     upper_bounds:np.array = None,
     lower_bounds:np.array = None,
     relative_limit_params:np.array = None,
@@ -175,6 +177,10 @@ def run(
             Parameters fixed to their initial values (ie not optimised)
         fixed_values : np.array = None,
             Values for fixed parameters (overrides default initial parameter values)
+        repeat_param : int = None,
+            Index of parameter at which repeat fits will be made
+        repeat_values : np.array = None,
+            Values for repeat parameter
         lower_bounds: np.array = None
 		    Lower bounds for each parameter during optimisation
 	    upper_bounds: np.array = None
@@ -411,6 +417,9 @@ def run(
 
     add_option('int_list', cmd_args, '--fixed_params', fixed_params)
     add_option('float_list', cmd_args, '--fixed_values', fixed_values)
+
+    add_option('int', cmd_args, '--repeat_param', repeat_param)
+    add_option('float_list', cmd_args, '--repeat_values', repeat_values)
 
     add_option('float_list', cmd_args, '--upper_bounds', upper_bounds)
     add_option('float_list', cmd_args, '--lower_bounds', lower_bounds)

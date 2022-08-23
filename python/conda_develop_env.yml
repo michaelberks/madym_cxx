@@ -1,0 +1,16 @@
+name: qbi_madym
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - numpy
+  - matplotlib
+  - scikit-image
+  - nibabel
+  - ipykernel
+  - pip
+  - pip:
+    - QbiPy
+    - -e ./
+

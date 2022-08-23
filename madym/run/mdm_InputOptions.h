@@ -160,6 +160,12 @@ struct mdm_InputOptions {
 	mdm_input_doubles fixedValues = mdm_input_doubles(
 		mdm_input_double_list(std::vector<double>{}), "fixed_values", "",
 		"Values for fixed parameters"); //!< See initial value
+	mdm_input_int repeatParam = mdm_input_int(
+		-1, "repeat_param", "",
+		"Index of parameter at which repeat fits will be made"); //!< See initial value
+	mdm_input_doubles repeatValues = mdm_input_doubles(
+		mdm_input_double_list(std::vector<double>{}), "repeat_values", "",
+		"Values for repeat parameter"); //!< See initial value
 	mdm_input_doubles lowerBounds = mdm_input_doubles(
 		mdm_input_double_list(std::vector<double>{}), "lower_bounds", "",
 		"Lower bounds for each parameter during optimisation"); //!< See initial value

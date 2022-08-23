@@ -106,7 +106,7 @@ def run(model, signals, B_values,
     # an n_samples x n_signals array, or the array size must already match 
     # the signals array 
     if B_values.size == n_signals:
-        B_values = np.repeat(B_values.reshape(1,n_signals), n_samples, 1)
+        B_values = np.repeat(B_values.reshape(1,n_signals), n_samples, 0)
     elif B_values.shape != (n_samples, n_signals):
         ValueError('Size of B values array does not match size of signals array')
 
@@ -213,10 +213,7 @@ def test(plot_output=True):
         interactive settings (eg installation on CSF)
     '''
     import matplotlib.pyplot as plt
-    from QbiPy.dce_models.dce_aif import Aif
-    from QbiPy.dce_models.tissue_concentration import signal_to_concentration, concentration_to_signal
-    from QbiPy.dce_models import tofts_model
-
+    
     #Run tests for ADC and IVIM models
     sigma = 1
     B_vals = np.array([0.0, 20.0, 40.0, 60.0, 80.0, 100.0, 300.0, 500.0, 800.0])

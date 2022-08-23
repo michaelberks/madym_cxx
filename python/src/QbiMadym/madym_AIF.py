@@ -20,14 +20,14 @@ def run(
     sequence_start:str = None,
     sequence_step:str = None,
     n_dyns:int = None,
-    input_Ct:bool = True,
+    input_Ct:bool = None,
     T1_name:str = None,
     M0_name:str = None,
     B1_name:str = None,
     B1_scaling:float = None,
-    B1_correction:bool = False,
+    B1_correction:bool = None,
     r1_const:float = None,
-    M0_ratio:bool = True,
+    M0_ratio:bool = None,
     TR:float = None,
     injection_image:int = None,
     T1_noise:float = None,
@@ -91,7 +91,7 @@ def run(
             Step between indexes of filenames in dynamic series
         n_dyns : int default 0, 
             Number of dynamic sequence maps to load. If <=0, loads all maps in dynamic dir matching -dyn pattern
-        input_Ct : bool default True, 
+        input_Ct : bool default None, 
             Flag specifying input dynamic sequence are concentration (not signal) maps
         T1_name : str default None,
             Path to T1 map
@@ -105,7 +105,7 @@ def run(
             Flag to turn B1 correction on
         r1_const : float = None, 
             Relaxivity constant of concentration in tissue (in ms)
-        M0_ratio : bool = True, 
+        M0_ratio : bool = None, 
             Flag to use ratio method to scale signal instead of supplying M0
         TR : float default None,  
             TR of dynamic series (in ms), only required if T1 method is inversion recovery
