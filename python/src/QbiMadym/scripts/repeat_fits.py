@@ -10,12 +10,24 @@ This is particularly useful for performing grid-searches over the
 arterial delay parameter when using linear-least-squares fitting of
 the extended-Tofts model, and this is the use case we demonstrate here.
 
+As a comparison, we make repeated calls to madym from python, using
+the fixed_params and fixed_values options, and then use python to select
+th ebets fit from the returned model residuals. This should provide
+identical results - the advantage of the using the repeat_param option
+being that this can be used in direct command-line calls to Madym when the
+python interface isn't available/in use.
+
+This script can either be run interactively or as regular python script
+from the command line, in which case the first argument should be
+path to the folder containing the Madym examples data.
+
 IMPORTANT: To run this script, please first run the run_examples_test_dataset.py
 script. This will check Madym is installed properly on your system, and we 
 will use some of the outputs of that script here.
 '''
 #%%
 import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -26,8 +38,12 @@ from QbiMadym import madym_DCE_lite
 
 #%%
 #Set path to the dataset - set this to the examples folder in which the
-#test_dataset and config files are stored.
-config_dir = ''
+#test_dataset and config files are stored. If you call this script from the command
+#line you can pass this as the first argument
+if len(sys.argv) > 0:
+    config_dir = sys.argv[1]
+else:
+    config_dir = ''
 
 #%% ------------------------------------------------------------------------
 ## We're going to use madym_DCE_lite to compute model fits directly on numpy
@@ -55,7 +71,7 @@ t = np.linspace(0, 6.13698, n_images) #units:minutes
 #Specify other scanner parameters
 TR = 4.0
 FA = 20.0
-injection_image = 7,
+injection_image = 7
 r1_const = 3.4
 
 #%% ------------------------------------------------------------------------
@@ -136,5 +152,5 @@ for i_p in range(4):
     ax[row,col].set_xlabel('Fitting using python loop')
     ax[row,col].set_ylabel('Fitting using --repeat_param option')
     ax[row,col].set_title(param_names[i_p])
-
+plt.show()
 # %%

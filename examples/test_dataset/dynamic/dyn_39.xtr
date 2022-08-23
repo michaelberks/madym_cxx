@@ -1,4 +1,6 @@
-voxel dimensions:	2.929688 2.929688 4.000000
-flip angle:	20.000000
-TR:	4.000000
-timestamp:	12 37 19.218750 123719.218750
+TimeStamp 123719.21875
+FlipAngle 20.0
+TR 4.0
+Xmm 2.929688
+Ymm 2.929688
+Zmm 4.0

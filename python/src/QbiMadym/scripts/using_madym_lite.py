@@ -9,13 +9,21 @@ We demonstrate the use here of the 3 lite tools:
 - madym_DCE_lite
 - madym_DWI_lite
 
+In each case we fit a single data point. However the tools are designed to
+work 2D arrays of inputs, with one sample per row (eg inputs to madym_DCE_lite
+are (n_samples, n_times) arrays, and to madym_DWI_lite (n_samples, n_Bvals)).
+
+To see examples of fitting multiple samples at once see lls_monte_carlo.py 
+for madym_DCE_lite and ivim_fitting.py for madym_DWI_lite.
+
+This script can either be run interactively or as regular python script
+from the command line.
 '''
+#%%
 import numpy as np
 import matplotlib.pyplot as plt
 
-import madym_T1
-import madym_DCE_lite
-import madym_DWI_lite
+from QbiMadym import madym_T1, madym_DCE_lite, madym_DWI_lite
 
 #%% -----------------------------------------------------------------
 # Madym T1
@@ -30,14 +38,15 @@ FAs = np.array([2, 10, 18])
 #will be 6 x 3
 signals = signal_from_T1(T1, M0, FAs, TR)
 
-#First run this in data mode using calculate_T1_lite:    
-T1_fit, M0_fit,_,_ = run(
+#Estimate T1 and M0 for this data using madym_T1    
+T1_fit, M0_fit,_,_ = madym_T1.run(
     ScannerParams=FAs, 
     signals=signals,
     TR=TR, 
     method='VFA')
 signals_fit = signal_from_T1(T1_fit, M0_fit, FAs, TR)
 
+#Plot the fits
 plt.figure(figsize=(16,8))
 for i_sample in range(6):
     plt.subplot(2,3,i_sample+1)
@@ -54,13 +63,7 @@ for i_sample in range(6):
     plt.xlabel('Flip angle (degrees)')
     plt.ylabel('Signal intensity') 
 plt.tight_layout()
-plt.show() 
-
-print('Parameter estimates (actual,fit)')
-for i_sample in range(6):
-    print(f' T1: ({T1[i_sample]}, {T1_fit[i_sample]:4.1f})')
-    print(f' M0: ({M0[i_sample]}, {M0_fit[i_sample]:4.1f})')
-
+plt.show()
 
 #%% -----------------------------------------------------------------
 # Madym DCE
@@ -83,9 +86,19 @@ C_t = tofts_model.concentration_from_model(aif, ktrans, ve, vp, tau)
 C_tn = C_t + np.random.randn(1,nDyns)/100
 C_tn = C_tn - np.mean(C_tn[:,0:injection_img])
 
-#Use madym lite to fit this data
+#Use madym lite to fit this data, returning the fitted parameters,
+#the model fit, and the modelled time-series (the function also returns
+#IAUC values, any error codes and the signal derived concentration (for
+# signal input) but we don't make use of these here
 model_params_C, model_fit_C, _, _, CmC_t,_ = madym_DCE_lite.run(
-    model='ETM', input_data=C_tn, dyn_times=t)
+    model='ETM', 
+    input_data=C_tn, 
+    dyn_times=t)
+
+# ---------------------------------------------------------------------
+# Now we show how to fit directly to signal instead of concentration
+# time-series
+#----------------------------------------------------------------------
 
 #Convert the concentrations to signals with some notional T1 values and
 #refit using signals as input
@@ -97,7 +110,11 @@ S_t0 = 100
 S_tn = concentration_to_signal(
     C_tn, T1_0, S_t0, FA, TR, r1_const, injection_img)
 
-model_params_S, model_fit_S, _,_,CmS_t,Cm_t = run(
+#Call madym_DCE_lite to run the fit - the key this time is to set
+#input_Ct to False so it knows it is getting signals no concentration
+# time-series. We also need to give it everything it needs to
+#convert to concentration (eg T1, TR, FA, r1)
+model_params_S, model_fit_S, _,_,CmS_t,Cm_t = madym_DCE_lite.run(
     model='ETM',
     input_data=S_tn,
     dyn_times=t,
@@ -160,15 +177,17 @@ B_vals = np.array([0.0, 20.0, 40.0, 60.0, 80.0, 100.0, 300.0, 500.0, 800.0])
 #Generate ADC test data with Rician noise added
 S0 = 100
 ADC = 0.8e-3
-signals = ADC_model(B_vals, S0, ADC)
-signals_n = add_rician_noise(signals, sigma)
+signals = madym_DWI_lite.ADC_model(B_vals, S0, ADC)
+signals_n = madym_DWI_lite.add_rician_noise(signals, sigma)
 
 #Use madym lite to fit this data
-model_params, _, _ = run(
+model_params, _, _ = madym_DWI_lite.run(
     'ADC', signals_n, B_vals)
 S0_f = model_params[0,0]
 ADC_f = model_params[0,1]
-signals_f = ADC_model(B_vals, S0_f, ADC_f )
+
+#Use the ADC model to convert the fitted params back to signal
+signals_f = madym_DWI_lite.ADC_model(B_vals, S0_f, ADC_f )
 
 #Display plots of the fit
 plt.figure(figsize=(16,8))
@@ -196,19 +215,20 @@ f = 0.2
 D_star = 15e-3
 Bvals_thresh = [40.0,60.0,100.0,150.0]
 
-signals = IVIM_model(B_vals, S0, D, f, D_star)
-signals_n = add_rician_noise(signals, sigma)
+signals = madym_DWI_lite.IVIM_model(B_vals, S0, D, f, D_star)
+signals_n = madym_DWI_lite.add_rician_noise(signals, sigma)
 
 #Use madym lite to fit this data
-model_params, _, _ = run(
+model_params, _, _ = madym_DWI_lite.run(
     'IVIM', signals_n, B_vals,
     Bvals_thresh=Bvals_thresh)
 S0_f = model_params[0,0]
 D_f = model_params[0,1]
 f_f = model_params[0,2]
 D_star_f = model_params[0,3]
-signals_f = IVIM_model(B_vals, S0_f, D_f, f_f, D_star_f)
 
+#Convert the fitted parameters back to signals using the IVIM model
+signals_f = madym_DWI_lite.IVIM_model(B_vals, S0_f, D_f, f_f, D_star_f)
 
 plt.subplot(1,2,2)
 plt.plot(B_vals, signals, 'k--', linewidth= 2)
@@ -231,3 +251,5 @@ plt.tight_layout()
 plt.show()
 
 
+
+# %%

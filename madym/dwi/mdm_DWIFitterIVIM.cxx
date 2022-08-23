@@ -29,7 +29,7 @@ MDM_API mdm_DWIFitterIVIM::mdm_DWIFitterIVIM(const std::vector<double> &Bvals,
   BValsThresh_(BValsThresh)
 {
   //Pre-initialise the alglib state
-  int nParams = 4;
+  int nParams = fullModel_ ? 4 : 3;
   std::vector<double> init = { 100, 1e-3, 0.5, 1e-2 };
   std::vector<double> lowerBounds = { 0, 1e-4, 0, 0 };
   std::vector<double> upperBounds = {1e6, 1e6, 1, 1e6};

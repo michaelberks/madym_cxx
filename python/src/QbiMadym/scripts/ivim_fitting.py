@@ -1,21 +1,33 @@
 '''
---------------------------------------------------------------------------
- This script provides a quick demonstration of fitting signals generated 
- for diffusion IVIM model using the Matlab wrapper to Madym's DWI tools
+This script provides a quick demonstration of fitting signals generated 
+for diffusion IVIM model using the Matlab wrapper to Madym's DWI tools
 
- The example shows running a fit at several noise levels for a fixed set
- of IVIM ground truth parameters, however this basic simulation may easily
- be extended to larger sets of more variable inputs, or with different 
- B-values etc.
+The example shows running a fit at several noise levels for a fixed set
+of IVIM ground truth parameters, however this basic simulation may easily
+be extended to larger sets of more variable inputs, or with different 
+B-values etc.
+
+This script can either be run interactively or as regular python script
+from the command line, in which case you can optionally pass the name
+of a directory in which plots of parameter estimates will be saved.
 '''
 #%%
+import sys
+import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 
 from QbiMadym import madym_DWI_lite
 
+if len(sys.argv) > 1:
+    save_dir = sys.argv[1]
+    os.makedirs(save_dir, exist_ok=True)
+else:
+    save_dir = None
+
 #%%
-def IVIM_simulation(n_samples, B_vals, S0, D, f, D_star, sigma):
+def IVIM_simulation(model, n_samples, B_vals, S0, D, f, D_star, sigma, save_dir):
 
     #Generate simulated IVIM test data with Rician noise added
     S0s = np.full((n_samples,1), S0)
@@ -30,7 +42,7 @@ def IVIM_simulation(n_samples, B_vals, S0, D, f, D_star, sigma):
     #Fit IVIM using Madym
     Bvals_thresh = [40.0,60.0,100.0,150.0]
     model_params = madym_DWI_lite.run(
-        'IVIM', signals_n, B_vals,
+        model, signals_n, B_vals,
         Bvals_thresh=Bvals_thresh)[0]
 
     #Plot the output
@@ -41,7 +53,7 @@ def IVIM_simulation(n_samples, B_vals, S0, D, f, D_star, sigma):
     n_bins = round(n_samples / 100)
 
     fig, ax = plt.subplots(2, 2, figsize=[12,12], constrained_layout = True)
-    plt.suptitle(f'Rician noise sigma = {sigma}')
+    plt.suptitle(f'{model}: Rician noise sigma = {sigma}')
     
     for i_p in range(4):
         row = i_p // 2
@@ -51,11 +63,13 @@ def IVIM_simulation(n_samples, B_vals, S0, D, f, D_star, sigma):
         bin_width = bins[1] - bins[0]
         med_p = np.median(model_params[:,i_p])
         max_count = np.max(counts)
-        ax[row, col].bar(bins[0:-1], counts, width = 0.9*bin_width)
-        ax[row, col].plot([gt[i_p], gt[i_p]], [0, max_count], 'g-', linewidth=2)
-        ax[row, col].plot([med_p, med_p], [0, max_count], 'r--', linewidth=2)
+        h_dist = ax[row, col].bar(bins[0:-1], counts, width = 0.9*bin_width)[0]
+        h_gt, = ax[row, col].plot([gt[i_p], gt[i_p]], [0, max_count], 'g-', linewidth=2)
+        h_med, = ax[row, col].plot([med_p, med_p], [0, max_count], 'r--', linewidth=2)
 
-        ax[row, col].legend([
+        ax[row, col].legend(
+            (h_dist, h_gt, h_med),
+            [
             'Distribution of fitted parameters',
             'Ground truth',
             'Median of fitted parameters'])
@@ -63,6 +77,15 @@ def IVIM_simulation(n_samples, B_vals, S0, D, f, D_star, sigma):
         ax[row, col].set_xlabel(f'{param_names[i_p]},  {param_units[i_p]}')
         ax[row, col].set_ylabel(f'Histogram counts per {n_samples}')
         ax[row, col].set_title(f'Fitting {param_names[i_p]} = {gt[i_p]:5.4f}: median fit = {med_p:5.4f}')
+        
+
+    
+
+    if not save_dir is None:
+        plt_name = os.path.join(save_dir, f'{model}_s{sigma}.png')
+        fig.savefig(plt_name)
+    else:
+        plt.show()
 
 #%%
 #Set B-values at which to simulate signal inputs
@@ -76,7 +99,8 @@ D_star = 15e-3
 n_samples = int(1e4)
 #%%
 for sigma in [0.1, 1, 2, 4, 10]:
-    IVIM_simulation(n_samples, B_vals, S0, D, f, D_star, sigma)
+    for model in ['IVIM', 'IVIM-simple']:
+        IVIM_simulation(model, n_samples, B_vals, S0, D, f, D_star, sigma, save_dir)
 
 
 

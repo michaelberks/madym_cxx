@@ -171,6 +171,10 @@ def run(model=None, input_data=None,
     
           model_fit (1D array, Nsamples x 1) - sum-of-squared model 
            residuals for each time-series
+
+          iauc (1D array, n_iauc x 1)
+            Integrated area under the C(t) curves for each sample, one value for
+            each input iauc_time
     
           error_codes (2D array, Nsamples x 2) - error codes returned by MaDym
            for fitting each sample. 0 implies no errors or warnings. For all
