@@ -17,7 +17,7 @@
 struct dcmNumericInfo {
   int seriesNumber; ///< series number
   int  acquisitionNumber; ///< acquisitionNumber
-  int  temporalPositionIdentifier=1;  ///< temporalPositionIdentifier
+  double  temporalPositionIdentifier=1;  ///< temporalPositionIdentifier
   double  sliceLocation;  ///< sliceLocation
   int instanceNumber;  ///< instanceNumber
 };

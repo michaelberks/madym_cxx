@@ -58,8 +58,8 @@ MDM_API void mdm_ErrorTracker::initErrorImage(const mdm_Image3D &imgWithDims)
 		//Error image has already been set, can just return true and get on silently
 		return;
 
+  errorImage_.copy(imgWithDims);
 	errorImage_.setType(mdm_Image3D::ImageType::TYPE_ERRORMAP);
-	errorImage_.setDimensions(imgWithDims);
 }
 
 MDM_API void mdm_ErrorTracker::resetErrorImage()

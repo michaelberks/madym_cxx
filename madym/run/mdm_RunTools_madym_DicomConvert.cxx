@@ -289,7 +289,8 @@ void mdm_RunTools_madym_DicomConvert::extractInfo(const std::string &filename,
       getNumericInfo(fileformat, DCM_SliceLocation, info_n.sliceLocation) &&
       getNumericInfo(fileformat, DCM_InstanceNumber, info_n.instanceNumber);
 
-    getNumericInfo(fileformat, DCM_TemporalPositionIdentifier, info_n.temporalPositionIdentifier);
+    if (!getNumericInfo(fileformat, DCM_TemporalPositionIdentifier, info_n.temporalPositionIdentifier))
+      info_n.temporalPositionIdentifier = getDynamicTime(fileformat, 0);
 
     //Only continue if acquistion number set
     if (valid && info_n.acquisitionNumber)
@@ -782,7 +783,7 @@ void mdm_RunTools_madym_DicomConvert::readSeriesInfo()
 //--------------------------------------------------------------------
 void mdm_RunTools_madym_DicomConvert::sortDicomDir()
 {
-
+  checkDynamicTime();
   const auto directory = fs::absolute(fs::path(options_.dicomDir()));
 
   //Get list of all files in the directory tree
@@ -968,6 +969,7 @@ void mdm_RunTools_madym_DicomConvert::checkSortValid(
   dcmSeriesInfo &series)
 {
   series.nZ = (int)series.numericInfo.size() / series.nTimes;
+  series.sortValid = true;
 
   //Check numSlices divided into an integer
   if (series.nZ*series.nTimes != (int)series.numericInfo.size())
@@ -982,19 +984,14 @@ void mdm_RunTools_madym_DicomConvert::checkSortValid(
   //When we loop through numeric we should see blocks of
   // [1,...,1][2,...,2]...[tn,...,tn] in temporalPosition
   // [z1,z2,...,zn]...[z1,z2,...,zn] in slice location
-  for (int i_t = 0; i_t < series.nTimes; i_t++)
+  for (int i_z = 0; i_z < series.nZ; i_z++)
   {
-    for (int i_z = 0; i_z < series.nZ; i_z++)
+    for (int i_t = 1; i_t < series.nTimes; i_t++)
     {
-      const auto &infoi = series.numericInfo[(i_t*series.nZ) + i_z];
-
-      series.sortValid = infoi.temporalPositionIdentifier == (int)i_t + 1;
-
-      if (series.sortValid && i_t)
-      {
-        const auto &info0 = series.numericInfo[i_z];
-        series.sortValid = infoi.sliceLocation == info0.sliceLocation;
-      }
+      const auto& info_t0 = series.numericInfo[(i_t-1)*series.nZ + i_z];
+      const auto &info_t1 = series.numericInfo[i_t*series.nZ + i_z];
+      series.sortValid = info_t1.sliceLocation == info_t0.sliceLocation &&
+          info_t1.temporalPositionIdentifier > info_t0.temporalPositionIdentifier;
       
       if (!series.sortValid)
         break;
