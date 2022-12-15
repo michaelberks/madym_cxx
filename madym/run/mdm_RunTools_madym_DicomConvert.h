@@ -36,9 +36,6 @@ struct dcmSeriesInfo {
   double Xmm; ///< size of voxels in X-axis in mm
   double Ymm; ///< size of voxels in X-axis in mm
   double Zmm; ///< size of voxels in X-axis in mm
-  std::vector<double> imagePosition; ///< 3-element vector: (x,y,z) co-ordinates of the image grid origin
-  std::vector<double> imageOrientation; ///< 6-element vector: (x,y,z) cosines of the first row, then first column of the image grid
-  double zDirection; ///!< Direction of slice axis relative to cross product of row and column axes
   double FA = 0; ///< Flip-angle 
   double TR = 0; ///< Repetition time in ms
   double TE = 0; ///< echo time in ms
@@ -190,9 +187,6 @@ private:
   void getSeriesName(dcmSeriesInfo& series, DcmFileFormat &fileformat);
 
   //
-  void getSeriesAxesDirections(dcmSeriesInfo& series, DcmFileFormat& fileformat);
-
-  //
   void completeSeriesInfo(dcmSeriesInfo &series, int nDyns = 0);
 
   //
@@ -214,6 +208,10 @@ private:
     bool isDynamic = false, int dynNum = 0, 
     double Bvalue = -1, const std::vector<double> gradOri = {});
 
+  //
+  void getVolumeAxesDirections(
+      const std::string& firstSlice, const std::string& lastSlice,
+      const std::string& seriesName, const int nSlices, mdm_Image3D::MetaData& info);
 
   //
   void setDicomTag(const mdm_input_strings &tagInput, DcmTagKey &tag);

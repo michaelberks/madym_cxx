@@ -447,89 +447,92 @@ void mdm_RunTools_madym_DicomConvert::getSeriesName(dcmSeriesInfo& series, DcmFi
 }
 
 //-----------------------------------------------------------------
-void mdm_RunTools_madym_DicomConvert::getSeriesAxesDirections(dcmSeriesInfo& series, DcmFileFormat& fileformat)
+void mdm_RunTools_madym_DicomConvert::getVolumeAxesDirections(
+    const std::string& firstSlice, const std::string& lastSlice,
+    const std::string& seriesName, const int nSlices, mdm_Image3D::MetaData& info)
 {
-  //Get the image position and orientation from the first slice
-  getScannerSetting(
-    fileformat, series.name, "ImagePositionPatient",
-    DCM_ImagePositionPatient, true, series.imagePosition, 3);
+    //Load in the final slice and get it's image position
+    DcmFileFormat firstSliceFile;
+    OFCondition status = firstSliceFile.loadFile(firstSlice.c_str());
 
-  getScannerSetting(
-    fileformat, series.name, "ImageOrientationPatient",
-    DCM_ImageOrientationPatient, true, series.imageOrientation, 6);
+    if (!status.good())
+        throw mdm_exception(__func__, "Unable to open first slice DICOM file " + firstSlice);
 
-  //Now workout the slice direction relative to the row and column axes orientation
-  series.zDirection = 1.0;
+    //Load in the final slice and get it's image position
+    DcmFileFormat lastSliceFile;
+    status = lastSliceFile.loadFile(lastSlice.c_str());
 
-  //Only continue if position and orientation of first slice found
-  if (series.imagePosition.size() != 3 || series.imageOrientation.size() != 6)
-    return;
+    if (!status.good())
+        throw mdm_exception(__func__, "Unable to open last slice DICOM file " + lastSlice);
 
-  //Find the last slice
-  auto nSlices = series.numericInfo.size();
-  size_t lastSlice = 1;
-  for (; lastSlice < nSlices; lastSlice++)
-    if (series.numericInfo[lastSlice].sliceLocation <= series.numericInfo[lastSlice-1].sliceLocation)
-      break;
-  
-  lastSlice--;   
+    std::vector<double> pos1, pos2, ori1;
 
-  //Only 1 slice in volume, so can't determine z-axis
-  if (!lastSlice)
-    return;
+    getScannerSetting(
+        firstSliceFile, seriesName, "ImagePositionPatient",
+        DCM_ImagePositionPatient, true, pos1, 3);
+    getScannerSetting(
+        lastSliceFile, seriesName, "ImagePositionPatient",
+        DCM_ImagePositionPatient, true, pos2, 3);
+    getScannerSetting(
+        firstSliceFile, seriesName, "ImageOrientationPatient",
+        DCM_ImageOrientationPatient, true, ori1, 6);
 
-  //Load in the final slice and get it's image position
-  DcmFileFormat lastSliceFile;
-  OFCondition status = lastSliceFile.loadFile(series.filenames[lastSlice].c_str());
+    //Check if image position and orientation are set
+    if (pos1.size() != 3 || pos2.size() != 3 || ori1.size() != 6)
+    {
+        mdm_ProgramLogger::logProgramWarning(__func__,
+            seriesName + ": unable to obtain image position and orientation from DICOM headers");
+        return;
+    }
+    
+    //Set image position and orientation in the info data
+    info.originX.setValue(pos1[0]);
+    info.originY.setValue(pos1[1]);
+    info.originZ.setValue(pos1[2]);
+    
+    info.rowDirCosX.setValue(ori1[0]);
+    info.rowDirCosY.setValue(ori1[1]);
+    info.rowDirCosZ.setValue(ori1[2]);
+    info.colDirCosX.setValue(ori1[3]);
+    info.colDirCosY.setValue(ori1[4]);
+    info.colDirCosZ.setValue(ori1[5]);
 
-  if (!status.good())
-    throw mdm_exception(__func__, "Unable to open " + series.filenames[lastSlice]);
+    //Get vector from first to last frame
+    auto dx = pos2[0] - pos1[0];
+    auto dy = pos2[1] - pos1[1];
+    auto dz = pos2[2] - pos1[2];
+    auto mag = std::sqrt(dx * dx + dy * dy + dz * dz);
+    dx /= mag;
+    dy /= mag;
+    dz /= mag;
 
-  const auto& pos1 = series.imagePosition;
-  std::vector<double> pos2;
-  getScannerSetting(
-    lastSliceFile, series.name, "ImagePositionPatient",
-    DCM_ImagePositionPatient, true, pos2, 3);
+    //Compute the distance between slices
+    auto zd = mag / (nSlices - 1);
 
-  if (pos2.size() != 3)
-    return;
+    //Compute cross product of row and column axes
+    auto ux = ori1[0];
+    auto uy = ori1[1];
+    auto uz = ori1[2];
 
-  //Get vector from first to last frame
-  auto dx = pos2[0] - pos1[0];
-  auto dy = pos2[1] - pos1[1];
-  auto dz = pos2[2] - pos1[2];
-  auto mag = std::sqrt(dx * dx + dy * dy + dz * dz);
-  dx /= mag;
-  dy /= mag;
-  dz /= mag;
+    auto vx = ori1[3];
+    auto vy = ori1[4];
+    auto vz = ori1[5];
 
-  //Compute the distance between slices
-  auto zd = mag / lastSlice;
+    auto wx = uy * vz - uz * vy;
+    auto wy = uz * vx - ux * vz;
+    auto wz = ux * vy - uy * vx;
 
-  //Compute cross product of row and column axes
-  auto ux = series.imageOrientation[0];
-  auto uy = series.imageOrientation[1];
-  auto uz = series.imageOrientation[2];
+    //w(x,y,z) should be approximately parallel to d(x,y,z), so
+    //their dot product should be either 1 or -1
+    auto dot = dx * wx + dy * wy + dz * wz;
 
-  auto vx = series.imageOrientation[3];
-  auto vy = series.imageOrientation[4];
-  auto vz = series.imageOrientation[5];
+    if (std::abs(std::abs(dot) - 1.0) > 1e-3)
+        mdm_ProgramLogger::logProgramWarning(__func__,
+            seriesName + ": cross product of row and column axes orientation does not match "
+            "the orientation of the vector from first to last slice image positions");
 
-  auto wx = uy * vz - uz * vy;
-  auto wy = uz * vx - ux * vz;
-  auto wz = ux * vy - uy * vx;
-
-  //w(x,y,z) should be approximately parallel to d(x,y,z), so
-  //their dot product should be either 1 or -1
-  auto dot = dx * wx + dy * wy + dz * wz;
-
-  if (std::abs(std::abs(dot) - 1.0) > 1e-3)
-    mdm_ProgramLogger::logProgramWarning(__func__,
-      series.name + ": cross product of row and column axes orientation does not match "
-      "the orientation of the vector from first to last slice image positions");
-
-  //The z-direction is the sign of dot multiple by the distance between slices
-  series.zDirection = dot > 0  ? zd : -zd;
+    //The z-direction is the sign of dot multiple by the distance between slices
+    info.zDirection.setValue( dot > 0 ? zd : -zd );
 
 }
 
@@ -568,9 +571,6 @@ void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series, 
   series.Xmm = pixelSpacing[0];
   series.Ymm = pixelSpacing[1];
   getNumericInfo(fileformat, DCM_SliceThickness, series.Zmm);
-
-  //Get image position information
-  getSeriesAxesDirections(series, fileformat);
 
   //Get scanner settings
   getScannerSetting(
@@ -903,7 +903,8 @@ mdm_Image3D mdm_RunTools_madym_DicomConvert::loadDicomImage(const dcmSeriesInfo&
   double scale = options_.dicomScale();
   applyAutoScaling(fileformat, offset, scale);
 
-  std::vector<size_t> dimensions = { (size_t)series.nX, (size_t)series.nY, sliceNames.size() };
+  auto nZ = sliceNames.size();
+  std::vector<size_t> dimensions = { (size_t)series.nX, (size_t)series.nY, nZ };
   std::vector <double> pixelSpacing = { series.Xmm, series.Ymm, series.Zmm };
 
   //Make the image from the filenames
@@ -918,21 +919,9 @@ mdm_Image3D mdm_RunTools_madym_DicomConvert::loadDicomImage(const dcmSeriesInfo&
   info.sclSlope.setValue(1 / scale);
   info.sclInter.setValue(offset);
 
-  //Check if image position and orientation are set
-  if (series.imagePosition.size() == 3) {
-    info.originX.setValue(series.imagePosition[0]);
-    info.originY.setValue(series.imagePosition[1]);
-    info.originZ.setValue(series.imagePosition[2]);
-  }
-  if (series.imageOrientation.size() == 6) {
-    info.rowDirCosX.setValue(series.imageOrientation[0]);
-    info.rowDirCosY.setValue(series.imageOrientation[1]);
-    info.rowDirCosZ.setValue(series.imageOrientation[2]);
-    info.colDirCosX.setValue(series.imageOrientation[3]);
-    info.colDirCosY.setValue(series.imageOrientation[4]);
-    info.colDirCosZ.setValue(series.imageOrientation[5]);
-  }
-  info.zDirection.setValue(series.zDirection);
+  //Get image position information
+  getVolumeAxesDirections(
+      sliceNames.front(), sliceNames.back(), series.name, nZ, info);
 
   info.flipX.setValue(options_.flipX());
   info.flipY.setValue(options_.flipY());
