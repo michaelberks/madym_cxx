@@ -64,7 +64,7 @@ madym_gui_model_configure::madym_gui_model_configure(const mdm_DCEModelBase &mod
 	const auto& upperBounds = model_.upperBounds();
 	const auto& relativeLimits = model_.relativeBounds();
 	const auto& repeatParam = model_.repeatParam();
-	const auto& repeatValues = model.repeatValues();
+	const auto& repeatValues = model_.repeatValues();
 
   for (int iParam = 0; iParam < 10; iParam++)
   {
@@ -137,7 +137,7 @@ madym_gui_model_configure::madym_gui_model_configure(const mdm_DCEModelBase &mod
 			paramControls_[iParam].lowerBound_->setVisible(true);
 			paramControls_[iParam].upperBound_->setVisible(true);
 			paramControls_[iParam].relativeLimit_->setVisible(true);
-			paramControls_[iParam].repeatValues_->setVisible(false);
+			paramControls_[iParam].repeatValues_->setVisible(true);
     }
     else
     {

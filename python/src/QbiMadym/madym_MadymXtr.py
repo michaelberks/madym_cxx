@@ -32,6 +32,8 @@ def run(
     TIs : list = None,
     Bvalues : list = None,
     dyn_times:np.array = None,
+    help:bool = None,
+    version:bool = None,
     working_directory:str = None,
     dummy_run:bool = None):
     '''
@@ -89,6 +91,10 @@ def run(
             List of B-values for DWI signal images
         dyn_times:np.array = None,
             Time associated with each dynamic signal (in mins)
+        help : bool = None,
+            Display help and exit
+        version : bool = None,
+            Display version and exit
         working_directory : str = None,
             Sets the current working directory for the system call, allows setting relative input paths for data
         dummy_run : bool = None
@@ -180,6 +186,10 @@ def run(
     add_option('float_list', cmd_args, '--TI', TIs)
 
     add_option('float_list', cmd_args, '--Bvalues', Bvalues)
+
+    add_option('bool', cmd_args, '--help', help)
+
+    add_option('bool', cmd_args, '--version', version)
 
     if dyn_times is not None:
         #Get a name for the temporary file we'll write times to (we'll hold

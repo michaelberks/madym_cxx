@@ -33,6 +33,10 @@ madym_gui_ui::madym_gui_ui(QWidget *parent)
   dataDir_(""),
   trackChanges_(true)
 {
+  //Set default locale so we don't get weird country specific mangling
+  //of numerical validators
+  QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedKingdom));
+  
 	// setup the UI
   ui.setupUi(this);
 
@@ -552,6 +556,22 @@ void madym_gui_ui::on_auditDirSelect_clicked()
     return;
 
   ui.auditDirLineEdit->setText(selectedDir);
+}
+
+
+void madym_gui_ui::on_noAuditCheckBox_stateChanged(int state)
+{
+  setBoolOption(state, processor_.madym_exe().options().noAudit);
+}
+
+void madym_gui_ui::on_noLogCheckBox_stateChanged(int state)
+{
+  setBoolOption(state, processor_.madym_exe().options().noLog);
+}
+
+void madym_gui_ui::on_quietCheckBox_stateChanged(int state)
+{
+  setBoolOption(state, processor_.madym_exe().options().quiet);
 }
 
 //-------------------------------------------------------------------------
@@ -1494,6 +1514,9 @@ void madym_gui_ui::setup_logging_tab(bool show)
     ui.configLineEdit->setText(options.outputConfigFileName().c_str());
     ui.auditNameLineEdit->setText(options.auditLogBaseName().c_str());
     ui.auditDirLineEdit->setText(options.auditLogDir().c_str());
+    ui.noAuditCheckBox->setChecked(options.noAudit());
+    ui.noLogCheckBox->setChecked(options.noLog());
+    ui.quietCheckBox->setChecked(options.quiet());
     ui.outputTabWidget->setCurrentIndex(0);
   }
   else

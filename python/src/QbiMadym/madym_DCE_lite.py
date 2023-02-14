@@ -50,6 +50,8 @@ def run(model=None, input_data=None,
     dyn_noise_values:np.array = None,
     test_enhancement:bool = None,
     quiet:bool = None,
+    help:bool = None,
+    version:bool = None,
     dummy_run:bool = False
 ):
     '''
@@ -159,6 +161,10 @@ def run(model=None, input_data=None,
             Set test-for-enhancement flag
         quiet : bool = False,
             Do not display logging messages in cout
+        help : bool = None,
+            Display help and exit
+        version : bool = None,
+            Display version and exit
         dummy_run : bool default False 
             Don't run any thing, just print the cmd we'll run to inspect)
     
@@ -351,6 +357,10 @@ def run(model=None, input_data=None,
     add_option('bool', cmd_args, '--test_enh', test_enhancement)
 
     add_option('bool', cmd_args, '--quiet', quiet)
+
+    add_option('bool', cmd_args, '--help', help)
+
+    add_option('bool', cmd_args, '--version', version)
 
     add_option('string', cmd_args, '--aif', aif_name)
 

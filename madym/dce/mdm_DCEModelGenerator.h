@@ -26,6 +26,7 @@
 #include <madym/dce/mdm_DCEModelDIBEM.h>
 #include <madym/dce/mdm_DCEModelDIBEM_Fp.h>
 #include <madym/dce/mdm_DCEModelPatlak.h>
+#include <madym/dce/mdm_DCEModelMLDRW.h>
 
 //!Header only class to generate specific instances of DCE models
 /*! 
@@ -48,7 +49,7 @@ public:
 	*/
 	enum ModelTypes {
 		UNDEFINED,
-    NONE,
+		NONE,
 		TOFTS,
 		ETM,
 		DIETM,
@@ -59,7 +60,8 @@ public:
 		DI2CXM,
 		DIBEM,
 		DIBEM_FP,
-		PATLAK
+		PATLAK,
+		MLDRW
 	};
 
 	/**
@@ -79,7 +81,8 @@ public:
 	"DIBEM",
 	"PATLAK",
 	"TOFTS",
-  "NONE"
+	"MLDRW",
+	"NONE"
 		};
 	}
 
@@ -125,6 +128,9 @@ public:
 
 		else if (modelName == "PATLAK")
 			return PATLAK;
+
+		else if (modelName == "MLDRW")
+			return MLDRW;
 
 		else
 			return UNDEFINED;
@@ -257,6 +263,15 @@ public:
 		case PATLAK:
 		{
 			return std::make_shared < mdm_DCEModelPatlak>(AIF, paramNames, initialParams,
+				fixedParams, fixedValues, lowerBounds, upperBounds,
+				relativeLimitParams, relativeLimitValues,
+				repeatParam, repeatValues);
+
+		}
+
+		case MLDRW:
+		{
+			return std::make_shared < mdm_DCEModelMLDRW>(AIF, paramNames, initialParams,
 				fixedParams, fixedValues, lowerBounds, upperBounds,
 				relativeLimitParams, relativeLimitValues,
 				repeatParam, repeatValues);

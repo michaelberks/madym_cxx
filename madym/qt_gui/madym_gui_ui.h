@@ -140,6 +140,10 @@ private slots:
   void on_auditNameLineEdit_textChanged(const QString &text);
   void on_auditDirLineEdit_textChanged(const QString &text);
   void on_auditDirSelect_clicked();
+  void on_noAuditCheckBox_stateChanged(int state);
+  void on_noLogCheckBox_stateChanged(int state);
+  void on_quietCheckBox_stateChanged(int state);
+
 
   //AIF options
   void on_AIFtypeComboBox_currentIndexChanged(const QString &text);

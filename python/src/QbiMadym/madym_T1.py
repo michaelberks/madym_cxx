@@ -33,10 +33,13 @@ def  run(
     no_log:bool = None,
     no_audit:bool = None,
     quiet:bool = None,
+    help:bool = None,
+    version:bool = None,
     img_fmt_r:str = None,
     img_fmt_w:str = None,
     nifti_scaling:bool = None,
     nifti_4D:bool = None,
+    voxel_size_warn_only:bool = None,
     overwrite:bool = None,
     working_directory:str = None,
     return_maps:bool = False,
@@ -107,6 +110,10 @@ def  run(
             Switch off audit logging
         quiet : bool = False,
             Do not display logging messages in cout
+        help : bool = None,
+            Display help and exit
+        version : bool = None,
+            Display version and exit
         img_fmt_r : str = None
             Image format for reading input
         img_fmt_w : str = None
@@ -115,6 +122,8 @@ def  run(
             If set, applies intensity scaling and offset when reading/writing NIFTI images
         nifti_4D : bool = None,
             If set, reads NIFTI 4D images for T1 mapping and dynamic inputs
+        voxel_size_warn_only : bool = None
+            If true, only warn if voxel sizes don't match for subsequent images
         overwrite : bool default False,
 			Set overwrite existing analysis in output dir ON
         working_directory : str = None,
@@ -158,7 +167,11 @@ def  run(
      Copyright: (C) University of Manchester'''
 
     #Parse inputs, check if using full or lite version 
-    use_lite = config_file is None and T1_vols is None
+    use_lite = (
+        config_file is None and 
+        T1_vols is None and
+        help is None and
+        version is None)
 
     if use_lite:
         if ScannerParams is None:
@@ -195,49 +208,55 @@ def  run(
     #Check if fitting to full volumes saved on disk, or directly supplied data
     if not use_lite:
 
-        add_option('string', cmd_args, '--config', config_file);
+        add_option('string', cmd_args, '--config', config_file)
     
-        add_option('string', cmd_args, '--cwd', working_directory);
+        add_option('string', cmd_args, '--cwd', working_directory)
     
-        add_option('string', cmd_args, '-T', method);
+        add_option('string', cmd_args, '-T', method)
     
-        add_option('string_list', cmd_args, '--T1_vols', T1_vols);
+        add_option('string_list', cmd_args, '--T1_vols', T1_vols)
     
-        add_option('string', cmd_args, '-o', output_dir);
+        add_option('string', cmd_args, '-o', output_dir)
     
-        add_option('string', cmd_args, '--B1', B1_name);  
+        add_option('string', cmd_args, '--B1', B1_name)  
     
-        add_option('float', cmd_args, '--B1_scaling', B1_scaling);
+        add_option('float', cmd_args, '--B1_scaling', B1_scaling)
     
-        add_option('string', cmd_args, '--img_fmt_r', img_fmt_r);
+        add_option('string', cmd_args, '--img_fmt_r', img_fmt_r)
     
-        add_option('string', cmd_args, '--img_fmt_w', img_fmt_w);
+        add_option('string', cmd_args, '--img_fmt_w', img_fmt_w)
 
         add_option('bool', cmd_args, '--nifti_scaling', nifti_scaling)
 
         add_option('bool', cmd_args, '--nifti_4D', nifti_4D)
     
-        add_option('string', cmd_args, '-E', error_name);
-    
-        add_option('string', cmd_args, '--roi', roi_name);
-    
-        add_option('float', cmd_args, '--T1_noise', noise_thresh);
-    
-        add_option('bool', cmd_args, '--no_audit', no_audit);
+        add_option('bool', cmd_args, '--voxel_size_warn_only', voxel_size_warn_only)
 
-        add_option('bool', cmd_args, '--no_log', no_log);
-
-        add_option('bool', cmd_args, '--quiet', quiet);
+        add_option('string', cmd_args, '-E', error_name)
     
-        add_option('string', cmd_args, '--program_log', program_log_name);
-
-        add_option('string', cmd_args, '--audit', audit_name);
-
-        add_option('string', cmd_args, '--audit_dir', audit_dir);
-
-        add_option('string', cmd_args, '--config_out', config_out);
+        add_option('string', cmd_args, '--roi', roi_name)
     
-        add_option('bool', cmd_args, '--overwrite', overwrite);
+        add_option('float', cmd_args, '--T1_noise', noise_thresh)
+    
+        add_option('bool', cmd_args, '--no_audit', no_audit)
+
+        add_option('bool', cmd_args, '--no_log', no_log)
+
+        add_option('bool', cmd_args, '--quiet', quiet)
+
+        add_option('bool', cmd_args, '--help', help)
+
+        add_option('bool', cmd_args, '--version', version)
+    
+        add_option('string', cmd_args, '--program_log', program_log_name)
+
+        add_option('string', cmd_args, '--audit', audit_name)
+
+        add_option('string', cmd_args, '--audit_dir', audit_dir)
+
+        add_option('string', cmd_args, '--config_out', config_out)
+    
+        add_option('bool', cmd_args, '--overwrite', overwrite)
         
     else:
         #Fit directly supplied FA and signal data using madym_T1_lite

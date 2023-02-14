@@ -16,6 +16,8 @@
 #include <cmath>            /* For cos(), sin() and exp() */
 #include <cassert>          /* For assert macro */
 
+#include "opt/interpolation.h"
+
 #include <madym/utils/mdm_ProgramLogger.h>
 #include <madym/utils/mdm_exception.h>
 
@@ -132,7 +134,11 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 	//
 	// First, we create optimizer object and tune its properties
 	//
-	std::vector<double> init_vals = { 1000.0, signals_[0] * 30.0 };
+
+	//Do linear fit to initialise T1 and M0
+	linearFit(T1value, M0value);
+
+	std::vector<double> init_vals = { T1value, M0value };
 	alglib::real_1d_array x;
 	x.attach_to_ptr(2, init_vals.data());
 
@@ -171,7 +177,7 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 	}
 
 	// Check for crap fit or bonkers result
-	if (x[0] < 0.0 || x[0] > 6000.0)
+	if (x[0] < 0.0 || x[0] > 10000.0)
 	{
 		setErrorValuesAndTidyUp(T1value, M0value);
 		return mdm_ErrorTracker::T1_MAD_VALUE;
@@ -292,4 +298,40 @@ void mdm_T1FitterVFA::initFAs()
 		cosFAs_[i] = std::cos(B1_*FAs_[i]);
 		sinFAs_[i] = std::sin(B1_*FAs_[i]);
 	}
+}
+
+//
+void mdm_T1FitterVFA::linearFit(double& T1, double& M0)
+{
+	alglib::real_1d_array x;
+	alglib::real_1d_array y;
+
+	x.setlength(nFAs_);
+	y.setlength(nFAs_);
+	for (size_t i = 0; i < nFAs_; i++)
+	{
+		y[i] = signals_[i] / sinFAs_[i];
+		x[i] = cosFAs_[i] * y[i];
+	}
+
+	alglib::ae_int_t info;
+	alglib::barycentricinterpolant pi;
+	alglib::real_1d_array p;
+	alglib::polynomialfitreport rep;
+
+	//
+	// Fitting without individual weights
+	//
+	// NOTE: result is returned as barycentricinterpolant structure.
+	//       if you want to get representation in the power basis,
+	//       you can use barycentricbar2pow() function to convert
+	//       from barycentric to power representation (see docs for 
+	//       POLINT subpackage for more info).
+	//
+	polynomialfit(x, y, 2, info, pi, rep);
+	polynomialbar2pow(pi, p);
+
+	auto E1 = p[1];
+	M0 = p[0] / (1 - E1);
+	T1 = -TR_ / std::log(p[1]);
 }

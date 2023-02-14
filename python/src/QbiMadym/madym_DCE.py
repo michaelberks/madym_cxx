@@ -25,6 +25,8 @@ def run(
     input_Ct:bool = None,
     output_Ct_sig:bool = None,
     output_Ct_mod:bool = None,
+    Ct_sig_prefix:str = None,
+    Ct_mod_prefix:str = None,
     T1_name:str = None,
     M0_name:str = None,
     B1_name:str = None,
@@ -76,6 +78,8 @@ def run(
     no_log:bool = None,
     no_audit:bool = None,
     quiet:bool = None,
+    help:bool = None,
+    version:bool = None,
     working_directory:str = None,
     dummy_run:bool = False):
     '''
@@ -129,6 +133,10 @@ def run(
             Flag requesting concentration (derived from signal) are saved to output
         output_Ct_mod : bool = False, 
             Flag requesting modelled concentration maps are saved to output
+        Ct_sig_prefix:str = None,
+            Change the name of the prefix used to name output signal derived Ct
+        Ct_mod_prefix:str = None,
+            Change the name of the prefix used to name output modelled derived Ct
         T1_name : str default None,
             Path to T1 map
         M0_name : str default None,
@@ -199,9 +207,9 @@ def run(
             Maximum number of iterations to run model fit for
         opt_type: str = None
             Type of optimisation to run
-        dyn_noise : bool = False,
+        dyn_noise : bool = None,
             Set to use varying temporal noise in model fit
-        test_enhancement : bool = False, 
+        test_enhancement : bool = None, 
             Set test-for-enhancement flag
         img_fmt_r : str = None
             Image format for reading input
@@ -211,9 +219,9 @@ def run(
             If set, applies intensity scaling and offset when reading/writing NIFTI images
         nifti_4D : bool = None,
             If set, reads NIFTI 4D images for T1 mapping and dynamic inputs
-        voxel_size_warn_only : bool = False
+        voxel_size_warn_only : bool = None
             If true, only warn if voxel sizes don't match for subsequent images
-        overwrite : bool = False,
+        overwrite : bool = None,
             Set overwrite existing analysis in output dir
         program_log_name : str = None, 
             Program log file name
@@ -225,12 +233,16 @@ def run(
             Error codes image file name
         config_out : str = None,
             Filename of output config file, will be appended with datetime
-        no_log arg : bool = False,
+        no_log arg : bool = None,
             Switch off program logging
-        no_audit : bool = False,
+        no_audit : bool = None,
             Switch off audit logging
-        quiet : bool = False,
+        quiet : bool = None,
             Do not display logging messages in cout
+        help : bool = None,
+            Display help and exit
+        version : bool = None,
+            Display version and exit
         working_directory : str = None,
             Sets the current working directory for the system call, allows setting relative input paths for data
         dummy_run : bool = False
@@ -359,6 +371,10 @@ def run(
 
     add_option('bool', cmd_args, '--Ct_mod', output_Ct_mod)
 
+    add_option('string', cmd_args, '--Ct_sig_prefix', Ct_sig_prefix)
+
+    add_option('string', cmd_args, '--Ct_mod_prefix', Ct_mod_prefix)
+
     add_option('bool', cmd_args, '--test_enh', test_enhancement)
 
     add_option('int', cmd_args, '--max_iter', max_iter)
@@ -374,6 +390,10 @@ def run(
     add_option('bool', cmd_args, '--no_log', no_log)
 
     add_option('bool', cmd_args, '--quiet', quiet)
+
+    add_option('bool', cmd_args, '--help', help)
+
+    add_option('bool', cmd_args, '--version', version)
 
     add_option('float', cmd_args, '-H', hct)
 
