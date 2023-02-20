@@ -681,7 +681,7 @@
                   </size>
                  </property>
                  <property name="currentIndex">
-                  <number>0</number>
+                  <number>4</number>
                  </property>
                  <widget class="QWidget" name="outputTab">
                   <attribute name="title">
@@ -1009,15 +1009,12 @@
                    <string>Logging</string>
                   </attribute>
                   <layout class="QGridLayout" name="gridLayout_10">
-                   <item row="0" column="0">
-                    <widget class="QLabel" name="label_30">
+                   <item row="4" column="0">
+                    <widget class="QLabel" name="label_31">
                      <property name="text">
-                      <string>Log name:</string>
+                      <string>Audit folder:</string>
                      </property>
                     </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QLineEdit" name="configLineEdit"/>
                    </item>
                    <item row="3" column="0">
                     <widget class="QLabel" name="label_27">
@@ -1026,37 +1023,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="3" column="1">
-                    <widget class="QLineEdit" name="auditNameLineEdit"/>
-                   </item>
-                   <item row="4" column="0">
-                    <widget class="QLabel" name="label_31">
-                     <property name="text">
-                      <string>Audit folder:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="1">
-                    <widget class="QLineEdit" name="logNameLineEdit"/>
-                   </item>
-                   <item row="2" column="0">
-                    <widget class="QLabel" name="label_29">
-                     <property name="text">
-                      <string>Config name:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="1">
-                    <widget class="QLineEdit" name="auditDirLineEdit"/>
-                   </item>
-                   <item row="4" column="2">
-                    <widget class="QToolButton" name="auditDirSelect">
-                     <property name="text">
-                      <string>...</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="1">
+                   <item row="6" column="1">
                     <spacer name="verticalSpacer_5">
                      <property name="orientation">
                       <enum>Qt::Vertical</enum>
@@ -1068,6 +1035,60 @@
                       </size>
                      </property>
                     </spacer>
+                   </item>
+                   <item row="2" column="0">
+                    <widget class="QLabel" name="label_29">
+                     <property name="text">
+                      <string>Config name:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QLabel" name="label_30">
+                     <property name="text">
+                      <string>Log name:</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="2">
+                    <widget class="QCheckBox" name="quietCheckBox">
+                     <property name="text">
+                      <string>Quiet</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <widget class="QCheckBox" name="noLogCheckBox">
+                     <property name="text">
+                      <string>No log</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="0">
+                    <widget class="QCheckBox" name="noAuditCheckBox">
+                     <property name="text">
+                      <string>No audit</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1" colspan="2">
+                    <widget class="QLineEdit" name="auditDirLineEdit"/>
+                   </item>
+                   <item row="3" column="1" colspan="2">
+                    <widget class="QLineEdit" name="auditNameLineEdit"/>
+                   </item>
+                   <item row="2" column="1" colspan="2">
+                    <widget class="QLineEdit" name="configLineEdit"/>
+                   </item>
+                   <item row="0" column="1" colspan="2">
+                    <widget class="QLineEdit" name="logNameLineEdit"/>
+                   </item>
+                   <item row="4" column="3">
+                    <widget class="QToolButton" name="auditDirSelect">
+                     <property name="text">
+                      <string>...</string>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </widget>

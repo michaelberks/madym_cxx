@@ -21,6 +21,7 @@ set(mdm_dce_sources
 	mdm_DCEModelDIBEM_Fp.cxx	mdm_DCEModelDIBEM_Fp.h
 	mdm_DCEModelDISCM.cxx		mdm_DCEModelDISCM.h
 	mdm_DCEModelPatlak.cxx		mdm_DCEModelPatlak.h
+	mdm_DCEModelMLDRW.cxx		mdm_DCEModelMLDRW.h
 	mdm_DCEVoxel.cxx			mdm_DCEVoxel.h
 	mdm_DCEModelFitter.cxx		mdm_DCEModelFitter.h
 	mdm_AIF.cxx					mdm_AIF.h

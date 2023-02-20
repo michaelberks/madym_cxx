@@ -178,6 +178,7 @@ MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *a
   options_parser_.add_option(config_options, options_.dynTimeTag);
   options_parser_.add_option(config_options, options_.dynTimeRequired);
   options_parser_.add_option(config_options, options_.temporalResolution);
+  options_parser_.add_option(config_options, options_.dynTimeFormat);
   
   //Logging options_
   options_parser_.add_option(config_options, options_.noLog);
@@ -1114,7 +1115,7 @@ double mdm_RunTools_madym_DicomConvert::getDynamicTime(DcmFileFormat &fileformat
 {
   //Attempt to get initial time from dicom field
   double dynTime = 0;
-  if (dynamicTimeTag_.hasValidGroup())
+  if (temporalResolution_ <= 0 && dynamicTimeTag_.hasValidGroup())
   {
     try
     {
@@ -1125,6 +1126,30 @@ double mdm_RunTools_madym_DicomConvert::getDynamicTime(DcmFileFormat &fileformat
       mdm_ProgramLogger::logProgramError(__func__, e.what());
       throw mdm_exception(__func__, "Dynamic time tag is set, but could not access " +
         std::string(dynamicTimeTag_.toString().c_str()));
+    }
+
+    //Check how to process timestamp
+    if (options_.dynTimeFormat() == "timestamp")
+    {
+      ; //Do nothing
+    }
+    else if (options_.dynTimeFormat() == "msecs")
+    {
+      dynTime = mdm_Image3D::secsToTimestamp(dynTime / 1000);
+    }
+    else if (options_.dynTimeFormat() == "seconds")
+    {
+      dynTime = mdm_Image3D::secsToTimestamp(dynTime);
+    }
+    else if (options_.dynTimeFormat() == "minutes")
+    {
+      dynTime = mdm_Image3D::secsToTimestamp(60*dynTime);
+    }
+    else
+    {
+      throw mdm_exception(__func__, "Value for " + std::string(options_.dynTimeFormat.key()) +
+        "option (" + options_.dynTimeFormat() +
+        ") not recognised. Must be one of [timestamp, msecs, seconds, minutes]");
     }
   }
   

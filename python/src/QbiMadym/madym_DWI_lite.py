@@ -13,6 +13,8 @@ def run(model, signals, B_values,
     output_dir:str = None, 
     output_name:str = 'madym_analysis.dat',
     Bvals_thresh:list = None,
+    help:bool = None,
+    version:bool = None,
     dummy_run:bool = False
 ):
     '''
@@ -52,6 +54,10 @@ def run(model, signals, B_values,
             Name of output file
         Bvals_thresh:list = None
             Thresholds used in IVIM fitting
+        help : bool = None,
+            Display help and exit
+        version : bool = None,
+            Display version and exit
         dummy_run : bool default False 
             Don't run any thing, just print the cmd we'll run to inspect
     
@@ -147,6 +153,10 @@ def run(model, signals, B_values,
 
 
     add_option('float_list', cmd_args, '--Bvals_thresh', Bvals_thresh)
+
+    add_option('bool', cmd_args, '--help', help)
+
+    add_option('bool', cmd_args, '--version', version)
 
     #Args structure complete, convert to string for printing
     cmd_str = ' '.join(cmd_args)

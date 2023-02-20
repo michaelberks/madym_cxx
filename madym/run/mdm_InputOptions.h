@@ -410,7 +410,9 @@ struct mdm_InputOptions {
   mdm_input_double temporalResolution = mdm_input_double(
     0, "temp_res", "", 
     "Time in seconds between volumes in the DCE sequence, used to fill acquisition time not set in dynTimeTag"); //!< See initial value
-
+	mdm_input_string dynTimeFormat = mdm_input_string(
+		mdm_input_str("timestamp"), "acquisition_time_format", "",
+		"Format of time read from acquisition_time_tag key"); //!< See initial value
 
 	//DICOM scanning settings
 	mdm_input_dicom_tag FATag = mdm_input_dicom_tag(

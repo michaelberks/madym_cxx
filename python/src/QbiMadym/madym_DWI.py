@@ -19,6 +19,7 @@ def run(
     img_fmt_r:str = None,
     img_fmt_w:str = None,
     nifti_scaling:bool = None,
+    voxel_size_warn_only:bool = None,
     overwrite:bool = None,
     program_log_name:str = None,
     audit_dir:str = None,
@@ -28,6 +29,8 @@ def run(
     no_log:bool = None,
     no_audit:bool = None,
     quiet:bool = None,
+    help:bool = None,
+    version:bool = None,
     working_directory:str = None,
     dummy_run:bool = False):
     '''
@@ -70,6 +73,8 @@ def run(
             Image format for writing output
         nifti_scaling:bool = None,
             If set, applies intensity scaling and offset when reading/writing NIFTI images
+        voxel_size_warn_only : bool = None
+            If true, only warn if voxel sizes don't match for subsequent images
         overwrite : bool = False,
             Set overwrite existing analysis in output dir
         program_log_name : str = None, 
@@ -88,6 +93,10 @@ def run(
             Switch off audit logging
         quiet : bool = False,
             Do not display logging messages in cout
+        help : bool = None,
+            Display help and exit
+        version : bool = None,
+            Display version and exit
         working_directory : str = None,
             Sets the current working directory for the system call, allows setting relative input paths for data
         dummy_run : bool = False
@@ -147,6 +156,8 @@ def run(
 
     add_option('bool', cmd_args, '--nifti_scaling', nifti_scaling)
 
+    add_option('bool', cmd_args, '--voxel_size_warn_only', voxel_size_warn_only)
+
     add_option('string_list', cmd_args, '--DWI_vols', DWI_vols)
         
     add_option('string', cmd_args, '--DWI_model', model)
@@ -162,6 +173,10 @@ def run(
     add_option('bool', cmd_args, '--no_log', no_log)
 
     add_option('bool', cmd_args, '--quiet', quiet)
+
+    add_option('bool', cmd_args, '--help', help)
+
+    add_option('bool', cmd_args, '--version', version)
 
     add_option('string', cmd_args, '--program_log', program_log_name)
 

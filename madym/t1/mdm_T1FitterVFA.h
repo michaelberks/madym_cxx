@@ -117,6 +117,8 @@ private:
 
 	void initFAs();
 
+	void linearFit(double& T1, double& M0);
+
 	std::vector<double> FAs_;
   double TR_;
 	double B1_;

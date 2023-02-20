@@ -45,6 +45,7 @@ def run(
     img_fmt_w:str = None,
     nifti_scaling:bool = None,
     nifti_4D:bool = None,
+    voxel_size_warn_only:bool = None,
     overwrite:bool = None,
     program_log_name:str = None,
     audit_dir:str = None,
@@ -54,6 +55,8 @@ def run(
     no_log:bool = None,
     no_audit:bool = None,
     quiet:bool = None,
+    help:bool = None,
+    version:bool = None,
     working_directory:str = None,
     dummy_run:bool = False):
     '''
@@ -141,6 +144,8 @@ def run(
             If set, applies intensity scaling and offset when reading/writing NIFTI images
         nifti_4D : bool = None,
             If set, reads NIFTI 4D images for T1 mapping and dynamic inputs
+        voxel_size_warn_only : bool = None
+            If true, only warn if voxel sizes don't match for subsequent images
         overwrite : bool = False,
             Set overwrite existing analysis in output dir
         program_log_name : str = None, 
@@ -159,6 +164,10 @@ def run(
             Switch off audit logging
         quiet : bool = False,
             Do not display logging messages in cout
+        help : bool = None,
+            Display help and exit
+        version : bool = None,
+            Display version and exit
         working_directory : str = None,
             Sets the current working directory for the system call, allows setting relative input paths for data
         dummy_run : bool = False
@@ -230,6 +239,8 @@ def run(
 
     add_option('bool', cmd_args, '--nifti_4D', nifti_4D)
 
+    add_option('bool', cmd_args, '--voxel_size_warn_only', voxel_size_warn_only)
+
     add_option('bool', cmd_args, '--Ct', input_Ct) 
 
     add_option('string', cmd_args, '--T1', T1_name)
@@ -261,7 +272,11 @@ def run(
 
     add_option('bool', cmd_args, '--no_log', no_log)    
 
-    add_option('bool', cmd_args, '--quiet', quiet)    
+    add_option('bool', cmd_args, '--quiet', quiet) 
+
+    add_option('bool', cmd_args, '--help', help)
+
+    add_option('bool', cmd_args, '--version', version)   
 
     add_option('int', cmd_args, '-i', injection_image)    
 

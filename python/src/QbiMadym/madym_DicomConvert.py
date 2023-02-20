@@ -14,6 +14,8 @@ def run(
     cmd_exe:str = None,
     T1_vols:list = None,
     T1_dir:str = None,
+    DWI_vols:list = None,
+    DWI_dir:str = None,
     dynamic_basename:str = None,
     dyn_dir:str = None,
     sequence_format:str = None,
@@ -21,19 +23,26 @@ def run(
     sequence_step:str = None,
     n_dyns:int = None,
     img_fmt_w:str = None,
+    img_dt_type:int = None,
     nifti_scaling:bool = None,
     dicom_dir : str = None,
     dicom_series_file : str = None,
     T1_input_series : list = None,
+    DWI_series : list = None,
     dyn_series : int = None,
     single_series : int = None,
     dicom_filter : str = None,
+    slice_filter_tag: str = None,
+    slice_filter_match_value:str = None,
+    single_vol_names : list = None,
     vol_name : str = None,
     sort : bool = None,
     make_t1 : bool = None,
+    make_DWI : bool = None,
     make_single : bool = None,
     make_dyn : bool = None,
     make_t1_means : bool = None,
+    make_Bvalue_means : bool = None,
     make_dyn_mean : bool = None,
     flip_x : bool = None,
     flip_y : bool = None,
@@ -43,6 +52,20 @@ def run(
     dicom_scale : float = None,
     dicom_offset : float = None,
     acquisition_time_tag : str = None,
+    acquisition_time_format : str = None,
+    acquisition_time_required : bool = None,
+    FA_tag : str = None,
+    FA_required : bool = None,
+    TR_tag : str = None,
+    TR_required : bool = None,
+    TI_tag : str = None,
+    TI_required : bool = None,
+    TE_tag : str = None,
+    TE_required : bool = None,
+    B_tag : str = None,
+    B_required : bool = None,
+    grad_ori_tag : str = None,
+    grad_ori_required : bool = None,
     temp_res : float = None,
     repeat_prefix : str = None,
     mean_suffix : str = None,
@@ -51,10 +74,11 @@ def run(
     audit_dir:str = None,
     audit_name:str = None,
     config_out:str = None,
-    error_name:str = None,
     no_log:bool = None,
     no_audit:bool = None,
     quiet:bool = None,
+    help:bool = None,
+    version:bool = None,
     working_directory:str = None,
     dummy_run:bool = None):
     '''
@@ -138,6 +162,41 @@ def run(
             Additional offset factor applied to the dicom data
         acquisition_time_tag : str = None
             Dicom tag key (group,element) for acquisition time, if empty uses DCM_AcquisitionTime
+        acquisition_time_format : str = None
+            Format of time read from acquisition_time_tag key
+        acquisition_time_required : bool = None,
+            If set to true, throws program warning if acquisition time not found in a DICOM header
+        FA_tag : str = None,
+            Custom Dicom tag key (group,element) for FlipAngle, only required if protocol 
+            doesn't use standard FlipAngle field (0018,1314)
+        FA_required : bool = None,
+            If set to true, throws program warning if FA not found in a DICOM header
+        TR_tag : str = None,
+            Custom Dicom tag key (group,element) for TR, only required if protocol 
+            doesn't use standard RepetitionTime field (0018,0080)
+        TR_required : bool = None,
+            If set to true, throws program warning if TR not found in a DICOM header
+        TI_tag : str = None,
+            Custom Dicom tag key (group,element) for TI, only required if protocol 
+            doesn't use standard InversionTime field (0018,0082)
+        TI_required : bool = None,
+            If set to true, throws program warning if TI not found in a DICOM header
+        TE_tag : str = None,
+            Custom Dicom tag key (group,element) for TE, only required if protocol 
+            doesn't use standard EchoTime field (0018,0081)
+        TE_required : bool = None,
+            If set to true, throws program warning if TE not found in a DICOM header
+        B_tag : str = None,
+            Custom Dicom tag key (group,element) for diffusion B-value, only required if 
+            protocol doesn't use standard DCM_DiffusionBValue field (0018,9087)
+        B_required : bool = None,
+            If set to true, throws program warning if B-value not found in a DICOM header
+        grad_ori_tag : str = None,
+            Custom Dicom tag key (group,element) for diffusion gradient orientation, 
+            only required if protocol 
+            doesn't use standard DCM_DiffusionGradientOrientation field (0018,9089)
+        grad_ori_required : bool = None,
+            If set to true, throws program warning if gradient orientation not found in a DICOM header
         temp_res : float = None
             Time in seconds between volumes in the DCE sequence, used to fill acquisition time not set in dynTimeTag
         repeat_prefix : str = None
@@ -152,8 +211,6 @@ def run(
             Folder in which audit output is saved
         audit_name : str = None, 
             Audit file name
-        error_name : str = None,
-            Error codes image file name
         config_out : str = None,
             Filename of output config file, will be appended with datetime
         no_log arg : bool = None,
@@ -162,6 +219,10 @@ def run(
             Switch off audit logging
         quiet : bool = None,
             Do not display logging messages in cout
+        help : bool = None,
+            Display help and exit
+        version : bool = None,
+            Display version and exit
         working_directory : str = None,
             Sets the current working directory for the system call, allows setting relative input paths for data
         dummy_run : bool = None
@@ -233,13 +294,17 @@ def run(
 
     add_option('string', cmd_args, '--img_fmt_w', img_fmt_w)
 
-    add_option('bool', cmd_args, '--nifti_scaling', nifti_scaling)
+    add_option('int', cmd_args, '--img_dt_type', img_dt_type)
 
-    add_option('bool', cmd_args, '--nifti_4D', nifti_4D)
+    add_option('bool', cmd_args, '--nifti_scaling', nifti_scaling)
 
     add_option('string_list', cmd_args, '--T1_vols', T1_vols)
 
     add_option('string', cmd_args, '--T1_dir', T1_dir)
+
+    add_option('string_list', cmd_args, '--DWI_vols', DWI_vols)
+
+    add_option('string', cmd_args, '--DWI_dir', DWI_dir)
 
     add_option('string', cmd_args, '--dicom_dir', dicom_dir)
 
@@ -249,15 +314,25 @@ def run(
 
     add_option('int', cmd_args, '--dyn_series', dyn_series)
 
-    add_option('int', cmd_args, '--single_series', single_series)
+    add_option('int_list', cmd_args, '--single_series', single_series)
+
+    add_option('int_list', cmd_args, '--DWI_series', DWI_series)
 
     add_option('string', cmd_args, '--dicom_filter', dicom_filter)
 
+    add_option('string', cmd_args, '--slice_filter_tag', slice_filter_tag)
+
+    add_option('string', cmd_args, '--slice_filter_match_value', slice_filter_match_value)
+
     add_option('string', cmd_args, '--vol_name', vol_name)
+
+    add_option('string_list', cmd_args, '--single_vol_names', single_vol_names)
 
     add_option('bool', cmd_args, '--sort', sort)
 
     add_option('bool', cmd_args, '--make_t1', make_t1)
+
+    add_option('bool', cmd_args, '--make_DWI', make_DWI)
 
     add_option('bool', cmd_args, '--make_single', make_single)
 
@@ -266,6 +341,8 @@ def run(
     add_option('bool', cmd_args, '--make_t1_means', make_t1_means)
 
     add_option('bool', cmd_args, '--make_dyn_mean', make_dyn_mean)
+
+    add_option('bool', cmd_args, '--make_Bvalue_means', make_Bvalue_means)
 
     add_option('bool', cmd_args, '--flip_x', flip_x)
 
@@ -283,6 +360,34 @@ def run(
 
     add_option('string', cmd_args, '--acquisition_time_tag', acquisition_time_tag)
 
+    add_option('string', cmd_args, '--acquisition_time_format', acquisition_time_format)
+
+    add_option('bool', cmd_args, '--acquisition_time_required', acquisition_time_required)
+
+    add_option('string', cmd_args, '--FA_tag', FA_tag)
+
+    add_option('bool', cmd_args, '--FA_required', FA_required)
+
+    add_option('string', cmd_args, '--TR_tag', TR_tag)
+
+    add_option('bool', cmd_args, '--TR_required', TR_required)
+
+    add_option('string', cmd_args, '--TI_tag', TI_tag)
+
+    add_option('bool', cmd_args, '--TI_required', TI_required)
+
+    add_option('string', cmd_args, '--TE_tag', TE_tag)
+
+    add_option('bool', cmd_args, '--TE_required', TE_required)
+
+    add_option('string', cmd_args, '--B_tag', B_tag)
+
+    add_option('bool', cmd_args, '--B_required', B_required)
+
+    add_option('string', cmd_args, '--grad_ori_tag', grad_ori_tag)
+
+    add_option('bool', cmd_args, '--grad_ori_required', grad_ori_required)
+
     add_option('float', cmd_args, '--temp_res', temp_res)
 
     add_option('string', cmd_args, '--repeat_prefix', repeat_prefix)
@@ -297,6 +402,10 @@ def run(
 
     add_option('bool', cmd_args, '--quiet', quiet)
 
+    add_option('bool', cmd_args, '--help', help)
+
+    add_option('bool', cmd_args, '--version', version)
+
     add_option('string', cmd_args, '--program_log', program_log_name)
 
     add_option('string', cmd_args, '--audit', audit_name)
@@ -304,8 +413,6 @@ def run(
     add_option('string', cmd_args, '--audit_dir', audit_dir)
 
     add_option('string', cmd_args, '--config_out', config_out)
-
-    add_option('string', cmd_args, '-E', error_name)
 
     #Args structure complete, convert to string for printing
     cmd_str = ' '.join(cmd_args)
