@@ -52,6 +52,7 @@ def run(
     dicom_scale : float = None,
     dicom_offset : float = None,
     acquisition_time_tag : str = None,
+    acquisition_time_format : str = None,
     acquisition_time_required : bool = None,
     FA_tag : str = None,
     FA_required : bool = None,
@@ -161,6 +162,8 @@ def run(
             Additional offset factor applied to the dicom data
         acquisition_time_tag : str = None
             Dicom tag key (group,element) for acquisition time, if empty uses DCM_AcquisitionTime
+        acquisition_time_format : str = None
+            Format of time read from acquisition_time_tag key
         acquisition_time_required : bool = None,
             If set to true, throws program warning if acquisition time not found in a DICOM header
         FA_tag : str = None,
@@ -356,6 +359,8 @@ def run(
     add_option('float', cmd_args, '--dicom_offset', dicom_offset)
 
     add_option('string', cmd_args, '--acquisition_time_tag', acquisition_time_tag)
+
+    add_option('string', cmd_args, '--acquisition_time_format', acquisition_time_format)
 
     add_option('bool', cmd_args, '--acquisition_time_required', acquisition_time_required)
 
