@@ -25,6 +25,8 @@
 #include <madym/utils/mdm_ProgramLogger.h>
 #include <madym/utils/mdm_exception.h>
 #include <madym/utils/mdm_platform_defs.h>
+#include <madym/image_io/meta/mdm_BIDSFormat.h>
+
 #include <mdm_version.h>
 
 namespace fs = boost::filesystem;
@@ -50,8 +52,6 @@ MDM_API mdm_Image3D mdm_NiftiFormat::readImage3D(const std::string &fileName,
   parseName(fileName,
     baseName, ext, gz);
 
-  std::string xtrFileName = baseName + ".xtr";
-
   //Try and read the main NIFTI image file
   mdm_Image3D img;
 
@@ -64,11 +64,14 @@ MDM_API mdm_Image3D mdm_NiftiFormat::readImage3D(const std::string &fileName,
   //to convert NIFTI transform matrices correctly
   if (loadXtr)
   {
-    auto  xtrExistsFlag = fs::exists(xtrFileName);
-    if (xtrExistsFlag)
-      mdm_XtrFormat::readAnalyzeXtr(xtrFileName, img);
+    if (fs::exists(baseName + ".json"))
+      mdm_BIDSFormat::readImageJSON(baseName + ".json", img);
+    
+    else if (fs::exists(baseName + ".xtr"))
+      mdm_XtrFormat::readAnalyzeXtr(baseName + ".xtr", img);
+
     else
-      throw mdm_exception(__func__, "No xtr file matching " + fileName);
+      throw mdm_exception(__func__, "No xtr or json file matching " + fileName);
   }
 
   // Store the voxel matrix dimensions
@@ -245,21 +248,23 @@ MDM_API std::vector<mdm_Image3D> mdm_NiftiFormat::readImage4D(const std::string&
       "Error reading %1%, zmm = %2%, should be strictly positive")
       % fileName % zmm);
 
+  //Try loading the XTR file first as this may contain info 
+  // on axes flipping we need
+  //to convert NIFTI transform matrices correctly
+  if (loadXtr)
+  {
+    if (fs::exists(baseName + ".json"))
+      mdm_BIDSFormat::readImageJSON(baseName + ".json", imgs);
+
+    else if (fs::exists(baseName + ".xtr"))
+      mdm_XtrFormat::readAnalyzeXtr(baseName + ".xtr", imgs);
+
+    else
+      throw mdm_exception(__func__, "No xtr or json file matching " + fileName);
+  }
+
   for (auto& img : imgs)
   {
-    //Try loading the XTR file first as this may contain info 
-    // on axes flipping we need
-    //to convert NIFTI transform matrices correctly
-      if (loadXtr)
-      {
-        std::string xtrFileName = baseName + ".xtr";
-        auto  xtrExistsFlag = fs::exists(xtrFileName);
-        if (xtrExistsFlag)
-          mdm_XtrFormat::readAnalyzeXtr(xtrFileName, img);
-        else
-          throw mdm_exception(__func__, "No xtr file matching " + fileName);
-      }
-
     //Set dimensions of each image
     img.setDimensions(nX, nY, nZ);
     img.setVoxelDims(xmm, ymm, zmm);
@@ -333,7 +338,7 @@ MDM_API void mdm_NiftiFormat::writeImage3D(const std::string &fileName,
 	bool compress, bool applyScaling)
 {
   if (!img)
-    throw mdm_exception(__func__, "Image for writing image must not be empty");
+    throw mdm_exception(__func__, "Image for writing must not be empty");
 
   //Check name is valid
   std::string baseName;
@@ -448,7 +453,159 @@ MDM_API void mdm_NiftiFormat::writeImage3D(const std::string &fileName,
   
   // Write *.xtr file
   if (xtrTypeFlag != mdm_XtrFormat::NO_XTR)
-    mdm_XtrFormat::writeAnalyzeXtr(baseName, img, xtrTypeFlag);
+  {
+    if (xtrTypeFlag == mdm_XtrFormat::BIDS)
+      mdm_BIDSFormat::writeImageJSON(baseName, img);
+    else
+      mdm_XtrFormat::writeAnalyzeXtr(baseName, img, xtrTypeFlag);
+  }
+    
+}
+
+//
+MDM_API void mdm_NiftiFormat::writeImage4D(const std::string& fileName,
+  const std::vector<mdm_Image3D> imgs,
+  const mdm_ImageDatatypes::DataType dataTypeFlag,
+  const mdm_XtrFormat::XTR_type xtrTypeFlag,
+  bool compress, bool applyScaling)
+{
+  if (imgs.empty())
+    throw mdm_exception(__func__, "Images for writing image must not be empty");
+
+  //Check name is valid
+  std::string baseName;
+  std::string ext;
+  bool gz;
+  parseName(fileName, baseName, ext, gz);
+
+  //What to do if gz true but compress false? Let gz override...
+  if (gz && !compress)
+    compress = true;
+
+  //Create new NIFTI image instance
+  nifti_image nii;
+
+  //Take alias to first image to access various bits of header info
+  const auto& img = imgs[0];
+
+  //Set dimesnions fields
+  size_t nx, ny, nz;
+  img.getDimensions(nx, ny, nz);
+
+  nii.nx = nx;
+  nii.ny = ny;
+  nii.nz = nz;
+  nii.nt = imgs.size();
+  nii.nvox = nx * ny * nz * nii.nt;
+  nii.dx = img.info().Xmm.value();
+  nii.dy = img.info().Ymm.value();
+  nii.dz = img.info().Zmm.value();
+  if (nii.nt > 1)
+  {
+    auto n = nii.nt - 1;
+    nii.dt = (imgs[n].secondsFromTimeStamp() - imgs[0].secondsFromTimeStamp())/n;
+  }
+  else
+  {
+    nii.dt = 0;
+    nii.time_units = 0;
+  }
+    
+  
+  nii.scl_slope = 1.0;
+  nii.scl_inter = 0.0;
+
+  //Set datatype
+  nii.nifti_type = NIFTI_FTYPE::NIFTI1_1;
+  nii.datatype = dataTypeFlag;
+  std::string descrip("Madym-");
+  descrip.append(MDM_VERSION);
+  for (size_t s = 0; s < descrip.size(); s++)
+    nii.descrip[s] = descrip[s];
+  for (size_t s = descrip.size(); s < sizeof(nii.descrip); s++)
+    nii.descrip[s] = '\0';
+  nii.aux_file[0] = '\0';
+
+  //Set transform matrix
+  nifti_img_to_nii_transform(img, nii);
+
+  //Apply scaling if set
+  if (applyScaling && img.info().sclSlope.isSet() && img.info().sclInter.isSet())
+  {
+    nii.scl_slope = img.info().sclSlope.value();
+    nii.scl_inter = img.info().sclInter.value();
+  }
+
+  //Set data field
+  // ------------------------------------------------------------------------
+  switch (nii.datatype)
+  {
+  case NIFTI_TYPE_UINT8: {
+    toData<uint8_t>(imgs, nii);
+    break;
+  }
+  case NIFTI_TYPE_UINT16: {
+    toData<uint16_t>(imgs, nii);
+    break;
+  }
+  case NIFTI_TYPE_UINT32: {
+    toData<uint32_t>(imgs, nii);
+    break;
+  }
+  case NIFTI_TYPE_UINT64: {
+    toData<uint64_t>(imgs, nii);
+    break;
+  }
+  case NIFTI_TYPE_INT8: {
+    toData<int8_t>(imgs, nii);
+    break;
+  }
+  case NIFTI_TYPE_INT16: {
+    toData<int16_t>(imgs, nii);
+    break;
+  }
+  case NIFTI_TYPE_INT32: {
+    toData<int32_t>(imgs, nii);
+    break;
+  }
+  case NIFTI_TYPE_INT64: {
+    toData<int64_t>(imgs, nii);
+    break;
+  }
+  case NIFTI_TYPE_FLOAT32: {
+    toData<float>(imgs, nii);
+    break;
+  }
+  case NIFTI_TYPE_FLOAT64: {
+    toData<double>(imgs, nii);
+    break;
+  }
+  default: {
+    throw mdm_exception(__func__, boost::format(
+      "Error reading %1%, datatype = %2% not recognised")
+      % fileName % nii.datatype);
+  }
+  }
+
+  //Write out as NIFTI
+  std::string saveName = baseName + ".nii";
+  if (compress)
+    saveName += extgz;
+
+  nifti_set_filenames(nii, saveName, 0, 0);
+  nifti_image_write(nii);
+
+  //Free NIFTI struct
+  nifti_image_free(nii);
+
+  // Write *.xtr file
+  if (xtrTypeFlag != mdm_XtrFormat::NO_XTR)
+  {
+    if (xtrTypeFlag == mdm_XtrFormat::BIDS)
+      mdm_BIDSFormat::writeImageJSON(baseName, imgs);
+    else
+      mdm_XtrFormat::writeAnalyzeXtr(baseName, img, xtrTypeFlag);
+  }
 }
 
 //
@@ -537,11 +694,32 @@ template <class T> void mdm_NiftiFormat::toData(const mdm_Image3D &img, nifti_im
 {
   nii.nbyper = sizeof(T);
   nii.data = malloc(nii.nvox*nii.nbyper);
-  auto scale = std::isnan(nii.scl_slope) ? 1.0 : nii.scl_slope;
-  auto offset = std::isnan(nii.scl_inter) ? 1.0 : nii.scl_inter;
+  auto slope = std::isnan(nii.scl_slope) ? 1.0 : nii.scl_slope;
+  auto inter = std::isnan(nii.scl_inter) ? 1.0 : nii.scl_inter;
   T* nii_data = static_cast<T*>(nii.data);
   for (size_t i = 0; i < nii.nvox; ++i)
-    *(nii_data + i) = (T)((img.voxel(i) - offset) / scale);
+    *(nii_data + i) = (T)((img.voxel(i) - inter) / slope);
+}
+
+//
+template <class T> void mdm_NiftiFormat::toData(const std::vector<mdm_Image3D>& imgs, nifti_image& nii)
+{
+  nii.nbyper = sizeof(T);
+  nii.data = malloc(nii.nvox * nii.nbyper);
+  auto slope = std::isnan(nii.scl_slope) ? 1.0 : nii.scl_slope;
+  auto inter = std::isnan(nii.scl_inter) ? 1.0 : nii.scl_inter;
+  auto nVoxels = imgs[0].numVoxels();
+  T* nii_data = static_cast<T*>(nii.data);
+  
+  size_t currImg = 0;
+  for (const auto& img : imgs)
+  {
+    auto offset = nVoxels * currImg;
+    for (size_t i = 0; i < nVoxels; ++i)
+      *(nii_data + offset + i) = (T)((img.voxel(i) - inter) / slope);
+
+    currImg++;
+  }
 }
 
 //

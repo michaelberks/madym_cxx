@@ -13,7 +13,7 @@
 #include "mdm_RunTools_madym_DicomConvert.h"
 
 #include <madym/image_io/dicom/mdm_DicomFormat.h>
-#include <madym/image_io/xtr/mdm_XtrFormat.h>
+#include <madym/image_io/meta/mdm_XtrFormat.h>
 #include <madym/image_io/mdm_ImageIO.h>
 #include <madym/utils/mdm_Image3D.h>
 #include <madym/utils/mdm_SequenceNames.h>

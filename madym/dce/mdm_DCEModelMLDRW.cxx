@@ -39,9 +39,9 @@ MDM_API mdm_DCEModelMLDRW::mdm_DCEModelMLDRW(
 {
   //Default values specific to tofts model
   if (pkParamNames_.empty())
-    pkParamNames_ = { "alpha", "kappa", "MTT", "Ktrans", "kep"};
+    pkParamNames_ = { "alpha", "kappa", "MTT", "kep", "tau_a"};
   if (pkInitParams_.empty())
-    pkInitParams_ = { 0.2, 0.2, 0.2, 0.2, 0.2}; //
+    pkInitParams_ = { 0.2, 0.2, 0.2, 0.2, 0.0}; //
   if (optParamFlags_.empty())
     optParamFlags_ = { true, true, true, true, true };
   if (lowerBounds_.empty())
@@ -77,13 +77,14 @@ MDM_API void mdm_DCEModelMLDRW::computeCtModel(size_t nTimes)
   const double &alpha = pkParams_[0];
   const double& kappa = pkParams_[1];
   const double& MTT = pkParams_[2];
-  const double &Ktrans =   pkParams_[3];
-  const double &kep =       pkParams_[4];
+  const double &kep = pkParams_[3];
+  const double& tau_a = pkParams_[4];
 
   //Resample AIF and get AIF times (I don't usually like single letter variables
   //but to be consistent with paper formulae, use AIF times = t)
   std::vector<double> Ca_t(nTimes, 0.0);
-  const std::vector<double> &t = AIF_.AIFTimes();
+  const auto &t = AIF_.AIFTimes();
+  auto t_inj = t[AIF_.prebolus()-1];
 
   double  integral = 0.0;
   //double kep = Ktrans / v_e;
@@ -91,14 +92,14 @@ MDM_API void mdm_DCEModelMLDRW::computeCtModel(size_t nTimes)
   Ca_t[0] = 0;
   for (size_t i_t = 1; i_t < nTimes; i_t++)
   {
-    Ca_t[i_t] = IF(alpha, kappa, MTT, t[i_t]);
+    Ca_t[i_t] = IF(alpha, kappa, MTT, t[i_t]-tau_a, t_inj);
 
     double delta_t = t[i_t] - t[i_t - 1];
     double e_delta = std::exp(-kep * delta_t);
     double A = delta_t * 0.5 * (Ca_t[i_t] + Ca_t[i_t - 1] * e_delta);
 
     integral = integral*e_delta + A;
-    double C_t = Ca_t[i_t] + Ktrans * integral;
+    double C_t = integral;
 
     if (std::isnan(C_t))
       return;
@@ -122,8 +123,9 @@ MDM_API void mdm_DCEModelMLDRW::checkParams()
 	errorCode_ = mdm_ErrorTracker::OK;
 }
 
-double mdm_DCEModelMLDRW::IF(double alpha, double kappa, double MTT, double t)
+double mdm_DCEModelMLDRW::IF(double alpha, double kappa, double MTT, double t, double t_inj)
 {
-  return alpha* std::sqrt(kappa / (2 * PI * t))*
+  //If t efore injection time, return 0, otherwise return dispersion IF
+  return (t <= t_inj) ? 0 : alpha* std::sqrt(kappa / (2 * PI * t))*
     std::exp(-kappa * std::pow(t - MTT, 2.0) / (2 * t));
 }

@@ -305,6 +305,13 @@ class mdm_Image3D
 	*/
 	MDM_API double minutesFromTimeStamp() const;
 
+	//! Return time in accumlated decimalized seconds since midnight
+	/*!
+	Converts the xtr HHMMSS.SS string saved as a double into total accumulated seconds
+	\return accumulated seconds since midnight in time stamp
+	*/
+	MDM_API double secondsFromTimeStamp() const;
+
   //! Static function to convert time in cumulative seconds since midnight, to a timestamp hhmmss.msecs
   /*!
   \param secs cumulative time in seconds
@@ -373,6 +380,13 @@ class mdm_Image3D
 	\param   ofs output filestream
 	*/
 	MDM_API void metaDataToStream(std::ostream &ofs) const;
+
+	//!   Set meta data using key-value pair 
+	/*!
+	\param   key name of key
+	\param   value value to store at key
+	*/
+	MDM_API void setMetaData(const std::string& key, const double& value);
 
 	//!   Set meta data from input file stream
 	/*!
@@ -490,10 +504,6 @@ private:
 	/*!
 	*/
 	void initDataArray();
-
-
-	//!   Set meta data using key-value pair 
-	void setMetaData(const std::string &key, const double &value);
 
 	ImageType imgType_;
 

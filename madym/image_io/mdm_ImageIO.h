@@ -10,7 +10,7 @@
 
 #include <madym/utils/mdm_api.h>
 #include <madym/utils/mdm_Image3D.h>
-#include <madym/image_io/xtr/mdm_XtrFormat.h>
+#include <madym/image_io/meta/mdm_XtrFormat.h>
 #include <madym/image_io/analyze/mdm_AnalyzeFormat.h>
 
  //! Analyze image format reading and writing

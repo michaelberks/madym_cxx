@@ -53,6 +53,19 @@ MDM_API void mdm_XtrFormat::readAnalyzeXtr(const std::string &xtrFileName,
 }
 
 //
+MDM_API void mdm_XtrFormat::readAnalyzeXtr(const std::string& xtrFileName,
+  std::vector<mdm_Image3D>& imgs)
+{
+  //Get alias to first image, and read the XTR file to this
+  auto& img = imgs[0];
+  readAnalyzeXtr(xtrFileName, img);
+
+  //Copy meta-info to other images
+  for (size_t i = 1; i < imgs.size(); i++)
+    imgs[i].copy(img);
+}
+
+//
 void mdm_XtrFormat::writeAnalyzeXtr(const std::string &baseName,
   const mdm_Image3D &img,
   const XTR_type typeFlag)
@@ -121,9 +134,6 @@ void mdm_XtrFormat::readOldXtr(std::ifstream &xtrFileStream,
 void mdm_XtrFormat::readNewXtr(std::ifstream &xtrFileStream,
 	mdm_Image3D &img)
 {
-	std::vector<std::string> keys;
-	std::vector<double> values;
-
 	/* Read values from extra info file */
 	/* TEST FOR READ ERRORS */
 	img.setMetaDataFromStream(xtrFileStream);

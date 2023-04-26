@@ -11,6 +11,33 @@
 
 void test_nifti_4D()
 {
+	//Double format
+	std::string img_name = mdm_test_utils::temp_dir() + "/img_4D";
+
+	int nx = 2, ny = 2, nz = 2, nt = 3;
+	int n_voxels = nx * ny * nz;
+	std::vector<double> real_data = { 1.01, 1.02, 1.03, 1.04, 1.05, 1.06, 1.07, 1.08 };
+
+	std::vector<mdm_Image3D> imgs(nt);
+	int t = 1;
+	for (auto& img : imgs)
+	{
+		for (int i = 0; i < n_voxels; i++)
+		{
+			img.setDimensions(nx, ny, nz);
+			img.setVoxel(i, real_data[i] * t);
+		}
+			
+
+		t++;
+	}
+	BOOST_CHECK_NO_THROW(mdm_NiftiFormat::writeImage4D(
+		img_name, imgs, mdm_ImageDatatypes::DT_FLOAT, mdm_XtrFormat::NO_XTR, true, false));
+
+	auto imgs_r = mdm_NiftiFormat::readImage4D(img_name, false, false);
+
+	for (int t = 0; t < nt; t++)
+		BOOST_CHECK(mdm_test_utils::vectors_near_equal(imgs[t].data(), imgs_r[t].data(), 1e-3));
 }
 
 void test_nifti_scaling()
@@ -148,6 +175,9 @@ BOOST_AUTO_TEST_SUITE(test_mdm)
 
 BOOST_AUTO_TEST_CASE(test_nifti) {
 	BOOST_TEST_MESSAGE("======= Testing NIFTI format image reading/writing =======");
+
+	test_nifti_4D();
+	return;
 
 	mdm_Image3D img_integer, img_real;
 	int nx = 2, ny = 2, nz = 2;

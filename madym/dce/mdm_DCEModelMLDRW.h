@@ -45,7 +45,7 @@ protected:
 
 private:
   //METHODS:
-  double IF(double alpha, double kappa, double MTT, double t);
+  double IF(double alpha, double kappa, double MTT, double t, double t_inj);
 
   //VARIABLES
 	const static int ETM_ERR_VEPLUSVPGT1;   /* Ve + Vp > 1.0                           - Binary bit 14 set  */

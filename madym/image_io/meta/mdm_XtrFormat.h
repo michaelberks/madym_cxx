@@ -28,6 +28,7 @@ public:
 		NO_XTR = -1, ///< Image does not have a matching .xtr file
 		OLD_XTR = 0, ///< Old format
 		NEW_XTR = 1, ///< Current format
+		BIDS = 2, ///< Write meta-data using BIDS style JSON file
 	};
 
   //! Read XTR file
@@ -37,6 +38,14 @@ public:
   */
   MDM_API static void readAnalyzeXtr(const std::string &xtrFileName,
     mdm_Image3D &img);
+
+	//! Read XTR file
+	/*!
+	\param xtrFileName name of file to read
+	\param imgs 4D set of image object to update with meta-parameters from XTR file
+	*/
+	MDM_API static void readAnalyzeXtr(const std::string& xtrFileName,
+		std::vector<mdm_Image3D>& imgs);
 
   //! Write XTR file
   /*!
