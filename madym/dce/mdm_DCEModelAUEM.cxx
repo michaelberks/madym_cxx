@@ -86,12 +86,12 @@ MDM_API void mdm_DCEModelAUEM::computeCtModel(size_t nTimes)
   auto E_i = k_i  / (F_p + k_i);// the hepatic uptake fraction
 
   // This can also be precomputed
-  auto E_pos = E_i  / (1 - T_e / T_i);
+  auto E_pos = E_i  / (1 - (k_ef ? T_e / T_i : 0));
 
   auto K_neg = 1  / T_e;
   auto F_neg = F_p*(1 - E_pos);
 
-  auto K_pos = 1  / T_i;
+  auto K_pos = k_ef ? 1  / T_i : 0;
   auto F_pos = F_p*E_pos;
 
   //Get AIF and PIF, labelled in model equation as Ca_t and Cv_t

@@ -80,8 +80,10 @@ public:
 
     // Let's rewrite the convolution sum, using the exponential "trick" so 
     //we can compute everything in one forward loop
-    double  Ft_pos = 0;
+    double Ft_pos = 0;
     double Ft_neg = 0;
+    double exp_pos = 1.0;
+    double exp_neg = 1.0;
 
     auto nTimes = t.size();
 
@@ -91,10 +93,20 @@ public:
       // Get current time, and time change
       auto delta_t = t[i_t] - t[i_t - 1];
 
-      mdm_Exponentials::exp_conv(K_pos, delta_t, Cp_t[i_t], Cp_t[i_t - 1], Ft_pos);
-      mdm_Exponentials::exp_conv(K_neg, delta_t, Cp_t[i_t], Cp_t[i_t - 1], Ft_neg);
+      if (K_pos)
+      {
+        mdm_Exponentials::exp_conv(K_pos, delta_t, Cp_t[i_t], Cp_t[i_t - 1], Ft_pos);
+        exp_pos = Ft_pos / K_pos;
+      }
+        
 
-      auto C_t = F_neg * Ft_neg / K_neg + F_pos * Ft_pos / K_pos;
+      if (K_neg)
+      {
+        mdm_Exponentials::exp_conv(K_neg, delta_t, Cp_t[i_t], Cp_t[i_t - 1], Ft_neg);
+        exp_neg = Ft_neg / K_neg;
+      }
+        
+      auto C_t = F_neg * exp_neg + F_pos * exp_pos;
 
       if (std::isnan(C_t))
         return;
