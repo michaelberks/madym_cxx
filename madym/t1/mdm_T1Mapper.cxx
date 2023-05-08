@@ -120,11 +120,19 @@ MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 
 		//Get signals at this voxel
 		std::vector<double> signal(nSignals);
+		bool valid_signal = true;
 		for (size_t i_f = 0; i_f < nSignals; i_f++)
+		{
 			signal[i_f] = inputImages_[i_f].voxel(voxelIndex);   /* sig FA_1 */
+			if (std::isnan(signal[i_f]) || std::isinf(signal[i_f]))
+			{
+				valid_signal = false;
+				break;
+			}
+		}
 
 		//TODO - MB, why only check the first signal?				
-		if (signal[0] > noiseThreshold_)
+		if (valid_signal && (signal[0] > noiseThreshold_))
 		{
       //If using B1 correction, add this to the inputs
       if (useB1_)
