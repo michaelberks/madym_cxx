@@ -65,7 +65,7 @@ MDM_API mdm_Image3D mdm_NiftiFormat::readImage3D(const std::string &fileName,
   if (loadXtr)
   {
     if (fs::exists(baseName + ".json"))
-      mdm_BIDSFormat::readImageJSON(baseName + ".json", img);
+      mdm_BIDSFormat::readImageJSON(baseName, img);
     
     else if (fs::exists(baseName + ".xtr"))
       mdm_XtrFormat::readAnalyzeXtr(baseName + ".xtr", img);
@@ -254,7 +254,7 @@ MDM_API std::vector<mdm_Image3D> mdm_NiftiFormat::readImage4D(const std::string&
   if (loadXtr)
   {
     if (fs::exists(baseName + ".json"))
-      mdm_BIDSFormat::readImageJSON(baseName + ".json", imgs);
+      mdm_BIDSFormat::readImageJSON(baseName, imgs);
 
     else if (fs::exists(baseName + ".xtr"))
       mdm_XtrFormat::readAnalyzeXtr(baseName + ".xtr", imgs);

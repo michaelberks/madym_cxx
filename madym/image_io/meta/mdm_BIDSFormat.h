@@ -21,18 +21,18 @@ public:
 
   //! Read BIDS style json file for a single 3D image
   /*!
-  \param jsonFileName name of file to read
+  \param fileName name of file to read
   \param img Image object to update with meta-parameters from JSON file
   */
-  MDM_API static void readImageJSON(const std::string& jsonFileName,
+  MDM_API static void readImageJSON(const std::string& fileName,
     mdm_Image3D& img);
 
   //! Read BIDS style json file for a set of 4D images
   /*!
-  \param jsonFileName name of file to read
+  \param fileName name of file to read
   \param imgs 4D set of image objects to update with meta-parameters from JSON file
   */
-  MDM_API static void readImageJSON(const std::string& jsonFileName,
+  MDM_API static void readImageJSON(const std::string& fileName,
     std::vector<mdm_Image3D>& img);
 
   //! Write JSON file

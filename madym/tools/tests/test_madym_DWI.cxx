@@ -30,6 +30,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DWI_ADC) {
 	//Compute signal for each Bval and write out image
 	std::vector<std::string> Bval_names(nBvals);
   std::string Bvals_str = "";
+	std::vector< mdm_Image3D > BValImgs;
 	for (int i_b = 0; i_b < nBvals; i_b++)
 	{
 		//Create ADC signal image
@@ -38,6 +39,8 @@ BOOST_AUTO_TEST_CASE(test_madym_DWI_ADC) {
 		Bval_img.setVoxelDims(1, 1, 1);
 		Bval_img.info().B.setValue(Bvals[i_b]);
     Bval_img.setVoxel(0, signals[i_b]);
+		Bval_img.setType(mdm_Image3D::ImageType::TYPE_DWI);
+		mdm_Image3D Bval_img2(Bval_img);
 
 		Bval_names[i_b] = Bval_dir + "Bval_" + std::to_string((int)Bvals[i_b]);
 
@@ -48,43 +51,102 @@ BOOST_AUTO_TEST_CASE(test_madym_DWI_ADC) {
       Bvals_str += ",";
 
     Bvals_str += Bval_names[i_b];
+
+		//Set gradients
+		Bval_img.info().gradOriX.setValue(1);
+		Bval_img.info().gradOriY.setValue(0);
+		Bval_img.info().gradOriZ.setValue(0);
+		Bval_img2.info().gradOriX.setValue(0);
+		Bval_img2.info().gradOriY.setValue(1);
+		Bval_img2.info().gradOriZ.setValue(0);
+
+		BValImgs.push_back(Bval_img);
+		BValImgs.push_back(Bval_img2);
 	}
 
-	//Call madym_DWI to fit ADC and S0
+	//Write out the 4D images in BIDS format
+	auto BValName4D = Bval_dir + "Bval_4D";
+	mdm_NiftiFormat::writeImage4D(BValName4D, BValImgs,
+		mdm_ImageDatatypes::DT_FLOAT, mdm_XtrFormat::BIDS, false);
+
 	std::string DWI_output_dir = test_dir + "/madym_DWI/";
-	std::stringstream cmd;
-	cmd << mdm_test_utils::tools_exe_dir() << "madym_DWI"
-		<< " --DWI_model ADC "
-		<< " --DWI_vols " << Bvals_str
-		<< " -o " << DWI_output_dir
-		<< " --overwrite"
-    << " --no_audit";
 
-	BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
-
-	int error;
-	try
 	{
-		error = std::system(cmd.str().c_str());
+		//Call madym_DWI to fit ADC and S0
+		std::stringstream cmd;
+		cmd << mdm_test_utils::tools_exe_dir() << "madym_DWI"
+			<< " --DWI_model ADC "
+			<< " --DWI_vols " << Bvals_str
+			<< " -o " << DWI_output_dir
+			<< " --overwrite"
+			<< " --no_audit";
+
+		BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
+
+		int error;
+		try
+		{
+			error = std::system(cmd.str().c_str());
+		}
+		catch (...)
+		{
+			BOOST_CHECK_MESSAGE(false, "Running madym_DWI failed");
+			return;
+		}
+
+		BOOST_CHECK_MESSAGE(!error, "Error returned from madym_DWI tool");
+
+		//Load in the parameter img vols and extract the single voxel from each
+		mdm_Image3D ADC_fit = mdm_NiftiFormat::readImage3D(DWI_output_dir + "ADC", false);
+		mdm_Image3D S0_fit = mdm_NiftiFormat::readImage3D(DWI_output_dir + "S0", false);
+
+		//Check the model parameters have fitted correctly
+		double tol = 0.1;
+		BOOST_TEST_MESSAGE("Testing fitted ADC");
+		BOOST_CHECK_CLOSE(ADC_fit.voxel(0), ADC, tol);
+		BOOST_TEST_MESSAGE("Testing fitted S0");
+		BOOST_CHECK_CLOSE(S0_fit.voxel(0), S0, tol);
 	}
-	catch (...)
+	
+
+	//Repeat test with 4D input
+	//Call madym_DWI to fit ADC and S0
 	{
-		BOOST_CHECK_MESSAGE(false, "Running madym_DWI failed");
-		return;
+		std::stringstream cmd;
+		cmd << mdm_test_utils::tools_exe_dir() << "madym_DWI"
+			<< " --DWI_model ADC "
+			<< " --DWI_vols " << BValName4D
+			<< " -o " << DWI_output_dir
+			<< " --nifti_4D "
+			<< " --overwrite"
+			<< " --no_audit";
+
+		BOOST_TEST_MESSAGE("Command to run: " + cmd.str());
+
+		int error;
+		try
+		{
+			error = std::system(cmd.str().c_str());
+		}
+		catch (...)
+		{
+			BOOST_CHECK_MESSAGE(false, "Running madym_DWI failed");
+			return;
+		}
+
+		BOOST_CHECK_MESSAGE(!error, "Error returned from madym_DWI tool");
+
+		//Load in the parameter img vols and extract the single voxel from each
+		mdm_Image3D ADC_fit = mdm_NiftiFormat::readImage3D(DWI_output_dir + "ADC", false);
+		mdm_Image3D S0_fit = mdm_NiftiFormat::readImage3D(DWI_output_dir + "S0", false);
+
+		//Check the model parameters have fitted correctly
+		double tol = 0.1;
+		BOOST_TEST_MESSAGE("Testing fitted ADC to 4D input");
+		BOOST_CHECK_CLOSE(ADC_fit.voxel(0), ADC, tol);
+		BOOST_TEST_MESSAGE("Testing fitted S0 to 4D input");
+		BOOST_CHECK_CLOSE(S0_fit.voxel(0), S0, tol);
 	}
-
-	BOOST_CHECK_MESSAGE(!error, "Error returned from madym_DWI tool");
-
-	//Load in the parameter img vols and extract the single voxel from each
-	mdm_Image3D ADC_fit = mdm_NiftiFormat::readImage3D(DWI_output_dir + "ADC", false);
-	mdm_Image3D S0_fit = mdm_NiftiFormat::readImage3D(DWI_output_dir + "S0", false);
-
-	//Check the model parameters have fitted correctly
-	double tol = 0.1;
-	BOOST_TEST_MESSAGE("Testing fitted ADC");
-	BOOST_CHECK_CLOSE(ADC_fit.voxel(0), ADC, tol);
-	BOOST_TEST_MESSAGE("Testing fitted S0");
-	BOOST_CHECK_CLOSE(S0_fit.voxel(0), S0, tol);
 
 	//Tidy up
 	fs::remove_all(Bval_dir);

@@ -13,7 +13,7 @@
 #include "mdm_RunTools_madym_DicomConvert.h"
 
 #include <madym/image_io/dicom/mdm_DicomFormat.h>
-#include <madym/image_io/meta/mdm_XtrFormat.h>
+#include <madym/image_io/meta/mdm_BIDSFormat.h>
 #include <madym/image_io/mdm_ImageIO.h>
 #include <madym/utils/mdm_Image3D.h>
 #include <madym/utils/mdm_SequenceNames.h>
@@ -71,6 +71,10 @@ MDM_API void mdm_RunTools_madym_DicomConvert::run()
   else
     readSeriesInfo();
 
+  //Set xtrType for writing
+  xtrType_ = (options_.nifti4D() || options_.useBIDS()) ? 
+    mdm_XtrFormat::XTR_type::BIDS : mdm_XtrFormat::XTR_type::NEW_XTR;
+
   if (options_.makeT1Inputs())
     makeT1InputVols(seriesInfo_);
 
@@ -127,6 +131,8 @@ MDM_API int mdm_RunTools_madym_DicomConvert::parseInputs(int argc, const char *a
   options_parser_.add_option(config_options, options_.flipY);
   options_parser_.add_option(config_options, options_.flipZ);
   options_parser_.add_option(config_options, options_.niftiScaling);
+  options_parser_.add_option(config_options, options_.nifti4D);
+  options_parser_.add_option(config_options, options_.useBIDS);
 
   //Dicom options
   options_parser_.add_option(config_options, options_.dicomDir);
@@ -1209,7 +1215,7 @@ void mdm_RunTools_madym_DicomConvert::makeSingleVol(
     fs::create_directories(volumeName.parent_path());
 
     mdm_ImageIO::writeImage3D(imageWriteFormat,
-      volumeName.string(), img, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
+      volumeName.string(), img, imageDatatype, xtrType_, options_.niftiScaling());
     mdm_ProgramLogger::logProgramMessage("Created 3D image " + volumeName.string() + " from series " + 
       std::to_string(series.index) + ": " + series.name);
   }
@@ -1258,24 +1264,36 @@ void mdm_RunTools_madym_DicomConvert::makeT1InputVols(
     //Set up mean image
     mdm_Image3D meanImg;
 
-    //Set up output directory - outpath is already absolute
+    //Set up output path/directory - outpath is already absolute
     fs::path T1Dir = fs::path(fs::absolute(options_.T1Dir())) / fs::path(T1Name);
-    fs::create_directories(T1Dir);
 
+    //For 3D writing, create a directory for the indiviudal repeats
+    if (!options_.nifti4D())
+      fs::create_directories(T1Dir);
+
+    //Create images container in case writing 4D. If we're not, it will stay unused
+    std::vector< mdm_Image3D > imgs;
     for (int i_rpt = 0; i_rpt < series.nTimes; i_rpt++)
     {
       auto startIdx = i_rpt * series.nZ;
       auto img = loadDicomImage(series, startIdx);
+      img.setType(mdm_Image3D::ImageType::TYPE_T1WTSPGR);
 
-      //Make output name
-      auto outputName = mdm_SequenceNames::makeSequenceFilename(
-        T1Dir.string(), options_.repeatPrefix(), i_rpt + 1, options_.sequenceFormat(),
-        options_.sequenceStart(), options_.sequenceStep());
+      if (options_.nifti4D())
+        imgs.push_back(img);
 
-      //Write the output image and xtr file
-      mdm_ImageIO::writeImage3D(imageWriteFormat,
-        outputName, img, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
-      mdm_ProgramLogger::logProgramMessage("Created T1 input file " + outputName);
+      else
+      {
+        //Make output name
+        auto outputName = mdm_SequenceNames::makeSequenceFilename(
+          T1Dir.string(), options_.repeatPrefix(), i_rpt + 1, options_.sequenceFormat(),
+          options_.sequenceStart(), options_.sequenceStep());
+
+        //Write the output image and xtr file
+        mdm_ImageIO::writeImage3D(imageWriteFormat,
+          outputName, img, imageDatatype, xtrType_, options_.niftiScaling());
+        mdm_ProgramLogger::logProgramMessage("Created T1 input file " + outputName);
+      }
 
       if (options_.makeT1Means())
       {
@@ -1286,14 +1304,25 @@ void mdm_RunTools_madym_DicomConvert::makeT1InputVols(
           meanImg += img;
       }
     }
+    if (options_.nifti4D())
+    {
+      //For 4D writing, the name is just the T1 dir we'd have used for the 3D writing
+      auto outputName = T1Dir;
+      fs::create_directories(outputName.parent_path());
 
+
+      //Write the output image and xtr file
+      mdm_ImageIO::writeImage4D(imageWriteFormat,
+        outputName.string(), imgs, imageDatatype, xtrType_, options_.niftiScaling());
+      mdm_ProgramLogger::logProgramMessage("Created 4D T1 input file " + outputName.string());
+    }
     if (options_.makeT1Means())
     {
       //Finalise the mean image
       meanImg /= series.nTimes;
       auto meanName = T1Dir.string() + options_.meanSuffix();
       mdm_ImageIO::writeImage3D(imageWriteFormat,
-        meanName, meanImg, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
+        meanName, meanImg, imageDatatype, xtrType_, options_.niftiScaling());
       mdm_ProgramLogger::logProgramMessage("Created mean T1 input file " + meanName);
     }
   }
@@ -1332,7 +1361,7 @@ std::vector<mdm_RunTools_madym_DicomConvert::DWIBvalueVolumes>
       fileformat, seriesInfo.name, "gradientOrientation", options_.gradOriTag,
       DCM_DiffusionGradientOrientation, true, gradOri, 3);
 
-    //Check if this B-value/gradient already found, and if so, and this filename
+    //Check if this B-value/gradient already found, and if so, add this filename
     // to the matched DWI volume info
     auto createNew = true;
     for (auto& BvalueInfo : DWIBvalueList)
@@ -1457,6 +1486,12 @@ void mdm_RunTools_madym_DicomConvert::makeDWIInputVols(
   auto imageWriteFormat = mdm_ImageIO::formatFromString(options_.imageWriteFormat());
   auto imageDatatype = static_cast<mdm_ImageDatatypes::DataType>(options_.imageDataType());
 
+  //For 4D writing, make a single vectors of all B-value inputs, and a second vector of mean imgs
+  //for 3D writing these will stay unused
+  auto write4D = options_.nifti4D();
+  std::vector< mdm_Image3D > imgs;
+  std::vector< mdm_Image3D > mean_imgs;
+
   //Loop over each B-value/Gradient orientation combo
   for (const auto BvalueInfo : DWIBvalueList)
   {
@@ -1465,11 +1500,14 @@ void mdm_RunTools_madym_DicomConvert::makeDWIInputVols(
     mdm_Image3D meanImg;
 
     //Make B-value basename
-    auto BvalueName = (boost::format("%1%_%2%") % basename % int(BvalueInfo.Bvalue)).str();
+    auto BvalueName = write4D ? "" :(boost::format("%1%_%2%") % basename % int(BvalueInfo.Bvalue)).str();
+    fs::path DWIDir = write4D ? "" : fs::path(options_.DWIDir()) / fs::path(BvalueName);
 
-    //Set up output directory - outpath is already absolute
-    fs::path DWIDir = fs::path(options_.DWIDir()) / fs::path(BvalueName);
-    fs::create_directories(DWIDir);
+    if (!write4D)
+    {
+      //Set up output directory - outpath is already absolute
+      fs::create_directories(DWIDir);
+    }
     
 
     auto nVolumes = BvalueInfo.volumes.size();
@@ -1477,17 +1515,23 @@ void mdm_RunTools_madym_DicomConvert::makeDWIInputVols(
     {
       const auto volumeInfo = BvalueInfo.volumes[i_v];
       auto img = loadDicomImage(seriesInfo, volumeInfo.fileNames, false, 0, volumeInfo.Bvalue, volumeInfo.gradOri);
+      img.setType(mdm_Image3D::ImageType::TYPE_DWI);
 
-      //Make output name
-      auto seq_start = volumeInfo.Bvalue ? options_.sequenceStart() : 0;
-      auto outputName = mdm_SequenceNames::makeSequenceFilename(
-        DWIDir.string(), BvalueName + "_orient_", i_v + 1, options_.sequenceFormat(),
-        seq_start, options_.sequenceStep());
+      if (write4D)
+        imgs.push_back(img);
+      else
+      {
+        //Make output name
+        auto seq_start = volumeInfo.Bvalue ? options_.sequenceStart() : 0;
+        auto outputName = mdm_SequenceNames::makeSequenceFilename(
+          DWIDir.string(), BvalueName + "_orient_", i_v + 1, options_.sequenceFormat(),
+          seq_start, options_.sequenceStep());
 
-      //Write the output image and xtr file
-      mdm_ImageIO::writeImage3D(imageWriteFormat,
-        outputName, img, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
-      mdm_ProgramLogger::logProgramMessage("Created DWI input file " + outputName);
+        //Write the output image and xtr file
+        mdm_ImageIO::writeImage3D(imageWriteFormat,
+          outputName, img, imageDatatype, xtrType_, options_.niftiScaling());
+        mdm_ProgramLogger::logProgramMessage("Created DWI input file " + outputName);
+      }
 
       if (options_.makeBvalueMeans())
       {
@@ -1502,13 +1546,38 @@ void mdm_RunTools_madym_DicomConvert::makeDWIInputVols(
 
     if (options_.makeBvalueMeans())
     {
-      //Finalise the mean image
-      meanImg /= nVolumes;
-      auto meanName = (boost::format("%1%%2%") % DWIDir.string() % options_.meanSuffix()).str();
+      if (write4D)
+        mean_imgs.push_back(meanImg);
 
-      mdm_ImageIO::writeImage3D(imageWriteFormat,
-        meanName, meanImg, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
-      mdm_ProgramLogger::logProgramMessage("Created mean DWI input file " + meanName);
+      else
+      {
+        //Finalise the mean image
+        meanImg /= nVolumes;
+        auto meanName = (boost::format("%1%%2%") % DWIDir.string() % options_.meanSuffix()).str();
+
+        mdm_ImageIO::writeImage3D(imageWriteFormat,
+          meanName, meanImg, imageDatatype, xtrType_, options_.niftiScaling());
+        mdm_ProgramLogger::logProgramMessage("Created mean DWI input file " + meanName);
+      }
+    }
+  }
+
+  //Write the 4D image volumes for the indiviudal B-values and their means
+  if (write4D)
+  {
+    auto DWIName = fs::path(options_.DWIDir()) / basename;
+    fs::create_directories(DWIName.parent_path());
+
+    mdm_ImageIO::writeImage4D(imageWriteFormat,
+      DWIName.string(), imgs, imageDatatype, xtrType_, options_.niftiScaling());
+    mdm_ProgramLogger::logProgramMessage("Created 4D DWI image " + DWIName.string());
+
+    if (options_.makeBvalueMeans())
+    {
+      auto DWIMeanName = DWIName.string() + options_.meanSuffix();
+      mdm_ImageIO::writeImage4D(imageWriteFormat,
+        DWIMeanName, mean_imgs, imageDatatype, xtrType_, options_.niftiScaling());
+      mdm_ProgramLogger::logProgramMessage("Created 4D image of DWI means over B-value " + DWIMeanName);
     }
   }
 }
@@ -1554,21 +1623,31 @@ void mdm_RunTools_madym_DicomConvert::makeDynamicVols(
     + std::to_string(nTimes) + " timepoints from series " +
     std::to_string(series.index) + ": " + series.name + " ...");
 
+  //Create images container in case writing 4D. If we're not, it will stay unused
+  std::vector< mdm_Image3D > imgs;
   for (int i_dyn = 0; i_dyn < nTimes; i_dyn++)
   {
     auto startIdx = i_dyn * series.nZ;
 
     auto img = loadDicomImage(series, startIdx, true, i_dyn);
+    img.setType(mdm_Image3D::ImageType::TYPE_T1DYNAMIC);
 
-    //Make output name
-    auto outputName = mdm_SequenceNames::makeSequenceFilename(
-      dynDir.string(), options_.dynName(), i_dyn+1, options_.sequenceFormat(),
-      options_.sequenceStart(), options_.sequenceStep());
+    if (options_.nifti4D())
+      imgs.push_back(img);
 
-    //Write the output image and xtr file
-    mdm_ImageIO::writeImage3D(imageWriteFormat,
-      outputName, img, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
-    mdm_ProgramLogger::logProgramMessage("Created dynamic image " + outputName);
+    else
+    {
+      //Make output name
+      auto outputName = mdm_SequenceNames::makeSequenceFilename(
+        dynDir.string(), options_.dynName(), i_dyn + 1, options_.sequenceFormat(),
+        options_.sequenceStart(), options_.sequenceStep());
+
+      //Write the output image and xtr file
+      mdm_ImageIO::writeImage3D(imageWriteFormat,
+        outputName, img, imageDatatype, xtrType_, options_.niftiScaling());
+      mdm_ProgramLogger::logProgramMessage("Created dynamic image " + outputName);
+    }
+    
 
     if (options_.makeDynMean())
     {
@@ -1580,13 +1659,25 @@ void mdm_RunTools_madym_DicomConvert::makeDynamicVols(
     }
   }
 
+  //If 4D, write the images now
+  if (options_.nifti4D())
+  {
+    auto dynName = dynDir / options_.dynName();
+
+    mdm_ImageIO::writeImage4D(imageWriteFormat,
+      dynName.string(), imgs, imageDatatype, xtrType_, options_.niftiScaling());
+    mdm_ProgramLogger::logProgramMessage("Created 4D dynamic image " + dynName.string());
+  }
+
   if (options_.makeDynMean())
   {
     //Finalise the mean image
     meanImg /= nTimes;
+    meanImg.setType(mdm_Image3D::ImageType::TYPE_DYNMEAN);
+
     auto meanName = dynDir / (options_.dynName() + options_.meanSuffix());
     mdm_ImageIO::writeImage3D(imageWriteFormat,
-      meanName.string(), meanImg, imageDatatype, mdm_XtrFormat::NEW_XTR, options_.niftiScaling());
+      meanName.string(), meanImg, imageDatatype, xtrType_, options_.niftiScaling());
     mdm_ProgramLogger::logProgramMessage("Created temporal mean of dynamic images " + meanName.string());
   }
 }

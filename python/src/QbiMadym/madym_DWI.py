@@ -19,6 +19,8 @@ def run(
     img_fmt_r:str = None,
     img_fmt_w:str = None,
     nifti_scaling:bool = None,
+    nifti_4D:bool = None,
+    use_BIDS:bool = None,
     voxel_size_warn_only:bool = None,
     overwrite:bool = None,
     program_log_name:str = None,
@@ -73,6 +75,10 @@ def run(
             Image format for writing output
         nifti_scaling:bool = None,
             If set, applies intensity scaling and offset when reading/writing NIFTI images
+        nifti_4D : bool = None,
+            If set, reads NIFTI 4D images for DWI input
+        use_BIDS : bool = None,
+            If set, writes images using BIDS json meta info
         voxel_size_warn_only : bool = None
             If true, only warn if voxel sizes don't match for subsequent images
         overwrite : bool = False,
@@ -155,6 +161,10 @@ def run(
     add_option('string', cmd_args, '--img_fmt_w', img_fmt_w)
 
     add_option('bool', cmd_args, '--nifti_scaling', nifti_scaling)
+
+    add_option('bool', cmd_args, '--nifti_4D', nifti_4D)
+
+    add_option('bool', cmd_args, '--use_BIDS', use_BIDS)
 
     add_option('bool', cmd_args, '--voxel_size_warn_only', voxel_size_warn_only)
 

@@ -23,6 +23,14 @@
 #include <madym/utils/mdm_exception.h>
 
 namespace json = boost::json;
+namespace fs = boost::filesystem;
+
+std::string parseJSONExt(const std::string& fileName, const std::string &ext)
+{
+  fs::path p(fileName);
+  auto ext_p = p.extension();
+  return (ext_p == ext) ? fileName : fileName + ext;
+}
 
 void JSONtoFile(std::ostream& os, json::value const& jv, std::string* indent = nullptr)
 {
@@ -116,7 +124,7 @@ bool isMember(const std::vector<const char*> vec, std::string str)
   return std::find(vec.begin(), vec.end(), str) != vec.end();
 }
 
-void setValue(json::value v, std::string key, mdm_Image3D& img)
+void setValue(json::value v, std::string key, mdm_Image3D& img, bool extra_keys_warning = false)
 {
   try
   {
@@ -135,21 +143,25 @@ void setValue(json::value v, std::string key, mdm_Image3D& img)
       img.setMetaData(key, v.get_bool());
       break;
     default:
-      mdm_ProgramLogger::logProgramWarning(__func__,
-        "Key in image JSON file, with value type ignored by Madym: " + key);
+      if (extra_keys_warning)
+        mdm_ProgramLogger::logProgramWarning(__func__,
+          "Key in image JSON file, with value type ignored by Madym: " + key);
     }
   }
   catch (mdm_exception& e)
   {
-    mdm_ProgramLogger::logProgramWarning(__func__,
-      "Extra key in image JSON file, ignored by Madym: " + key);
+    if (extra_keys_warning)
+      mdm_ProgramLogger::logProgramWarning(__func__,
+        "Extra key in image JSON file, ignored by Madym: " + key);
   }
 }
 
  //
-MDM_API void mdm_BIDSFormat::readImageJSON(const std::string &jsonFileName,
+MDM_API void mdm_BIDSFormat::readImageJSON(const std::string &fileName,
   mdm_Image3D &img)
 {
+  auto jsonFileName = parseJSONExt(fileName, ".json");
+
   std::ifstream t(jsonFileName);
   std::stringstream buffer;
   buffer << t.rdbuf();
@@ -167,9 +179,10 @@ MDM_API void mdm_BIDSFormat::readImageJSON(const std::string &jsonFileName,
 }
 
 //
-MDM_API void mdm_BIDSFormat::readImageJSON(const std::string& jsonFileName,
+MDM_API void mdm_BIDSFormat::readImageJSON(const std::string& baseName,
   std::vector<mdm_Image3D>& imgs)
 {
+  auto jsonFileName = parseJSONExt(baseName, ".json");
   std::ifstream t(jsonFileName);
   std::stringstream buffer;
   buffer << t.rdbuf();
@@ -180,6 +193,7 @@ MDM_API void mdm_BIDSFormat::readImageJSON(const std::string& jsonFileName,
   auto nImages = imgs.size();
 
   auto const& obj = jv.get_object();
+  json::array dynTimes;
   if (!obj.empty())
   {
     for (auto it = obj.begin(); it < obj.end(); ++it)
@@ -194,16 +208,15 @@ MDM_API void mdm_BIDSFormat::readImageJSON(const std::string& jsonFileName,
         //Array size must match number of images
         if (keyArray.size() != nImages)
           throw mdm_exception(__func__, boost::format(
-            "Error reading %1%, size of DynamicTimes array (%2%) does not match expected number of images (%3%)")
-            % jsonFileName % keyArray.size() % nImages);
+            "Error reading %1% in %2%, size of array (%3%) does not match expected number of images (%4%)")
+            % it->key().to_string() % jsonFileName % keyArray.size() % nImages);
 
         if (key == "DynamicTimes")
         {
-          //Dynamic times need setting with respect to the timestamp of the first image
-          //but what if this is not set?
-          auto secs0 = imgs[0].secondsFromTimeStamp();
-          for (size_t i = 1; i < nImages; i++)
-            imgs[i].setTimeStampFromSecs(secs0 + keyArray[i].get_double());
+          //Defer saving dynamic times to image header until all fields have been read. This ensures
+          //the first image timestamp won't override the set times
+          dynTimes = keyArray;
+          
         }
         else
         {
@@ -224,6 +237,71 @@ MDM_API void mdm_BIDSFormat::readImageJSON(const std::string& jsonFileName,
   for (auto& img : imgs)
     img.setMetaDataSource(jsonFileName);
 
+  //Set dyn times if necessary
+  if (!dynTimes.empty())
+  {
+    //Dynamic times need setting with respect to the timestamp of the first image
+    auto secs0 = imgs[0].secondsFromTimeStamp();
+    for (size_t i = 1; i < nImages; i++)
+      imgs[i].setTimeStampFromSecs(secs0 + dynTimes[i].get_double());
+  }
+
+  //Set B-values and gradients if necessary
+  auto bValFileName = parseJSONExt(baseName, ".bval");
+  auto bVecFileName = parseJSONExt(baseName, ".bvec");
+  auto bExists = fs::exists(bValFileName) && fs::exists(bVecFileName);
+
+  if (bExists)
+  {
+    std::vector< double> bVals;
+    std::vector< std::vector< double> > bVecXYZ(3);
+
+    //Open the b-val file and read the contents
+    std::ifstream bValFileStream(bValFileName.c_str(), std::ios::in);
+    if (!bValFileStream)
+      throw mdm_exception(__func__, "Can't open BIDS bval file" + bValFileName);
+    
+    double bVal;
+    for (size_t b = 0; b < nImages; b++)
+    {
+      bValFileStream >> bVal;
+      bVals.push_back(bVal);
+    }
+    bValFileStream.close();
+
+    //Open the b-Vec file and read the contents
+    std::ifstream bVecFileStream(bVecFileName.c_str(), std::ios::in);
+    if (!bVecFileStream)
+      throw mdm_exception(__func__, "Can't open BIDS bvec file" + bVecFileName);
+    double bVec;
+    for (size_t ax = 0; ax < 3; ax++)
+    {
+      for (size_t b = 0; b < nImages; b++)
+      {
+        bVecFileStream >> bVec;
+        bVecXYZ[ax].push_back(bVec);
+      }
+    }
+    bVecFileStream.close();
+
+    //Now loop through images adding the b-Values and gradients to the image meta info
+    for (size_t b = 0; b < nImages; b++)
+    {
+      auto& img_info = imgs[b].info();
+      img_info.B.setValue(bVals[b]);
+      img_info.gradOriX.setValue(bVecXYZ[0][b]);
+      img_info.gradOriY.setValue(bVecXYZ[1][b]);
+      img_info.gradOriZ.setValue(bVecXYZ[2][b]);
+
+      //Make sure the image type is set to DWI
+      imgs[b].setType(mdm_Image3D::ImageType::TYPE_DWI);
+    }
+
+    
+  }
+  else if (imgs[0].type() == mdm_Image3D::ImageType::TYPE_DWI)
+    throw mdm_exception(__func__, "Error reading " + jsonFileName + 
+      ": 4D images of type DWI must have a matching .bval and .bvec files");
 }
 
 //
@@ -244,7 +322,8 @@ void mdm_BIDSFormat::writeImageJSON(const std::string &baseName,
   for (int i = 0; i < keys.size(); i++)
     imgMeta[keys[i]] = values[i];
 
-  std::ofstream jsonStreamOut(baseName.c_str(), std::ios::out);
+  auto jsonFileName = parseJSONExt(baseName, ".json");
+  std::ofstream jsonStreamOut(jsonFileName.c_str(), std::ios::out);
   JSONtoFile(jsonStreamOut, imgMeta);
   jsonStreamOut.close();
 }
@@ -255,58 +334,11 @@ void mdm_BIDSFormat::writeImageJSON(const std::string& baseName,
 {
   json::object imgMeta;
 
-  /*;
-
-  if (img.info().flipAngle.isSet())
-    imgMeta["FlipAngle"] = img.info().flipAngle.value();
-
-  if (img.info().TR.isSet())
-    imgMeta["RepetitionTime"] = img.info().TR.value();
-
-  if (img.info().TE.isSet())
-    imgMeta["EchoTime"] = img.info().TE.value();
-
-  if (img.info().TI.isSet())
-    imgMeta["InversionTime"] = img.info().TI.value();
-
-  if (img.info().Xmm.isSet())
-    imgMeta["VoxelSize"] = {
-        img.info().Xmm.value(),
-        img.info().Ymm.value(),
-        img.info().Zmm.value()};
-    imgMeta["VoxelUnits"] = "mm";
-
-  if (img.info().rowDirCosX.isSet())
-    imgMeta["RowDirection"] = {
-        img.info().rowDirCosX.value(),
-        img.info().rowDirCosY.value(),
-        img.info().rowDirCosZ.value()};
-
-  if (img.info().colDirCosX.isSet())
-    imgMeta["ColDirection"] = {
-        img.info().colDirCosX.value(),
-        img.info().colDirCosY.value(),
-        img.info().colDirCosZ.value()};
-
-  if (img.info().flipX.isSet())
-    imgMeta["Flip"] = {
-        img.info().flipX.value(),
-        img.info().flipY.value(),
-        img.info().flipZ.value()};
-
-  if (img.info().zDirection.isSet())
-    imgMeta["zDirection"] = img.info().zDirection.value();
-
-  if (img.info().sclSlope.isSet())
-    imgMeta["sclSlope"] = img.info().sclSlope.value();
-
-  if (img.info().sclInter.isSet())
-    imgMeta["sclInter"] = img.info().sclInter.value();*/
-
-    //Set the time and type
-  const auto& img = imgs[0];
-  imgMeta["TimeStamp"] = img.timeStamp();
-  imgMeta["ImageType"] = img.type();
+  //Set the time and type
+  const auto& img0 = imgs[0];
+  auto img_type = img0.type();
+  imgMeta["TimeStamp"] = img0.timeStamp();
+  imgMeta["ImageType"] = img_type;
 
   //Get all other set values
   std::vector<std::string> keys;
@@ -317,14 +349,56 @@ void mdm_BIDSFormat::writeImageJSON(const std::string& baseName,
     imgMeta[keys[i]] = values[i];
 
   //Set dynamic times in seconds
-  json::array dynTimes(imgs.size(), 0.0);
-  auto secs0 = img.secondsFromTimeStamp();
-  for (size_t i = 1; i < imgs.size(); i++)
-    dynTimes[i] = imgs[i].secondsFromTimeStamp() - secs0;
-    
-  imgMeta["DynamicTimes"] = dynTimes;
+  if (img_type == mdm_Image3D::ImageType::TYPE_CAMAP || img_type == mdm_Image3D::ImageType::TYPE_T1DYNAMIC)
+  {
+    json::array dynTimes(imgs.size(), 0.0);
+    auto secs0 = img0.secondsFromTimeStamp();
+    for (size_t i = 1; i < imgs.size(); i++)
+      dynTimes[i] = imgs[i].secondsFromTimeStamp() - secs0;
 
-  std::ofstream jsonStreamOut(baseName.c_str(), std::ios::out);
+    imgMeta["DynamicTimes"] = dynTimes;
+  }
+  else if (img_type == mdm_Image3D::ImageType::TYPE_DWI)
+  {
+    //Create B-value and B-vec files - because B-vecs files are written 3 x n (with each
+    // axis on 1 line), it is easier to collect them in the first pass loop before writing
+     
+    // //Open file for B-values
+    auto bValFileName = parseJSONExt(baseName, ".bval");
+    std::ofstream bValFileStream(bValFileName.c_str(), std::ios::out);
+    if (!bValFileStream)
+      throw mdm_exception(__func__, "Can't open BIDS bval file" + bValFileName);
+    
+    std::vector< std::vector<double> > bVecXYZ(3);
+    for (const auto& img : imgs)
+    {
+      //Write b-Val
+      bValFileStream << img.info().B.value() << " ";
+
+      //Get B-vecs
+      bVecXYZ[0].push_back(img.info().gradOriX.value());
+      bVecXYZ[1].push_back(img.info().gradOriY.value());
+      bVecXYZ[2].push_back(img.info().gradOriZ.value());
+    }
+    //Close the b-Val file
+    bValFileStream.close();
+
+    //Now on second loop write the b-Vec file
+    auto bVecFileName = parseJSONExt(baseName, ".bvec");
+    std::ofstream bVecFileStream(bVecFileName.c_str(), std::ios::out);
+    if (!bVecFileStream)
+      throw mdm_exception(__func__, "Can't open BIDS bvec file" + bVecFileName);
+    for (size_t ax = 0; ax < 3; ax++)
+    {
+      for (size_t b = 0; b < imgs.size(); b++)
+        bVecFileStream << bVecXYZ[ax][b] << " ";
+      bVecFileStream << '\n';
+    }
+    bVecFileStream.close();
+  }
+
+  auto jsonFileName = parseJSONExt(baseName, ".json");
+  std::ofstream jsonStreamOut(jsonFileName.c_str(), std::ios::out);
   JSONtoFile(jsonStreamOut, imgMeta);
   jsonStreamOut.close();
 }

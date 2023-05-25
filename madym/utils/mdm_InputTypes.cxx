@@ -18,8 +18,50 @@
 #include <boost/lexical_cast.hpp>
 #include <madym/utils/mdm_exception.h>
 #include <madym/utils/mdm_platform_defs.h>
+#include <madym/utils/mdm_ProgramLogger.h>
 
 const std::string mdm_input_str::EMPTY_STR = "\"\"";
+
+//!Expand environment variables
+std::string expandEnvVars(const std::string& str)
+{
+  std::vector<std::string> tokens;
+  boost::split(tokens, str, boost::is_any_of("$"));
+  auto nTokens = tokens.size();
+  std::string out_str;
+  if (nTokens == 1)
+    out_str = str;
+
+  else if (nTokens % 2)
+  {
+    for (size_t t = 0; t < nTokens; t++)
+    {
+      if (t % 2)
+      { //Odd tokens (counting from 0) are between $'s and should be parsed as environment variables
+        if (tokens[t].empty())
+          //Was $$, so append escaped $ character to output string
+          out_str += "$";
+        else
+        {
+          //Check the environment variable, if found, append to output string. If not warn the user
+          auto env = std::getenv(tokens[t].c_str());
+          if (env)
+            out_str += env;
+          else
+            mdm_ProgramLogger::logProgramWarning(__func__,
+              "Environment variable " + tokens[t] + " in input " + str + " not found on system.");
+        } 
+      }       
+      else //Even tokens (counting from 0) are regular strings to append to output
+        out_str += tokens[t];
+    }
+  } 
+  else
+    throw mdm_exception(__func__,
+      "Error parsing input, environment variables must be enclosed in matching $ pairs, eg $USER$. Use $$ to escape a single $ character.");
+  
+  return out_str;
+}
 
 //Suppress doxygen warnings caused by typedefs/templates below
 
@@ -89,7 +131,7 @@ MDM_API mdm_input_str::mdm_input_str()
 {}
 
 MDM_API mdm_input_str::mdm_input_str(std::string str) :
-	str_(str)
+	str_(expandEnvVars(str))
 {}
 
 MDM_API mdm_input_str::~mdm_input_str()
@@ -299,7 +341,7 @@ MDM_API void mdm_input_string_list::fromString(const std::string &str)
     std::string s3(t);
     boost::trim(s3);
     if (!s3.empty())
-      list_.push_back(s3);
+      list_.push_back( expandEnvVars(s3) );
   }
 }
 DISABLE_WARNING_POP

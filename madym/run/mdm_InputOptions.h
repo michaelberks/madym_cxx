@@ -266,6 +266,9 @@ struct mdm_InputOptions {
 	mdm_input_bool nifti4D = mdm_input_bool(
 		false, "nifti_4D", "",
 		"If set, reads NIFTI 4D images for T1 mapping and dynamic inputs"); //!< See initial value
+	mdm_input_bool useBIDS = mdm_input_bool(
+		false, "use_BIDS", "",
+		"If set, writes images using BIDS json meta info"); //!< See initial value
 
 	//Logging options
   mdm_input_bool voxelSizeWarnOnly = mdm_input_bool(

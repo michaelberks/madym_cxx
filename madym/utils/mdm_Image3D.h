@@ -135,7 +135,6 @@ class mdm_Image3D
 		TYPE_M0MAP, //!< M0 map
     TYPE_B1MAP, //!< B1 correction map
 		TYPE_CAMAP, //!< Contrast-agent concentration map
-		TYPE_DEGR, //!< Variable flip-angle map
 		TYPE_T2STARMAP, //!< T2* map
 		TYPE_DYNMEAN, //!< Temporal mean of dynamic images
 		TYPE_DWI, //!< Diffusion weighted-image

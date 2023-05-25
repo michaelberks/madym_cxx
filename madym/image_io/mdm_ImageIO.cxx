@@ -163,6 +163,44 @@ MDM_API void mdm_ImageIO::writeImage3D(ImageFormat imgFormat,
 }
 
 //
+MDM_API void mdm_ImageIO::writeImage4D(ImageFormat imgFormat,
+  const std::string& baseName,
+  const std::vector< mdm_Image3D> & imgs,
+  const mdm_ImageDatatypes::DataType dataTypeFlag,
+  const mdm_XtrFormat::XTR_type xtrTypeFlag,
+  bool applyScaling)
+{
+  if (xtrTypeFlag != mdm_XtrFormat::XTR_type::BIDS)
+    throw mdm_exception(__func__, "XTR format must be BIDS for 4D writing. Check input option use_BIDS is set.");
+
+  switch (imgFormat)
+  {
+  case ImageFormat::NIFTI:
+    mdm_NiftiFormat::writeImage4D(baseName, imgs, dataTypeFlag, xtrTypeFlag, false, applyScaling);
+    break;
+
+  case ImageFormat::NIFTI_GZ:
+    mdm_NiftiFormat::writeImage4D(baseName, imgs, dataTypeFlag, xtrTypeFlag, true, applyScaling);
+    break;
+
+  case DICOM:
+    ; //Fall through
+  case ImageFormat::ANALYZE:
+    ; //Fall through
+
+  case ImageFormat::ANALYZE_SPARSE:
+    throw mdm_exception(__func__, "4D writing is not supported for Analyze 7.5 or DICOM formats. Use NIFTI or NIFT_GZ");
+
+  case ImageFormat::UNKNOWN:
+    ; //Fall through to error
+
+  default:
+    throw mdm_exception(__func__, "Unrecognized image format " + std::to_string(imgFormat));
+  }
+
+}
+
+//
 MDM_API bool mdm_ImageIO::filesExist(ImageFormat imgFormat,
   const std::string & baseName,
   bool warn)

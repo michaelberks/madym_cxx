@@ -234,8 +234,7 @@ MDM_API void mdm_Image3D::setTimeStampFromNow()
 	double hh = timeLocal.time_of_day().hours();
 	double mm = timeLocal.time_of_day().minutes();
 	double ss = timeLocal.time_of_day().seconds();
-	double ms = (double)timeLocal.time_of_day().total_milliseconds();
-	timeStamp_ = 10000 * hh + 100 * mm + ss + (ms/1000);
+	timeStamp_ = 10000 * hh + 100 * mm + ss;
 }
 
 //
