@@ -10,8 +10,6 @@
 
 void test_json(mdm_Image3D& img)
 {
-	auto img_oe = mdm_NiftiFormat::readImage3D("Q:/data/MB/BIDS_bruker_test/20210705_123459_210363_1_1/IR/OE_400.nii.gz", true, false);
-
 	double FA = 20;
 	double TR = 3;
 	double TE = 1;

@@ -30,11 +30,11 @@ endif()
 add_library(mdm_image 
 	${mdm_image_sources})
 
-find_package(Boost COMPONENTS container REQUIRED)
+#find_package(Boost COMPONENTS container REQUIRED)
 
 target_link_libraries( mdm_image
   mdm_utils
-  Boost::container
+  #Boost::container
 )
 
 if (BUILD_WITH_ZLIB)

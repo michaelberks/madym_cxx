@@ -172,7 +172,7 @@ MDM_API void mdm_BIDSFormat::readImageJSON(const std::string &fileName,
   if (!obj.empty())
   {
     for (auto it = obj.begin(); it < obj.end(); ++it)
-      setValue(it->value(), it->key().to_string(), img);
+      setValue(it->value(), it->key_c_str(), img);
   }
 
   img.setMetaDataSource(jsonFileName);
@@ -198,18 +198,18 @@ MDM_API void mdm_BIDSFormat::readImageJSON(const std::string& baseName,
   {
     for (auto it = obj.begin(); it < obj.end(); ++it)
     {
-      const auto key = it->key().to_string();
+      const auto key = std::string(it->key_c_str());
       const auto value = it->value();
 
       //Try to set array values that distribute over images
-      if (isMember(arrayKeys, it->key().to_string()))
+      if (isMember(arrayKeys, std::string(it->key_c_str())))
       {
         auto keyArray = value.as_array();
         //Array size must match number of images
         if (keyArray.size() != nImages)
           throw mdm_exception(__func__, boost::format(
             "Error reading %1% in %2%, size of array (%3%) does not match expected number of images (%4%)")
-            % it->key().to_string() % jsonFileName % keyArray.size() % nImages);
+            % it->key_c_str() % jsonFileName % keyArray.size() % nImages);
 
         if (key == "DynamicTimes")
         {
