@@ -312,6 +312,14 @@ MDM_API void mdm_VolumeAnalysis::addCtDataMap(const mdm_Image3D ctMap)
     if (!isnan(noise))
       noiseVar_.push_back(noise);
   }
+  if (outputCt_mod_ && (CtModelMaps_.size() == numCtSignal() - 1))
+  {
+    mdm_Image3D cModMap;
+    cModMap.copy(ctMap);
+    cModMap.setTimeStampFromDoubleStr(ctMap.timeStamp());
+    cModMap.setType(mdm_Image3D::ImageType::TYPE_CAMAP);
+    CtModelMaps_.push_back(cModMap);
+  }
 }
 
 //
@@ -680,14 +688,6 @@ void mdm_VolumeAnalysis::initialiseParameterMaps(
 
   //Create enhancing map
   createMap(enhVoxMap_);
-
-  //Create modelled Ct maps
-  if (outputCt_mod_)
-  {
-    CtModelMaps_.resize(numDynamics());
-    for (auto &map : CtModelMaps_)
-      createMap(map);
-  }
 }
 
 //

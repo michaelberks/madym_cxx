@@ -13,6 +13,7 @@
 #include "mdm_ParamSummaryStats.h"
 #include <madym/image_io/mdm_ImageDatatypes.h>
 #include <madym/image_io/mdm_ImageIO.h>
+#include <madym/image_io/meta/mdm_XtrFormat.h>
 #include <madym/utils/mdm_Image3D.h>
 
 //!   Manager class for reading input and writing ouput of volume-wise model analysis
@@ -70,8 +71,9 @@ public:
 	//! Load signal image volumes for DWI modelling
 	/*!
 	\param DWIInputPaths list of filepaths to input signal images
+	\param useNifti4D if true, load 4D NIFTI images and return average of each B-value as 3D image to add
 	*/
-	MDM_API void loadDWIMappingInputImages(const std::vector<std::string>& DWIInputPaths);
+	MDM_API void loadDWIMappingInputImages(const std::vector<std::string>& DWIInputPaths, bool useNifti4D);
 
 	//! Load DCE time-series signal volumes
 	/*!
@@ -142,25 +144,51 @@ public:
   */
   MDM_API void saveAIFmap(const std::string &outputDir, const std::string &name);
 
-	//! Save all output maps to disk
+	//! Save General output maps to disk
 	/*!
 	\param outputDir directory in which to write output maps.
-  \param indexPattern string format specification, to convert integers 1,...,nDyns into a string
-  \param startIndex start index of sequence names
-  \param stepSize step size between indices in sequence names
 	*/
-
 	MDM_API void saveGeneralOutputMaps(const std::string& outputDir);
 
+	//! Save T1 output maps to disk
+	/*!
+	\param outputDir directory in which to write output maps.
+	*/
 	MDM_API void saveT1OutputMaps(const std::string& outputDir);
 
+	//! Save dynamic C(t) maps to disk as series of 3D vols
+	/*!
+	\param outputDir directory in which to write output maps.
+	\param Ct_sigPrefix prefix to use for signal-derived C(t)
+	\param Ct_modPrefix prefix to use for modelled C(t)
+	\param indexPattern string format specification, to convert integers 1,...,nDyns into a string
+	\param startIndex start index of sequence names
+	\param stepSize step size between indices in sequence names
+	*/
 	MDM_API void saveDynamicOutputMaps(const std::string& outputDir,
 		const  std::string& Ct_sigPrefix, const  std::string& Ct_modPrefix,
 		const std::string& indexPattern,
 		const int startIndex, const int stepSize);
 
+	//! Save dynamic C(t) maps to disk as single 4D image
+	/*!
+	\param outputDir directory in which to write output maps.
+	\param Ct_sigPrefix prefix to use for signal-derived C(t)
+	\param Ct_modPrefix prefix to use for modelled C(t)
+	*/
+	MDM_API void saveDynamicOutputMaps(const std::string& outputDir,
+		const  std::string& Ct_sigPrefix, const  std::string& Ct_modPrefix);
+
+	//! Save DCE-specific output maps to disk
+	/*!
+	\param outputDir directory in which to write output maps.
+	*/
 	MDM_API void saveDCEOutputMaps(const std::string& outputDir);
 
+	//! Save DWI specific output maps to disk
+	/*!
+	\param outputDir directory in which to write output maps.
+	*/
 	MDM_API void saveDWIOutputMaps(const std::string& outputDir);
 
 	//! Save model residuals map to disk
@@ -216,6 +244,12 @@ public:
 	*/
 	MDM_API void setApplyNiftiScaling(bool flag);
 
+	//! Set image meta information format for writing output
+	/*!
+	\param use_bids if true uses BIDS JSON format, otherwise uses original Madym XTR format
+	*/
+	MDM_API void setXtrType(bool use_bids);
+
 protected:
 
 private:
@@ -249,6 +283,7 @@ private:
   mdm_ImageIO::ImageFormat imageWriteFormat_;
   mdm_ImageIO::ImageFormat imageReadFormat_;
 	bool applyNiftiScaling_;
+	mdm_XtrFormat::XTR_type xtrType_;
 };
 
 #endif /* MDM_FILELOAD_HDR */

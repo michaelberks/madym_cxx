@@ -36,6 +36,7 @@ void mdm_RunToolsVolumeAnalysis::setFileManagerParams()
   fileManager_.setImageReadFormat(options_.imageReadFormat());
   fileManager_.setImageWriteFormat(options_.imageWriteFormat());
   fileManager_.setApplyNiftiScaling(options_.niftiScaling());
+  fileManager_.setXtrType(options_.useBIDS());
 }
 
 //

@@ -9,6 +9,7 @@
 #include <madym/dce/mdm_DCEModelGenerator.h>
 #include <madym/run/mdm_RunTools_madym_DCE.h>
 #include <madym/image_io/mdm_ImageIO.h>
+#include <madym/image_io/nifti/mdm_NiftiFormat.h>
 #include <madym/utils/mdm_Image3D.h>
 #include <madym/run/mdm_ParamSummaryStats.h>
 #include <cmath>
@@ -157,17 +158,21 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
 	std::string test_dir = mdm_test_utils::temp_dir();
 	std::string dyn_dir = test_dir +"/dynamics/";
 	fs::create_directories(dyn_dir);
-
+  
+  //Create vector of images for 4D input
+  std::vector<mdm_Image3D> Ct_imgs;
 	for (int i_t = 0; i_t < nTimes; i_t++)
 	{
 		//Write out 1x1 concentration maps and xtr files
-		std::string Ct_name = dyn_dir + "Ct_" + (boost::format("%02u") % (i_t + 1)).str();
+		auto Ct_name = dyn_dir + "Ct_" + (boost::format("%02u") % (i_t + 1)).str();
 
 		mdm_Image3D Ct_img;
 		Ct_img.setDimensions(1, 1, 1);
 		Ct_img.setVoxelDims(1, 1, 1);
 		Ct_img.setTimeStampFromMins(dynTimes[i_t]);
 		Ct_img.setVoxel(0, Ct[i_t]);
+    Ct_img.setType(mdm_Image3D::ImageType::TYPE_CAMAP);
+    Ct_imgs.push_back(Ct_img);
 
 		mdm_AnalyzeFormat::writeImage3D(Ct_name, Ct_img, 
 			mdm_ImageDatatypes::DT_FLOAT, mdm_XtrFormat::NEW_XTR, false);
@@ -175,6 +180,9 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
 		if (!i_t)
 			BOOST_TEST_MESSAGE("Saved 1st dynamic image " << Ct_name);
 	}
+  auto CtName4D = dyn_dir + "Ct_4D";
+  mdm_NiftiFormat::writeImage4D(CtName4D, Ct_imgs,
+    mdm_ImageDatatypes::DT_FLOAT, mdm_XtrFormat::BIDS, false);
 
 	//Run 2 types of tests:
 	// 1) Using a run tools object, this runs the complete pipeline but doesn't involve a system call
@@ -184,6 +192,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
 	// 1) Using a run tools object
 	//-------------------------------------------------------------------------------
 	{
+    BOOST_TEST_MESSAGE("1) Using a run tools object");
 		std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct1/";
     mdm_RunTools_madym_DCE madym_exe;
 		auto &madym_options = madym_exe.options();
@@ -219,6 +228,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
 	// 2) From the command line
 	//-------------------------------------------------------------------------------
 	{
+    BOOST_TEST_MESSAGE("2) From the command line");
 		std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct2/";
 		std::stringstream cmd;
 		cmd << mdm_test_utils::tools_exe_dir() << "madym_DCE"
@@ -261,6 +271,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
 	// 3) Using a run tools object with empty IAUC values
 	//-------------------------------------------------------------------------------
 	{
+    BOOST_TEST_MESSAGE("3) Using a run tools object with empty IAUC values");
 		std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct3/";
     mdm_RunTools_madym_DCE madym_exe;
     auto &madym_options = madym_exe.options();
@@ -294,6 +305,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
   // 4) Using a run tools object with empty model
   //-------------------------------------------------------------------------------
   {
+    BOOST_TEST_MESSAGE("4) Using a run tools object with empty model");
     std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct4/";
     mdm_RunTools_madym_DCE madym_exe;
     auto &madym_options = madym_exe.options();
@@ -327,6 +339,7 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
   // 5) Using NIFTI as image format
   //-------------------------------------------------------------------------------
   {
+    BOOST_TEST_MESSAGE("5) Using NIFTI as image format");
     std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct1/";
     mdm_RunTools_madym_DCE madym_exe;
     auto &madym_options = madym_exe.options();
@@ -359,9 +372,45 @@ BOOST_AUTO_TEST_CASE(test_madym_DCE) {
   }
 
   //-------------------------------------------------------------------------------
+  // 5a) Using NIFTI 4D as image format
+  //-------------------------------------------------------------------------------
+  {
+    BOOST_TEST_MESSAGE("5a) Using NIFTI 4D as image format");
+    std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct4D/";
+    mdm_RunTools_madym_DCE madym_exe;
+    auto& madym_options = madym_exe.options();
+
+    madym_options.model.set("ETM");
+    madym_options.outputDir.set(Ct_output_dir);
+    madym_options.dynName.set(CtName4D);
+   madym_options.injectionImage.set(injectionImage);
+    madym_options.dose.set(dose);
+    madym_options.hct.set(hct);
+    madym_options.IAUCTimes.set(IAUCTimes);
+    madym_options.inputCt.set(true);
+    madym_options.imageReadFormat.set("NIFTI");
+    madym_options.imageWriteFormat.set("NIFTI");
+    madym_options.overwrite.set(true);
+    madym_options.noAudit.set(true);
+    madym_options.nifti4D.set(true);
+
+    madym_exe.parseInputs("test_madym_DCE");
+    int result = madym_exe.run_catch();
+
+    BOOST_CHECK_MESSAGE(!result, "Running madym_DCE failed");
+    check_output(Ct_output_dir,
+      trueParams,
+      IAUCTimes,
+      IAUCVals,
+      mdm_ImageIO::ImageFormat::NIFTI
+    );
+  }
+
+  //-------------------------------------------------------------------------------
   // 6) Fit once, then reload params and call no opt
   //-------------------------------------------------------------------------------
   {
+    BOOST_TEST_MESSAGE("6) Fit once, then reload params and call no opt");
     std::string Ct_output_dir = test_dir + "/mdm_analysis_Ct1/";
     {
       mdm_RunTools_madym_DCE madym_exe;

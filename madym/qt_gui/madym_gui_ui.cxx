@@ -527,6 +527,11 @@ void madym_gui_ui::on_nifti4DCheckBox_stateChanged(int state)
 {
   setBoolOption(state, processor_.madym_exe().options().nifti4D);
 }
+
+void madym_gui_ui::on_bidsCheckBox_stateChanged(int state)
+{
+  setBoolOption(state, processor_.madym_exe().options().useBIDS);
+}
  
 //-------------------------------------------------------------------------
 //:Logging options
@@ -1492,6 +1497,7 @@ void madym_gui_ui::setup_image_format_tab(bool show)
     initialize_image_format_options(*ui.imageWriteComboBox, options.imageWriteFormat);
     ui.niftiScalingCheckBox->setChecked(options.niftiScaling());
     ui.nifti4DCheckBox->setChecked(options.nifti4D());
+    ui.bidsCheckBox->setChecked(options.useBIDS());
   }
   else
   {

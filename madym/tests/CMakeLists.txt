@@ -27,6 +27,7 @@ add_executable( test_mdm
   test_volumeAnalysis.cxx
   test_DWI.cxx
   test_mdm_exception.cxx
+  test_BIDS.cxx
 )
 
 target_link_libraries(test_mdm Boost::unit_test_framework mdm)

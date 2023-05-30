@@ -10,7 +10,7 @@
 
 #include <madym/utils/mdm_api.h>
 #include <madym/utils/mdm_Image3D.h>
-#include <madym/image_io/xtr/mdm_XtrFormat.h>
+#include <madym/image_io/meta/mdm_XtrFormat.h>
 #include <madym/image_io/analyze/mdm_AnalyzeFormat.h>
 
  //! Analyze image format reading and writing
@@ -92,7 +92,7 @@ public:
 	\param    baseName      base name for file (gets .hdr/.img/.xtr appended)
 	\param    img           mdm_Image3D holding the data to be written to file
 	\param    dataTypeFlag  integer data type flag; see Data_type enum
-	\param    xtrTypeFlag   integer xtr type flag; 0 for old, 1 for new
+	\param    xtrTypeFlag   integer xtr type flag
   \param    applyScaling  If set in image meta info use scl slope and intercept fields to recsale the image intensities before writing to NIFTI
 	*/
 	MDM_API static void writeImage3D(ImageFormat imgFormat,
@@ -100,6 +100,22 @@ public:
     const mdm_Image3D &img,
 		const mdm_ImageDatatypes::DataType dataTypeFlag, 
     const mdm_XtrFormat::XTR_type xtrTypeFlag, 
+    bool applyScaling);
+
+  //!    Write vector of mdm_Image3Ds to NIFTI 4D file set
+  /*!
+  \param    imgFormat format of image, must be NIFTI
+  \param    baseName      base name for file (gets .hdr/.img/.xtr appended)
+  \param    imgs          vector of mdm_Image3Ds to be written to file
+  \param    dataTypeFlag  integer data type flag; see Data_type enum
+  \param    xtrTypeFlag   integer xtr type flag, must be BIDS
+  \param    applyScaling  If set in image meta info use scl slope and intercept fields to recsale the image intensities before writing to NIFTI
+  */
+  MDM_API static void writeImage4D(ImageFormat imgFormat,
+    const std::string& baseName,
+    const std::vector< mdm_Image3D> & imgs,
+    const mdm_ImageDatatypes::DataType dataTypeFlag,
+    const mdm_XtrFormat::XTR_type xtrTypeFlag,
     bool applyScaling);
 
   //!    Test for existence of the file with the specified basename and format appropriate extension

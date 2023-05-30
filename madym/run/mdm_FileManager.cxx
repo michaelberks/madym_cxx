@@ -21,7 +21,6 @@ namespace fs = boost::filesystem;
 
 #include <madym/utils/mdm_ProgramLogger.h>
 #include <madym/utils/mdm_exception.h>
-#include <madym/image_io/xtr/mdm_XtrFormat.h>
 #include <madym/utils/mdm_SequenceNames.h>
 
 const int mdm_FileManager::MAX_DYN_IMAGES = 1024;
@@ -33,7 +32,8 @@ MDM_API mdm_FileManager::mdm_FileManager(mdm_VolumeAnalysis &volumeAnalysis)
   writeCtModelMaps_(false),
   applyNiftiScaling_(false),
   imageWriteFormat_(mdm_ImageIO::ImageFormat::NIFTI),
-  imageReadFormat_(mdm_ImageIO::ImageFormat::NIFTI)
+  imageReadFormat_(mdm_ImageIO::ImageFormat::NIFTI),
+  xtrType_(mdm_XtrFormat::XTR_type::BIDS)
 {
 }
 
@@ -107,7 +107,7 @@ MDM_API void mdm_FileManager::loadModelResiduals(const std::string &path)
   auto setFunc = std::bind(
     &mdm_VolumeAnalysis::setDCEMap, &volumeAnalysis_, mdm_VolumeAnalysis::MAP_NAME_RESIDUALS, std::placeholders::_1);
   loadAndSetImage(path, mdm_VolumeAnalysis::MAP_NAME_RESIDUALS, setFunc,
-    mdm_Image3D::ImageType::TYPE_KINETICMAP, false);
+    mdm_Image3D::ImageType::TYPE_KINETICMAP, xtrType_ == mdm_XtrFormat::BIDS);
 
 }
 
@@ -164,8 +164,30 @@ MDM_API void mdm_FileManager::saveDynamicOutputMaps(const std::string& outputDir
         startIndex, stepSize);
       if (!i)
         fs::create_directories((fs::path(outputDir) / ctName).parent_path());
-      saveOutputMap(ctName, volumeAnalysis_.CtModelMap(i), outputDir, false);
+      saveOutputMap(ctName, volumeAnalysis_.CtModelMap(i), outputDir, true);
     }
+  }
+}
+
+MDM_API void mdm_FileManager::saveDynamicOutputMaps(const std::string& outputDir,
+  const  std::string& Ct_sigPrefix, const  std::string& Ct_modPrefix)
+{
+  if (writeCtDataMaps_)
+  {
+    auto saveName = fs::path(outputDir) / Ct_sigPrefix;
+    fs::create_directories(saveName.parent_path());
+    mdm_ImageIO::writeImage4D(imageWriteFormat_, saveName.string(),
+      volumeAnalysis_.CtDataMaps(),
+      mdm_ImageDatatypes::DT_FLOAT, xtrType_, applyNiftiScaling_);
+
+  }
+  if (writeCtModelMaps_)
+  {
+    auto saveName = fs::path(outputDir) / Ct_modPrefix;
+    fs::create_directories(saveName.parent_path());
+    mdm_ImageIO::writeImage4D(imageWriteFormat_, saveName.string(),
+      volumeAnalysis_.CtModelMaps(),
+      mdm_ImageDatatypes::DT_FLOAT, xtrType_, applyNiftiScaling_);
   }
 }
 
@@ -270,6 +292,7 @@ MDM_API void mdm_FileManager::loadT1MappingInputImages(const std::vector<std::st
     {
       //Read in 4D image
       auto imgs = mdm_ImageIO::readImage4D(imageReadFormat_, T1InputPaths[i], true, applyNiftiScaling_);
+      imgs[0].setType(mdm_Image3D::ImageType::TYPE_T1WTSPGR);
       if (imgs.size() == 1)
         //If it's just a single 3D image, set in T1 mapper
         volumeAnalysis_.T1Mapper().addInputImage(imgs[0]);
@@ -283,6 +306,7 @@ MDM_API void mdm_FileManager::loadT1MappingInputImages(const std::vector<std::st
           mean_img += img;
 
         mean_img /= imgs.size();
+        mean_img.setType(mdm_Image3D::ImageType::TYPE_T1WTSPGR);
         volumeAnalysis_.T1Mapper().addInputImage(mean_img);
       }
     }
@@ -326,7 +350,7 @@ MDM_API void mdm_FileManager::loadB1Map(const std::string &path, const double B1
 }
 
 //
-MDM_API void mdm_FileManager::loadDWIMappingInputImages(const std::vector<std::string>& DWIInputPaths)
+MDM_API void mdm_FileManager::loadDWIMappingInputImages(const std::vector<std::string>& DWIInputPaths, bool useNifti4D)
 {
   //Check we haven't been given too many or too few images
   auto nNumImgs = DWIInputPaths.size();
@@ -334,10 +358,63 @@ MDM_API void mdm_FileManager::loadDWIMappingInputImages(const std::vector<std::s
   //Loop through filePaths, loaded each variable flip angle images
   for (int i = 0; i < nNumImgs; i++)
   {
-    auto setFunc = std::bind(
-      &mdm_DWIMapper::addInputImage, &volumeAnalysis_.DWIMapper(), std::placeholders::_1);
-    loadAndSetImage(DWIInputPaths[i], "DWI input", setFunc,
-      mdm_Image3D::ImageType::TYPE_DWI, true);
+    if (useNifti4D)
+    {
+      //Read in 4D image
+      auto imgs = mdm_ImageIO::readImage4D(imageReadFormat_, DWIInputPaths[i], true, applyNiftiScaling_);
+      if (imgs.size() == 1)
+        //If it's just a single 3D image, set in T1 mapper
+        volumeAnalysis_.DWIMapper().addInputImage(imgs[0]);
+
+      else
+      {
+        //Otherwise, separate into B-values, then take the mean over each
+        std::vector< std::vector < mdm_Image3D >> BValsImgs;
+        std::vector< double > BVals;
+
+        //First, group the B-values
+        for (const auto& img : imgs)
+        {
+          //See if B-value already found
+          auto Bval = img.info().B.value();
+          auto itr = std::find(BVals.begin(), BVals.end(), Bval);
+
+          if (itr != BVals.end())
+          {
+            //If B-value found, append this image to the images vector for that value
+            auto index = std::distance(BVals.begin(), itr);
+            BValsImgs[index].push_back(img);
+          }
+          else 
+          {
+            //If not found, append the B-values, and start a new images vector
+            BVals.push_back(Bval);
+            BValsImgs.push_back({ img });
+          }
+        }
+        //Now loop again over the B-values, making mean images and adding to the DWI mapper
+        for (const auto &BValImgs : BValsImgs)
+        { 
+          mdm_Image3D mean_img;
+          mean_img.copy(BValImgs[0]);
+          for (const auto& img : BValImgs)
+            mean_img += img;
+
+          mean_img /= BValImgs.size();
+          mean_img.setType(mdm_Image3D::ImageType::TYPE_DWI);
+          volumeAnalysis_.DWIMapper().addInputImage(mean_img);
+        }
+        
+      }
+    }
+    else
+    {
+      auto setFunc = std::bind(
+        &mdm_DWIMapper::addInputImage, &volumeAnalysis_.DWIMapper(), std::placeholders::_1);
+      loadAndSetImage(DWIInputPaths[i], "DWI input", setFunc,
+        mdm_Image3D::ImageType::TYPE_DWI, true);
+    }
+    
   }
 }
 
@@ -428,9 +505,14 @@ MDM_API void mdm_FileManager::loadDynamicTimeseries(const std::string& basePath,
     (fs::path(basePath) / StName).string();
   auto imgs = mdm_ImageIO::readImage4D(imageReadFormat_, imgName, true, applyNiftiScaling_);
   double dynTime = 0;
+  double temp_res = imgs[0].info().temporalResolution.isSet() ?
+    imgs[0].info().temporalResolution.value() : 0;
   for (auto img : imgs)
   {
-    img.setTimeStampFromSecs(dynTime);
+    //If set, use the temporal resolution field, otherwise assume acquisition times
+    //have been set from JSON meta file
+    if (temp_res)
+      img.setTimeStampFromSecs(dynTime);
     if (Ct)
     {
       img.setType(mdm_Image3D::ImageType::TYPE_CAMAP);
@@ -441,7 +523,8 @@ MDM_API void mdm_FileManager::loadDynamicTimeseries(const std::string& basePath,
       img.setType(mdm_Image3D::ImageType::TYPE_T1DYNAMIC);
       volumeAnalysis_.addStDataMap(img);
     }
-    dynTime += img.info().temporalResolution.value();
+    if (temp_res)
+      dynTime += temp_res;
   }
 
 }
@@ -474,6 +557,13 @@ MDM_API void mdm_FileManager::setApplyNiftiScaling(bool flag)
   applyNiftiScaling_ = flag;
 }
 
+//
+MDM_API void mdm_FileManager::setXtrType(bool use_bids)
+{
+  xtrType_ = use_bids ? 
+    mdm_XtrFormat::XTR_type::BIDS : mdm_XtrFormat::XTR_type::NEW_XTR;
+}
+
 //---------------------------------------------------------------------------
 //Private functions
 //---------------------------------------------------------------------------
@@ -492,9 +582,9 @@ void mdm_FileManager::saveOutputMap(const std::string &mapName, const mdm_Image3
 {
 	std::string saveName = (fs::path(outputDir) / mapName).string();
 
-  mdm_XtrFormat::XTR_type xtr = (writeXtr ? 
-    mdm_XtrFormat::XTR_type::NEW_XTR : 
-    mdm_XtrFormat::XTR_type::NO_XTR);
+  mdm_XtrFormat::XTR_type xtr = writeXtr ? 
+    xtrType_ : 
+    mdm_XtrFormat::XTR_type::NO_XTR;
 
 
   try {

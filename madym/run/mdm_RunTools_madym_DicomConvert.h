@@ -9,6 +9,7 @@
 #define MDM_RUNTOOLS_MADYM_DCE_LITE_HDR
 #include <madym/utils/mdm_api.h>
 #include <madym/run/mdm_RunTools.h>
+#include <madym/image_io/meta/mdm_XtrFormat.h>
 
 #include <dcmtk/dcmimgle/dcmimage.h>
 #include <dcmtk/dcmdata/dctk.h> 
@@ -247,6 +248,7 @@ private:
   DcmTagKey autoOffsetTag_;
 
   double temporalResolution_;
+  mdm_XtrFormat::XTR_type xtrType_;
 };
 
 #endif

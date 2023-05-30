@@ -27,10 +27,10 @@ const double mdm_Image3D::voxelSizeTolerance_ = 0.01;
 mdm_Image3D::MetaData::MetaData()
 	: /* Defaulting to NaN llows test isnan() for unset */
 	flipAngle("FlipAngle"),
-	TR("TR"),
-	TE("TE"),
+	TR("RepetitionTime"),
+	TE("EchoTime"),
 	B("B"),
-	TI("TI"),
+	TI("InversionTime"),
 	TA("TA"),
 	ETL("ETL"),
 	gradOriX("gradOriX"),
@@ -39,22 +39,22 @@ mdm_Image3D::MetaData::MetaData()
 	Xmm("Xmm"),
 	Ymm("Ymm"),
 	Zmm("Zmm"),
-	originX("originX", 0.0),
-	originY("originY", 0.0),
-	originZ("originZ", 0.0),
-	rowDirCosX("rowDirCosX", 1.0),
-	rowDirCosY("rowDirCosY", 0.0),
-	rowDirCosZ("rowDirCosZ", 0.0),
-	colDirCosX("colDirCosX", 0.0),
-	colDirCosY("colDirCosY", 1.0),
-	colDirCosZ("colDirCosZ", 0.0),
-	flipX("flipX", 0),
-	flipY("flipY", 0),
-	flipZ("flipZ", 0),
-	zDirection("zDirection", 1.0),
+	originX("OriginX", 0.0),
+	originY("OriginY", 0.0),
+	originZ("OriginZ", 0.0),
+	rowDirCosX("RowDirCosX", 1.0),
+	rowDirCosY("RowDirCosY", 0.0),
+	rowDirCosZ("RowDirCosZ", 0.0),
+	colDirCosX("ColDirCosX", 0.0),
+	colDirCosY("ColDirCosY", 1.0),
+	colDirCosZ("ColDirCosZ", 0.0),
+	flipX("FlipX", 0),
+	flipY("FlipY", 0),
+	flipZ("FlipZ", 0),
+	zDirection("ZDirection", 1.0),
 	temporalResolution("TemporalResolution"),
-	sclSlope("sclSlope"),
-	sclInter("sclInter"),
+	sclSlope("SclSlope"),
+	sclInter("SclInter"),
 	noiseSigma("NoiseSigma"),
 	xtrSource("from API")
 {}
@@ -234,8 +234,7 @@ MDM_API void mdm_Image3D::setTimeStampFromNow()
 	double hh = timeLocal.time_of_day().hours();
 	double mm = timeLocal.time_of_day().minutes();
 	double ss = timeLocal.time_of_day().seconds();
-	double ms = (double)timeLocal.time_of_day().total_milliseconds();
-	timeStamp_ = 10000 * hh + 100 * mm + ss + (ms/1000);
+	timeStamp_ = 10000 * hh + 100 * mm + ss;
 }
 
 //
@@ -261,9 +260,17 @@ MDM_API double mdm_Image3D::timeStamp() const
 //
 MDM_API double mdm_Image3D::minutesFromTimeStamp() const
 {
-	return timestampToSecs(timeStamp_) / 60.0; //time in minutes as used as standard throughout DCE analysis
+	return secondsFromTimeStamp() / 60.0; //time in minutes as used as standard throughout DCE analysis
 }
 
+//
+MDM_API double mdm_Image3D::secondsFromTimeStamp() const
+{
+	return timestampToSecs(timeStamp_); //time in minutes as used as standard throughout DCE analysis
+}
+
+
+//
 MDM_API double mdm_Image3D::secsToTimestamp(const double secs)
 {
   double hh = std::floor(secs / (3600));
@@ -298,72 +305,72 @@ MDM_API const mdm_Image3D::MetaData& mdm_Image3D::info() const
 }
 
 //
-void mdm_Image3D::setMetaData(const std::string &key, const double &value)
+MDM_API void mdm_Image3D::setMetaData(const std::string &key, const double &value)
 {
 
-	if (key.compare(info_.TimeStampKey) == 0)
+	if (boost::iequals(key, info_.TimeStampKey))
 		setTimeStampFromDoubleStr(value);
-	else if (key.compare(info_.ImageTypeKey) == 0)
+	else if (boost::iequals(key, info_.ImageTypeKey))
 		setType(static_cast<ImageType>(int(value)));		
-	else if (key.compare(info_.flipAngle.key()) == 0)
+	else if (boost::iequals(key, info_.flipAngle.key()))
 		info_.flipAngle.setValue(value);
-	else if (key.compare(info_.TR.key()) == 0)
+	else if (boost::iequals(key, info_.TR.key()) || boost::iequals(key, "TR")) //TR for back compatibility
 		info_.TR.setValue(value);
-	else if (key.compare(info_.TE.key()) == 0)
+	else if (boost::iequals(key, info_.TE.key()) || boost::iequals(key, "TE")) //TI for back compatibility
 		info_.TE.setValue(value);
-	else if (key.compare(info_.B.key()) == 0)
+	else if (boost::iequals(key, info_.B.key()))
 		info_.B.setValue(value);
-	else if (key.compare(info_.TI.key()) == 0)
+	else if (boost::iequals(key, info_.TI.key()) || boost::iequals(key, "TI")) //TI for back compatibility
 		info_.TI.setValue(value);
-	else if (key.compare(info_.TA.key()) == 0)
+	else if (boost::iequals(key, info_.TA.key()))
 		info_.TA.setValue(value);
-	else if (key.compare(info_.ETL.key()) == 0)
+	else if (boost::iequals(key, info_.ETL.key()))
 		info_.ETL.setValue(value);
-	else if (key.compare(info_.gradOriX.key()) == 0)
+	else if (boost::iequals(key, info_.gradOriX.key()))
 		info_.gradOriX.setValue(value);
-	else if (key.compare(info_.gradOriY.key()) == 0)
+	else if (boost::iequals(key, info_.gradOriY.key()))
 		info_.gradOriY.setValue(value);
-	else if (key.compare(info_.gradOriZ.key()) == 0)
+	else if (boost::iequals(key, info_.gradOriZ.key()))
 		info_.gradOriZ.setValue(value);
-	else if (key.compare(info_.Xmm.key()) == 0)
+	else if (boost::iequals(key, info_.Xmm.key()))
 		info_.Xmm.setValue(value);
-	else if (key.compare(info_.Ymm.key()) == 0)
+	else if (boost::iequals(key, info_.Ymm.key()))
 		info_.Ymm.setValue(value);
-	else if (key.compare(info_.Zmm.key()) == 0)
+	else if (boost::iequals(key, info_.Zmm.key()))
 		info_.Zmm.setValue(value);
-	else if (key.compare(info_.originX.key()) == 0)
+	else if (boost::iequals(key, info_.originX.key()))
 		info_.originX.setValue(value);
-	else if (key.compare(info_.originY.key()) == 0)
+	else if (boost::iequals(key, info_.originY.key()))
 		info_.originY.setValue(value);
-	else if (key.compare(info_.originZ.key()) == 0)
+	else if (boost::iequals(key, info_.originZ.key()))
 		info_.originZ.setValue(value);
-	else if (key.compare(info_.rowDirCosX.key()) == 0)
+	else if (boost::iequals(key, info_.rowDirCosX.key()))
 		info_.rowDirCosX.setValue(value);
-	else if (key.compare(info_.rowDirCosY.key()) == 0)
+	else if (boost::iequals(key, info_.rowDirCosY.key()))
 		info_.rowDirCosY.setValue(value);
-	else if (key.compare(info_.rowDirCosZ.key()) == 0)
+	else if (boost::iequals(key, info_.rowDirCosZ.key()))
 		info_.rowDirCosZ.setValue(value);
-	else if (key.compare(info_.colDirCosX.key()) == 0)
+	else if (boost::iequals(key, info_.colDirCosX.key()))
 		info_.colDirCosX.setValue(value);
-	else if (key.compare(info_.colDirCosY.key()) == 0)
+	else if (boost::iequals(key, info_.colDirCosY.key()))
 		info_.colDirCosY.setValue(value);
-	else if (key.compare(info_.colDirCosZ.key()) == 0)
+	else if (boost::iequals(key, info_.colDirCosZ.key()))
 		info_.colDirCosZ.setValue(value);
-	else if (key.compare(info_.flipX.key()) == 0)
+	else if (boost::iequals(key, info_.flipX.key()))
 		info_.flipX.setValue(value);
-	else if (key.compare(info_.flipY.key()) == 0)
+	else if (boost::iequals(key, info_.flipY.key()))
 		info_.flipY.setValue(value);
-	else if (key.compare(info_.flipZ.key()) == 0)
+	else if (boost::iequals(key, info_.flipZ.key()))
 		info_.flipZ.setValue(value);
-	else if (key.compare(info_.zDirection.key()) == 0)
+	else if (boost::iequals(key, info_.zDirection.key()))
 		info_.zDirection.setValue(value);
-	else if (key.compare(info_.temporalResolution.key()) == 0)
+	else if (boost::iequals(key, info_.temporalResolution.key()))
 		info_.temporalResolution.setValue(value);
-	else if (key.compare(info_.sclSlope.key()) == 0)
+	else if (boost::iequals(key, info_.sclSlope.key()))
 		info_.sclSlope.setValue(value);
-	else if (key.compare(info_.sclInter.key()) == 0)
+	else if (boost::iequals(key, info_.sclInter.key()))
 		info_.sclInter.setValue(value);
-  else if (key.compare(info_.noiseSigma.key()) == 0)
+  else if (boost::iequals(key, info_.noiseSigma.key()))
     info_.noiseSigma.setValue(value);
 	else
 	{

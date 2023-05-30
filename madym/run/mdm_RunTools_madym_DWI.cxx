@@ -94,6 +94,8 @@ MDM_API int mdm_RunTools_madym_DWI::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.imageReadFormat);
 	options_parser_.add_option(config_options, options_.imageWriteFormat);
 	options_parser_.add_option(config_options, options_.niftiScaling);
+	options_parser_.add_option(config_options, options_.nifti4D);
+	options_parser_.add_option(config_options, options_.useBIDS);
 
 	//Logging options_
 	options_parser_.add_option(config_options, options_.voxelSizeWarnOnly);
@@ -150,16 +152,16 @@ void mdm_RunTools_madym_DWI::mapDWI()
 	auto model = mdm_DWIModelGenerator::parseModelName(
 		options_.DWImodel());
 
-	//Check number of signal inputs, will abort if too many/too few
-	checkNumInputs(model, (int)options_.DWIinputNames().size());
-
 	//Set B-vals thresh - only needed for ivim but negligible cost to set for all methods
 	volumeAnalysis_.DWIMapper().setBvalsThresh(options_.BvalsThresh());
 
 	//Load DWI inputs
 	loadDWIInputs();
 
-	//FA images loaded, try computing DWI maps
+	//Check number of signal inputs, will abort if too many / too few 
+	checkNumInputs(model, (int)volumeAnalysis_.DWIMapper().inputImages().size());
+	
+	//Images loaded, try computing DWI maps
 	volumeAnalysis_.DWIMapper().setModel(model);
 
 	volumeAnalysis_.DWIMapper().mapDWI();
@@ -172,5 +174,5 @@ void mdm_RunTools_madym_DWI::loadDWIInputs()
 	for (std::string mapName : options_.DWIinputNames())
 		DWIinputPaths.push_back(fs::absolute(fs::path(options_.DWIDir()) / mapName).string());
 
-	fileManager_.loadDWIMappingInputImages(DWIinputPaths);
+	fileManager_.loadDWIMappingInputImages(DWIinputPaths, options_.nifti4D());
 }

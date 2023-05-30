@@ -60,7 +60,7 @@ void test_xtr(mdm_Image3D &img)
 	img.info().TR.setValue(TR);
 	img.info().TE.setValue(TE);
 	img.setTimeStampFromDoubleStr(time);
-	img.setType(mdm_Image3D::ImageType::TYPE_DEGR);
+	img.setType(mdm_Image3D::ImageType::TYPE_T1WTSPGR);
 
 	std::string img_name = mdm_test_utils::temp_dir() + "/xtr_test";
   BOOST_TEST_MESSAGE("Testing: xtr write");
@@ -77,7 +77,7 @@ void test_xtr(mdm_Image3D &img)
 	BOOST_TEST_MESSAGE("Tesing xtr read: timestamp");
 	BOOST_CHECK_CLOSE(time, img_r.timeStamp(), 1e-3);
 	BOOST_TEST_MESSAGE("Tesing xtr read: image type");
-	BOOST_CHECK_EQUAL(mdm_Image3D::ImageType::TYPE_DEGR, img_r.type());
+	BOOST_CHECK_EQUAL(mdm_Image3D::ImageType::TYPE_T1WTSPGR, img_r.type());
 }
 
 

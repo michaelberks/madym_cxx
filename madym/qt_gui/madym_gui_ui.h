@@ -134,6 +134,7 @@ private slots:
   void on_imageWriteComboBox_currentIndexChanged(const QString &text);
   void on_niftiScalingCheckBox_stateChanged(int state);
   void on_nifti4DCheckBox_stateChanged(int state);
+  void on_bidsCheckBox_stateChanged(int state);
 
   //Logging options
   void on_logNameLineEdit_textChanged(const QString &text);

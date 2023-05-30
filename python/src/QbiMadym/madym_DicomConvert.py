@@ -25,6 +25,8 @@ def run(
     img_fmt_w:str = None,
     img_dt_type:int = None,
     nifti_scaling:bool = None,
+    nifti_4D:bool = None,
+    use_BIDS:bool = None,
     dicom_dir : str = None,
     dicom_series_file : str = None,
     T1_input_series : list = None,
@@ -120,6 +122,10 @@ def run(
             Image format for writing output
         nifti_scaling:bool = None,
             If set, applies intensity scaling and offset when reading/writing NIFTI images
+        nifti_4D : bool = None,
+            If set, reads NIFTI 4D images for T1 mapping and dynamic inputs
+        use_BIDS : bool = None,
+            If set, writes images using BIDS json meta info
         dicom_dir : str = None
             Folder containing DICOM data
         dicom_series_file : str = None
@@ -297,6 +303,10 @@ def run(
     add_option('int', cmd_args, '--img_dt_type', img_dt_type)
 
     add_option('bool', cmd_args, '--nifti_scaling', nifti_scaling)
+
+    add_option('bool', cmd_args, '--nifti_4D', nifti_4D)
+
+    add_option('bool', cmd_args, '--use_BIDS', use_BIDS)
 
     add_option('string_list', cmd_args, '--T1_vols', T1_vols)
 

@@ -11,7 +11,7 @@
 #include <madym/utils/mdm_api.h>
 #include <madym/utils/mdm_Image3D.h>
 #include <madym/image_io/analyze/mdm_AnalyzeFormat.h>
-#include <madym/image_io/xtr/mdm_XtrFormat.h>
+#include <madym/image_io/meta/mdm_XtrFormat.h>
 #include "znzlib.h"
 #include "nifti1.h"                  /*** NIFTI-1 header specification ***/
 #include "nifti2.h"                  /*** NIFTI-2 header specification ***/
@@ -59,6 +59,22 @@ public:
 		const mdm_ImageDatatypes::DataType dataTypeFlag, 
     const mdm_XtrFormat::XTR_type xtrTypeFlag,
 		bool compress = false, bool applyScaling = false);
+
+  //!    Write mdm_Image4D to QBI extended Analyze hdr/img/xtr file set
+  /*!
+  \param    fileName      base name for file (gets .hdr/.img/.xtr appended)
+  \param    imgs          std::vector<mdm_Image3D> holding the data to be written to file
+  \param    dataTypeFlag  integer data type flag; see Data_type enum
+  \param    xtrTypeFlag   integer xtr type flag; 0 for old, 1 for new
+  \param		compress			flag, if true, write out compressed image (nii.gz)
+  \param    applyScaling use the scl slope and intercept fields to recsale the image intensities
+  \return   bool 0 for success or 1 for failure
+  */
+  MDM_API static void writeImage4D(const std::string& fileName,
+    const std::vector<mdm_Image3D> imgs,
+    const mdm_ImageDatatypes::DataType dataTypeFlag,
+    const mdm_XtrFormat::XTR_type xtrTypeFlag,
+    bool compress = false, bool applyScaling = false);
 
   //!    Test for existence of the file with the specified basename and all NIFTI extensions (.img, .hdr, .nii etc)
   /*!
@@ -206,8 +222,8 @@ private:
 
     double toffset = 0;              /*!< time coordinate offset */
 
-    int xyz_units = 2;              /*!< dx,dy,dz units: NIFTI_UNITS_* code  */
-    int time_units = 0;              /*!< dt       units: NIFTI_UNITS_* code  */
+    int xyz_units = 2;              /*!< dx,dy,dz units: NIFTI_UNITS_MM code 2  */
+    int time_units = 8;              /*!< dt       units: NIFTI_UNITS_SECS code  8 */
 
     int nifti_type;              /*!< see NIFTI_FTYPE_* codes, below:
                                           0==ANALYZE,
@@ -506,6 +522,7 @@ private:
   template <class T> static void fromData(const nifti_image &nii, mdm_Image3D &img, bool applyScaling);
   template <class T> static void fromData(const nifti_image& nii, std::vector<mdm_Image3D>& imgs, bool applyScaling);
   template <class T> static void toData(const mdm_Image3D &img, nifti_image &nii);
+  template <class T> static void toData(const std::vector<mdm_Image3D>& imgs, nifti_image& nii);
 
   //Variable constants
   static const std::string extnii;   /* modifiable, for possible uppercase */

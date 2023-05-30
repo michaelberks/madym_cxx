@@ -210,6 +210,7 @@ MDM_API int mdm_RunTools_madym_DCE::parseInputs(int argc, const char *argv[])
   options_parser_.add_option(config_options, options_.imageWriteFormat);
 	options_parser_.add_option(config_options, options_.niftiScaling);
 	options_parser_.add_option(config_options, options_.nifti4D);
+	options_parser_.add_option(config_options, options_.useBIDS);
 
 		//Logging options_
   options_parser_.add_option(config_options, options_.voxelSizeWarnOnly);
@@ -346,8 +347,12 @@ void mdm_RunTools_madym_DCE::writeOutput()
     AIF_.writeAIF(outputPath_.string() + "/AIF.txt");
 
 	fileManager_.saveGeneralOutputMaps(outputPath_.string());
-	fileManager_.saveDynamicOutputMaps(outputPath_.string(),
-		options_.Ct_sigPrefix(), options_.Ct_modPrefix(),
-		options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
+	if (options_.nifti4D())
+		fileManager_.saveDynamicOutputMaps(outputPath_.string(),
+			options_.Ct_sigPrefix(), options_.Ct_modPrefix());
+	else
+		fileManager_.saveDynamicOutputMaps(outputPath_.string(),
+			options_.Ct_sigPrefix(), options_.Ct_modPrefix(),
+			options_.sequenceFormat(), options_.sequenceStart(), options_.sequenceStep());
 	fileManager_.saveDCEOutputMaps(outputPath_.string());
 }

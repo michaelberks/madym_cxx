@@ -41,8 +41,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1145</width>
-         <height>803</height>
+         <width>1137</width>
+         <height>869</height>
         </rect>
        </property>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -681,7 +681,7 @@
                   </size>
                  </property>
                  <property name="currentIndex">
-                  <number>4</number>
+                  <number>1</number>
                  </property>
                  <widget class="QWidget" name="outputTab">
                   <attribute name="title">
@@ -842,6 +842,13 @@
                       </size>
                      </property>
                     </spacer>
+                   </item>
+                   <item row="1" column="2">
+                    <widget class="QCheckBox" name="bidsCheckBox">
+                     <property name="text">
+                      <string>Use BIDS</string>
+                     </property>
+                    </widget>
                    </item>
                   </layout>
                  </widget>
@@ -2947,7 +2954,7 @@
      <x>0</x>
      <y>0</y>
      <width>1182</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

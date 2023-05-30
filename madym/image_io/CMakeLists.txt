@@ -11,7 +11,8 @@ set(mdm_image_sources
   mdm_ImageDatatypes.h
   mdm_ImageIO.cxx mdm_ImageIO.h
   analyze/mdm_AnalyzeFormat.cxx analyze/mdm_AnalyzeFormat.h
-  xtr/mdm_XtrFormat.cxx xtr/mdm_XtrFormat.h
+  meta/mdm_XtrFormat.cxx meta/mdm_XtrFormat.h
+  meta/mdm_BIDSFormat.cxx meta/mdm_BIDSFormat.h
   nifti/mdm_NiftiFormat.cxx nifti/mdm_NiftiFormat.h
   nifti/mdm_NiftiFormatAscii.cxx  nifti/mdm_NiftiFormatTransforms.cxx 
   nifti/znzlib.cpp nifti/znzlib.h
@@ -31,7 +32,16 @@ add_library(mdm_image
 
 target_link_libraries( mdm_image
   mdm_utils
+  #Boost::container
 )
+
+#For windows only, we need to link to boost::container for the boost JSON library
+if (WIN32)
+    find_package(Boost COMPONENTS container REQUIRED)
+    target_link_libraries( mdm_image
+        Boost::container
+    )
+endif()
 
 if (BUILD_WITH_ZLIB)
   target_link_libraries( mdm_image ZLIB::ZLIB)
