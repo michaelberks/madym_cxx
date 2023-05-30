@@ -30,12 +30,18 @@ endif()
 add_library(mdm_image 
 	${mdm_image_sources})
 
-#find_package(Boost COMPONENTS container REQUIRED)
-
 target_link_libraries( mdm_image
   mdm_utils
   #Boost::container
 )
+
+#For windows only, we need to link to boost::container for the boost JSON library
+if (WIN32)
+    find_package(Boost COMPONENTS container REQUIRED)
+    target_link_libraries( mdm_image
+        Boost::container
+    )
+endif()
 
 if (BUILD_WITH_ZLIB)
   target_link_libraries( mdm_image ZLIB::ZLIB)
