@@ -12,8 +12,8 @@ if (APPLE)
 endif()
 
 ####################################################
-# Require C++11
-set(CMAKE_CXX_STANDARD 14 CACHE STRING "Defines standard required for C++ compiler")
+# Require C++17
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "Defines standard required for C++ compiler")
 
 ####################################################
 #Get version of the git repository
