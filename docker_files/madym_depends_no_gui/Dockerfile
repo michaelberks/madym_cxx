@@ -39,21 +39,7 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.82.0/source/boost_
 #Remove what we don't need       
 RUN rm -rf /var/lib/apt/lists/* 
 
-#Add the QT stuff required my the Madym GUI and package builder
-COPY Qt Qt
-COPY cqtdeployer cqtdeployer
-RUN ln -s /cqtdeployer/cqtdeployer.sh /usr/bin/cqtdeployer \
-    && patchelf --set-rpath /Qt/5.15.2/gcc_64/lib /Qt/5.15.2/gcc_64/lib/libicuuc.so.56 \
-    && patchelf --set-rpath /Qt/5.15.2/gcc_64/lib /Qt/5.15.2/gcc_64/lib/libicudata.so.56 \
-    && patchelf --set-rpath /Qt/5.15.2/gcc_64/lib /Qt/5.15.2/gcc_64/lib/libicui18n.so.56 \
-    && patchelf --set-rpath /Qt/5.15.2/gcc_64/lib /cqtdeployer/lib/libicuuc.so.56 \
-    && patchelf --set-rpath /Qt/5.15.2/gcc_64/lib /cqtdeployer/lib/libicudata.so.56 \
-    && patchelf --set-rpath /Qt/5.15.2/gcc_64/lib /cqtdeployer/lib/libicui18n.so.56
-    
-ENV Qt5Core_DIR /Qt/5.15.2/gcc_64/lib/cmake/Qt5core
-ENV Qt5Gui_DIR /Qt/5.15.2/gcc_64/lib/cmake/Qt5Gui
-ENV Qt5Widgets_DIR /Qt/5.15.2/gcc_64/lib/cmake/Qt5Widgets
-
 #Add gcc environment variables used in CMake build command
 ENV CC /usr/bin/gcc
 ENV CXX /usr/bin/g++    
+
