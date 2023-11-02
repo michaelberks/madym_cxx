@@ -199,7 +199,7 @@ def  run(
         if use_lite:
             cmd_exe += '_lite'
 
-        cmd_args =  [cmd_exe]
+    cmd_args =  [cmd_exe]
 
     #Set up output directory
     delete_output = False
