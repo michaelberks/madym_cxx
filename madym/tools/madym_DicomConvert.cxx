@@ -14,8 +14,6 @@
 //! Launch the command line tool
 int main(int argc, char *argv[])
 {
-  
-
   //Instantiate new madym_exe object
   mdm_RunTools_madym_DicomConvert madym_exe;
 

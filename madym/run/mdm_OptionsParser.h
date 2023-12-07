@@ -168,7 +168,7 @@ private:
 	bool parse_config_file(const po::options_description &config_options,
 		const std::string &configFile, const std::string &configType);
 
-	bool check_config_type(std::ifstream &ifs, const std::string &configType);
+	bool check_config_type(std::ifstream &ifs, const std::string &configType, std::stringstream &ss);
 
 	void make_exe_args(int argc, const char *argv[]);
 	

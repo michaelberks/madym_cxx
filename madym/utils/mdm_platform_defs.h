@@ -56,4 +56,16 @@
 #define DISABLE_WARNING_UNKNOWN_ESCAPE_SEQUENCE
 #endif
 
+//Deal with newline ends in config files
+#ifdef _WIN32
+#define NEWLINE_FIND "\r"
+#define NEWLINE_REPLACE "\r\n"
+#elif defined macintosh // OS 9
+#define NEWLINE_FIND "\r"
+#define NEWLINE_REPLACE ""
+#else
+#define NEWLINE_FIND "\r"
+#define NEWLINE_REPLACE "" // Mac OS X uses \n
+#endif
+
 #endif /* MDM_PLATFORM_DEFS */

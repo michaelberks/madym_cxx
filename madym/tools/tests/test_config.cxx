@@ -2,7 +2,19 @@
 
 #include <madym/tests/mdm_test_utils.h>
 #include <madym/run/mdm_OptionsParser.h>
+#include <madym/run/mdm_RunTools_madym_T1.h>
 #include <madym/run/mdm_RunTools_madym_DCE.h>
+
+void test_config_type(const std::string &config_file)
+{
+	mdm_RunTools_madym_T1 madym_exe;
+	madym_exe.options().configFile.set(config_file);
+	madym_exe.parseInputs(madym_exe.who());
+
+	BOOST_CHECK_EQUAL(madym_exe.options().T1method(), "IR");
+	BOOST_CHECK_EQUAL(madym_exe.options().T1noiseThresh(), 10);
+}
+
 
 BOOST_AUTO_TEST_SUITE(test_mdm_tools)
 
@@ -53,6 +65,14 @@ BOOST_AUTO_TEST_CASE(test_config) {
 	BOOST_CHECK_EQUAL(options.maxIterations(), options_in.maxIterations());
 	BOOST_TEST_MESSAGE("Reading and writing params file, values match: testEnhancemnet");
 	BOOST_CHECK_EQUAL(options.testEnhancement(), options_in.testEnhancement());
+
+	BOOST_TEST_MESSAGE("======= Testing line-endings in config files =======");
+	BOOST_TEST_MESSAGE("Testing windows line ends CR LF");
+	test_config_type(mdm_test_utils::calibration_dir() + "madym_T1_windows.txt");
+	BOOST_TEST_MESSAGE("Testing unix line ends LF");
+	test_config_type(mdm_test_utils::calibration_dir() + "madym_T1_unix.txt");
+	BOOST_TEST_MESSAGE("Testing mac line ends CR");
+	test_config_type(mdm_test_utils::calibration_dir() + "madym_T1_mac.txt");
 }
 
 BOOST_AUTO_TEST_SUITE_END() //
