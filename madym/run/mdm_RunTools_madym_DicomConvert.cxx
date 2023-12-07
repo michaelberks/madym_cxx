@@ -458,51 +458,65 @@ void mdm_RunTools_madym_DicomConvert::getVolumeAxesDirections(
     const std::string& firstSlice, const std::string& lastSlice,
     const std::string& seriesName, const int nSlices, mdm_Image3D::MetaData& info)
 {
-    //Load in the final slice and get it's image position
+    //Load in the first slice and get it's image position and orientation
     DcmFileFormat firstSliceFile;
     OFCondition status = firstSliceFile.loadFile(firstSlice.c_str());
 
     if (!status.good())
         throw mdm_exception(__func__, "Unable to open first slice DICOM file " + firstSlice);
 
-    //Load in the final slice and get it's image position
-    DcmFileFormat lastSliceFile;
-    status = lastSliceFile.loadFile(lastSlice.c_str());
-
-    if (!status.good())
-        throw mdm_exception(__func__, "Unable to open last slice DICOM file " + lastSlice);
-
-    std::vector<double> pos1, pos2, ori1;
-
+    std::vector<double> pos1, ori1;
     getScannerSetting(
         firstSliceFile, seriesName, "ImagePositionPatient",
         DCM_ImagePositionPatient, true, pos1, 3);
-    getScannerSetting(
-        lastSliceFile, seriesName, "ImagePositionPatient",
-        DCM_ImagePositionPatient, true, pos2, 3);
     getScannerSetting(
         firstSliceFile, seriesName, "ImageOrientationPatient",
         DCM_ImageOrientationPatient, true, ori1, 6);
 
     //Check if image position and orientation are set
-    if (pos1.size() != 3 || pos2.size() != 3 || ori1.size() != 6)
+    if (pos1.size() != 3 || ori1.size() != 6)
     {
         mdm_ProgramLogger::logProgramWarning(__func__,
             seriesName + ": unable to obtain image position and orientation from DICOM headers");
         return;
     }
-    
+
     //Set image position and orientation in the info data
     info.originX.setValue(pos1[0]);
     info.originY.setValue(pos1[1]);
     info.originZ.setValue(pos1[2]);
-    
+
     info.rowDirCosX.setValue(ori1[0]);
     info.rowDirCosY.setValue(ori1[1]);
     info.rowDirCosZ.setValue(ori1[2]);
     info.colDirCosX.setValue(ori1[3]);
     info.colDirCosY.setValue(ori1[4]);
     info.colDirCosZ.setValue(ori1[5]);
+
+    //For only 1 slice, just return
+    if (nSlices == 1)
+    {
+      info.zDirection.setValue(1);
+    }
+
+    //Load in the final slice and get it's image position
+    DcmFileFormat lastSliceFile;
+    status = lastSliceFile.loadFile(lastSlice.c_str());
+
+    if (!status.good())
+      throw mdm_exception(__func__, "Unable to open last slice DICOM file " + lastSlice);
+
+    std::vector<double> pos2;
+    getScannerSetting(
+      lastSliceFile, seriesName, "ImagePositionPatient",
+      DCM_ImagePositionPatient, true, pos2, 3);
+
+    if (pos2.size() != 3)
+    {
+      mdm_ProgramLogger::logProgramWarning(__func__,
+        seriesName + ": unable to obtain image position of last slice from DICOM headers");
+      return;
+    }
 
     //Get vector from first to last frame
     auto dx = pos2[0] - pos1[0];
@@ -537,6 +551,17 @@ void mdm_RunTools_madym_DicomConvert::getVolumeAxesDirections(
         mdm_ProgramLogger::logProgramWarning(__func__,
             seriesName + ": cross product of row and column axes orientation does not match "
             "the orientation of the vector from first to last slice image positions");
+
+    //The distance between slices zd should also match the already computed
+    //Z-mm setting in info, check it does to a close tolerance, or else
+    //throw a warning
+    if (std::abs(zd - info.Zmm.value()) > 1e-3)
+      mdm_ProgramLogger::logProgramWarning(__func__,
+        (boost::format(
+          "Distance between slices as computed from slice origins (%1% mm) does not match "
+          "the value (%2% mm) set in SpacingBetweenSlices (SliceThickness if SpacingBetweenSlices not set)"
+        ) % zd % info.Zmm.value()).str());
+
 
     //The z-direction is the sign of dot multiple by the distance between slices
     info.zDirection.setValue( dot > 0 ? zd : -zd );
@@ -577,8 +602,12 @@ void mdm_RunTools_madym_DicomConvert::completeSeriesInfo(dcmSeriesInfo &series, 
     DCM_PixelSpacing, true, pixelSpacing, 2);
   series.Xmm = pixelSpacing[0];
   series.Ymm = pixelSpacing[1];
-  getNumericInfo(fileformat, DCM_SliceThickness, series.Zmm);
 
+  //Try using DCM_SpacingBetweenSlices to get Z-mm, if it isn't set
+  //revert to DCM_SliceThickness
+  if (!getNumericInfo(fileformat, DCM_SpacingBetweenSlices, series.Zmm))
+    getNumericInfo(fileformat, DCM_SliceThickness, series.Zmm);
+    
   //Get scanner settings
   getScannerSetting(
     fileformat, series.name, "FA", options_.FATag, 
