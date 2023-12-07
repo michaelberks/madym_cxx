@@ -18,6 +18,10 @@
 #include <Winsock2.h>
 #include <limits.h>
 
+//These two libraries need to be linked to make DCMTK link properly (as of DCMTK 3.6.7)
+#pragma comment(lib, "netapi32.lib")
+#pragma comment(lib, "iphlpapi.lib")
+
 #define getcwd _getcwd // stupid MSFT "deprecation" warning
 #define PLATFORM_USER "USERNAME"
 

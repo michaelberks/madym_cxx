@@ -182,7 +182,7 @@ MDM_API int mdm_DWIFitterADC::minimumInputs() const
 //
 MDM_API int mdm_DWIFitterADC::maximumInputs() const
 {
-	return 10;
+	return 100;
 }
 
 //

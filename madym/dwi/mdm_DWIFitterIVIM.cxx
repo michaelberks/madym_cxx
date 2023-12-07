@@ -115,7 +115,7 @@ MDM_API int mdm_DWIFitterIVIM::minimumInputs() const
 //
 MDM_API int mdm_DWIFitterIVIM::maximumInputs() const
 {
-	return 10;
+	return 100;
 }
 
 //
