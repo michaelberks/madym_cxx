@@ -65,7 +65,7 @@
 #define NEWLINE_REPLACE ""
 #else
 #define NEWLINE_FIND "\r"
-#define NEWLINE_REPLACE "" // Mac OS X uses \n
+#define NEWLINE_REPLACE "\n" // Mac OS X uses \n
 #endif
 
 #endif /* MDM_PLATFORM_DEFS */
