@@ -22,6 +22,7 @@
 #include <boost/lexical_cast.hpp>
 #include <madym/utils/mdm_exception.h>
 #include <madym/utils/mdm_ProgramLogger.h>
+#include <madym/utils/mdm_platform_defs.h>
 
 //! Custom validator for input type mdm_input_str
 void validate(boost::any& v,
@@ -398,11 +399,12 @@ bool mdm_OptionsParser::parse_config_file(const po::options_description &config_
 			else
 			{
 				//Check config file is of correct type
-				if (!check_config_type(ifs, configType))
+				std::stringstream iss;
+				if (!check_config_type(ifs, configType, iss))
 					return false;
 
 				//Parse the config file into the variables map
-				po::store(po::parse_config_file(ifs, config_options), vm_);
+				po::store(po::parse_config_file(iss, config_options), vm_);
 				po::notify(vm_);
 			}
 		}
@@ -427,21 +429,49 @@ bool mdm_OptionsParser::parse_config_file(const po::options_description &config_
 	return true;
 }
 
-bool mdm_OptionsParser::check_config_type(std::ifstream &ifs, const std::string &configType)
+bool mdm_OptionsParser::check_config_type(std::ifstream &ifs, const std::string &configType, std::stringstream& ss)
 {
 	//Get the first line of the config file
 	std::string inputConfigType;
 	std::getline (ifs, inputConfigType);
+
+	//Remove the # prefix
 	inputConfigType.erase(0,1);
 
+	//Deal with different line ends
+	bool badLineEnd = false;
+	auto badLineEndPos = inputConfigType.find(NEWLINE_FIND);
+	if (badLineEndPos != std::string::npos)
+	{
+		inputConfigType.erase(badLineEndPos);
+		badLineEnd = true;
+	}
+	
+	//Check config type
 	if (inputConfigType != configType)
 	{
 		std::cout << "Input config type " << inputConfigType << " does not match required type "
 			<< configType << std::endl;
 		return false;
 	}
-	else
-		return true;
+
+	//If there was mismatched line-ending, return to the start of the file
+	//as we may have consumed the whole file
+	if (badLineEnd)
+		ifs.seekg(0, ifs.beg);
+
+	//Copy file content into stringstream
+	ss << ifs.rdbuf();
+
+	//If necessary update the stringstream to replace bad line ends
+	if (badLineEnd)
+	{
+		std::cout << "Replaced line-endings in config file\n";
+		auto ss_str = ss.str();
+		boost::replace_all(ss_str, NEWLINE_FIND, NEWLINE_REPLACE);
+		ss.str(ss_str);
+	}
+	return true;
 }
 
 void mdm_OptionsParser::make_exe_args(int argc, const char *argv[])

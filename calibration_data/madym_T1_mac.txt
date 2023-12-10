@@ -1,0 +1,1 @@
+#madym_T1T1_method = IRT1_noise = 10

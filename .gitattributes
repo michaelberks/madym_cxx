@@ -1,0 +1,13 @@
+# Ensure all files are checked into the repo with LF line endings and checked 
+# out with LFs.
+* text=auto eol=lf
+
+# Except these files will always be checked out with CRLFs (regardless of the
+# OS they were checked out on).
+*.bat text eol=crlf
+
+#These calibration files need to be checked out with specific line endings
+#so they can be used to test how the config file reader copes on different OSs
+calibration_data/madym_T1_windows.txt text eol=crlf
+calibration_data/madym_T1_unix.txt text eol=lf
+calibration_data/madym_T1_mac.txt text eol=cr
