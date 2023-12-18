@@ -1,4 +1,4 @@
-FROM ubuntu:22.10
+FROM ubuntu:22.04
 
 #Install downloaded depends
 ENV DEBIAN_FRONTEND noninteractive
