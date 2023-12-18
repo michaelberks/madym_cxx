@@ -1,4 +1,5 @@
 build*
+!build_scripts
 *.DS_Store
 examples/test_dataset/madym*
 ~*

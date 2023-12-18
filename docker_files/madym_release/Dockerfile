@@ -1,29 +1,28 @@
 #Pull the base image as Ubuntu
-FROM madym_depends:latest
+FROM ubuntu:22.10
 
-RUN groupadd -g 1000 madymuser \
-    && useradd -d /home/madymuser -s /bin/bash -m madymuser -u 1000 -g 1000
-    
-RUN git clone https://gitlab.com/manchester_qbi/manchester_qbi_public/madym_cxx.git \
-    && mkdir madym_build \
-    && cd madym_build \
-    && cmake ../madym_cxx/ -DCMAKE_BUILD_TYPE=Release \
-	-D BUILD_DOCUMENTATION=OFF \
-	-D BUILD_INSTALL=OFF \
-	-D BUILD_QT_GUI=ON \
-	-D BUILD_SHARED_LIBS=ON \
-	-D BUILD_TESTING=ON \
-	-D BUILD_TOOLS=ON \
-	-D BUILD_WITH_DCMTK=ON \
-	-D BUILD_WITH_ZLIB=ON \
-    && make all \
-    && ctest
+ARG MADYM_VERSION
+
+COPY ./madym_v$MADYM_VERSION.deb ./
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN ls -full && apt update \
+    && apt install -yq \
+        git \
+        python3-pip \
+        ./madym_v$MADYM_VERSION.deb \
+    && groupadd -g 1000 madymuser \
+    && useradd -d /home/madymuser -s /bin/bash -m madymuser -u 1000 -g 1000 \
+    && pip install /usr/madym-v$MADYM_VERSION/python \
+    && ln /usr/bin/python3 /usr/bin/python
 
 #Run Container as nonroot
 USER madymuser
 
 ENV HOME /home/madymuser
-ENV MADYM_ROOT /madym_build/bin
+ENV MADYM_ROOT /usr/madym-v$MADYM_VERSION/bin
+ENV PATH $PATH:$MADYM_ROOT
 
-#Start command in bash terminal
-CMD ["/bin/bash"]
+#Launch GUI on container start
+CMD ["/usr/madym-v$MADYM_VERSION/bin/madym_gui"]
