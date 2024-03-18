@@ -156,7 +156,7 @@ public:
       for (auto img : inputImages)
         TIs.push_back(img.info().TI.value());
 
-      return std::make_unique<mdm_T1FitterIR>(TIs, bigTR, true);
+      return std::make_unique<mdm_T1FitterIR>(TIs, bigTR, false);
     }
 		case IR_E:
 		{
@@ -200,7 +200,7 @@ public:
     case IR:
     {
       std::vector<double> empty;
-      auto T1Fitter = std::make_unique<mdm_T1FitterIR>(empty, options.TR(), true);
+      auto T1Fitter = std::make_unique<mdm_T1FitterIR>(empty, options.TR(), false);
       return T1Fitter;
     }
 		case IR_E:
