@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(test_T1_VFA) {
 
   //Next fit the signals to recover M0 and T1
   double T1fit, M0fit, EWfit;
-  mdm_T1FitterVFA T1CalculatorVFA(FAs, TR, false);
+  mdm_T1FitterVFA T1CalculatorVFA(FAs, TR, false, {});
   T1CalculatorVFA.setInputs(signalsCalibration);
   auto errCode = T1CalculatorVFA.fitT1(T1fit, M0fit, EWfit);
   BOOST_CHECK_MESSAGE(!errCode, "T1 fit returned error " << errCode);
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_T1_VFA) {
     fa /= B1;
   signalsCalibrationB1.push_back(B1);
 
-  mdm_T1FitterVFA T1CalculatorB1(FAsB1, TR, true);
+  mdm_T1FitterVFA T1CalculatorB1(FAsB1, TR, true, {});
   T1CalculatorB1.setInputs(signalsCalibrationB1);
   errCode = T1CalculatorB1.fitT1(T1fit, M0fit, EWfit);
   BOOST_CHECK_MESSAGE(!errCode, "T1 fit returned error " << errCode);
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(test_T1_IR) {
       % signalsCalibration[i] % signals[i]);
   }
 
-  mdm_T1FitterIR T1CalculatorIR(TIs, TR, false);
+  mdm_T1FitterIR T1CalculatorIR(TIs, TR, false, {});
   T1CalculatorIR.setInputs(signalsCalibration);
 
   double T1fit, M0fit, EWfit;
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(test_T1_IR_EW) {
   
 
   //Create a fitter with efficiency weighting set on
-  mdm_T1FitterIR T1CalculatorIR(TIs, TR, true);
+  mdm_T1FitterIR T1CalculatorIR(TIs, TR, true, {});
   T1CalculatorIR.setInputs(signalsCalibration);
 
   double T1fit, M0fit, EWfit;

@@ -48,13 +48,13 @@ public:
 	/*!
 	\param method selected T1 mapping method
 	*/
-	MDM_API void  mapT1(mdm_T1MethodGenerator::T1Methods method);
+	MDM_API void  mapT1(mdm_T1MethodGenerator::T1Methods method, const std::vector<double>& init_params);
 
 	//! Map baseline T1 using default class method
 	/*!
 	\param method selected T1 mapping method
 	*/
-	MDM_API void  mapT1();
+	MDM_API void  mapT1(const std::vector<double>& init_params);
 
 	//! Add a precomputed T1 map
 	/*!

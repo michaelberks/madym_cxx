@@ -23,7 +23,7 @@ public:
 	\param TR repetition time in ms
   \param usingB1 flag if using B1 correction
 	*/
-	MDM_API mdm_T1FitterVFA(const std::vector<double> &FAs, const double TR, const bool usingB1);
+	MDM_API mdm_T1FitterVFA(const std::vector<double> &FAs, const double TR, const bool usingB1, const std::vector<double>& init_params);
 
 	//! Default denstructor
 	/*!
@@ -123,6 +123,7 @@ private:
   double TR_;
 	double B1_;
   bool usingB1_;
+	std::vector<double> init_params_;
 
 	//Convenient to cache these when FAs set
 	int nFAs_;

@@ -19,12 +19,14 @@
 #include <madym/utils/mdm_ProgramLogger.h>
 #include <madym/utils/mdm_exception.h>
 //
-MDM_API mdm_T1FitterIR::mdm_T1FitterIR(const std::vector<double> &TIs, const double TR, const bool fitEfficiencyWeighting)
+MDM_API mdm_T1FitterIR::mdm_T1FitterIR(const std::vector<double> &TIs, const double TR, 
+	const bool fitEfficiencyWeighting, const std::vector<double>& init_params)
   :
   mdm_T1FitterBase(),
   TIs_(TIs),
   TR_(TR),
-	fitEfficiencyWeighting_(fitEfficiencyWeighting)
+	fitEfficiencyWeighting_(fitEfficiencyWeighting),
+	init_params_(init_params)
 {
 	//Pre-initialise the alglib state
 	int nParams = fitEfficiencyWeighting_ ? 3 : 2;
@@ -113,40 +115,51 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
 	//
 	// First, we create optimizer object and tune its properties
 	//
-	alglib::real_1d_array x;
-	alglib::real_1d_array s;
 	int n_params;
-	std::vector<double> init_vals = { 1000, 1, 1 };
-	std::vector<double> init_scale = { 1000, 1, 1 };
+	double init_T1, init_M0;
+	double init_EW = 1.0;
 
 	if (fitEfficiencyWeighting_)
 	{
 		//Run an initial fit with efficiency fixed to 1.0 to get
 		//initial values for T1 and M0
-		double init_T1, init_M0, init_EW;
-		mdm_T1FitterIR* fitter = new mdm_T1FitterIR(TIs_, TR_, false);
+		
+		mdm_T1FitterIR* fitter = new mdm_T1FitterIR(TIs_, TR_, false, init_params_);
 		fitter->setInputs(signals_);
 		fitter->fitT1(init_T1, init_M0, init_EW);
 		delete fitter;
 
-		init_vals[0] = init_T1;
-		init_vals[1] = init_M0;
-	
-		init_scale[0] = get_scale(init_T1);
-		init_scale[1] = get_scale(init_M0);
 		n_params = 3;
-		EWvalue = 1.0;
 		
 	}
 	else
 	{
-		auto init_M0 = signals_.back();
-		init_vals[1] = init_M0;
-		init_scale[1] = get_scale(init_M0);
+		auto nInit = init_params_.size();
 
+		if (nInit)
+		{
+			//If user has only given one value, use this for initialising T1
+			init_T1 = init_params_[0];
+
+			if (nInit > 1)
+				//If user gives second value, use this for M0
+				init_M0 = init_params_[1];
+			else
+				//Set M0 from signals
+				init_M0 = signals_.back();
+		}
+		else //No user initialisation, set M0 from signals, T1 defaults to 1000
+		{
+			init_T1 = 1000.0;
+			init_M0 = signals_.back();
+		}
 		n_params = 2;
 	}
-	
+
+	std::vector<double> init_vals = { init_T1, init_M0, init_EW };
+	std::vector<double> init_scale = { get_scale(init_T1), get_scale(init_M0), 1 };
+	alglib::real_1d_array x;
+	alglib::real_1d_array s;
 	
 	// Optimize and evaluate results
 	try
@@ -156,9 +169,7 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
 		alglib::minbcsetscale(state_, s);
 		minbcrestartfrom(state_, x);
 		alglib::minbcoptimize(state_, &computeSSEGradientAlglib, NULL, this);
-		minbcresults(state_, x, rep_);
-	
-		
+		minbcresults(state_, x, rep_);	
 
 #if _DEBUG
 		//

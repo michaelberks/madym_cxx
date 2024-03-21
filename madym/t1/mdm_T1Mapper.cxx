@@ -81,13 +81,13 @@ MDM_API void mdm_T1Mapper::setB1(mdm_Image3D B1)
 }
 
 //
-MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
+MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method, const std::vector<double>& init_params)
 {
 	//
 	auto nSignals = inputImages_.size();
 
 	//Instantiate T1 fitter object of required method type
-	auto T1Fitter = mdm_T1MethodGenerator::createFitter(method, inputImages_, bigTR_);
+	auto T1Fitter = mdm_T1MethodGenerator::createFitter(method, inputImages_, bigTR_, init_params);
 
 	mdm_ErrorTracker::ErrorCode errCode = mdm_ErrorTracker::OK;
 
@@ -187,10 +187,10 @@ MDM_API void  mdm_T1Mapper::mapT1(mdm_T1MethodGenerator::T1Methods method)
 }
 
 //
-MDM_API void mdm_T1Mapper::mapT1()
+MDM_API void mdm_T1Mapper::mapT1(const std::vector<double>& init_params)
 {
 	//Just call the overload mapT1 with the method- member variable
-	mapT1(method_);
+	mapT1(method_, init_params);
 }
 
 //

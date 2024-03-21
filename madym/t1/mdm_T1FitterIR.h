@@ -23,7 +23,7 @@ public:
 	\param TR repetition time in ms
 	\param fitEfficiencyWeighting flag to fit efficiency weighting
 	*/
-	MDM_API mdm_T1FitterIR(const std::vector<double> &TIs, const double TR, const bool fitEfficiencyWeighting);
+	MDM_API mdm_T1FitterIR(const std::vector<double> &TIs, const double TR, const bool fitEfficiencyWeighting, const std::vector<double>& init_params);
 
 	//! Default denstructor
 	/*!
@@ -112,6 +112,7 @@ private:
 	std::vector<double> TIs_;
   double TR_;
 	bool fitEfficiencyWeighting_;
+	std::vector<double> init_params_;
 
 	alglib::minbcstate  state_; //!< Cached ALGLIB internal
 	alglib::minbcreport rep_; //!< Cached ALGLIB internal
