@@ -203,7 +203,7 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
 	}
 
 	// Check for crap fit or bonkers result
-	if (x[0] < 0.0 || x[0] > 6000.0)
+	if (x[0] < 0.0 || x[0] > 10000.0)
 	{
 		setErrorValuesAndTidyUp(T1value, M0value);
 		return mdm_ErrorTracker::T1_MAD_VALUE;

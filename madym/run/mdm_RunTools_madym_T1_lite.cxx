@@ -117,7 +117,8 @@ MDM_API int mdm_RunTools_madym_T1_lite::parseInputs(int argc, const char *argv[]
 	options_parser_.add_option(config_options, options_.T1method);
 	options_parser_.add_option(config_options, options_.FA);
 	options_parser_.add_option(config_options, options_.TR);
-  options_parser_.add_option(config_options, options_.B1Correction);
+	options_parser_.add_option(config_options, options_.T1InitialParams);
+	options_parser_.add_option(config_options, options_.B1Correction);
 	options_parser_.add_option(config_options, options_.T1noiseThresh);
 	options_parser_.add_option(config_options, options_.nT1Inputs);
 	options_parser_.add_option(config_options, options_.outputDir);

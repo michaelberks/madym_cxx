@@ -86,6 +86,7 @@ MDM_API int mdm_RunTools_madym_T1::parseInputs(int argc, const char *argv[])
 	options_parser_.add_option(config_options, options_.B1Scaling);
 	options_parser_.add_option(config_options, options_.B1Name);
 	options_parser_.add_option(config_options, options_.TR);
+	options_parser_.add_option(config_options, options_.T1InitialParams);
 
 	//General output options_
 	options_parser_.add_option(config_options, options_.outputRoot);
