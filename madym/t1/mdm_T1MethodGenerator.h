@@ -121,7 +121,7 @@ public:
 	\return shared pointer to T1 fitter using specified method
 	*/
 	MDM_API static std::unique_ptr<mdm_T1FitterBase> createFitter( 
-		T1Methods methodType, const std::vector<mdm_Image3D> &inputImages, const double &bigTR)
+		T1Methods methodType, const std::vector<mdm_Image3D> &inputImages, const double &bigTR, const std::vector<double>& init_params)
   {
 		const auto &nSignals = inputImages.size();
     const auto PI = acos(-1.0);
@@ -137,7 +137,7 @@ public:
 			//Get tr value from first FA image - assume same for all images?
 			double TR = inputImages[0].info().TR.value();
 
-      return std::make_unique<mdm_T1FitterVFA>(FAs, TR, false);
+      return std::make_unique<mdm_T1FitterVFA>(FAs, TR, false, init_params);
 		}
     case VFA_B1:
     {
@@ -148,7 +148,7 @@ public:
       //Get tr value from first FA image - assume same for all images?
       double TR = inputImages[0].info().TR.value();
 
-      return std::make_unique<mdm_T1FitterVFA>(FAs, TR, true);
+      return std::make_unique<mdm_T1FitterVFA>(FAs, TR, true, init_params);
     }
     case IR:
     {
@@ -156,7 +156,7 @@ public:
       for (auto img : inputImages)
         TIs.push_back(img.info().TI.value());
 
-      return std::make_unique<mdm_T1FitterIR>(TIs, bigTR, true);
+      return std::make_unique<mdm_T1FitterIR>(TIs, bigTR, false, init_params);
     }
 		case IR_E:
 		{
@@ -164,7 +164,7 @@ public:
 			for (auto img : inputImages)
 				TIs.push_back(img.info().TI.value());
 
-			return std::make_unique<mdm_T1FitterIR>(TIs, bigTR, true);
+			return std::make_unique<mdm_T1FitterIR>(TIs, bigTR, true, init_params);
 		}
 		default:
       throw mdm_exception(__func__, "T1 method " + std::to_string(methodType) + " not valid");
@@ -188,25 +188,25 @@ public:
 		case VFA:
 		{
       std::vector<double> empty;
-      auto T1Fitter = std::make_unique<mdm_T1FitterVFA>(empty, options.TR(), false);
+      auto T1Fitter = std::make_unique<mdm_T1FitterVFA>(empty, options.TR(), false, options.T1InitialParams());
 			return T1Fitter;
 		}
     case VFA_B1:
     {
       std::vector<double> empty;
-      auto T1Fitter = std::make_unique<mdm_T1FitterVFA>(empty, options.TR(), true);
+      auto T1Fitter = std::make_unique<mdm_T1FitterVFA>(empty, options.TR(), true, options.T1InitialParams());
       return T1Fitter;
     }
     case IR:
     {
       std::vector<double> empty;
-      auto T1Fitter = std::make_unique<mdm_T1FitterIR>(empty, options.TR(), true);
+      auto T1Fitter = std::make_unique<mdm_T1FitterIR>(empty, options.TR(), false, options.T1InitialParams());
       return T1Fitter;
     }
 		case IR_E:
 		{
 			std::vector<double> empty;
-			auto T1Fitter = std::make_unique<mdm_T1FitterIR>(empty, options.TR(), true);
+			auto T1Fitter = std::make_unique<mdm_T1FitterIR>(empty, options.TR(), true, options.T1InitialParams());
 			return T1Fitter;
 		}
 		default:

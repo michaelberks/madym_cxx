@@ -24,13 +24,16 @@
 const double mdm_T1FitterVFA::PI = acos(-1.0);
 
 //
-MDM_API mdm_T1FitterVFA::mdm_T1FitterVFA(const std::vector<double> &FAs, const double TR, const bool usingB1)
+MDM_API mdm_T1FitterVFA::mdm_T1FitterVFA(const std::vector<double> &FAs, const double TR, 
+	const bool usingB1, const std::vector<double>& init_params)
   :
   mdm_T1FitterBase(),
   B1_(1.0),
   FAs_(FAs),
+	nFAs_(0),
   TR_(TR),
-  usingB1_(usingB1)
+  usingB1_(usingB1),
+	init_params_(init_params)
 {
 	if (!FAs_.empty())
 		initFAs();
@@ -135,9 +138,25 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterVFA::fitT1(
 	// First, we create optimizer object and tune its properties
 	//
 
-	//Do linear fit to initialise T1 and M0
-	linearFit(T1value, M0value);
+	//If user has set init values, use these instead of a linear fit
+	auto nInit = init_params_.size();
+	if (nInit)
+	{
+		//If user has only given one value, use this for initialising T1
+		T1value = init_params_[0];
 
+		if (nInit > 1)
+			//If user gives second value, use this for M0
+			M0value = init_params_[1];
+		else
+			M0value = signals_.back();
+	}
+	else
+	{
+		//Otherwise, do linear fit to initialise T1 and M0
+		linearFit(T1value, M0value);
+	}
+	
 	std::vector<double> init_vals = { T1value, M0value };
 	alglib::real_1d_array x;
 	x.attach_to_ptr(2, init_vals.data());

@@ -163,7 +163,7 @@ void mdm_RunToolsVolumeAnalysis::mapT1()
   //FA images loaded, try computing T1 and M0 maps
   volumeAnalysis_.T1Mapper().setMethod(methodType);
   volumeAnalysis_.T1Mapper().setNoiseThreshold(options_.T1noiseThresh());
-  volumeAnalysis_.T1Mapper().mapT1();
+  volumeAnalysis_.T1Mapper().mapT1(options_.T1InitialParams());
 }
 
 //

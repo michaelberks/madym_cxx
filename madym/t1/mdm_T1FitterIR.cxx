@@ -19,29 +19,27 @@
 #include <madym/utils/mdm_ProgramLogger.h>
 #include <madym/utils/mdm_exception.h>
 //
-MDM_API mdm_T1FitterIR::mdm_T1FitterIR(const std::vector<double> &TIs, const double TR, const bool fitEfficiencyWeighting)
+MDM_API mdm_T1FitterIR::mdm_T1FitterIR(const std::vector<double> &TIs, const double TR, 
+	const bool fitEfficiencyWeighting, const std::vector<double>& init_params)
   :
   mdm_T1FitterBase(),
   TIs_(TIs),
   TR_(TR),
-	fitEfficiencyWeighting_(fitEfficiencyWeighting)
+	fitEfficiencyWeighting_(fitEfficiencyWeighting),
+	init_params_(init_params)
 {
-
 	//Pre-initialise the alglib state
 	int nParams = fitEfficiencyWeighting_ ? 3 : 2;
 	std::vector<double> init = { 1000, 1000, 1.0};
-	std::vector<double> scale = { 1e3, 1e3, 1};
 
 	std::vector<double> lowerBounds = { 0, 0, 0};
-	std::vector<double> upperBounds = { 1e5, 1e5, 1};
+	std::vector<double> upperBounds = { 1e5, 1e6, 1};
 
 	alglib::real_1d_array x;
-	alglib::real_1d_array s;
 	alglib::real_1d_array bndl;
 	alglib::real_1d_array bndu;
 
 	x.setcontent(nParams, init.data());
-	s.setcontent(nParams, scale.data());
 	bndl.setcontent(nParams, lowerBounds.data());
 	bndu.setcontent(nParams, upperBounds.data());
 
@@ -58,7 +56,7 @@ MDM_API mdm_T1FitterIR::mdm_T1FitterIR(const std::vector<double> &TIs, const dou
 	alglib::minbccreate(x, state_);
 	alglib::minbcsetbc(state_, bndl, bndu);
 	alglib::minbcsetcond(state_, epsg, epsf, epsx, maxits);
-	alglib::minbcsetscale(state_, s);
+	alglib::minbcsetprecscale(state_);
 
 #if _DEBUG
 	//Provides numerical check of analytic gradient, useful in debugging, but should not be
@@ -101,6 +99,11 @@ MDM_API void mdm_T1FitterIR::setInputs(const std::vector<double> &inputs)
   signals_ = inputs;
 }
 
+double get_scale(double init)
+{
+	return  std::pow(10, std::max((double)std::round(std::log10(init)), 0.0));
+}
+
 //
 MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
 	double &T1value, double &M0value, double& EWvalue)
@@ -112,37 +115,61 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
 	//
 	// First, we create optimizer object and tune its properties
 	//
-	alglib::real_1d_array x;
+	int n_params;
+	double init_T1, init_M0;
+	double init_EW = 1.0;
+
 	if (fitEfficiencyWeighting_)
 	{
 		//Run an initial fit with efficiency fixed to 1.0 to get
 		//initial values for T1 and M0
-		double init_T1, init_M0, init_EW;
-		mdm_T1FitterIR* fitter = new mdm_T1FitterIR(TIs_, TR_, false);
+		
+		mdm_T1FitterIR* fitter = new mdm_T1FitterIR(TIs_, TR_, false, init_params_);
 		fitter->setInputs(signals_);
 		fitter->fitT1(init_T1, init_M0, init_EW);
 		delete fitter;
 
-		std::vector<double> init_vals = { init_T1, init_M0, 1.0 };
-		x.setcontent(3, init_vals.data());
-		EWvalue = 1.0;
+		n_params = 3;
 		
 	}
 	else
 	{
-		std::vector<double> init_vals = { 1000, signals_.back()};
-		x.setcontent(2, init_vals.data());
+		auto nInit = init_params_.size();
+
+		if (nInit)
+		{
+			//If user has only given one value, use this for initialising T1
+			init_T1 = init_params_[0];
+
+			if (nInit > 1)
+				//If user gives second value, use this for M0
+				init_M0 = init_params_[1];
+			else
+				//Set M0 from signals
+				init_M0 = signals_.back();
+		}
+		else //No user initialisation, set M0 from signals, T1 defaults to 1000
+		{
+			init_T1 = 1000.0;
+			init_M0 = signals_.back();
+		}
+		n_params = 2;
 	}
-	
+
+	std::vector<double> init_vals = { init_T1, init_M0, init_EW };
+	std::vector<double> init_scale = { get_scale(init_T1), get_scale(init_M0), 1 };
+	alglib::real_1d_array x;
+	alglib::real_1d_array s;
 	
 	// Optimize and evaluate results
 	try
 	{
+		x.setcontent(n_params, init_vals.data());
+		s.setcontent(n_params, init_scale.data());
+		alglib::minbcsetscale(state_, s);
 		minbcrestartfrom(state_, x);
 		alglib::minbcoptimize(state_, &computeSSEGradientAlglib, NULL, this);
-		minbcresults(state_, x, rep_);
-	
-		
+		minbcresults(state_, x, rep_);	
 
 #if _DEBUG
 		//
@@ -154,6 +181,10 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
 		std::cout << "Bad gradient suspected:" << (ogrep.badgradsuspected ? "true" : "false") << "\n"; // EXPECTED: false
 		std::cout << "Non c0 suspected:" << (ogrep.nonc0suspected ? "true" : "false") << "\n"; // EXPECTED: false
 		std::cout << "Non c1 suspected:" << (ogrep.nonc1suspected ? "true" : "false") << "\n"; // EXPECTED: false
+
+		std::cout << "T1 initalised to " << init_vals[0] << ", scale = " << init_scale[0] << '\n';
+		std::cout << "M0 initalised to " << init_vals[1] << ", scale = " << init_scale[1] << '\n';
+		std::cout << "Fitting to [" << signals_.front() << ", " << signals_.back() << "], with TR = " << TR_ << "\n";
 #endif
 	}
 	catch (alglib::ap_error e)
@@ -172,7 +203,7 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
 	}
 
 	// Check for crap fit or bonkers result
-	if (x[0] < 0.0 || x[0] > 6000.0)
+	if (x[0] < 0.0 || x[0] > 10000.0)
 	{
 		setErrorValuesAndTidyUp(T1value, M0value);
 		return mdm_ErrorTracker::T1_MAD_VALUE;
@@ -181,6 +212,9 @@ MDM_API mdm_ErrorTracker::ErrorCode mdm_T1FitterIR::fitT1(
 	T1value = x[0];
 	M0value = x[1];
 	EWvalue = fitEfficiencyWeighting_ ? x[2] : 1.0;
+#if _DEBUG
+	std::cout << "Fitted T1 = " << T1value << ", M0 = " << M0value << "\n";
+#endif
 	return mdm_ErrorTracker::OK;
 }
 

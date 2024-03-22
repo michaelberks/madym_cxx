@@ -84,6 +84,9 @@ struct mdm_InputOptions {
 	mdm_input_double B1Scaling = mdm_input_double(
     1000.0, "B1_scaling", "",
     "Scaling value appplied to B1 map"); //!< See initial value
+	mdm_input_doubles T1InitialParams = mdm_input_doubles(
+		mdm_input_double_list(std::vector<double>{}), "T1_init_params", "",
+		"Initial values for [T1,M0] to be optimised. If only 1 set, this will initialise T1"); //!< See initial value
 
 	//DWI tool inputs
 	mdm_input_string DWImodel = mdm_input_string(
@@ -141,7 +144,7 @@ struct mdm_InputOptions {
 		"Tracer-kinetic model"); //!< See initial value
 	mdm_input_doubles initialParams = mdm_input_doubles(
 		mdm_input_double_list(std::vector<double>{}), "init_params", "",
-		"Initial values for model parameters to be optimised"); //!< See initial value
+		"Initial values for DCE TK model parameters to be optimised"); //!< See initial value
 	mdm_input_string initMapsDir = mdm_input_string(
 		mdm_input_str(""), "init_maps", "",
 		"Path to folder containing parameter maps for per-voxel initialisation"); //!< See initial value
